@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JobPilot AI - Your Career Co-Pilot
+
+AI-powered career platform built with Next.js 16, featuring resume optimization, job matching, cover letter generation, and interview prep — all wrapped in a premium space-themed UI.
+
+## Features
+
+- **Resume Intelligence** — Upload your resume and get AI-powered ATS scoring, keyword analysis, full rebuilds, and career pivot mode
+- **Job Search & Match** — Paste a job description and get an AI match score with detailed gap analysis
+- **Cover Letter Generator** — Generate tailored, professional cover letters in seconds
+- **Interview Prep AI** — Predict likely interview questions and practice answers with AI coaching
+- **Application Tracker** — Track all your job applications with status management
+- **Settings & Billing** — Plan management with Stripe integration for Pro/Enterprise upgrades
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4 with custom space theme
+- **Database:** SQLite via Prisma ORM + libSQL adapter
+- **Auth:** NextAuth.js v5 (Credentials provider, JWT sessions)
+- **AI:** Google Gemini (2.5 Flash with auto-fallback)
+- **Payments:** Stripe (Checkout, Billing Portal, Webhooks)
+- **Fonts:** Geist Sans, Geist Mono, Space Grotesk
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up environment variables
+
+Copy the `.env.example` or create a `.env` file:
+
+```env
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="your-secret-here"
+AUTH_URL="http://localhost:3000"
+GEMINI_API_KEY="your-gemini-api-key"
+```
+
+Get a free Gemini API key at: https://aistudio.google.com/apikey
+
+### 3. Set up the database
+
+```bash
+npx prisma migrate dev
+```
+
+### 4. Run the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── (auth)/          # Login & Signup pages
+│   ├── (marketing)/     # Contact, Privacy, Terms pages
+│   ├── api/             # API routes (AI, auth, Stripe, CRUD)
+│   ├── dashboard/       # Protected app pages (6 features)
+│   ├── layout.tsx       # Root layout with fonts & metadata
+│   ├── page.tsx         # Landing page
+│   └── globals.css      # Space theme (colors, glow, glass cards)
+├── components/          # Reusable UI components
+├── lib/                 # Auth, Prisma, Stripe config
+└── types/               # TypeScript type extensions
+prisma/
+├── schema.prisma        # Database schema (5 models)
+└── migrations/          # SQL migration files
+```
 
-## Learn More
+## Pricing Model
 
-To learn more about Next.js, take a look at the following resources:
+| Plan | Price | AI Calls |
+|------|-------|----------|
+| Free | $0/forever | 3/month |
+| Pro | $19/month | Unlimited |
+| Enterprise | Custom | Unlimited + Team features |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

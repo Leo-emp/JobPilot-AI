@@ -1,0 +1,101 @@
+// ============================================================
+// PRISMA SCHEMA - JobPilot AI Database
+// ============================================================
+// Defines all database tables (models) and their relationships.
+// Using SQLite for development — can migrate to PostgreSQL for production.
+// Run `npx prisma migrate dev` after changes to apply them.
+// ============================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---- User Account ----
+// Stores registered users with hashed passwords
+model User {
+  id             String   @id @default(cuid())  // Unique ID (cuid is URL-safe)
+  name           String                          // Display name
+  email          String   @unique                // Login email (must be unique)
+  password       String                          // bcrypt-hashed password
+  plan           String   @default("free")       // Subscription plan: free, pro, enterprise
+  aiUsageCount   Int      @default(0)            // Number of AI calls this billing period
+  usageResetDate DateTime @default(now())        // When the usage counter resets (monthly)
+  stripeCustomerId   String?                     // Stripe customer ID for billing
+  stripeSubId        String?                     // Stripe subscription ID
+  createdAt      DateTime @default(now())        // When the account was created
+  updatedAt      DateTime @updatedAt             // Auto-updates on any change
+
+  // Relationships — one user has many of each
+  resumes      Resume[]
+  jobs         SavedJob[]
+  applications Application[]
+  coverLetters CoverLetter[]
+}
+
+// ---- Uploaded Resume ----
+// Stores the raw text of uploaded resumes for AI analysis
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String                          // Foreign key to User
+  fileName  String                          // Original file name
+  content   String                          // Extracted text content
+  analysis  String?                         // AI analysis results (JSON string)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---- Saved Job Listing ----
+// Jobs the user has saved for tracking
+model SavedJob {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String                        // Job title
+  company     String                        // Company name
+  location    String?                       // Job location
+  description String                        // Full job description
+  url         String?                        // Link to the original posting
+  salary      String?                        // Salary range if available
+  matchScore  Int?                           // AI-calculated match score (0-100)
+  createdAt   DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+}
+
+// ---- Job Application ----
+// Tracks the status of each application
+model Application {
+  id            String   @id @default(cuid())
+  userId        String
+  jobId         String?                      // Optional link to a saved job
+  jobTitle      String                       // Job title (denormalized for convenience)
+  company       String                       // Company name
+  status        String   @default("Saved")   // Current status (Saved, Applied, Interview, etc.)
+  notes         String?                      // User's personal notes
+  appliedDate   DateTime?                    // When they applied
+  interviewDate DateTime?                    // Scheduled interview date
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  SavedJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
+
+// ---- Generated Cover Letter ----
+// Stores AI-generated cover letters for re-use
+model CoverLetter {
+  id          String   @id @default(cuid())
+  userId      String
+  jobTitle    String                         // Target job title
+  company     String                         // Target company
+  content     String                         // The generated cover letter text
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

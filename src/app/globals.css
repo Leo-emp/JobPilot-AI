@@ -1,26 +1,228 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ============================================================
+   GLOBAL CSS - JobPilot AI (Space Theme)
+   ============================================================
+   This file defines all custom CSS variables, animations,
+   and utility classes for the premium space-themed UI.
+   Tailwind v4 uses @theme for extending design tokens.
+   ============================================================ */
 
+/* ---- Custom Theme Tokens (Tailwind v4 style) ---- */
+/* These extend Tailwind's default design system with our brand colors */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-space-900: #050510;
+  --color-space-800: #0a0a1a;
+  --color-space-700: #0f0f2a;
+  --color-space-600: #16163a;
+  --color-space-500: #1e1e4a;
+  --color-brand-indigo: #6366f1;
+  --color-brand-purple: #8b5cf6;
+  --color-brand-violet: #a855f7;
+  --color-brand-light: #818cf8;
+  --color-brand-glow: #c084fc;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-card-bg: rgba(15, 15, 42, 0.6);
+  --color-card-border: rgba(99, 102, 241, 0.15);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-space-grotesk);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---- Smooth Scrolling ---- */
+/* Enables smooth anchor-link scrolling across the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---- Base Styles ---- */
+/* Dark space background applied to the entire page */
+body {
+  background: var(--color-space-900);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ---- Glowing Text Effect (OpenClaw-inspired) ---- */
+/* Creates a neon-glow effect using text-shadow with multiple layers */
+/* Each layer adds a wider, more transparent glow around the text */
+.glow-text {
+  background: linear-gradient(135deg, #818cf8, #a855f7, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5))
+          drop-shadow(0 0 40px rgba(139, 92, 246, 0.3))
+          drop-shadow(0 0 80px rgba(139, 92, 246, 0.15));
+}
+
+/* Stronger glow variant for the hero title */
+.glow-text-strong {
+  background: linear-gradient(135deg, #a5b4fc, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.6))
+          drop-shadow(0 0 60px rgba(168, 85, 247, 0.4))
+          drop-shadow(0 0 100px rgba(192, 132, 252, 0.2));
+}
+
+/* Subtle glow for taglines */
+.glow-text-subtle {
+  color: #c084fc;
+  text-shadow: 0 0 10px rgba(192, 132, 252, 0.5),
+               0 0 20px rgba(192, 132, 252, 0.3);
+}
+
+/* ---- Animated Star Background ---- */
+/* The star field is created with CSS radial-gradient dots */
+/* positioned randomly, with a slow drift animation */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Slow rotation for orbital decorations */
+@keyframes orbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Fade in from bottom (for scroll animations) */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---- Glassmorphism Card ---- */
+/* Semi-transparent card with backdrop blur (frosted glass effect) */
+.glass-card {
+  background: rgba(15, 15, 42, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+/* Hover state lifts the card and brightens the border */
+.glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ---- Gradient Border Button ---- */
+/* Uses a pseudo-element trick: the button has a gradient background, */
+/* with an inner pseudo-element that covers most of it, leaving a */
+/* gradient border visible around the edges */
+.btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 32px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 30px rgba(99, 102, 241, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Secondary (outline) button with gradient border */
+.btn-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 32px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #c084fc;
+  background: transparent;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  border-color: rgba(192, 132, 252, 0.6);
+  background: rgba(192, 132, 252, 0.05);
+}
+
+/* ---- Navbar Blur ---- */
+/* Sticky top navigation with frosted glass background */
+.nav-blur {
+  background: rgba(5, 5, 16, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.08);
+}
+
+/* ---- Grid Background Pattern ---- */
+/* Subtle grid lines like the OpenClaw reference */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ---- Scrollbar Styling ---- */
+/* Custom purple-themed scrollbar to match the space UI */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050510;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* ---- Section Fade-In ---- */
+/* Applied to sections for scroll-triggered entrance animations */
+.animate-fade-in {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+/* ---- Responsive Helpers ---- */
+/* Ensure images and videos don't overflow on mobile */
+img, video {
+  max-width: 100%;
+  height: auto;
 }
