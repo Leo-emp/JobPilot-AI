@@ -48,7 +48,7 @@ async function callGemini(prompt: string): Promise<string> {
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               temperature: 0.7,
-              maxOutputTokens: 4096,
+              maxOutputTokens: 8192,
             },
           }),
         }
@@ -85,21 +85,48 @@ async function callGemini(prompt: string): Promise<string> {
 function buildPrompt(action: string, payload: Record<string, string>): string {
   switch (action) {
     case "analyze_resume":
-      return `You are a professional resume analyst and ATS expert. Analyze this resume and provide:
-1. **ATS Score** (0-100) with explanation
-2. **Strengths** (what's working well)
-3. **Weaknesses** (what needs improvement)
-4. **Missing Keywords** for the industry
-5. **Formatting Issues** that might trip up ATS systems
-6. **Action Items** (specific, prioritized improvements)
+      return `You are a senior career coach and ATS expert with 15 years of experience in hiring. Analyze this resume thoroughly.
+
+IMPORTANT RULES:
+- Use the ACTUAL content from the resume below — reference specific job titles, companies, skills, and achievements the candidate listed
+- Never use generic placeholders like [Your Name] or [Company] — use what's in the resume
+- Be specific and actionable in your feedback
+
+Provide this EXACT structure:
+
+## ATS Score: X/100
+(Explain why this score — what's helping and hurting)
+
+## Strengths
+(List 3-5 specific things this resume does well, referencing actual content)
+
+## Weaknesses
+(List 3-5 specific problems with actionable fixes)
+
+## Missing Keywords
+(Industry-specific keywords they should add based on their target field)
+
+## Formatting Issues
+(ATS-specific problems: tables, headers, file format concerns)
+
+## Priority Action Items
+(Numbered list of the top 5 changes that would have the biggest impact, in order of importance)
 
 Resume:
 ${payload.resume}`;
 
     case "optimize_resume":
-      return `You are an ATS optimization expert. Optimize this resume for the following job description.
-Improve keyword matching, strengthen bullet points with action verbs, and ensure ATS compatibility.
-Return the COMPLETE optimized resume in clean markdown format.
+      return `You are a professional resume writer. Optimize this resume for the job description below.
+
+CRITICAL RULES:
+- Use the candidate's REAL name, contact info, experience, and education from their resume
+- NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data from the resume
+- Keep all real details (dates, companies, job titles) — only improve the wording and keywords
+- Inject relevant keywords from the job description naturally into bullet points
+- Strengthen bullet points with action verbs and quantify achievements where data exists
+- If the resume doesn't have a specific number, write the bullet without one — don't add fake brackets
+
+Return the COMPLETE optimized resume ready to use, in clean markdown format.
 
 Resume:
 ${payload.resume}
@@ -108,16 +135,26 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "rebuild_resume":
-      return `You are an expert resume writer. Completely rebuild this resume to perfectly target the job below.
+      return `You are an elite resume writer hired to rebuild this resume for a specific job.
 
-RULES:
-- Use this EXACT structure: Contact Info → Professional Summary → Core Competencies → Professional Experience → Education → Certifications
-- Start EVERY bullet point with a POWER ACTION VERB (Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, etc.)
-- Inject keywords from the job description naturally throughout
-- Quantify achievements with numbers, percentages, dollar amounts wherever possible
-- Keep it to 1-2 pages maximum
-- Make it ATS-friendly: no tables, no graphics, clean formatting
-- Return the COMPLETE rebuilt resume in clean markdown format
+CRITICAL RULES:
+- Use the candidate's REAL name, contact info, education, and work history from their resume
+- NEVER use placeholders like [Your Name], [Company Name], [City, State], [X years], or [quantify, e.g., 15-20%]
+- Every piece of information must come from the original resume — do NOT invent experience or details
+- If the resume lacks specific metrics, write strong bullet points without fake numbers
+- Rewrite and reframe existing experience to align with the target job — but keep it truthful
+
+STRUCTURE:
+1. **Name + Contact Info** (from the resume)
+2. **Professional Summary** (2-3 sentences tailored to the target role)
+3. **Core Competencies** (keyword-rich skills grid matching the job)
+4. **Professional Experience** (each role with 4-6 bullet points starting with power verbs)
+5. **Education** (from the resume)
+6. **Certifications / Professional Development** (if applicable)
+
+Start every bullet with a power action verb: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, etc.
+
+Return the COMPLETE rebuilt resume in clean markdown — ready to copy and use.
 
 Original Resume:
 ${payload.resume}
@@ -142,11 +179,23 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "cover_letter":
-      return `Write a professional, compelling cover letter for this job application.
-Make it personalized, confident, and specific to the role.
-Reference relevant experience from the resume.
-Keep it under 400 words. Use a modern, professional tone — not overly formal.
-Return only the cover letter text (no extra commentary).
+      return `Write a compelling cover letter for this job application.
+
+CRITICAL RULES:
+- Use the candidate's REAL name and details from the resume — never use [Your Name] or placeholders
+- Reference SPECIFIC achievements, projects, and skills from their actual resume
+- Address it to the hiring team at the real company name provided
+- Sound human and confident — not robotic or overly formal
+- Show genuine enthusiasm for the specific role and company
+- Keep it under 350 words — hiring managers skim
+- End with a clear call to action
+
+STRUCTURE:
+1. Opening: Hook the reader — mention the specific role and why you're excited
+2. Body (2 paragraphs): Connect your real experience to their job requirements
+3. Closing: Express enthusiasm and request an interview
+
+Return ONLY the cover letter — no commentary, no "Here's your cover letter" intro.
 
 Resume:
 ${payload.resume}
@@ -184,24 +233,29 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "career_pivot":
-      return `You are a career transition specialist. This person is changing careers.
-Rebuild their resume to target a completely different role.
+      return `You are a career transition specialist. This person wants to change careers.
 
-FOCUS ON:
-- Transferable skills that apply to the new field
-- Reframing past experience to show relevance
-- Adding a "Professional Development" section if they have relevant coursework/certifications
-- A strong Professional Summary that addresses the career change transparently
-- Keep it honest — don't fabricate experience
+CRITICAL RULES:
+- Use the candidate's REAL name, contact info, and background from their resume
+- NEVER use placeholders like [Your Name], [Company], [X years] — use actual data
+- Do NOT invent experience — only reframe what actually exists
+- Identify genuinely transferable skills from their background
+- Be honest about the transition — don't pretend they have experience they don't
+
+APPROACH:
+1. **Professional Summary**: Address the career change directly — show how their background uniquely positions them
+2. **Transferable Skills**: Map their existing skills to the target role requirements
+3. **Experience**: Rewrite each role emphasizing aspects relevant to the new field
+4. **Education & Development**: Highlight any relevant coursework, certifications, or self-study
+
+Return the COMPLETE rebuilt resume in clean markdown — ready to use, no placeholders.
 
 Original Resume:
 ${payload.resume}
 
 Target Role: ${payload.jobTitle}
 Target Industry: ${payload.company}
-Target Job Description: ${payload.jobDescription}
-
-Return the COMPLETE rebuilt resume in clean markdown format.`;
+Target Job Description: ${payload.jobDescription}`;
 
     default:
       throw new Error(`Unknown action: ${action}`);

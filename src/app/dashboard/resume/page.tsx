@@ -44,24 +44,51 @@ export default function ResumePage() {
   const [company, setCompany] = useState("");
   const [jobDescription, setJobDescription] = useState("");
 
+  /* Track file upload progress */
+  const [uploading, setUploading] = useState(false);
+
   /* ---- Handle File Upload ---- */
-  /* Reads the uploaded file and extracts text content */
+  /* Sends file to server API for proper text extraction (especially PDFs) */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
+    setError("");
 
-    /* For .txt files, read directly */
-    if (file.name.endsWith(".txt")) {
+    /* For .txt files, read directly in browser — no server needed */
+    if (file.name.toLowerCase().endsWith(".txt")) {
       const text = await file.text();
       setResumeText(text);
       return;
     }
 
-    /* For PDF and DOCX, read as text for now */
-    const text = await file.text();
-    setResumeText(text);
+    /* For PDF and DOCX, send to server for proper text extraction */
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/parse-resume", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to parse file.");
+        setResumeText("");
+        return;
+      }
+
+      setResumeText(data.text);
+    } catch {
+      setError("Failed to upload file. Try pasting your resume text instead.");
+      setResumeText("");
+    } finally {
+      setUploading(false);
+    }
   };
 
   /* ---- Save Resume to Database ---- */
@@ -161,7 +188,7 @@ export default function ResumePage() {
           <label className="flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl border-2 border-dashed border-card-border hover:border-brand-indigo/40 cursor-pointer transition-colors">
             <span className="text-2xl">📎</span>
             <span className="text-sm text-text-secondary">
-              {fileName || "Upload resume (PDF, DOCX, TXT)"}
+              {uploading ? "Extracting text..." : fileName || "Upload resume (PDF, DOCX, TXT)"}
             </span>
             <input
               type="file"
