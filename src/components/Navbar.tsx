@@ -60,6 +60,12 @@ export default function Navbar() {
             >
               Pricing
             </Link>
+            <Link
+              href="/about"
+              className="text-sm text-text-secondary hover:text-white transition-colors"
+            >
+              About
+            </Link>
           </div>
 
           {/* ---- Desktop CTA Buttons ---- */}
@@ -129,6 +135,13 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
               >
                 Pricing
+              </Link>
+              <Link
+                href="/about"
+                className="text-text-secondary hover:text-white transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                About
               </Link>
               <div className="flex flex-col gap-3 pt-2">
                 <Link
