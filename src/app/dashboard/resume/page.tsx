@@ -13,8 +13,8 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
-import ReactMarkdown from "react-markdown";
+import { useState } from "react";
+import MarkdownResult from "@/components/MarkdownResult";
 
 /* ---- Tab names for the feature sub-sections ---- */
 const tabs = [
@@ -111,69 +111,6 @@ async function extractTextFromPDF(file: File): Promise<string> {
 
   return pages.join("\n\n");
 }
-
-/* ============================================================
-   MARKDOWN TO HTML - For download functionality
-   ============================================================
-   Converts the AI markdown result to clean HTML for Word/PDF
-   downloads. Produces a professional, ATS-friendly document.
-   ============================================================ */
-function markdownToHTML(md: string): string {
-  let html = md
-    /* Headers */
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    /* Bold and italic */
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>")
-    /* Horizontal rules */
-    .replace(/^---$/gm, "<hr>")
-    /* Line breaks — but not after block elements */
-    .replace(/\n/g, "<br>");
-
-  /* Convert bullet point sequences into proper <ul> lists */
-  html = html.replace(
-    /(?:<br>)?(?:[*\-•] .+(?:<br>)?)+/g,
-    (match) => {
-      const items = match
-        .split("<br>")
-        .filter((line) => /^[*\-•] /.test(line.trim()))
-        .map((line) => `<li>${line.trim().replace(/^[*\-•] /, "")}</li>`)
-        .join("");
-      return `<ul>${items}</ul>`;
-    }
-  );
-
-  /* Convert numbered list sequences into proper <ol> lists */
-  html = html.replace(
-    /(?:<br>)?(?:\d+\. .+(?:<br>)?)+/g,
-    (match) => {
-      const items = match
-        .split("<br>")
-        .filter((line) => /^\d+\. /.test(line.trim()))
-        .map((line) => `<li>${line.trim().replace(/^\d+\. /, "")}</li>`)
-        .join("");
-      return `<ol>${items}</ol>`;
-    }
-  );
-
-  return html;
-}
-
-/* Shared styles for the downloadable document — clean ATS-friendly layout */
-const DOWNLOAD_STYLES = `
-  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.65; font-size: 15px; }
-  h1 { font-size: 26px; margin: 0 0 4px 0; color: #111; }
-  h2 { font-size: 18px; border-bottom: 2px solid #2d2d2d; padding-bottom: 4px; margin: 24px 0 12px 0; color: #111; text-transform: uppercase; letter-spacing: 0.5px; }
-  h3 { font-size: 16px; margin: 16px 0 6px 0; color: #222; }
-  p { margin: 0 0 8px 0; }
-  ul, ol { padding-left: 22px; margin: 6px 0 12px 0; }
-  li { margin-bottom: 5px; }
-  strong { color: #111; }
-  hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
-  @media print { body { padding: 20px; } }
-`;
 
 export default function ResumePage() {
   /* Track which tab is active */
@@ -297,46 +234,6 @@ export default function ResumePage() {
       setLoading(false);
     }
   };
-
-  /* ---- Download as PDF ---- */
-  /* Opens a clean formatted document in a new window for printing/saving as PDF */
-  const downloadPDF = useCallback(() => {
-    const html = markdownToHTML(result);
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html><head>
-        <title>Resume - JobPilot AI</title>
-        <style>${DOWNLOAD_STYLES}</style>
-      </head><body>${html}</body></html>
-    `);
-    printWindow.document.close();
-    /* Small delay to ensure content renders before print dialog */
-    setTimeout(() => printWindow.print(), 300);
-  }, [result]);
-
-  /* ---- Download as Word ---- */
-  /* Creates an HTML file disguised as .doc — Word opens it natively */
-  const downloadWord = useCallback(() => {
-    const html = markdownToHTML(result);
-    const wordContent = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office"
-            xmlns:w="urn:schemas-microsoft-com:office:word"
-            xmlns="http://www.w3.org/TR/REC-html40">
-      <head><meta charset="utf-8">
-        <style>${DOWNLOAD_STYLES}</style>
-      </head><body>${html}</body></html>
-    `;
-    const blob = new Blob([wordContent], { type: "application/msword" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resume-jobpilot.doc";
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [result]);
 
   return (
     <div>
@@ -547,79 +444,7 @@ export default function ResumePage() {
         )}
 
         {/* ---- AI Result Display ---- */}
-        {/* Renders markdown as properly formatted HTML with large readable font */}
-        {result && (
-          <div className="mt-8">
-            {/* Result header with action buttons */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-              <h3 className="text-xl font-bold glow-text-subtle">AI Result</h3>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => navigator.clipboard.writeText(result)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors"
-                >
-                  Copy Text
-                </button>
-                <button
-                  onClick={downloadWord}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors"
-                >
-                  Download Word
-                </button>
-                <button
-                  onClick={downloadPDF}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors"
-                >
-                  Download PDF
-                </button>
-              </div>
-            </div>
-
-            {/* Formatted result content — professional layout with readable font */}
-            <div className="p-6 sm:p-8 rounded-xl bg-space-700/80 border border-card-border">
-              <ReactMarkdown
-                components={{
-                  /* Custom styled components for professional resume display */
-                  h1: ({ children }) => (
-                    <h1 className="text-2xl font-bold text-white mb-1">{children}</h1>
-                  ),
-                  h2: ({ children }) => (
-                    <h2 className="text-lg font-bold text-white mt-7 mb-3 pb-2 border-b border-card-border uppercase tracking-wide">{children}</h2>
-                  ),
-                  h3: ({ children }) => (
-                    <h3 className="text-base font-bold text-white mt-4 mb-1">{children}</h3>
-                  ),
-                  p: ({ children }) => (
-                    <p className="text-[15px] text-gray-300 leading-relaxed mb-3">{children}</p>
-                  ),
-                  ul: ({ children }) => (
-                    <ul className="list-disc list-outside ml-5 space-y-1.5 mb-4">{children}</ul>
-                  ),
-                  ol: ({ children }) => (
-                    <ol className="list-decimal list-outside ml-5 space-y-1.5 mb-4">{children}</ol>
-                  ),
-                  li: ({ children }) => (
-                    <li className="text-[15px] text-gray-300 leading-relaxed">{children}</li>
-                  ),
-                  strong: ({ children }) => (
-                    <strong className="text-white font-semibold">{children}</strong>
-                  ),
-                  em: ({ children }) => (
-                    <em className="text-gray-400 italic">{children}</em>
-                  ),
-                  hr: () => <hr className="border-card-border my-5" />,
-                }}
-              >
-                {result}
-              </ReactMarkdown>
-            </div>
-
-            {/* Download reminder at the bottom */}
-            <p className="mt-4 text-sm text-text-muted text-center">
-              Use the buttons above to download your result as a Word document or PDF.
-            </p>
-          </div>
-        )}
+        {result && <MarkdownResult result={result} />}
 
         {/* ---- Loading State ---- */}
         {loading && (

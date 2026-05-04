@@ -10,6 +10,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import MarkdownResult from "@/components/MarkdownResult";
 
 /* ---- Type for saved cover letters ---- */
 interface SavedLetter {
@@ -224,9 +225,7 @@ export default function CoverLetterPage() {
 
           {/* Result text */}
           {result ? (
-            <div className="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap">
-              {result}
-            </div>
+            <MarkdownResult result={result} showDownload={false} />
           ) : (
             !loading && (
               <p className="text-text-muted text-sm py-8 text-center">

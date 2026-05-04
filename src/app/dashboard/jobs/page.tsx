@@ -12,6 +12,7 @@
 "use client";
 
 import { useState } from "react";
+import MarkdownResult from "@/components/MarkdownResult";
 
 export default function JobsPage() {
   /* Form fields */
@@ -131,14 +132,7 @@ export default function JobsPage() {
       )}
 
       {/* AI Analysis */}
-      {result && (
-        <div className="glass-card p-6 sm:p-8">
-          <h3 className="text-lg font-bold mb-4 glow-text-subtle">Detailed Analysis</h3>
-          <div className="prose prose-invert max-w-none text-sm whitespace-pre-wrap">
-            {result}
-          </div>
-        </div>
-      )}
+      {result && <MarkdownResult result={result} showDownload={false} />}
 
       {/* Loading */}
       {loading && (

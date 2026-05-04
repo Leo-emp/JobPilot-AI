@@ -9,6 +9,7 @@
 "use client";
 
 import { useState } from "react";
+import MarkdownResult from "@/components/MarkdownResult";
 
 export default function InterviewPage() {
   /* Tab state */
@@ -146,14 +147,7 @@ export default function InterviewPage() {
               {loading ? "Predicting..." : "🎯 Generate Questions"}
             </button>
 
-            {questions && (
-              <div className="mt-8 p-6 rounded-xl bg-space-700 border border-card-border">
-                <h3 className="text-lg font-bold mb-4 glow-text-subtle">Predicted Questions</h3>
-                <div className="prose prose-invert max-w-none text-sm whitespace-pre-wrap">
-                  {questions}
-                </div>
-              </div>
-            )}
+            {questions && <MarkdownResult result={questions} showDownload={false} />}
           </div>
         )}
 
@@ -192,14 +186,7 @@ export default function InterviewPage() {
               {loading ? "Generating..." : "💬 Generate Answer"}
             </button>
 
-            {answer && (
-              <div className="mt-8 p-6 rounded-xl bg-space-700 border border-card-border">
-                <h3 className="text-lg font-bold mb-4 glow-text-subtle">Coached Answer</h3>
-                <div className="prose prose-invert max-w-none text-sm whitespace-pre-wrap">
-                  {answer}
-                </div>
-              </div>
-            )}
+            {answer && <MarkdownResult result={answer} showDownload={false} />}
           </div>
         )}
 
