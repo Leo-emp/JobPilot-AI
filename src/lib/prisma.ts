@@ -19,11 +19,14 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /* ---- Create the Database Connection ---- */
-/* PrismaLibSql adapter connects Prisma to the SQLite file */
-/* Pass the config directly — url points to the database file */
+/* In production (Vercel), connects to Turso cloud database via libSQL */
+/* In development, connects to the local SQLite file (dev.db) */
+/* Turso requires both a URL and an auth token for cloud connections */
 function createPrismaClient() {
   const adapter = new PrismaLibSql({
     url: process.env.DATABASE_URL || "file:./prisma/dev.db",
+    /* Auth token is required for Turso cloud, not needed for local SQLite */
+    authToken: process.env.DATABASE_AUTH_TOKEN || undefined,
   });
   return new PrismaClient({ adapter });
 }
