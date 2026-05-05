@@ -8,10 +8,11 @@
    ============================================================ */
 
 /* ---- Feature Data ---- */
-/* Each feature has an SVG icon path, accent color, title, and description */
+/* Each feature has an SVG icon path, accent color, title, description, and showcase ID for scroll linking */
 const features = [
   {
     title: "Resume Intelligence",
+    showcaseId: "showcase-resume-intelligence",
     description:
       "Upload your resume and get instant ATS scoring, keyword analysis, and AI-powered optimization suggestions.",
     color: "text-blue-400",
@@ -25,6 +26,7 @@ const features = [
   },
   {
     title: "Smart Job Matching",
+    showcaseId: "showcase-smart-job-matching",
     description:
       "Find jobs that match your skills. Our AI calculates compatibility scores and highlights skill gaps.",
     color: "text-purple-400",
@@ -38,6 +40,7 @@ const features = [
   },
   {
     title: "Cover Letter Generator",
+    showcaseId: "showcase-cover-letter-generator",
     description:
       "Generate tailored, professional cover letters for any job in seconds. Each one is unique to the role.",
     color: "text-emerald-400",
@@ -51,6 +54,7 @@ const features = [
   },
   {
     title: "Resume Rebuild Engine",
+    showcaseId: "showcase-resume-rebuild-engine",
     description:
       "Completely rebuild your resume for a specific job — ATS-optimized format, power verbs, keyword injection.",
     color: "text-indigo-400",
@@ -64,6 +68,7 @@ const features = [
   },
   {
     title: "Interview Prep AI",
+    showcaseId: "showcase-interview-prep-ai",
     description:
       "Predict likely interview questions for any role and get AI-coached answers based on your experience.",
     color: "text-amber-400",
@@ -77,6 +82,7 @@ const features = [
   },
   {
     title: "Career Pivot Mode",
+    showcaseId: "showcase-career-pivot-mode",
     description:
       "Switching careers? Our AI reframes your experience with transferable skills for your target industry.",
     color: "text-rose-400",
@@ -90,6 +96,7 @@ const features = [
   },
   {
     title: "Resume Templates",
+    showcaseId: "showcase-resume-templates",
     description:
       "Choose from 6 professional ATS-friendly templates. Fill in your details and download as PDF or Word.",
     color: "text-violet-400",
@@ -103,6 +110,7 @@ const features = [
   },
   {
     title: "LinkedIn Optimizer",
+    showcaseId: "showcase-linkedin-optimizer",
     description:
       "Get a profile audit scored out of 100, then AI-rewritten headline, about, and experience that attract recruiters.",
     color: "text-cyan-400",
@@ -140,9 +148,10 @@ export default function Features() {
         {/* 1 col mobile, 2 col tablet, 4 col desktop — centered text */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {features.map((feature, index) => (
-            <div
+            <a
               key={index}
-              className="group relative rounded-2xl border border-card-border bg-space-800/60 p-7 text-center hover:border-brand-indigo/30 hover:bg-space-700/60 transition-all duration-300"
+              href={`#${feature.showcaseId}`}
+              className="group relative rounded-2xl border border-card-border bg-space-800/60 p-7 text-center hover:border-brand-indigo/30 hover:bg-space-700/60 transition-all duration-300 cursor-pointer"
             >
               {/* Icon circle — centered */}
               <div className={`mx-auto mb-5 w-14 h-14 rounded-xl ${feature.bg} border ${feature.border} flex items-center justify-center ${feature.color}`}>
@@ -158,7 +167,7 @@ export default function Features() {
               <p className="text-sm text-text-secondary leading-relaxed">
                 {feature.description}
               </p>
-            </div>
+            </a>
           ))}
         </div>
       </div>

@@ -115,6 +115,26 @@ const showcaseFeatures = [
     ),
   },
   {
+    tag: "Career Pivot Mode",
+    headline: "Switch careers without starting from scratch",
+    description:
+      "Changing industries is hard — but your experience is more valuable than you think. Our AI identifies transferable skills from your background and reframes your resume for a completely different career path. Same experience, new narrative.",
+    capabilities: [
+      "Transferable skills mapping between your current and target industry",
+      "Experience reframing — same achievements, new industry language",
+      "Gap analysis showing what skills to highlight vs. what to learn",
+      "Industry-specific keyword injection for your target career",
+    ],
+    accent: "from-rose-500 to-pink-600",
+    iconBg: "bg-rose-500/10 border-rose-500/20",
+    iconColor: "text-rose-400",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    ),
+  },
+  {
     tag: "LinkedIn Optimizer",
     headline: "Get found by recruiters, not lost in the feed",
     description:
@@ -181,7 +201,8 @@ export default function FeatureShowcase() {
           {showcaseFeatures.map((feature, index) => (
             <div
               key={index}
-              className={`flex flex-col ${
+              id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
+              className={`scroll-mt-24 flex flex-col ${
                 index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
               } gap-10 lg:gap-16 items-center`}
             >
@@ -365,6 +386,39 @@ export default function FeatureShowcase() {
                     )}
 
                     {index === 5 && (
+                      /* Career Pivot Mode Preview */
+                      <>
+                        <div className="p-3 rounded-lg bg-space-600/40 border-l-2 border-rose-400/50 mb-3">
+                          <div className="text-xs text-text-muted mb-1">Current: Marketing Manager</div>
+                          <div className="text-xs text-white">7 years in B2B SaaS marketing</div>
+                        </div>
+                        <div className="flex justify-center mb-3">
+                          <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                          </svg>
+                        </div>
+                        <div className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50 mb-4">
+                          <div className="text-xs text-green-400 mb-1">Target: Product Manager</div>
+                          <div className="text-xs text-white">Reframed for product leadership</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-400" />
+                            <span className="text-xs text-text-secondary">5 transferable skills found</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-400" />
+                            <span className="text-xs text-text-secondary">2 skills to emphasize more</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-400" />
+                            <span className="text-xs text-text-secondary">1 certification recommended</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {index === 6 && (
                       /* LinkedIn Optimizer Preview */
                       <>
                         <div className="flex items-center justify-between mb-3">
@@ -392,7 +446,7 @@ export default function FeatureShowcase() {
                       </>
                     )}
 
-                    {index === 6 && (
+                    {index === 7 && (
                       /* Resume Templates Preview */
                       <>
                         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -427,7 +481,7 @@ export default function FeatureShowcase() {
         {/* ---- Bottom CTA ---- */}
         <div className="mt-24 sm:mt-32 text-center">
           <p className="text-text-secondary text-lg mb-6">
-            All six tools. One platform. Zero guesswork.
+            All eight tools. One platform. Zero guesswork.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Start Optimizing for Free
