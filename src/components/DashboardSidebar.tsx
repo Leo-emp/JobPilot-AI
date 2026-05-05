@@ -19,6 +19,7 @@ import RocketIcon from "./RocketIcon";
 const navItems = [
   { href: "/dashboard", icon: "🏠", label: "Dashboard" },
   { href: "/dashboard/resume", icon: "📄", label: "Resume Intelligence" },
+  { href: "/dashboard/templates", icon: "📋", label: "Resume Templates" },
   { href: "/dashboard/jobs", icon: "🔍", label: "Job Search & Match" },
   { href: "/dashboard/cover-letter", icon: "✉️", label: "Cover Letter" },
   { href: "/dashboard/tracker", icon: "📊", label: "Application Tracker" },
