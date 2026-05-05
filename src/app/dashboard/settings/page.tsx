@@ -141,8 +141,8 @@ export default function SettingsPage() {
   };
 
   /* Calculate usage percentage */
-  const usageLimit = userPlan?.plan === "free" ? 3 : -1;
-  const usagePercent = usageLimit > 0 ? Math.min((userPlan?.aiUsageCount || 0) / usageLimit * 100, 100) : 0;
+  const usageLimit = userPlan?.plan === "pro" ? 100 : 3;
+  const usagePercent = Math.min((userPlan?.aiUsageCount || 0) / usageLimit * 100, 100);
 
   return (
     <div>
@@ -199,10 +199,8 @@ export default function SettingsPage() {
               </span>
               <p className="text-text-secondary text-sm mt-3">
                 {userPlan?.plan === "pro"
-                  ? "Unlimited AI calls, all features unlocked."
-                  : userPlan?.plan === "enterprise"
-                  ? "Everything in Pro, plus team features and API access."
-                  : "3 AI calls per month, basic features."}
+                  ? "100 AI calls per month, all 8 tools unlocked."
+                  : "3 AI calls per month, 2 tools included."}
               </p>
             </div>
             {userPlan?.plan === "free" && (
@@ -231,12 +229,10 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-text-secondary">AI Usage This Month</span>
               <span className="text-text-muted">
-                {userPlan?.aiUsageCount || 0}
-                {usageLimit > 0 ? ` / ${usageLimit}` : " (unlimited)"}
+                {userPlan?.aiUsageCount || 0} / {usageLimit}
               </span>
             </div>
-            {usageLimit > 0 && (
-              <div className="w-full h-2 rounded-full bg-space-700 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-space-700 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     usagePercent >= 100
@@ -248,7 +244,6 @@ export default function SettingsPage() {
                   style={{ width: `${usagePercent}%` }}
                 />
               </div>
-            )}
             {userPlan?.usageResetDate && (
               <p className="text-xs text-text-muted mt-2">
                 Resets on {new Date(userPlan.usageResetDate).toLocaleDateString()}

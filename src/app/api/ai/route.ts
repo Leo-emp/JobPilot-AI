@@ -344,8 +344,7 @@ ${payload.linkedinText}`;
 /* "unlimited" plans use -1 to indicate no cap */
 const PLAN_LIMITS: Record<string, number> = {
   free: 3,        /* Free users get 3 AI calls per month */
-  pro: -1,        /* Pro users get unlimited AI calls */
-  enterprise: -1, /* Enterprise users get unlimited AI calls */
+  pro: 100,       /* Pro users get 100 AI calls per month */
 };
 
 /* ---- Main POST Handler ---- */
@@ -398,13 +397,26 @@ export async function POST(req: NextRequest) {
 
     /* Check if user has exceeded their plan limit */
     const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
-    if (limit !== -1 && user.aiUsageCount >= limit) {
+    if (user.aiUsageCount >= limit) {
       return NextResponse.json(
         {
-          error: `You've used all ${limit} AI calls for this month. Upgrade to Pro for unlimited access.`,
+          error: `You've used all ${limit} AI calls for this month. Upgrade to Pro for more.`,
           limitReached: true,
         },
         { status: 429 }
+      );
+    }
+
+    /* ---- Feature Gating ---- */
+    /* Free users can only access Resume Analysis and Job Match */
+    const FREE_ACTIONS = ["analyze_resume", "match_score"];
+    if (user.plan === "free" && !FREE_ACTIONS.includes(action)) {
+      return NextResponse.json(
+        {
+          error: "This feature is available on the Pro plan. Upgrade to unlock all 8 AI tools.",
+          upgradeRequired: true,
+        },
+        { status: 403 }
       );
     }
 
@@ -420,7 +432,7 @@ export async function POST(req: NextRequest) {
     });
 
     /* Return the result along with remaining usage info */
-    const remaining = limit === -1 ? "unlimited" : limit - user.aiUsageCount - 1;
+    const remaining = limit - user.aiUsageCount - 1;
     return NextResponse.json({ result, remaining });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "AI request failed.";
