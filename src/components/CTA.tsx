@@ -39,13 +39,13 @@ export default function CTA() {
           <Link href="/signup" className="btn-primary text-lg px-10 py-4">
             Get Started Free →
           </Link>
-          <Link href="#features" className="btn-secondary text-lg px-10 py-4">
+          <Link href="/#features" className="btn-secondary text-lg px-10 py-4">
             Learn More
           </Link>
         </div>
 
         {/* Trust line */}
-        <p className="mt-8 text-sm text-text-muted">
+        <p className="mt-8 text-base text-text-muted">
           Free plan available &bull; No credit card required &bull; Cancel
           anytime
         </p>

@@ -135,7 +135,7 @@ export default function Pricing() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-text-secondary text-sm">
+                    <span className="text-text-secondary text-base">
                       {feature}
                     </span>
                   </li>

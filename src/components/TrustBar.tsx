@@ -25,7 +25,7 @@ export default function TrustBar() {
                 {stat.value}
               </div>
               {/* Label below the number */}
-              <div className="text-sm text-text-muted uppercase tracking-wider">
+              <div className="text-sm sm:text-base text-text-muted uppercase tracking-wider">
                 {stat.label}
               </div>
             </div>

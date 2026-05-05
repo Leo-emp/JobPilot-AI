@@ -74,13 +74,13 @@ export default function Testimonials() {
                   {t.avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">{t.name}</p>
-                  <p className="text-xs text-text-muted">{t.role}</p>
+                  <p className="font-semibold text-base">{t.name}</p>
+                  <p className="text-sm text-text-muted">{t.role}</p>
                 </div>
               </div>
 
               {/* Testimonial text */}
-              <p className="text-text-secondary text-sm leading-relaxed flex-1">
+              <p className="text-text-secondary text-base leading-relaxed flex-1">
                 &ldquo;{t.text}&rdquo;
               </p>
             </div>

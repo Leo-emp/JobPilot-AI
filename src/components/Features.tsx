@@ -99,7 +99,7 @@ export default function Features() {
               </h3>
 
               {/* Feature description */}
-              <p className="text-text-secondary leading-relaxed">
+              <p className="text-base text-text-secondary leading-relaxed">
                 {feature.description}
               </p>
             </div>

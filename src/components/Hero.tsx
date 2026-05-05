@@ -73,7 +73,7 @@ export default function Hero() {
 
       {/* ---- Trust Indicators ---- */}
       {/* Small text below buttons showing social proof */}
-      <p className="mt-8 text-sm text-text-muted">
+      <p className="mt-8 text-base text-text-muted">
         No credit card required &bull; Free forever plan available
       </p>
     </section>

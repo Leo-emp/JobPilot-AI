@@ -71,7 +71,7 @@ export default function HowItWorks() {
                 <h3 className="text-xl sm:text-2xl font-bold mb-3">
                   {step.title}
                 </h3>
-                <p className="text-text-secondary leading-relaxed max-w-xl">
+                <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-xl">
                   {step.description}
                 </p>
               </div>

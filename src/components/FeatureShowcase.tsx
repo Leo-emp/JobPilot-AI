@@ -192,7 +192,7 @@ export default function FeatureShowcase() {
                   <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
                     {feature.icon}
                   </div>
-                  <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">
+                  <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
                     {feature.tag}
                   </span>
                 </div>
@@ -203,7 +203,7 @@ export default function FeatureShowcase() {
                 </h3>
 
                 {/* Description */}
-                <p className="text-text-secondary leading-relaxed mb-6">
+                <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6">
                   {feature.description}
                 </p>
 
@@ -225,7 +225,7 @@ export default function FeatureShowcase() {
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      <span className="text-sm text-text-secondary leading-relaxed">
+                      <span className="text-base text-text-secondary leading-relaxed">
                         {cap}
                       </span>
                     </li>
