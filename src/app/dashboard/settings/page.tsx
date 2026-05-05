@@ -1,16 +1,20 @@
 /* ============================================================
    SETTINGS PAGE
    ============================================================
-   User account settings, plan management, and billing.
+   User account settings, plan management, billing, and
+   account deletion (GDPR compliance).
    Shows current plan, profile info, usage stats, and
-   connects to Stripe for plan upgrades and billing management.
+   connects to payment provider for plan upgrades.
+   Includes a working "Delete Account" flow that requires
+   email confirmation before permanently removing all data.
    ============================================================ */
 
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 /* ---- User plan data from the API ---- */
 interface UserPlan {
@@ -29,6 +33,12 @@ export default function SettingsPage() {
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  /* Account deletion state */
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   /* Check for Stripe redirect messages */
   useEffect(() => {
@@ -98,6 +108,35 @@ export default function SettingsPage() {
       setMessage("Failed to connect to billing system.");
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  /* ---- Handle Account Deletion ---- */
+  /* Permanently deletes the user's account after email confirmation */
+  const handleDeleteAccount = async () => {
+    setDeleteError("");
+    setDeleteLoading(true);
+
+    try {
+      const res = await fetch("/api/user/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmEmail: deleteConfirmEmail }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setDeleteError(data.error || "Failed to delete account.");
+        return;
+      }
+
+      /* Account deleted — sign out and redirect to homepage */
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      setDeleteError("Failed to connect to server. Please try again.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -247,17 +286,98 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* ---- Danger Zone ---- */}
+        {/* ---- Data & Privacy Card ---- */}
+        <div className="glass-card p-6">
+          <h2 className="text-lg font-bold mb-4">Data & Privacy</h2>
+          <p className="text-text-secondary text-sm mb-4">
+            Your resume and LinkedIn text are processed ephemerally — they are NOT stored on our servers
+            after the AI request completes. Only your account info (name, email) and usage counts are persisted.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/privacy"
+              className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms"
+              className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors"
+            >
+              Terms of Service
+            </Link>
+          </div>
+        </div>
+
+        {/* ---- Danger Zone — Account Deletion ---- */}
         <div className="glass-card p-6 border-red-500/20">
           <h2 className="text-lg font-bold mb-4 text-red-400">Danger Zone</h2>
           <p className="text-text-secondary text-sm mb-4">
-            Permanently delete your account and all associated data.
+            Permanently delete your account and all associated data. This action is irreversible —
+            all resumes, cover letters, applications, and saved jobs will be permanently erased.
           </p>
-          <button className="px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/10 transition-colors">
-            Delete Account
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/10 transition-colors"
+          >
+            Delete My Account
           </button>
         </div>
       </div>
+
+      {/* ---- Delete Account Confirmation Modal ---- */}
+      {/* Requires user to type their email to confirm — prevents accidental deletion */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Dark backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => { setShowDeleteModal(false); setDeleteError(""); setDeleteConfirmEmail(""); }}
+          />
+          {/* Modal content */}
+          <div className="relative w-full max-w-md bg-space-800 border border-red-500/20 rounded-2xl p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-red-400 mb-2">Delete Account</h3>
+            <p className="text-text-secondary text-sm mb-4">
+              This will permanently delete your account and ALL data including resumes,
+              cover letters, applications, and saved jobs. This cannot be undone.
+            </p>
+            <p className="text-text-secondary text-sm mb-4">
+              To confirm, type your email address: <strong className="text-white">{session?.user?.email}</strong>
+            </p>
+
+            {/* Email confirmation input */}
+            <input
+              type="email"
+              value={deleteConfirmEmail}
+              onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+              placeholder="Type your email to confirm..."
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-red-500/30 text-white placeholder-text-muted focus:outline-none focus:border-red-500 text-sm mb-4"
+            />
+
+            {/* Delete error message */}
+            {deleteError && (
+              <p className="text-red-400 text-sm mb-4">{deleteError}</p>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteError(""); setDeleteConfirmEmail(""); }}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-text-secondary border border-card-border rounded-xl hover:bg-space-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading || deleteConfirmEmail.toLowerCase() !== (session?.user?.email?.toLowerCase() || "")}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteLoading ? "Deleting..." : "Permanently Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

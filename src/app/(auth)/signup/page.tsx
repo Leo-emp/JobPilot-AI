@@ -19,6 +19,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -37,6 +38,12 @@ export default function SignupPage() {
     /* Password minimum length check */
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    /* Must agree to terms */
+    if (!agreedToTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy.");
       return;
     }
 
@@ -160,20 +167,37 @@ export default function SignupPage() {
             />
           </div>
 
+          {/* Terms & Privacy consent checkbox */}
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="terms-consent"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-card-border bg-space-700 text-brand-indigo focus:ring-brand-indigo"
+            />
+            <label htmlFor="terms-consent" className="text-xs text-text-secondary leading-relaxed">
+              I agree to the{" "}
+              <Link href="/terms" target="_blank" className="text-brand-light hover:text-white transition-colors">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" target="_blank" className="text-brand-light hover:text-white transition-colors">
+                Privacy Policy
+              </Link>.
+              I understand that my data is processed by AI and I am responsible for verifying all generated content.
+            </label>
+          </div>
+
           {/* Submit button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !agreedToTerms}
             className="btn-primary w-full !py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
-
-        {/* Terms notice */}
-        <p className="mt-4 text-xs text-text-muted text-center">
-          By creating an account, you agree to our Terms of Service and Privacy Policy.
-        </p>
 
         {/* Link to login */}
         <p className="mt-4 text-center text-sm text-text-secondary">
