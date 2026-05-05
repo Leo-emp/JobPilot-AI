@@ -16,12 +16,13 @@ datasource db {
 }
 
 // ---- User Account ----
-// Stores registered users with hashed passwords
+// Stores registered users (email/password OR OAuth via Google/LinkedIn)
 model User {
   id             String   @id @default(cuid())  // Unique ID (cuid is URL-safe)
   name           String                          // Display name
   email          String   @unique                // Login email (must be unique)
-  password       String                          // bcrypt-hashed password
+  image          String?                         // Profile picture URL (from OAuth providers)
+  password       String?                         // bcrypt-hashed password (null for OAuth users)
   plan           String   @default("free")       // Subscription plan: free, pro, enterprise
   aiUsageCount   Int      @default(0)            // Number of AI calls this billing period
   usageResetDate DateTime @default(now())        // When the usage counter resets (monthly)
@@ -31,10 +32,32 @@ model User {
   updatedAt      DateTime @updatedAt             // Auto-updates on any change
 
   // Relationships — one user has many of each
+  accounts     Account[]
   resumes      Resume[]
   jobs         SavedJob[]
   applications Application[]
   coverLetters CoverLetter[]
+}
+
+// ---- OAuth Account ----
+// Stores linked OAuth provider accounts (Google, LinkedIn, etc.)
+// Required by NextAuth for the database adapter pattern
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String                       // "oauth" or "credentials"
+  provider          String                       // "google", "linkedin", etc.
+  providerAccountId String                       // Unique ID from the OAuth provider
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 // ---- Uploaded Resume ----
