@@ -17,7 +17,9 @@
 import StarField from "@/components/StarField";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import TrustBar from "@/components/TrustBar";
 import Features from "@/components/Features";
+import FeatureShowcase from "@/components/FeatureShowcase";
 import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
 import Pricing from "@/components/Pricing";
@@ -34,7 +36,9 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <TrustBar />
         <Features />
+        <FeatureShowcase />
         <HowItWorks />
         <Testimonials />
         <Pricing />

@@ -66,7 +66,7 @@ export default function Hero() {
         <Link href="/signup" className="btn-primary text-base px-8 py-4">
           Get Started Free →
         </Link>
-        <Link href="#features" className="btn-secondary text-base px-8 py-4">
+        <Link href="/#features" className="btn-secondary text-base px-8 py-4">
           See Features
         </Link>
       </div>
