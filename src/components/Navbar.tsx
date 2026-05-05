@@ -37,25 +37,25 @@ export default function Navbar() {
           {/* Hidden on mobile (hidden), visible on medium screens (md:flex) */}
           <div className="hidden md:flex items-center gap-8">
             <Link
-              href="#features"
+              href="/#features"
               className="text-sm text-text-secondary hover:text-white transition-colors"
             >
               Features
             </Link>
             <Link
-              href="#how-it-works"
+              href="/#how-it-works"
               className="text-sm text-text-secondary hover:text-white transition-colors"
             >
               How It Works
             </Link>
             <Link
-              href="#testimonials"
+              href="/#testimonials"
               className="text-sm text-text-secondary hover:text-white transition-colors"
             >
               Testimonials
             </Link>
             <Link
-              href="#pricing"
+              href="/#pricing"
               className="text-sm text-text-secondary hover:text-white transition-colors"
             >
               Pricing
@@ -109,28 +109,28 @@ export default function Navbar() {
           <div className="md:hidden pb-4 border-t border-card-border mt-2 pt-4">
             <div className="flex flex-col gap-4">
               <Link
-                href="#features"
+                href="/#features"
                 className="text-text-secondary hover:text-white transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 Features
               </Link>
               <Link
-                href="#how-it-works"
+                href="/#how-it-works"
                 className="text-text-secondary hover:text-white transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 How It Works
               </Link>
               <Link
-                href="#testimonials"
+                href="/#testimonials"
                 className="text-text-secondary hover:text-white transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 Testimonials
               </Link>
               <Link
-                href="#pricing"
+                href="/#pricing"
                 className="text-text-secondary hover:text-white transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
