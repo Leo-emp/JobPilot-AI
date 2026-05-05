@@ -1,10 +1,9 @@
 /* ============================================================
    PRICING SECTION - Two-Tier Plans
    ============================================================
-   Clean two-tier layout: Free and Pro.
-   Pro card is highlighted with a billing toggle (monthly/annual).
-   Feature comparison table with checkmark/X symbols.
-   Annual plan saves 43% ($29/mo vs $199/yr = $16.58/mo).
+   Unified layout: two plan cards side by side with the feature
+   comparison built into each card. Monthly/annual toggle.
+   Clean, compact design — no separate table below.
    ============================================================ */
 
 "use client";
@@ -12,8 +11,8 @@
 import { useState } from "react";
 import Link from "next/link";
 
-/* ---- Feature comparison rows ---- */
-/* Each row: feature name, free (true/false), pro (true/false) */
+/* ---- Feature rows shown inside each card ---- */
+/* Grouped into fewer, clearer lines */
 const featureRows = [
   { name: "Resume Analysis & ATS Scoring", free: true, pro: true },
   { name: "Job Match Scoring", free: true, pro: true },
@@ -25,11 +24,9 @@ const featureRows = [
   { name: "LinkedIn Optimizer", free: false, pro: true },
   { name: "Career Pivot Mode", free: false, pro: true },
   { name: "PDF & Word Download", free: false, pro: true },
-  { name: "Priority Support", free: false, pro: true },
 ];
 
 export default function Pricing() {
-  /* Toggle between monthly and annual billing */
   const [annual, setAnnual] = useState(false);
 
   return (
@@ -73,27 +70,34 @@ export default function Pricing() {
         </div>
 
         {/* ---- Pricing Cards ---- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* ---- Free Plan ---- */}
-          <div className="rounded-2xl border border-card-border bg-space-800/60 p-8 sm:p-10 flex flex-col">
+          <div className="rounded-2xl border border-card-border bg-space-800/60 p-8 flex flex-col">
             <h3 className="text-2xl font-bold mb-2">Free</h3>
-            <div className="flex items-baseline gap-1 mb-2">
+            <div className="flex items-baseline gap-1 mb-1">
               <span className="text-5xl font-extrabold">$0</span>
-              <span className="text-text-muted text-lg">/forever</span>
             </div>
-            <p className="text-text-secondary mb-8">Get started and explore the platform.</p>
+            <p className="text-text-secondary text-sm mb-6">3 AI calls per month</p>
 
-            {/* Free plan highlights */}
-            <div className="space-y-3 mb-10 flex-1">
-              <div className="flex items-center gap-3">
-                <span className="text-brand-light text-lg font-bold">3</span>
-                <span className="text-text-secondary text-base">AI calls per month</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-brand-light text-lg font-bold">2</span>
-                <span className="text-text-secondary text-base">tools included</span>
-              </div>
+            {/* Feature list */}
+            <div className="space-y-2.5 mb-8 flex-1">
+              {featureRows.map((row, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  {row.free ? (
+                    <svg className="w-4.5 h-4.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4.5 h-4.5 text-text-muted/30 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                  <span className={`text-sm ${row.free ? "text-text-secondary" : "text-text-muted/50"}`}>
+                    {row.name}
+                  </span>
+                </div>
+              ))}
             </div>
 
             <Link href="/signup" className="btn-secondary w-full text-center text-base py-3">
@@ -102,8 +106,7 @@ export default function Pricing() {
           </div>
 
           {/* ---- Pro Plan ---- */}
-          <div className="relative rounded-2xl border border-brand-indigo/40 bg-space-800/60 p-8 sm:p-10 flex flex-col ring-1 ring-brand-indigo/20 shadow-lg shadow-brand-indigo/10">
-            {/* Most Popular badge */}
+          <div className="relative rounded-2xl border border-brand-indigo/40 bg-space-800/60 p-8 flex flex-col ring-1 ring-brand-indigo/20 shadow-lg shadow-brand-indigo/10">
             <div className="absolute -top-3 left-8">
               <span className="px-4 py-1 text-xs font-bold uppercase tracking-wider bg-brand-indigo text-white rounded-full">
                 Most Popular
@@ -111,85 +114,31 @@ export default function Pricing() {
             </div>
 
             <h3 className="text-2xl font-bold mb-2">Pro</h3>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-5xl font-extrabold">
-                {annual ? "$199" : "$29"}
-              </span>
-              <span className="text-text-muted text-lg">
-                {annual ? "/year" : "/month"}
-              </span>
+            <div className="flex items-baseline gap-1 mb-1">
+              <span className="text-5xl font-extrabold">{annual ? "$199" : "$29"}</span>
+              <span className="text-text-muted text-lg">{annual ? "/year" : "/month"}</span>
             </div>
-            {annual && (
-              <p className="text-sm text-green-400 mb-2">
-                $16.58/month — save $149/year
-              </p>
+            {annual ? (
+              <p className="text-sm text-green-400 mb-6">$16.58/mo — save $149/year</p>
+            ) : (
+              <p className="text-text-secondary text-sm mb-6">100 AI calls per month</p>
             )}
-            <p className="text-text-secondary mb-8">Everything you need to land the job.</p>
 
-            {/* Pro plan highlights */}
-            <div className="space-y-3 mb-10 flex-1">
-              <div className="flex items-center gap-3">
-                <span className="text-brand-light text-lg font-bold">100</span>
-                <span className="text-text-secondary text-base">AI calls per month</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-brand-light text-lg font-bold">8</span>
-                <span className="text-text-secondary text-base">tools — everything unlocked</span>
-              </div>
+            {/* Feature list — all checked */}
+            <div className="space-y-2.5 mb-8 flex-1">
+              {featureRows.map((row, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <svg className="w-4.5 h-4.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm text-text-secondary">{row.name}</span>
+                </div>
+              ))}
             </div>
 
             <Link href="/signup?plan=pro" className="btn-primary w-full text-center text-base py-3">
               Upgrade to Pro
             </Link>
-          </div>
-        </div>
-
-        {/* ---- Feature Comparison Table ---- */}
-        <div className="rounded-2xl border border-card-border bg-space-800/40 overflow-hidden">
-          {/* Table header */}
-          <div className="grid grid-cols-[1fr_80px_80px] sm:grid-cols-[1fr_100px_100px] px-6 py-4 border-b border-card-border bg-space-700/30">
-            <span className="text-base font-bold text-white">Features</span>
-            <span className="text-base font-bold text-white text-center">Free</span>
-            <span className="text-base font-bold text-brand-light text-center">Pro</span>
-          </div>
-
-          {/* Table rows */}
-          {featureRows.map((row, i) => (
-            <div
-              key={i}
-              className={`grid grid-cols-[1fr_80px_80px] sm:grid-cols-[1fr_100px_100px] px-6 py-3.5 items-center ${
-                i % 2 === 0 ? "bg-space-800/20" : ""
-              } ${i < featureRows.length - 1 ? "border-b border-card-border/50" : ""}`}
-            >
-              <span className="text-base text-text-secondary">{row.name}</span>
-
-              {/* Free column — checkmark or X */}
-              <div className="flex justify-center">
-                {row.free ? (
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 text-text-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                )}
-              </div>
-
-              {/* Pro column — always checkmark */}
-              <div className="flex justify-center">
-                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-          ))}
-
-          {/* AI calls row at bottom */}
-          <div className="grid grid-cols-[1fr_80px_80px] sm:grid-cols-[1fr_100px_100px] px-6 py-3.5 items-center border-t border-card-border bg-space-700/20">
-            <span className="text-base font-medium text-white">Monthly AI Calls</span>
-            <span className="text-base font-bold text-white text-center">3</span>
-            <span className="text-base font-bold text-brand-light text-center">100</span>
           </div>
         </div>
 
