@@ -1,21 +1,21 @@
 /* ============================================================
-   APPLICATIONS API - List & Create
+   EXTENSION SAVE JOB API - Save Job from Chrome Extension
    ============================================================
-   GET  /api/applications — list all applications for the user
-   POST /api/applications — create a new application
-   Both endpoints require authentication.
-   Includes CORS headers for Chrome Extension access.
+   POST /api/extension/save-job
+   Saves a job listing to the user's applications tracker.
+   Creates both a SavedJob record and an Application record.
+   Includes CORS headers for cross-origin extension requests.
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-/* ---- Add CORS headers for Chrome Extension ---- */
+/* ---- Add CORS headers to response ---- */
 function corsHeaders(origin: string | null) {
   const headers: Record<string, string> = {
     "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 
@@ -35,31 +35,21 @@ export async function OPTIONS(req: NextRequest) {
   });
 }
 
-/* ---- GET: List all applications for the logged-in user ---- */
-export async function GET(req: NextRequest) {
-  const origin = req.headers.get("origin");
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders(origin) });
-  }
-
-  const applications = await prisma.application.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json(applications, { headers: corsHeaders(origin) });
-}
-
-/* ---- POST: Create a new application ---- */
+/* ---- POST: Save a job from the extension ---- */
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin");
+
+  /* Check authentication */
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders(origin) });
+    return NextResponse.json(
+      { error: "Please log in to JobPilot AI first." },
+      { status: 401, headers: corsHeaders(origin) }
+    );
   }
 
-  const { jobTitle, company } = await req.json();
+  /* Parse request body */
+  const { jobTitle, company, location, url, description } = await req.json();
 
   if (!jobTitle || !company) {
     return NextResponse.json(
@@ -68,14 +58,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  /* Save the job listing */
+  const savedJob = await prisma.savedJob.create({
+    data: {
+      userId: session.user.id,
+      title: jobTitle,
+      company,
+      location: location || null,
+      url: url || null,
+      description: description || "",
+    },
+  });
+
+  /* Create an application record linked to the saved job */
   const application = await prisma.application.create({
     data: {
       userId: session.user.id,
+      jobId: savedJob.id,
       jobTitle,
       company,
       status: "Saved",
     },
   });
 
-  return NextResponse.json(application, { status: 201, headers: corsHeaders(origin) });
+  return NextResponse.json(
+    { success: true, jobId: savedJob.id, applicationId: application.id },
+    { status: 201, headers: corsHeaders(origin) }
+  );
 }

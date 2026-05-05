@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "JobPilot AI",
+  "version": "1.0.0",
+  "description": "Save jobs from any page to your JobPilot AI dashboard. Get AI match scores and generate cover letters instantly.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://job-pilot-ai-nine.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

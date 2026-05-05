@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobPilot AI</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- ============================================================
+       HEADER - Logo and branding
+       ============================================================ -->
+  <div class="header">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="url(#grad)" stroke-width="2"/>
+        <path d="M8 12l3 3 5-5" stroke="url(#grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="24" y2="24">
+            <stop offset="0%" stop-color="#818cf8"/>
+            <stop offset="100%" stop-color="#6366f1"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span>JobPilot AI</span>
+    </div>
+    <div class="status" id="status-dot">
+      <span class="dot"></span>
+      <span class="status-text" id="status-text">Checking...</span>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       NOT LOGGED IN STATE
+       ============================================================ -->
+  <div id="login-prompt" class="section" style="display: none;">
+    <div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5">
+        <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+      </svg>
+      <p>Sign in to your JobPilot AI account to start saving jobs.</p>
+      <button class="btn-primary" id="btn-login">Open JobPilot AI</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN CONTENT - Save Job Form
+       ============================================================ -->
+  <div id="main-content" style="display: none;">
+    <!-- Quick save from current page -->
+    <div class="section">
+      <div class="section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save a Job
+      </div>
+
+      <!-- Job title input -->
+      <div class="form-group">
+        <label for="job-title">Job Title *</label>
+        <input type="text" id="job-title" placeholder="e.g. Senior Software Engineer">
+      </div>
+
+      <!-- Company input -->
+      <div class="form-group">
+        <label for="company">Company *</label>
+        <input type="text" id="company" placeholder="e.g. Google">
+      </div>
+
+      <!-- Location input -->
+      <div class="form-group">
+        <label for="location">Location</label>
+        <input type="text" id="location" placeholder="e.g. Remote, New York, NY">
+      </div>
+
+      <!-- Job URL input (auto-fills with current tab URL) -->
+      <div class="form-group">
+        <label for="job-url">Job URL</label>
+        <input type="text" id="job-url" placeholder="https://...">
+      </div>
+
+      <!-- Job description textarea -->
+      <div class="form-group">
+        <label for="description">Job Description</label>
+        <textarea id="description" rows="4" placeholder="Paste the job description here for AI matching..."></textarea>
+      </div>
+
+      <!-- Save button -->
+      <button class="btn-primary" id="btn-save" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Save to JobPilot
+      </button>
+    </div>
+
+    <!-- ============================================================
+         AI TOOLS - Quick actions
+         ============================================================ -->
+    <div class="section" id="ai-section" style="display: none;">
+      <div class="section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        AI Tools
+      </div>
+      <div class="ai-buttons">
+        <button class="btn-secondary" id="btn-match">Match Score</button>
+        <button class="btn-secondary" id="btn-cover">Cover Letter</button>
+      </div>
+      <div id="ai-result" class="ai-result" style="display: none;"></div>
+    </div>
+
+    <!-- ============================================================
+         RECENT SAVES - Show last few saved jobs
+         ============================================================ -->
+    <div class="section">
+      <div class="section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Recent Applications
+      </div>
+      <div id="recent-jobs" class="recent-list">
+        <div class="empty-state small">
+          <p>No applications yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard link -->
+    <a class="dashboard-link" id="btn-dashboard">
+      Open Full Dashboard
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- ============================================================
+       SUCCESS / ERROR TOAST
+       ============================================================ -->
+  <div id="toast" class="toast" style="display: none;"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
