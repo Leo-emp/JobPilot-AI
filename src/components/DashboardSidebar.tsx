@@ -23,6 +23,7 @@ const navItems = [
   { href: "/dashboard/cover-letter", icon: "✉️", label: "Cover Letter" },
   { href: "/dashboard/tracker", icon: "📊", label: "Application Tracker" },
   { href: "/dashboard/interview", icon: "🎤", label: "Interview Prep" },
+  { href: "/dashboard/linkedin", icon: "💼", label: "LinkedIn Optimizer" },
   { href: "/dashboard/settings", icon: "⚙️", label: "Settings" },
 ];
 

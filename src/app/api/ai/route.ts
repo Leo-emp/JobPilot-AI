@@ -257,6 +257,83 @@ Target Role: ${payload.jobTitle}
 Target Industry: ${payload.company}
 Target Job Description: ${payload.jobDescription}`;
 
+    case "linkedin_audit":
+      return `You are a LinkedIn optimization expert and personal branding strategist. Audit this LinkedIn profile text and provide a comprehensive score and improvement plan.
+
+IMPORTANT RULES:
+- Use the person's ACTUAL name, headline, and content — never use placeholders
+- Be specific — reference their actual experience and wording
+- Score each section honestly, not generously
+
+Provide this EXACT structure:
+
+## LinkedIn Score: X/100
+
+## Headline
+**Current:** (quote their current headline)
+**Score:** X/10
+**Issues:** (what's wrong)
+**Suggested Headline:** (write a specific improved headline using their real info)
+
+## About / Summary
+**Score:** X/10
+**Issues:** (what's missing or weak)
+**Suggestions:** (specific improvements with examples)
+
+## Experience Section
+**Score:** X/10
+**Issues:** (vague bullets, missing metrics, weak verbs, etc.)
+**Key Fixes:** (rewrite 2-3 of their weakest bullet points as examples)
+
+## Skills & Endorsements
+**Score:** X/10
+**Suggestions:** (specific skills they should add based on their field)
+
+## Recommendations
+**Score:** X/10
+**Suggestions:** (who to ask and how)
+
+## Profile Completeness
+**Missing Sections:** (list any missing: banner image, featured, volunteer, certifications, etc.)
+
+## Top 5 Priority Actions
+(Numbered list of the highest-impact changes they should make immediately)
+
+LinkedIn Profile:
+${payload.linkedinText}`;
+
+    case "linkedin_rewrite":
+      return `You are a LinkedIn copywriter and personal branding expert. Rewrite this person's LinkedIn profile sections to be compelling, keyword-rich, and optimized for recruiter search.
+
+CRITICAL RULES:
+- Use their REAL name, job titles, companies, and experience
+- NEVER use placeholders like [Your Name] or [Industry]
+- Write in first person for the About section
+- Keep the tone professional but personable — not corporate-speak
+- Inject relevant industry keywords naturally for LinkedIn SEO
+- Quantify achievements where the original data supports it
+${payload.targetRole ? `- Optimize for this target role: ${payload.targetRole}` : ""}
+
+Provide this EXACT structure:
+
+## Optimized Headline
+(One powerful headline, max 220 characters)
+
+## Optimized About
+(3-4 paragraphs: hook, value proposition, key achievements, call to action)
+
+## Optimized Experience
+(Rewrite each role with 4-5 strong bullet points starting with action verbs)
+
+## Recommended Skills
+(List 15-20 relevant skills they should add to their profile, ordered by importance)
+
+## Recommended Hashtags
+(5-7 hashtags they should follow/use for visibility in their field)
+
+LinkedIn Profile:
+${payload.linkedinText}`;
+
     default:
       throw new Error(`Unknown action: ${action}`);
   }
