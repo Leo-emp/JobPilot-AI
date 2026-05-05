@@ -1,7 +1,7 @@
 /* ============================================================
    FEATURES SECTION - What JobPilot AI Does
    ============================================================
-   Displays the 6 core features in a responsive grid of glass cards.
+   Displays the 8 core features in a responsive grid of glass cards.
    Each card has an icon, title, and description.
    Uses the glassmorphism card style from globals.css.
    ============================================================ */
@@ -45,6 +45,18 @@ const features = [
     description:
       "Switching careers? Our AI reframes your experience with transferable skills for your target industry.",
   },
+  {
+    icon: "📋",
+    title: "Resume Templates",
+    description:
+      "Choose from 6 professional ATS-friendly templates. Fill in your details and download as PDF or Word instantly.",
+  },
+  {
+    icon: "💼",
+    title: "LinkedIn Optimizer",
+    description:
+      "Get a profile audit scored out of 100, then AI-rewritten headline, about, and experience sections that attract recruiters.",
+  },
 ];
 
 export default function Features() {
@@ -63,14 +75,14 @@ export default function Features() {
             <span className="glow-text">Land the Job</span>
           </h2>
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            Six powerful AI tools working together to supercharge your job search
+            Eight powerful AI tools working together to supercharge your job search
             from start to finish.
           </p>
         </div>
 
         {/* ---- Feature Cards Grid ---- */}
         {/* Responsive: 1 column on mobile, 2 on tablet, 3 on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {features.map((feature, index) => (
             <div
               key={index}

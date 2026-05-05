@@ -9,7 +9,7 @@
 const stats = [
   { value: "10,000+", label: "Resumes Optimized" },
   { value: "95%", label: "ATS Pass Rate" },
-  { value: "6", label: "AI-Powered Tools" },
+  { value: "8", label: "AI-Powered Tools" },
   { value: "30s", label: "Average Generation Time" },
 ];
 

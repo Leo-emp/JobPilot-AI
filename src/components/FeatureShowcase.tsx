@@ -134,6 +134,26 @@ const showcaseFeatures = [
       </svg>
     ),
   },
+  {
+    tag: "Resume Templates",
+    headline: "Professional templates, ready in minutes",
+    description:
+      "Pick from 6 ATS-friendly resume templates designed for different industries and seniority levels. Fill in your details, preview the result live, and download a polished PDF or Word document — no design skills needed.",
+    capabilities: [
+      "6 professionally designed templates: Classic, Modern, Executive, Minimal, Technical, Creative",
+      "Live preview showing exactly how your resume will look when printed",
+      "Direct PDF and Word download — no print dialog, no extra steps",
+      "Single-column ATS-safe layouts that every hiring system can parse",
+    ],
+    accent: "from-violet-500 to-fuchsia-600",
+    iconBg: "bg-violet-500/10 border-violet-500/20",
+    iconColor: "text-violet-400",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function FeatureShowcase() {
@@ -368,6 +388,32 @@ export default function FeatureShowcase() {
                             <span className="text-xs text-text-secondary">Skills</span>
                             <span className="text-xs text-amber-400 font-medium">Okay — 5/10</span>
                           </div>
+                        </div>
+                      </>
+                    )}
+
+                    {index === 6 && (
+                      /* Resume Templates Preview */
+                      <>
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                          {["Classic", "Modern", "Executive"].map((name, i) => (
+                            <div key={i} className={`p-2 rounded-lg border text-center ${i === 1 ? "bg-violet-500/10 border-violet-500/30" : "bg-space-600/40 border-space-600/60"}`}>
+                              <div className={`w-full h-1 rounded mb-2 ${i === 0 ? "bg-blue-500" : i === 1 ? "bg-indigo-500" : "bg-gray-500"}`} />
+                              <div className="h-1.5 rounded bg-space-500/60 w-[70%] mx-auto mb-1" />
+                              <div className="h-1 rounded bg-space-500/40 w-full mb-0.5" />
+                              <div className="h-1 rounded bg-space-500/40 w-[80%]" />
+                              <div className={`text-[9px] mt-2 font-medium ${i === 1 ? "text-violet-400" : "text-text-muted"}`}>{name}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="px-3 py-1.5 rounded-md bg-violet-500/10 border border-violet-500/20">
+                            <span className="text-xs text-violet-400 font-medium">PDF</span>
+                          </div>
+                          <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
+                            <span className="text-xs text-blue-400 font-medium">Word</span>
+                          </div>
+                          <span className="text-xs text-text-muted ml-1">Ready to download</span>
                         </div>
                       </>
                     )}
