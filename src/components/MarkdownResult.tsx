@@ -9,6 +9,8 @@
 
 "use client";
 
+import { useState } from "react";
+
 /* ---- Convert a single line of markdown to HTML ---- */
 function processInline(text: string): string {
   return text
@@ -137,16 +139,66 @@ interface MarkdownResultProps {
 
 /* ---- Main Component ---- */
 export default function MarkdownResult({ result, showDownload = true }: MarkdownResultProps) {
+  const [pdfLoading, setPdfLoading] = useState(false);
   const html = parseMarkdown(result);
 
-  /* Download as PDF — opens print dialog */
-  const downloadPDF = () => {
-    const downloadHTML = markdownToDownloadHTML(result);
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
-    printWindow.document.close();
-    setTimeout(() => printWindow.print(), 300);
+  /* Download as PDF file — uses html2pdf.js from CDN for direct .pdf download */
+  const downloadPDF = async () => {
+    setPdfLoading(true);
+    try {
+      /* Load html2pdf.js from CDN if not already loaded */
+      if (!(window as unknown as Record<string, unknown>).html2pdf) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load PDF library"));
+          document.head.appendChild(script);
+        });
+      }
+
+      /* Build HTML content for PDF */
+      const downloadHTML = markdownToDownloadHTML(result);
+      const container = document.createElement("div");
+      container.innerHTML = downloadHTML;
+
+      /* Apply download styles */
+      const styleEl = document.createElement("style");
+      styleEl.textContent = DOWNLOAD_STYLES;
+      container.prepend(styleEl);
+
+      /* Temporarily add to DOM for rendering */
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.width = "800px";
+      document.body.appendChild(container);
+
+      /* Generate and save PDF */
+      const html2pdf = (window as unknown as Record<string, unknown>).html2pdf as CallableFunction;
+      await html2pdf()
+        .set({
+          margin: [10, 10, 10, 10],
+          filename: "resume-jobpilot.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .from(container)
+        .save();
+
+      document.body.removeChild(container);
+    } catch {
+      /* Fallback to print dialog */
+      const downloadHTML = markdownToDownloadHTML(result);
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 300);
+      }
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   /* Download as Word — creates .doc blob */
@@ -184,9 +236,10 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
               </button>
               <button
                 onClick={downloadPDF}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors"
+                disabled={pdfLoading}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50"
               >
-                Download PDF
+                {pdfLoading ? "Generating PDF..." : "Download PDF"}
               </button>
             </>
           )}

@@ -293,15 +293,69 @@ export default function TemplatesPage() {
 
   /* Check if enough data to preview/download */
   const canPreview = formData.fullName.trim() && (formData.summary.trim() || formData.experience.trim());
+  /* Track PDF generation state */
+  const [pdfLoading, setPdfLoading] = useState(false);
 
-  /* ---- Download as PDF (print dialog) ---- */
-  const downloadPDF = () => {
-    const html = generateResumeHTML(formData, selectedTemplate);
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-    printWindow.document.write(html);
-    printWindow.document.close();
-    setTimeout(() => printWindow.print(), 300);
+  /* ---- Download as PDF file using html2pdf.js from CDN ---- */
+  /* Dynamically loads html2pdf.js, renders HTML to canvas, outputs .pdf file */
+  const downloadPDF = async () => {
+    setPdfLoading(true);
+    try {
+      /* Load html2pdf.js from CDN if not already loaded */
+      if (!(window as unknown as Record<string, unknown>).html2pdf) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load PDF library"));
+          document.head.appendChild(script);
+        });
+      }
+
+      /* Create a temporary container with the resume HTML */
+      const container = document.createElement("div");
+      const fullHTML = generateResumeHTML(formData, selectedTemplate);
+      /* Extract only the body content and apply inline styles */
+      container.innerHTML = fullHTML.replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>|<!DOCTYPE html>/g, "");
+
+      /* Apply the template's CSS as a style tag inside the container */
+      const styleEl = document.createElement("style");
+      styleEl.textContent = getTemplateCSS(selectedTemplate);
+      container.prepend(styleEl);
+
+      /* Temporarily add to DOM (required for rendering) */
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.width = "800px";
+      document.body.appendChild(container);
+
+      /* Generate PDF with html2pdf */
+      const html2pdf = (window as unknown as Record<string, unknown>).html2pdf as CallableFunction;
+      await html2pdf()
+        .set({
+          margin: [10, 10, 10, 10],
+          filename: `${formData.fullName || "resume"}-resume.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .from(container)
+        .save();
+
+      /* Clean up */
+      document.body.removeChild(container);
+    } catch {
+      /* Fallback to print dialog if PDF library fails */
+      const html = generateResumeHTML(formData, selectedTemplate);
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 300);
+      }
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   /* ---- Download as Word (.doc) ---- */
@@ -565,10 +619,10 @@ Google Professional Data Engineer — 2022`}
               </button>
               <button
                 onClick={downloadPDF}
-                disabled={!canPreview}
+                disabled={!canPreview || pdfLoading}
                 className="px-6 py-3 rounded-xl text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Download PDF
+                {pdfLoading ? "Generating PDF..." : "Download PDF"}
               </button>
               <button
                 onClick={downloadWord}
@@ -609,9 +663,10 @@ Google Professional Data Engineer — 2022`}
               <div className="flex items-center gap-2">
                 <button
                   onClick={downloadPDF}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors"
+                  disabled={pdfLoading}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50"
                 >
-                  Download PDF
+                  {pdfLoading ? "Generating..." : "Download PDF"}
                 </button>
                 <button
                   onClick={downloadWord}
