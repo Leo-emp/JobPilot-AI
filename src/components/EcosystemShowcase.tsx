@@ -1,12 +1,10 @@
 /* ============================================================
    ECOSYSTEM SHOWCASE - Job Board & Networking CRM
    ============================================================
-   Showcases the two ecosystem features that extend JobPilot
-   beyond AI tools into a full career management platform:
+   Showcases two platform features below the AI tool showcase:
    1. Job Board Integration — search real listings, save & track
    2. Networking CRM — manage contacts, companies, follow-ups
-   Each feature gets a detailed insight section with a visual
-   snapshot of the actual product UI.
+   Concise benefit-driven copy with visual UI snapshots.
    ============================================================ */
 
 import Link from "next/link";
@@ -25,9 +23,8 @@ export default function EcosystemShowcase() {
             Your Complete Career{" "}
             <span className="glow-text">Command Center</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            AI optimization is only half the battle. JobPilot connects you to real job listings
-            and helps you manage your entire professional network — all in one place.
+          <p className="max-w-xl mx-auto text-text-secondary text-lg">
+            Search real jobs and manage your network — without leaving your dashboard.
           </p>
         </div>
 
@@ -56,21 +53,17 @@ export default function EcosystemShowcase() {
             </h3>
 
             {/* Description */}
-            <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6">
-              Most career tools make you paste job descriptions manually. JobPilot pulls real listings
-              from major job boards — Indeed, LinkedIn, Glassdoor, and more — directly into your workspace.
-              Search by title, location, and salary. Save interesting roles with one click. Every saved job
-              automatically lands in your Application Tracker, ready for AI matching and cover letter generation.
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
+              Real listings from Indeed, LinkedIn, Glassdoor, and more — pulled directly into your workspace.
+              Save roles with one click and they land straight in your tracker.
             </p>
 
             {/* Capability bullets */}
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-3">
               {[
-                "Real-time search across major job boards powered by Adzuna API",
-                "Salary ranges, location, contract type, and posting date for every listing",
-                "One-click save sends jobs straight to your Application Tracker",
-                "Saved jobs are instantly available for AI Match Score and Cover Letter tools",
-                "Pagination and filters to narrow thousands of results to your best fits",
+                "Search by title, location, and salary across major job boards",
+                "One-click save to your Application Tracker",
+                "Salary, contract type, and posting date on every listing",
               ].map((cap, j) => (
                 <li key={j} className="flex items-start gap-3">
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,16 +73,6 @@ export default function EcosystemShowcase() {
                 </li>
               ))}
             </ul>
-
-            {/* Insight callout */}
-            <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/15">
-              <p className="text-sm text-text-secondary leading-relaxed">
-                <span className="font-semibold text-green-400">Why this matters: </span>
-                Job seekers spend an average of 11 hours per week just searching for jobs across different platforms.
-                Centralized search eliminates tab-hopping, lets you compare roles side-by-side, and connects
-                every listing to your AI toolkit — so the job you find at 9am has a tailored resume by 9:05.
-              </p>
-            </div>
           </div>
 
           {/* ---- Visual Side — Job Search Snapshot ---- */}
@@ -158,7 +141,7 @@ export default function EcosystemShowcase() {
                 </div>
               </div>
 
-              {/* Job card 3 — partial, showing there are more */}
+              {/* Job card 3 — partial */}
               <div className="p-3 rounded-lg bg-space-700/50 border border-card-border opacity-60">
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -195,25 +178,21 @@ export default function EcosystemShowcase() {
 
             {/* Headline */}
             <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-              80% of jobs are filled through networking. Track every connection.
+              Track every recruiter, referral, and follow-up in one place
             </h3>
 
             {/* Description */}
-            <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6">
-              The hidden job market runs on relationships. JobPilot&apos;s Networking CRM gives you a
-              dedicated space to manage every recruiter, hiring manager, referral, and mentor in your
-              job search. Track who you&apos;ve talked to, when to follow up, and which companies are on
-              your radar — so no opportunity slips through the cracks.
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
+              Referred candidates are 4x more likely to get hired. Manage your contacts, tag relationships,
+              set follow-up reminders, and track target companies — so no opportunity slips through the cracks.
             </p>
 
             {/* Capability bullets */}
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-3">
               {[
-                "Contact profiles with role, company, LinkedIn, email, and personal notes",
-                "Relationship tagging — Recruiter, Hiring Manager, Referral, Mentor, Connection",
-                "Follow-up date tracking with overdue alerts so you never ghost a lead",
-                "Target company tracker with priority levels (High, Medium, Low) and status pipeline",
-                "Company research notes — culture, team info, recent news — all in one place",
+                "Contact profiles with LinkedIn, role, company, and notes",
+                "Follow-up reminders with overdue alerts",
+                "Target company tracker with priority and status pipeline",
               ].map((cap, j) => (
                 <li key={j} className="flex items-start gap-3">
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,16 +202,6 @@ export default function EcosystemShowcase() {
                 </li>
               ))}
             </ul>
-
-            {/* Insight callout */}
-            <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-500/15">
-              <p className="text-sm text-text-secondary leading-relaxed">
-                <span className="font-semibold text-orange-400">Why this matters: </span>
-                Studies show that referred candidates are 4x more likely to be hired and get offers
-                15% faster than cold applicants. A structured networking approach isn&apos;t optional — it&apos;s
-                the single highest-ROI activity in any job search. JobPilot makes it systematic instead of chaotic.
-              </p>
-            </div>
           </div>
 
           {/* ---- Visual Side — Networking CRM Snapshot ---- */}
@@ -337,12 +306,8 @@ export default function EcosystemShowcase() {
 
         {/* ---- Bottom CTA ---- */}
         <div className="mt-24 sm:mt-32 text-center">
-          <p className="text-text-secondary text-lg mb-3">
+          <p className="text-text-secondary text-lg mb-6">
             Find jobs. Build relationships. Land interviews.
-          </p>
-          <p className="text-text-muted text-sm mb-8 max-w-lg mx-auto">
-            JobPilot is the only platform that combines AI career tools, real-time job search,
-            and a professional networking CRM in a single workspace.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Get Started Free
