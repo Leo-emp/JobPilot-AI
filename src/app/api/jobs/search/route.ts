@@ -71,7 +71,6 @@ export async function GET(req: NextRequest) {
       app_key: appKey,
       results_per_page: "20",
       what: query,
-      content_type: "application/json",
     });
 
     /* Add location filter if provided */
@@ -83,7 +82,13 @@ export async function GET(req: NextRequest) {
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Adzuna API error: ${response.status}`);
+      const text = await response.text();
+      throw new Error(`Adzuna API error ${response.status}: ${text.slice(0, 200)}`);
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error("Adzuna returned non-JSON response");
     }
 
     const data: AdzunaResponse = await response.json();
