@@ -116,29 +116,35 @@ Resume:
 ${payload.resume}`;
 
     case "optimize_resume":
-      return `You are a professional resume writer. Optimize this resume for the job description below.
+      return `You are a world-class resume writer who has helped candidates land roles at Google, McKinsey, and Fortune 500 companies. Optimize this resume for the job description below.
 
 CRITICAL RULES:
-- Use the candidate's REAL name, contact info, experience, and education from their resume
-- NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data from the resume
-- Keep all real details (dates, companies, job titles) — only improve the wording and keywords
-- Inject relevant keywords from the job description naturally into bullet points
-- Strengthen bullet points with action verbs and quantify achievements where data exists
-- If the resume doesn't have a specific number, write the bullet without one — don't add fake brackets
+- Use the candidate's REAL name, contact info, experience, and education — NEVER invent or fabricate
+- NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data only
+- Extract EXACT keywords and phrases from the job description and weave them naturally into bullet points
+- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
+- If the resume contains a number or metric, ALWAYS preserve and highlight it (e.g., "by 10%", "50+ customers", "30 calls/day")
+- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
+- Prioritize bullets by impact: lead with the most impressive achievement for each role
+- Mirror the job description's language — if they say "stakeholder management", use that exact phrase, not a synonym
+
+WRITING QUALITY STANDARDS:
+- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
+- Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
+- Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
+- Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences tailored to the target role)
+2. ## Professional Summary (3-4 sentences — open with years of experience + core expertise, mention the target role/industry, close with a standout achievement or unique value)
 3. ## Core Skills
-   List as bullet points grouped by category, e.g.:
-   - **Strategy & Operations:** Market Research, Strategic Planning, Business Development
-   - **Marketing & Sales:** Campaign Management, Lead Generation, CRM
-   - **Technical:** Python, SQL, Google Analytics, Microsoft Office
-   (Group into 3-5 categories with 3-6 skills each)
+   Bullet points grouped by category:
+   - **Category Name:** Skill, Skill, Skill, Skill
+   (3-5 categories, 3-6 skills each — pull keywords directly from job description)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
-   Then 4-6 bullet points starting with power verbs
+   Exactly 4 bullet points per role — only the highest-impact achievements
 5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
 6. ## Certifications and Trainings (if applicable, list each with institution and date)
@@ -153,39 +159,41 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "rebuild_resume":
-      return `You are an elite resume writer hired to rebuild this resume for a specific job.
+      return `You are a world-class resume writer who has helped candidates land roles at Google, McKinsey, and Fortune 500 companies. Rebuild this resume from scratch for the specific job below.
 
 CRITICAL RULES:
-- Use the candidate's REAL name, contact info, education, and work history from their resume
+- Use the candidate's REAL name, contact info, education, and work history — NEVER invent or fabricate
 - NEVER use placeholders like [Your Name], [Company Name], [City, State], [X years], or [quantify, e.g., 15-20%]
-- Every piece of information must come from the original resume — do NOT invent experience or details
-- If the resume lacks specific metrics, write strong bullet points without fake numbers
-- Rewrite and reframe existing experience to align with the target job — but keep it truthful
+- Extract EXACT keywords and phrases from the job description and weave them naturally into bullet points
+- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
+- If the resume contains a number or metric, ALWAYS preserve and highlight it (e.g., "by 10%", "50+ customers", "30 calls/day")
+- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
+- Prioritize bullets by impact: lead with the most impressive achievement for each role
+- Mirror the job description's language — if they say "stakeholder management", use that exact phrase, not a synonym
+
+WRITING QUALITY STANDARDS:
+- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
+- Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
+- Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
+- Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences tailored to the target role)
+2. ## Professional Summary (3-4 sentences — open with years of experience + core expertise, mention the target role/industry, close with a standout achievement or unique value)
 3. ## Core Skills
-   List as bullet points grouped by category, e.g.:
-   - **Strategy & Operations:** Market Research, Strategic Planning, Business Development
-   - **Marketing & Sales:** Campaign Management, Lead Generation, CRM
-   - **Technical:** Python, SQL, Google Analytics, Microsoft Office
-   (Group into 3-5 categories with 3-6 skills each)
+   Bullet points grouped by category:
+   - **Category Name:** Skill, Skill, Skill, Skill
+   (3-5 categories, 3-6 skills each — pull keywords directly from job description)
 4. ## Work Experience
-   For EACH role use this exact format:
-   ### Job Title, Company, Location — Dates
-   - Bullet point with power verb
-   - Bullet point with power verb
-   (4-6 bullets per role)
+   For EACH role: ### Job Title, Company, Location — Dates
+   Exactly 4 bullet points per role — only the highest-impact achievements
 5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
 6. ## Certifications and Trainings
    List each certification/training with institution and date
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
-
-Start every work experience bullet with a power action verb: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, etc.
 
 Return the COMPLETE rebuilt resume in clean markdown — ready to copy and use.
 
@@ -266,32 +274,37 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "career_pivot":
-      return `You are a career transition specialist. This person wants to change careers.
+      return `You are a world-class career transition specialist who has helped hundreds of professionals successfully switch industries. This person wants to change careers.
 
 CRITICAL RULES:
-- Use the candidate's REAL name, contact info, and background from their resume
-- NEVER use placeholders like [Your Name], [Company], [X years] — use actual data
-- Do NOT invent experience — only reframe what actually exists
-- Identify genuinely transferable skills from their background
-- Be honest about the transition — don't pretend they have experience they don't
+- Use the candidate's REAL name, contact info, and background — NEVER invent or fabricate
+- NEVER use placeholders like [Your Name], [Company], [X years] — use actual data only
+- Do NOT invent experience — only reframe what actually exists for the target industry
+- Extract EXACT keywords from the target job description and weave them into reframed bullets
+- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
+- If the resume contains a number or metric, ALWAYS preserve and highlight it
+- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers
+
+WRITING QUALITY STANDARDS:
+- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Cultivated
+- Remove filler words: "responsible for", "helped with", "assisted in" — replace with direct action
+- Reframe each achievement using the TARGET INDUSTRY's language, not the source industry
+- Professional Summary must directly address the career change — why their background is an ASSET, not a gap
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
 2. ## Professional Summary
-   Address the career change directly — 3-4 sentences showing how their background uniquely positions them for the target role
+   Address the career change directly — 3-4 sentences showing how their background uniquely positions them for the target role. Mention specific transferable strengths.
 3. ## Core Skills
-   List as bullet points grouped by category, e.g.:
-   - **Transferable Skills:** Project Management, Stakeholder Communication, Data Analysis
-   - **Target Industry:** Skills relevant to the new field
+   Bullet points grouped by category:
+   - **Transferable Skills:** Skills that directly map to the target role
+   - **Target Industry:** Keywords pulled from the job description
    - **Technical:** Tools and technologies
-   (Group into 3-5 categories with 3-6 skills each)
+   (3-5 categories, 3-6 skills each)
 4. ## Work Experience
-   For EACH role use this exact format:
-   ### Job Title, Company, Location — Dates
-   - Bullet reframed for the target industry
-   - Emphasize transferable skills relevant to the new field
-   (4-6 bullets per role)
+   For EACH role: ### Job Title, Company, Location — Dates
+   Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value
 5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
 6. ## Certifications and Trainings
