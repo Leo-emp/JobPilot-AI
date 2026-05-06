@@ -8,34 +8,34 @@
 
 /* ---- Testimonial Data ---- */
 /* These are placeholder testimonials — replace with real ones later */
-/* Outcome-focused testimonials with specific, measurable results */
+/* These are placeholder testimonials — replace with real ones later */
 const testimonials = [
   {
     name: "Sarah M.",
     role: "Software Engineer",
     avatar: "SM",
-    text: "Went from 0 callbacks to 5 interviews in 2 weeks. The Resume Rebuild Engine rewrote my entire resume for each role — every application was tailored.",
+    text: "JobPilot completely transformed my resume. I went from zero callbacks to 5 interviews in two weeks. The ATS optimization is incredible.",
     color: "from-brand-indigo to-brand-purple",
   },
   {
     name: "David K.",
-    role: "Teacher → UX Designer",
+    role: "Career Changer",
     avatar: "DK",
-    text: "Career Pivot Mode found 7 transferable skills I didn't know I had. Landed a UX role at a SaaS company after 4 years in education. Nothing else does this.",
+    text: "The Career Pivot mode is a game-changer. I transitioned from teaching to tech and JobPilot rewrote my entire resume to highlight transferable skills.",
     color: "from-brand-purple to-brand-violet",
   },
   {
     name: "Priya R.",
     role: "Marketing Manager",
     avatar: "PR",
-    text: "I was spending 45 minutes per cover letter. JobPilot generates one in 30 seconds that's better than what I wrote manually. Applied to 3x more jobs.",
+    text: "Generated a perfect cover letter in 30 seconds. It was better than anything I'd spent hours writing myself. Absolutely worth it.",
     color: "from-brand-violet to-brand-glow",
   },
   {
     name: "James L.",
     role: "Recent Graduate",
     avatar: "JL",
-    text: "Interview Prep predicted 4 out of 5 questions I was asked at my final round. Walked in prepared, got the offer. Worth it for that feature alone.",
+    text: "The interview prep predicted almost the exact questions I was asked. I walked in confident and got the offer. This tool is unreal.",
     color: "from-brand-light to-brand-indigo",
   },
 ];
@@ -58,7 +58,7 @@ export default function Testimonials() {
             <span className="glow-text">Say</span>
           </h2>
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            Real results from job seekers who stopped guessing and started landing interviews.
+            Join thousands of job seekers who launched their careers with JobPilot AI.
           </p>
         </div>
 

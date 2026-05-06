@@ -46,17 +46,18 @@ export default function Hero() {
         JobPilot AI
       </h1>
 
-      {/* ---- Outcome-Focused Tagline ---- */}
-      {/* Clear promise: what the user gets, not what the product is */}
+      {/* ---- Glowing Tagline ---- */}
+      {/* Also uses Space Grotesk for consistency with the title */}
       <p className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl md:text-2xl font-medium tracking-[0.2em] uppercase mb-8 glow-text-subtle">
-        Land More Interviews, Faster
+        Your Career Co-Pilot
       </p>
 
-      {/* ---- Description — outcome-driven, not feature-listing ---- */}
+      {/* ---- Description ---- */}
+      {/* Body text stays in Geist (the default sans font) for readability */}
       <p className="max-w-2xl text-base sm:text-lg text-text-secondary leading-relaxed mb-12">
-        Stop sending resumes into the void. 10 AI tools analyze, rewrite,
-        and optimize every part of your application — so you get callbacks,
-        not silence.
+        AI-powered resume optimization, intelligent job matching,
+        personalized cover letters, and interview prep —
+        everything you need to land your dream job, in one place.
       </p>
 
       {/* ---- CTA Buttons ---- */}
