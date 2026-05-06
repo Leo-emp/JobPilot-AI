@@ -25,6 +25,7 @@ const navItems = [
   { href: "/dashboard/tracker", icon: "📊", label: "Application Tracker" },
   { href: "/dashboard/interview", icon: "🎤", label: "Interview Prep" },
   { href: "/dashboard/linkedin", icon: "💼", label: "LinkedIn Optimizer" },
+  { href: "/dashboard/network", icon: "👥", label: "Networking CRM" },
   { href: "/dashboard/settings", icon: "⚙️", label: "Settings" },
 ];
 

@@ -37,6 +37,8 @@ model User {
   jobs         SavedJob[]
   applications Application[]
   coverLetters CoverLetter[]
+  contacts     Contact[]
+  companies    Company[]
 }
 
 // ---- OAuth Account ----
@@ -108,6 +110,46 @@ model Application {
 
   user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   job  SavedJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
+
+// ---- Networking Contact ----
+// People the user is networking with during their job search
+model Contact {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String                          // Contact's full name
+  email        String?                         // Contact's email
+  phone        String?                         // Contact's phone number
+  company      String?                         // Company they work at
+  role         String?                         // Their job title/role
+  linkedinUrl  String?                         // LinkedIn profile URL
+  relationship String   @default("Connection") // Connection, Recruiter, Hiring Manager, Referral, Mentor
+  notes        String?                         // Personal notes about this contact
+  lastContactedAt DateTime?                    // When you last reached out
+  nextFollowUp    DateTime?                    // When to follow up next
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---- Networking Company ----
+// Companies the user is targeting in their job search
+model Company {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String                           // Company name
+  industry    String?                          // Industry/sector
+  website     String?                          // Company website URL
+  location    String?                          // HQ or relevant office location
+  size        String?                          // Company size (Startup, Small, Medium, Large, Enterprise)
+  notes       String?                          // Research notes about the company
+  priority    String   @default("Medium")      // Low, Medium, High priority target
+  status      String   @default("Researching") // Researching, Applied, Interviewing, Offer, Rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ---- Generated Cover Letter ----
