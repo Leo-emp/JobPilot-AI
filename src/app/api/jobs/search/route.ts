@@ -54,9 +54,10 @@ export async function GET(req: NextRequest) {
 
   /* If Adzuna keys aren't configured, return sample data */
   if (!appId || !appKey) {
+    const sampleJobs = getSampleJobs(query, location);
     return NextResponse.json({
-      jobs: getSampleJobs(query, location),
-      total: 50,
+      jobs: sampleJobs,
+      total: sampleJobs.length,
       page: 1,
       source: "sample",
       message: "Showing sample jobs. Configure ADZUNA_APP_ID and ADZUNA_APP_KEY for real job listings.",

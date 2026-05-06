@@ -321,17 +321,21 @@ export default function JobsPage() {
               {/* Job cards */}
               <div className="space-y-4 mb-6">
                 {searchResults.map((job) => (
-                  <div key={job.id} className="glass-card p-5 hover:border-brand-indigo/30 transition-colors">
+                  <div
+                    key={job.id}
+                    className="glass-card p-5 hover:border-brand-indigo/30 transition-colors cursor-pointer"
+                    onClick={() => setExpandedJob(expandedJob === job.id ? null : job.id)}
+                  >
                     {/* Job header row */}
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg text-white truncate">{job.title}</h3>
+                        <h3 className="font-bold text-lg text-white">{job.title}</h3>
                         <p className="text-text-secondary text-sm">{job.company}</p>
                       </div>
 
                       {/* Save button */}
                       <button
-                        onClick={() => handleSaveJob(job)}
+                        onClick={(e) => { e.stopPropagation(); handleSaveJob(job); }}
                         disabled={savingJobId === job.id || savedJobs.has(job.id)}
                         className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                           savedJobs.has(job.id)
@@ -372,25 +376,23 @@ export default function JobsPage() {
                     </div>
 
                     {/* Job description — truncated with expand toggle */}
-                    <p className={`text-sm text-text-secondary leading-relaxed ${
+                    <div className={`text-sm text-text-secondary leading-relaxed ${
                       expandedJob === job.id ? "" : "line-clamp-3"
                     }`}>
                       {job.description}
-                    </p>
-                    <button
-                      onClick={() => setExpandedJob(expandedJob === job.id ? null : job.id)}
-                      className="text-xs text-brand-light hover:text-white mt-2 transition-colors"
-                    >
+                    </div>
+                    <span className="inline-block text-xs text-brand-light hover:text-white mt-2 transition-colors font-medium">
                       {expandedJob === job.id ? "Show less" : "Show more"}
-                    </button>
+                    </span>
 
-                    {/* Apply link — only if URL exists */}
-                    {job.url && (
+                    {/* Apply link — only if URL exists and job is expanded */}
+                    {job.url && expandedJob === job.id && (
                       <div className="mt-3 pt-3 border-t border-card-border">
                         <a
                           href={job.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
                           className="text-sm text-brand-light hover:text-white transition-colors font-medium"
                         >
                           View & Apply &rarr;
@@ -402,25 +404,31 @@ export default function JobsPage() {
               </div>
 
               {/* ---- Pagination ---- */}
-              {searchTotal > 20 && (
-                <div className="flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => handleSearch(searchPage - 1)}
-                    disabled={searchPage <= 1 || searchLoading}
-                    className="btn-secondary text-sm disabled:opacity-30"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-sm text-text-muted">Page {searchPage}</span>
-                  <button
-                    onClick={() => handleSearch(searchPage + 1)}
-                    disabled={searchResults.length < 20 || searchLoading}
-                    className="btn-secondary text-sm disabled:opacity-30"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
+              {(() => {
+                const totalPages = Math.ceil(searchTotal / 20);
+                if (totalPages <= 1) return null;
+                return (
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => handleSearch(searchPage - 1)}
+                      disabled={searchPage <= 1 || searchLoading}
+                      className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-text-muted">
+                      Page {searchPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handleSearch(searchPage + 1)}
+                      disabled={searchPage >= totalPages || searchLoading}
+                      className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
