@@ -33,6 +33,7 @@ export default function JobsPage() {
   /* ---- Search tab state ---- */
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
+  const [searchCountry, setSearchCountry] = useState("gb");
   const [searchResults, setSearchResults] = useState<JobResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
@@ -72,6 +73,7 @@ export default function JobsPage() {
       const params = new URLSearchParams({
         q: searchQuery,
         page: String(page),
+        country: searchCountry,
       });
       if (searchLocation) params.set("location", searchLocation);
 
@@ -220,9 +222,9 @@ export default function JobsPage() {
         <div>
           {/* ---- Search Form ---- */}
           <div className="glass-card p-6 mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mb-4">
               {/* Job title / keywords */}
-              <div className="sm:col-span-1">
+              <div className="sm:col-span-4">
                 <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">
                   Job Title or Keywords
                 </label>
@@ -231,13 +233,13 @@ export default function JobsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch(1)}
-                  placeholder="e.g. Software Engineer"
+                  placeholder="e.g. Business Consultant"
                   className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
                 />
               </div>
 
               {/* Location */}
-              <div className="sm:col-span-1">
+              <div className="sm:col-span-3">
                 <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">
                   Location
                 </label>
@@ -246,13 +248,43 @@ export default function JobsPage() {
                   value={searchLocation}
                   onChange={(e) => setSearchLocation(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch(1)}
-                  placeholder="e.g. New York, Remote"
+                  placeholder="e.g. London, Remote"
                   className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
                 />
               </div>
 
+              {/* Country selector */}
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">
+                  Country
+                </label>
+                <select
+                  value={searchCountry}
+                  onChange={(e) => setSearchCountry(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:outline-none focus:border-brand-indigo text-sm appearance-none cursor-pointer"
+                >
+                  <option value="gb">United Kingdom</option>
+                  <option value="us">United States</option>
+                  <option value="au">Australia</option>
+                  <option value="ca">Canada</option>
+                  <option value="de">Germany</option>
+                  <option value="fr">France</option>
+                  <option value="in">India</option>
+                  <option value="nz">New Zealand</option>
+                  <option value="sg">Singapore</option>
+                  <option value="nl">Netherlands</option>
+                  <option value="it">Italy</option>
+                  <option value="br">Brazil</option>
+                  <option value="za">South Africa</option>
+                  <option value="at">Austria</option>
+                  <option value="ch">Switzerland</option>
+                  <option value="pl">Poland</option>
+                  <option value="mx">Mexico</option>
+                </select>
+              </div>
+
               {/* Search button */}
-              <div className="flex items-end">
+              <div className="sm:col-span-3 flex items-end">
                 <button
                   onClick={() => handleSearch(1)}
                   disabled={!searchQuery.trim() || searchLoading}
@@ -266,7 +298,7 @@ export default function JobsPage() {
             {/* Source indicator */}
             {searchSource === "sample" && (
               <p className="text-xs text-amber-400/80">
-                Showing sample jobs. Add your free Adzuna API keys in .env for real listings from Indeed, LinkedIn, Glassdoor & more.
+                Showing sample jobs. Add your free Adzuna API keys in .env for real listings from Indeed, LinkedIn, Glassdoor &amp; more.
               </p>
             )}
           </div>
