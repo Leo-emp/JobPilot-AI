@@ -126,7 +126,20 @@ CRITICAL RULES:
 - Strengthen bullet points with action verbs and quantify achievements where data exists
 - If the resume doesn't have a specific number, write the bullet without one — don't add fake brackets
 
-Return the COMPLETE optimized resume ready to use, in clean markdown format.
+STRUCTURE (follow this EXACT order):
+1. # Name (from resume)
+   Contact info on one line: Location • Phone • Email • LinkedIn
+2. ## Professional Summary (3-4 sentences tailored to the target role)
+3. ## Work Experience
+   For EACH role: ### Job Title, Company, Location — Dates
+   Then 4-6 bullet points starting with power verbs
+4. ## Education
+   For each entry: ### Degree, Institution, Location — Dates
+5. ## Certifications and Trainings (if applicable, list each with institution and date)
+6. ## Core Skills (comma-separated list matching the job)
+7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
+
+Return the COMPLETE optimized resume in clean markdown format.
 
 Resume:
 ${payload.resume}
@@ -144,15 +157,26 @@ CRITICAL RULES:
 - If the resume lacks specific metrics, write strong bullet points without fake numbers
 - Rewrite and reframe existing experience to align with the target job — but keep it truthful
 
-STRUCTURE:
-1. **Name + Contact Info** (from the resume)
-2. **Professional Summary** (2-3 sentences tailored to the target role)
-3. **Core Competencies** (keyword-rich skills grid matching the job)
-4. **Professional Experience** (each role with 4-6 bullet points starting with power verbs)
-5. **Education** (from the resume)
-6. **Certifications / Professional Development** (if applicable)
+STRUCTURE (follow this EXACT order):
+1. # Name (from resume)
+   Contact info on one line: Location • Phone • Email • LinkedIn
+2. ## Professional Summary (3-4 sentences tailored to the target role)
+3. ## Work Experience
+   For EACH role use this exact format:
+   ### Job Title, Company, Location — Dates
+   - Bullet point with power verb
+   - Bullet point with power verb
+   (4-6 bullets per role)
+4. ## Education
+   For each entry: ### Degree, Institution, Location — Dates
+5. ## Certifications and Trainings
+   List each certification/training with institution and date
+6. ## Core Skills
+   Comma-separated list of relevant skills matching the job
+7. ## Languages
+   List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
-Start every bullet with a power action verb: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, etc.
+Start every work experience bullet with a power action verb: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, etc.
 
 Return the COMPLETE rebuilt resume in clean markdown — ready to copy and use.
 
@@ -242,11 +266,25 @@ CRITICAL RULES:
 - Identify genuinely transferable skills from their background
 - Be honest about the transition — don't pretend they have experience they don't
 
-APPROACH:
-1. **Professional Summary**: Address the career change directly — show how their background uniquely positions them
-2. **Transferable Skills**: Map their existing skills to the target role requirements
-3. **Experience**: Rewrite each role emphasizing aspects relevant to the new field
-4. **Education & Development**: Highlight any relevant coursework, certifications, or self-study
+STRUCTURE (follow this EXACT order):
+1. # Name (from resume)
+   Contact info on one line: Location • Phone • Email • LinkedIn
+2. ## Professional Summary
+   Address the career change directly — 3-4 sentences showing how their background uniquely positions them for the target role
+3. ## Work Experience
+   For EACH role use this exact format:
+   ### Job Title, Company, Location — Dates
+   - Bullet reframed for the target industry
+   - Emphasize transferable skills relevant to the new field
+   (4-6 bullets per role)
+4. ## Education
+   For each entry: ### Degree, Institution, Location — Dates
+5. ## Certifications and Trainings
+   List each certification/training with institution and date
+6. ## Core Skills
+   Comma-separated transferable skills mapped to the target role
+7. ## Languages
+   List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
 Return the COMPLETE rebuilt resume in clean markdown — ready to use, no placeholders.
 

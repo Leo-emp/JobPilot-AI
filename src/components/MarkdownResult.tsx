@@ -103,32 +103,95 @@ function parseMarkdown(md: string): string {
   return htmlParts.join("\n");
 }
 
-/* ---- Shared download styles for PDF/Word exports ---- */
+/* ---- Professional download styles for PDF/Word exports ---- */
+/* Matches the standard resume layout: bold name, contact with pipes, */
+/* uppercase section headers with underlines, structured entries */
 const DOWNLOAD_STYLES = `
-  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.65; font-size: 15px; }
-  h1 { font-size: 26px; margin: 0 0 4px 0; color: #111; }
-  h2 { font-size: 18px; border-bottom: 2px solid #2d2d2d; padding-bottom: 4px; margin: 24px 0 12px 0; color: #111; text-transform: uppercase; letter-spacing: 0.5px; }
-  h3 { font-size: 16px; margin: 16px 0 6px 0; color: #222; }
-  p { margin: 0 0 8px 0; }
-  ul, ol { padding-left: 22px; margin: 6px 0 12px 0; }
-  li { margin-bottom: 5px; }
-  strong { color: #111; }
-  hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.55; font-size: 14px; }
+  h1 { font-size: 28px; font-weight: 700; margin: 0 0 4px 0; color: #111; }
+  h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin: 20px 0 10px 0; color: #111; }
+  h3 { font-size: 14px; font-weight: 700; margin: 12px 0 2px 0; color: #111; }
+  p { margin: 0 0 8px 0; font-size: 13.5px; color: #333; }
+  .contact-line { font-size: 13px; color: #444; margin-bottom: 14px; }
+  ul, ol { padding-left: 20px; margin: 4px 0 10px 0; }
+  li { margin-bottom: 3px; font-size: 13.5px; color: #333; line-height: 1.5; }
+  strong { color: #111; font-weight: 700; }
+  em { font-style: italic; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 14px 0; }
   @media print { body { padding: 20px; } }
 `;
 
-/* ---- Convert markdown to plain HTML for downloads ---- */
+/* ---- Convert markdown to structured HTML for downloads ---- */
+/* Properly wraps consecutive <li> elements in <ul> tags and */
+/* converts contact-line paragraphs (with bullet separators) */
 function markdownToDownloadHTML(md: string): string {
-  return md
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>")
-    .replace(/^[-*•] (.+)$/gm, "<li>$1</li>")
-    .replace(/^(\d+)\. (.+)$/gm, "<li>$2</li>")
-    .replace(/^---$/gm, "<hr>")
-    .replace(/\n/g, "<br>");
+  const lines = md.split("\n");
+  const htmlParts: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    /* Empty line — close any open list, add spacing */
+    if (!trimmed) {
+      if (inList) { htmlParts.push("</ul>"); inList = false; }
+      continue;
+    }
+
+    /* Headings */
+    if (trimmed.startsWith("### ")) {
+      if (inList) { htmlParts.push("</ul>"); inList = false; }
+      htmlParts.push(`<h3>${trimmed.slice(4).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</h3>`);
+      continue;
+    }
+    if (trimmed.startsWith("## ")) {
+      if (inList) { htmlParts.push("</ul>"); inList = false; }
+      htmlParts.push(`<h2>${trimmed.slice(3).replace(/\*\*(.+?)\*\*/g, "$1")}</h2>`);
+      continue;
+    }
+    if (trimmed.startsWith("# ")) {
+      if (inList) { htmlParts.push("</ul>"); inList = false; }
+      htmlParts.push(`<h1>${trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, "$1")}</h1>`);
+      continue;
+    }
+
+    /* Horizontal rules */
+    if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
+      if (inList) { htmlParts.push("</ul>"); inList = false; }
+      htmlParts.push("<hr>");
+      continue;
+    }
+
+    /* List items — wrap in <ul> */
+    if (/^[-*•] /.test(trimmed)) {
+      if (!inList) { htmlParts.push("<ul>"); inList = true; }
+      const content = trimmed.replace(/^[-*•] /, "")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
+      htmlParts.push(`<li>${content}</li>`);
+      continue;
+    }
+
+    /* Numbered list items */
+    if (/^\d+\. /.test(trimmed)) {
+      if (!inList) { htmlParts.push("<ul>"); inList = true; }
+      const content = trimmed.replace(/^\d+\. /, "")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      htmlParts.push(`<li>${content}</li>`);
+      continue;
+    }
+
+    /* Regular paragraphs */
+    if (inList) { htmlParts.push("</ul>"); inList = false; }
+    const content = trimmed
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
+    htmlParts.push(`<p>${content}</p>`);
+  }
+
+  if (inList) htmlParts.push("</ul>");
+  return htmlParts.join("\n");
 }
 
 /* ---- Props for the component ---- */
