@@ -106,58 +106,73 @@ const EMPTY_FORM: ResumeData = {
 };
 
 /* ============================================================
-   TEMPLATE CSS GENERATORS
+   TEMPLATE CSS GENERATORS — Teal-quality professional styling
    ============================================================
-   Each template ID maps to a function that returns the CSS
-   for the downloadable/printable HTML document.
-   All use single-column, ATS-safe structure.
+   Each template produces clean, ATS-friendly output with:
+   - Structured experience entries (bold title, company, bullets)
+   - Bullet-separated contact lines
+   - Proper typography and spacing
    ============================================================ */
 function getTemplateCSS(templateId: string): string {
+  /* Shared base styles for all templates — single-column ATS-safe layout */
   const shared = `
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.6; }
-    .header { margin-bottom: 20px; }
-    .name { margin-bottom: 4px; }
-    .contact { margin-bottom: 16px; }
-    .contact span { margin-right: 14px; }
+    .header { margin-bottom: 16px; }
+    .name { margin-bottom: 6px; }
+    .contact { margin-bottom: 12px; font-size: 13px; color: #444; }
+    .contact span + span::before { content: " \\2022 "; margin: 0 6px; color: #999; }
+    .summary { margin-bottom: 18px; font-size: 13.5px; color: #333; line-height: 1.55; }
     .section { margin-bottom: 18px; }
     .section-title { margin-bottom: 10px; }
-    .content { white-space: pre-line; }
+    .entry { margin-bottom: 14px; }
+    .entry-title { font-weight: 700; font-size: 14px; color: #111; }
+    .entry-company { font-size: 13.5px; color: #333; margin-bottom: 4px; }
+    .entry-bullets { padding-left: 18px; margin-top: 4px; }
+    .entry-bullets li { font-size: 13.5px; color: #333; line-height: 1.5; margin-bottom: 3px; }
+    .content { white-space: pre-line; font-size: 13.5px; color: #333; }
     .skills-list { display: flex; flex-wrap: wrap; gap: 6px; }
-    .skill-tag { display: inline-block; padding: 2px 0; }
+    .skill-tag { display: inline-block; padding: 2px 0; font-size: 13px; }
     @media print { body { padding: 20px; } }
   `;
 
   switch (templateId) {
+    /* Classic — Teal-style: dark green name, clean lines, traditional feel */
     case "classic":
       return shared + `
-        body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 14px; }
-        .name { font-size: 28px; font-weight: bold; color: #111; }
-        .contact { font-size: 13px; color: #444; border-bottom: 2px solid #111; padding-bottom: 12px; }
-        .section-title { font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #999; padding-bottom: 4px; color: #111; }
-        .content { font-size: 14px; color: #222; }
+        body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 14px; }
+        .name { font-size: 28px; font-weight: 700; color: #0f5132; }
+        .contact { color: #444; border-bottom: none; }
+        .summary { color: #333; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #111; border-bottom: 1px solid #111; padding-bottom: 3px; }
+        .entry-title { color: #111; }
+        .entry-company { font-weight: 700; color: #111; }
         .skill-tag { font-size: 13px; color: #222; }
       `;
+    /* Modern — Bold sans-serif with red accent line under header */
     case "modern":
       return shared + `
         body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 14px; }
-        .header { border-left: 4px solid #4f46e5; padding-left: 16px; }
-        .name { font-size: 30px; font-weight: 700; color: #1e1b4b; }
-        .contact { font-size: 13px; color: #555; }
-        .section-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #4f46e5; border-bottom: 2px solid #e0e0ff; padding-bottom: 4px; }
-        .content { font-size: 14px; color: #333; }
-        .skill-tag { background: #eef2ff; color: #4338ca; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .name { font-size: 32px; font-weight: 700; color: #111; }
+        .header { padding-bottom: 14px; border-bottom: 3px solid #e63946; margin-bottom: 18px; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #e63946; border-bottom: 1px solid #e63946; padding-bottom: 3px; }
+        .entry-company { font-weight: 700; }
+        .skill-tag { font-size: 13px; color: #222; }
       `;
+    /* Executive — Elegant serif, refined spacing, dark underlines */
     case "executive":
       return shared + `
-        body { font-family: 'Calibri', Arial, sans-serif; font-size: 14px; }
-        .header { background: #1a1a1a; color: #fff; padding: 24px; margin: -40px -40px 24px -40px; }
-        .name { font-size: 32px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-        .contact { font-size: 13px; color: #ccc; }
-        .section-title { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; background: #f0f0f0; padding: 6px 12px; color: #111; }
-        .content { font-size: 14px; color: #222; }
-        .skill-tag { font-size: 13px; font-weight: 600; color: #111; }
+        body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 14px; }
+        .name { font-size: 28px; font-weight: 700; color: #111; font-style: italic; }
+        .contact { text-align: center; }
+        .header { text-align: center; margin-bottom: 18px; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #111; border-bottom: 1.5px solid #111; padding-bottom: 3px; font-family: 'Calibri', Arial, sans-serif; }
+        .entry-title { font-weight: 700; }
+        .entry-company { font-weight: 700; }
+        .entry-bullets li { font-size: 13.5px; }
+        .skill-tag { font-size: 13px; color: #222; font-family: 'Calibri', Arial, sans-serif; }
       `;
+    /* Minimal — Ultra-clean, maximum whitespace, lightweight */
     case "minimal":
       return shared + `
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13.5px; }
@@ -165,26 +180,28 @@ function getTemplateCSS(templateId: string): string {
         .contact { font-size: 12px; color: #888; }
         .section { margin-bottom: 22px; }
         .section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: #999; border-bottom: 1px solid #e5e5e5; padding-bottom: 4px; }
-        .content { font-size: 13.5px; color: #333; }
+        .entry-title { font-size: 13.5px; font-weight: 600; }
+        .entry-company { font-size: 13px; color: #555; }
+        .entry-bullets li { font-size: 13px; color: #444; }
         .skill-tag { font-size: 12px; color: #555; }
       `;
+    /* Technical — Clean with blue accents for engineering roles */
     case "technical":
       return shared + `
-        body { font-family: 'Consolas', 'Fira Code', 'Courier New', monospace; font-size: 13px; }
-        .name { font-size: 26px; font-weight: bold; color: #0ea5e9; }
-        .contact { font-size: 12px; color: #555; font-family: 'Calibri', Arial, sans-serif; }
-        .section-title { font-size: 14px; font-weight: bold; color: #0284c7; border-bottom: 2px solid #0ea5e9; padding-bottom: 3px; font-family: 'Calibri', Arial, sans-serif; text-transform: uppercase; letter-spacing: 1px; }
-        .content { font-size: 13px; color: #222; font-family: 'Calibri', Arial, sans-serif; }
-        .skill-tag { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-family: 'Consolas', monospace; }
+        body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 14px; }
+        .name { font-size: 28px; font-weight: 700; color: #0369a1; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #0369a1; border-bottom: 2px solid #0ea5e9; padding-bottom: 3px; }
+        .entry-company { font-weight: 700; }
+        .skill-tag { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-family: 'Consolas', 'Fira Code', monospace; }
       `;
+    /* Creative — Pink/rose accent, modern feel for design/marketing */
     case "creative":
       return shared + `
         body { font-family: 'Segoe UI', 'Calibri', Arial, sans-serif; font-size: 14px; }
-        .header { border-bottom: 3px solid #ec4899; padding-bottom: 16px; }
-        .name { font-size: 32px; font-weight: 700; color: #be185d; }
-        .contact { font-size: 13px; color: #666; }
-        .section-title { font-size: 15px; font-weight: 700; color: #be185d; border-bottom: 2px solid #fce7f3; padding-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
-        .content { font-size: 14px; color: #333; }
+        .name { font-size: 30px; font-weight: 700; color: #be185d; }
+        .header { border-bottom: 3px solid #ec4899; padding-bottom: 14px; margin-bottom: 18px; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #be185d; border-bottom: 2px solid #fce7f3; padding-bottom: 3px; }
+        .entry-company { font-weight: 700; }
         .skill-tag { background: #fdf2f8; color: #be185d; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
       `;
     default:
@@ -193,15 +210,54 @@ function getTemplateCSS(templateId: string): string {
 }
 
 /* ============================================================
-   GENERATE HTML FROM FORM DATA
+   PARSE EXPERIENCE TEXT INTO STRUCTURED ENTRIES
    ============================================================
-   Builds a clean, ATS-friendly HTML document from the user's
-   form inputs. Skills are split by comma into individual tags.
+   Detects lines with " | " as job headers (Title | Company | Dates).
+   Lines starting with "- " become bullet points.
+   Groups everything into structured entry objects.
+   ============================================================ */
+function parseExperienceEntries(text: string): { title: string; company: string; bullets: string[] }[] {
+  const lines = text.split("\n").filter((l) => l.trim());
+  const entries: { title: string; company: string; bullets: string[] }[] = [];
+  let current: { title: string; company: string; bullets: string[] } | null = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.includes(" | ")) {
+      /* Header line: "Title | Company | Dates" or "Title | Company" */
+      if (current) entries.push(current);
+      const parts = trimmed.split(" | ").map((p) => p.trim());
+      current = {
+        title: parts[0] + (parts[2] ? ` • ${parts[2]}` : ""),
+        company: parts[1] || "",
+        bullets: [],
+      };
+    } else if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+      /* Bullet point line */
+      if (current) {
+        current.bullets.push(trimmed.replace(/^[-•]\s*/, ""));
+      }
+    } else if (current) {
+      /* Non-header, non-bullet — treat as additional company/context line */
+      current.bullets.push(trimmed);
+    }
+  }
+  if (current) entries.push(current);
+  return entries;
+}
+
+/* ============================================================
+   GENERATE HTML FROM FORM DATA — Teal-quality output
+   ============================================================
+   Builds a clean, ATS-friendly HTML document with:
+   - Bullet-separated contact line (Location • Phone • Email • LinkedIn)
+   - Summary as clean paragraph
+   - Structured experience with bold titles, company, bullet lists
    ============================================================ */
 function generateResumeHTML(data: ResumeData, templateId: string): string {
-  /* Build contact line from non-empty fields */
-  const contactParts = [data.email, data.phone, data.location, data.linkedin].filter(Boolean);
-  const contactLine = contactParts.map((c) => `<span>${c}</span>`).join(" | ");
+  /* Build contact line with bullet separators (Teal style) */
+  const contactParts = [data.location, data.phone, data.email, data.linkedin].filter(Boolean);
+  const contactLine = contactParts.map((c) => `<span>${c}</span>`).join("");
 
   /* Split skills by comma into individual tags */
   const skillTags = data.skills
@@ -214,14 +270,40 @@ function generateResumeHTML(data: ResumeData, templateId: string): string {
   /* Build sections — only include non-empty ones */
   let sections = "";
 
+  /* Summary as a clean paragraph */
   if (data.summary.trim()) {
     sections += `
-      <div class="section">
-        <div class="section-title">Professional Summary</div>
-        <div class="content">${data.summary}</div>
-      </div>`;
+      <div class="summary">${data.summary}</div>`;
   }
 
+  /* Experience — parsed into structured entries with bold titles + bullets */
+  if (data.experience.trim()) {
+    const entries = parseExperienceEntries(data.experience);
+    if (entries.length > 0) {
+      let entriesHTML = "";
+      for (const entry of entries) {
+        entriesHTML += `
+          <div class="entry">
+            <div class="entry-title">${entry.title}</div>
+            ${entry.company ? `<div class="entry-company">${entry.company}</div>` : ""}
+            ${entry.bullets.length > 0 ? `<ul class="entry-bullets">${entry.bullets.map((b) => `<li>${b}</li>`).join("")}</ul>` : ""}
+          </div>`;
+      }
+      sections += `
+        <div class="section">
+          <div class="section-title">Work Experience</div>
+          ${entriesHTML}
+        </div>`;
+    } else {
+      sections += `
+        <div class="section">
+          <div class="section-title">Work Experience</div>
+          <div class="content">${data.experience}</div>
+        </div>`;
+    }
+  }
+
+  /* Skills section */
   if (data.skills.trim()) {
     sections += `
       <div class="section">
@@ -230,26 +312,38 @@ function generateResumeHTML(data: ResumeData, templateId: string): string {
       </div>`;
   }
 
-  if (data.experience.trim()) {
-    sections += `
-      <div class="section">
-        <div class="section-title">Professional Experience</div>
-        <div class="content">${data.experience}</div>
-      </div>`;
-  }
-
+  /* Education — also try to parse structured entries */
   if (data.education.trim()) {
-    sections += `
-      <div class="section">
-        <div class="section-title">Education</div>
-        <div class="content">${data.education}</div>
-      </div>`;
+    const eduEntries = parseExperienceEntries(data.education);
+    if (eduEntries.length > 0) {
+      let eduHTML = "";
+      for (const entry of eduEntries) {
+        eduHTML += `
+          <div class="entry">
+            <div class="entry-title">${entry.title}</div>
+            ${entry.company ? `<div class="entry-company">${entry.company}</div>` : ""}
+            ${entry.bullets.length > 0 ? `<ul class="entry-bullets">${entry.bullets.map((b) => `<li>${b}</li>`).join("")}</ul>` : ""}
+          </div>`;
+      }
+      sections += `
+        <div class="section">
+          <div class="section-title">Education</div>
+          ${eduHTML}
+        </div>`;
+    } else {
+      sections += `
+        <div class="section">
+          <div class="section-title">Education</div>
+          <div class="content">${data.education}</div>
+        </div>`;
+    }
   }
 
+  /* Certifications */
   if (data.certifications.trim()) {
     sections += `
       <div class="section">
-        <div class="section-title">Certifications & Development</div>
+        <div class="section-title">Certifications</div>
         <div class="content">${data.certifications}</div>
       </div>`;
   }
@@ -266,7 +360,7 @@ function generateResumeHTML(data: ResumeData, templateId: string): string {
 <body>
   <div class="header">
     <div class="name">${data.fullName || "Your Name"}</div>
-    <div class="contact">${contactLine || "email@example.com | (123) 456-7890"}</div>
+    <div class="contact">${contactLine || "<span>email@example.com</span><span>(123) 456-7890</span>"}</div>
   </div>
   ${sections}
 </body>
@@ -684,18 +778,12 @@ Google Professional Data Engineer — 2022`}
                 </button>
               </div>
             </div>
-            {/* Resume rendered in iframe-like container */}
-            <div
-              className="p-8 sm:p-12"
-              dangerouslySetInnerHTML={{ __html: generateResumeHTML(formData, selectedTemplate).replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>|<!DOCTYPE html>/g, "") }}
-              style={{
-                fontFamily: selectedTemplate === "classic" ? "Georgia, serif" :
-                  selectedTemplate === "technical" ? "Consolas, monospace" :
-                  "Calibri, Segoe UI, Arial, sans-serif",
-                color: "#1a1a1a",
-                lineHeight: "1.6",
-                fontSize: "14px",
-              }}
+            {/* Resume rendered via srcdoc iframe for proper CSS isolation */}
+            <iframe
+              srcDoc={generateResumeHTML(formData, selectedTemplate)}
+              className="w-full border-0"
+              style={{ minHeight: "900px" }}
+              title="Resume Preview"
             />
           </div>
         </div>
