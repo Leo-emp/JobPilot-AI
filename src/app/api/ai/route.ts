@@ -222,23 +222,40 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "cover_letter":
-      return `Write a compelling cover letter for this job application.
+      return `You are a professional cover letter writer who creates personalized, human-sounding cover letters that get interviews.
 
 CRITICAL RULES:
-- Use the candidate's REAL name and details from the resume — never use [Your Name] or placeholders
-- Reference SPECIFIC achievements, projects, and skills from their actual resume
-- Address it to the hiring team at the real company name provided
-- Sound human and confident — not robotic or overly formal
-- Show genuine enthusiasm for the specific role and company
-- Keep it under 350 words — hiring managers skim
-- End with a clear call to action
+- Extract the candidate's REAL full name, email, phone, and location from their resume — NEVER use [Your Name], [Your Email], or any placeholder brackets
+- Reference SPECIFIC achievements, metrics, and projects from their actual resume — not vague generalities
+- Address it to "Dear Hiring Manager" unless a specific name is given
+- Write like a confident human, not a corporate robot — vary sentence length, use natural transitions, show personality
+- NEVER use generic filler like "I am writing to express my interest" or "I believe I would be a great fit" — these scream template
+- Connect the candidate's REAL past results to what the company needs — show you understand THEIR business
+- Keep it 3 paragraphs for the body (not counting header/closing) — around 300-350 words total
+- Every sentence must earn its place — if it could apply to any candidate, delete it
 
-STRUCTURE:
-1. Opening: Hook the reader — mention the specific role and why you're excited
-2. Body (2 paragraphs): Connect your real experience to their job requirements
-3. Closing: Express enthusiasm and request an interview
+STRUCTURE (follow this EXACT format):
 
-Return ONLY the cover letter — no commentary, no "Here's your cover letter" intro.
+1. **Header** — Candidate's full name, email, phone, location (from resume), then today's date, then company name and "Dear Hiring Manager,"
+
+2. **Opening paragraph** — Lead with the specific role title at the specific company. Open with something genuine about WHY this role excites you based on what the company does or what the role involves. Mention your current/most recent title and one headline achievement with a number.
+
+3. **Body paragraph 1** — Pick 2-3 of your strongest achievements from the resume that directly match the job description's top requirements. Use specific metrics and results. Show HOW your experience solves THEIR problems.
+
+4. **Body paragraph 2** — Highlight complementary skills, tools, or experiences from the resume that add value beyond the core requirements. Connect your unique background to what makes you different from other candidates. Mention specific tools, methodologies, or domain expertise from the job description that you actually have.
+
+5. **Closing paragraph** — Express genuine enthusiasm for contributing to the company's mission or goals (be specific, not generic). Include a confident call to action requesting an interview. Thank them for their time.
+
+6. **Sign-off** — "Sincerely," followed by the candidate's full name
+
+TONE GUIDELINES:
+- Write as if you're a real person excited about a real opportunity — not filling out a template
+- Use active voice throughout — "I led" not "I was responsible for leading"
+- Show don't tell — instead of "I am a strong communicator" say "I presented strategic recommendations to C-suite leadership that drove international expansion"
+- Mirror 2-3 keywords from the job description naturally — don't keyword-stuff
+- Sound warm and professional — not desperate or arrogant
+
+Return ONLY the cover letter text — no commentary, no "Here's your cover letter", no markdown formatting except line breaks between sections.
 
 Resume:
 ${payload.resume}

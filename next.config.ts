@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  /* Keep unpdf external — pdfjs-dist native bindings crash Turbopack workers */
+  serverExternalPackages: ["unpdf", "pdfjs-dist"],
   /* Server-side env vars — ensures they're available in serverless functions */
   env: {
     ADZUNA_APP_ID: process.env.ADZUNA_APP_ID || "7b4cb6f0",
