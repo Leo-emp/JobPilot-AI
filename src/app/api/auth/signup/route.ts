@@ -62,10 +62,9 @@ export async function POST(req: NextRequest) {
       { id: user.id, email: user.email, name: user.name },
       { status: 201 } // 201 Created
     );
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+  } catch {
     return NextResponse.json(
-      { error: `Something went wrong: ${message}` },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
