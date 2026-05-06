@@ -22,16 +22,16 @@ export default function CTA() {
           }}
         />
 
-        {/* Main CTA heading */}
+        {/* Main CTA heading — outcome-focused */}
         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6">
-          Ready to{" "}
-          <span className="glow-text-strong">Launch Your Career?</span>
+          Your Next Interview{" "}
+          <span className="glow-text-strong">Starts Here</span>
         </h2>
 
-        {/* Supporting text */}
+        {/* Supporting text — specific value, not vague promises */}
         <p className="text-lg sm:text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
-          Join thousands of professionals who use JobPilot AI to land interviews
-          faster, write better resumes, and walk into every opportunity fully prepared.
+          10 AI tools. One platform. Upload your resume, and in under 60 seconds
+          you&apos;ll know exactly what to fix, what to say, and where to apply.
         </p>
 
         {/* CTA Buttons */}

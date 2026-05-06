@@ -199,7 +199,7 @@ export default function SettingsPage() {
               </span>
               <p className="text-text-secondary text-sm mt-3">
                 {userPlan?.plan === "pro"
-                  ? "100 AI calls per month, all 8 tools unlocked."
+                  ? "100 AI calls per month, all 10 tools unlocked."
                   : "3 AI calls per month, 2 tools included."}
               </p>
             </div>

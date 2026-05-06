@@ -413,7 +413,7 @@ export async function POST(req: NextRequest) {
     if (user.plan === "free" && !FREE_ACTIONS.includes(action)) {
       return NextResponse.json(
         {
-          error: "This feature is available on the Pro plan. Upgrade to unlock all 8 AI tools.",
+          error: "This feature is available on the Pro plan. Upgrade to unlock all 10 AI tools.",
           upgradeRequired: true,
         },
         { status: 403 }

@@ -139,8 +139,8 @@ export default function Features() {
             <span className="glow-text">Land the Job</span>
           </h2>
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            Eight powerful AI tools working together to supercharge your job search
-            from start to finish.
+            Ten AI-powered tools working together to take you from application
+            to interview — all in one platform.
           </p>
         </div>
 

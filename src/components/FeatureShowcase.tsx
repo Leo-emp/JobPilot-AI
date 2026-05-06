@@ -481,7 +481,7 @@ export default function FeatureShowcase() {
         {/* ---- Bottom CTA ---- */}
         <div className="mt-24 sm:mt-32 text-center">
           <p className="text-text-secondary text-lg mb-6">
-            All eight tools. One platform. Zero guesswork.
+            All ten tools. One platform. Zero guesswork.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Start Optimizing for Free

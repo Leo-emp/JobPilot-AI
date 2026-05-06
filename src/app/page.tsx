@@ -6,7 +6,7 @@
    1. StarField (animated background — behind everything)
    2. Navbar (sticky top navigation)
    3. Hero (main headline + CTA)
-   4. Features (6 feature cards)
+   4. Features (8 feature cards)
    5. HowItWorks (3-step guide)
    6. Testimonials (social proof)
    7. Pricing (3-tier plans)

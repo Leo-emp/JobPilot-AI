@@ -6,11 +6,12 @@
    Shows numbers that make visitors feel the product is proven.
    ============================================================ */
 
+/* Honest, differentiating stats — no fabricated user numbers */
 const stats = [
-  { value: "10,000+", label: "Resumes Optimized" },
-  { value: "95%", label: "ATS Pass Rate" },
-  { value: "8", label: "AI-Powered Tools" },
-  { value: "30s", label: "Average Generation Time" },
+  { value: "10", label: "AI-Powered Tools" },
+  { value: "1", label: "Platform, Everything Built In" },
+  { value: "<30s", label: "Per AI Generation" },
+  { value: "$0", label: "To Start — Free Plan Included" },
 ];
 
 export default function TrustBar() {
