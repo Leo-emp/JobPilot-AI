@@ -127,6 +127,7 @@ CRITICAL RULES:
 - If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
 - Prioritize bullets by impact: lead with the most impressive achievement for each role
 - Mirror the job description's language — if they say "stakeholder management", use that exact phrase, not a synonym
+- NEVER claim the candidate already holds the target job title — state their ACTUAL current role and frame relevant experience as qualification for the target role
 
 WRITING QUALITY STANDARDS:
 - Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
@@ -137,7 +138,7 @@ WRITING QUALITY STANDARDS:
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences — open with years of experience + core expertise, mention the target role/industry, close with a standout achievement or unique value)
+2. ## Professional Summary (3-4 sentences — state their ACTUAL current role/title first, then explain why their experience makes them a strong fit for the target role. NEVER claim they already hold the target job title. If they're transitioning, frame it as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill, Skill
@@ -170,6 +171,7 @@ CRITICAL RULES:
 - If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
 - Prioritize bullets by impact: lead with the most impressive achievement for each role
 - Mirror the job description's language — if they say "stakeholder management", use that exact phrase, not a synonym
+- NEVER claim the candidate already holds the target job title — state their ACTUAL current role and frame relevant experience as qualification for the target role
 
 WRITING QUALITY STANDARDS:
 - Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
@@ -180,7 +182,7 @@ WRITING QUALITY STANDARDS:
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences — open with years of experience + core expertise, mention the target role/industry, close with a standout achievement or unique value)
+2. ## Professional Summary (3-4 sentences — state their ACTUAL current role/title first, then explain why their experience makes them a strong fit for the target role. NEVER claim they already hold the target job title. If they're transitioning, frame it as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill, Skill
@@ -295,7 +297,7 @@ STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
 2. ## Professional Summary
-   Address the career change directly — 3-4 sentences showing how their background uniquely positions them for the target role. Mention specific transferable strengths.
+   State their ACTUAL current role/title first, then address the career change — 3-4 sentences showing how their background uniquely positions them for the target role. NEVER claim they already hold the target title. Frame it as "seeking to transition" or "leveraging X experience into Y role". Mention specific transferable strengths.
 3. ## Core Skills
    Bullet points grouped by category:
    - **Transferable Skills:** Skills that directly map to the target role
