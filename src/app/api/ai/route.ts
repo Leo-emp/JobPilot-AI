@@ -130,13 +130,18 @@ STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
 2. ## Professional Summary (3-4 sentences tailored to the target role)
-3. ## Work Experience
+3. ## Core Skills
+   List as bullet points grouped by category, e.g.:
+   - **Strategy & Operations:** Market Research, Strategic Planning, Business Development
+   - **Marketing & Sales:** Campaign Management, Lead Generation, CRM
+   - **Technical:** Python, SQL, Google Analytics, Microsoft Office
+   (Group into 3-5 categories with 3-6 skills each)
+4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Then 4-6 bullet points starting with power verbs
-4. ## Education
+5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
-5. ## Certifications and Trainings (if applicable, list each with institution and date)
-6. ## Core Skills (comma-separated list matching the job)
+6. ## Certifications and Trainings (if applicable, list each with institution and date)
 7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
 
 Return the COMPLETE optimized resume in clean markdown format.
@@ -161,18 +166,22 @@ STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
 2. ## Professional Summary (3-4 sentences tailored to the target role)
-3. ## Work Experience
+3. ## Core Skills
+   List as bullet points grouped by category, e.g.:
+   - **Strategy & Operations:** Market Research, Strategic Planning, Business Development
+   - **Marketing & Sales:** Campaign Management, Lead Generation, CRM
+   - **Technical:** Python, SQL, Google Analytics, Microsoft Office
+   (Group into 3-5 categories with 3-6 skills each)
+4. ## Work Experience
    For EACH role use this exact format:
    ### Job Title, Company, Location — Dates
    - Bullet point with power verb
    - Bullet point with power verb
    (4-6 bullets per role)
-4. ## Education
+5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
-5. ## Certifications and Trainings
+6. ## Certifications and Trainings
    List each certification/training with institution and date
-6. ## Core Skills
-   Comma-separated list of relevant skills matching the job
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
@@ -271,18 +280,22 @@ STRUCTURE (follow this EXACT order):
    Contact info on one line: Location • Phone • Email • LinkedIn
 2. ## Professional Summary
    Address the career change directly — 3-4 sentences showing how their background uniquely positions them for the target role
-3. ## Work Experience
+3. ## Core Skills
+   List as bullet points grouped by category, e.g.:
+   - **Transferable Skills:** Project Management, Stakeholder Communication, Data Analysis
+   - **Target Industry:** Skills relevant to the new field
+   - **Technical:** Tools and technologies
+   (Group into 3-5 categories with 3-6 skills each)
+4. ## Work Experience
    For EACH role use this exact format:
    ### Job Title, Company, Location — Dates
    - Bullet reframed for the target industry
    - Emphasize transferable skills relevant to the new field
    (4-6 bullets per role)
-4. ## Education
+5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
-5. ## Certifications and Trainings
+6. ## Certifications and Trainings
    List each certification/training with institution and date
-6. ## Core Skills
-   Comma-separated transferable skills mapped to the target role
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
