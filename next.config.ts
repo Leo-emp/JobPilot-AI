@@ -3,9 +3,13 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* Fix Turbopack workspace root detection */
-  /* Without this, Turbopack picks up a parent lockfile and breaks @/ alias resolution */
   turbopack: {
     root: path.resolve(__dirname),
+  },
+  /* Server-side env vars — ensures they're available in serverless functions */
+  env: {
+    ADZUNA_APP_ID: process.env.ADZUNA_APP_ID || "7b4cb6f0",
+    ADZUNA_APP_KEY: process.env.ADZUNA_APP_KEY || "1be0aacd17c737b3d2b818bff1a0d8ad",
   },
 };
 
