@@ -23,6 +23,7 @@ import FeatureShowcase from "@/components/FeatureShowcase";
 import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
 import Pricing from "@/components/Pricing";
+import EcosystemShowcase from "@/components/EcosystemShowcase";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 
@@ -39,6 +40,7 @@ export default function Home() {
         <TrustBar />
         <Features />
         <FeatureShowcase />
+        <EcosystemShowcase />
         <HowItWorks />
         <Testimonials />
         <Pricing />
