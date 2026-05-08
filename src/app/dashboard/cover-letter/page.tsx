@@ -177,7 +177,7 @@ export default function CoverLetterPage() {
   };
 
   /* Check if form is ready to generate */
-  const canGenerate = (resumeText || "").trim() && (jobTitle || "").trim() && (company || "").trim() && (jobDescription || "").trim() && !loading;
+  const canGenerate = String(resumeText).trim() && String(jobTitle).trim() && String(company).trim() && String(jobDescription).trim() && !loading;
 
   return (
     <div>

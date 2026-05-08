@@ -631,7 +631,7 @@ export default function TemplatesPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const canPreview = (formData.fullName || "").trim() && ((formData.summary || "").trim() || (formData.experience || "").trim());
+  const canPreview = String(formData.fullName).trim() && (String(formData.summary).trim() || String(formData.experience).trim());
 
   /* ---- PDF Download ---- */
   const downloadPDF = async () => {
