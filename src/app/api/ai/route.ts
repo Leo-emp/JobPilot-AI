@@ -491,12 +491,18 @@ export async function POST(req: NextRequest) {
     }
 
     /* ---- Feature Gating ---- */
-    /* Free users can only access Resume Analysis and Job Match */
-    const FREE_ACTIONS = ["analyze_resume", "match_score"];
+    /* Free users can access core tools; Pro unlocks advanced features */
+    const FREE_ACTIONS = [
+      "analyze_resume",
+      "match_score",
+      "cover_letter",
+      "optimize_resume",
+      "interview_questions",
+    ];
     if (user.plan === "free" && !FREE_ACTIONS.includes(action)) {
       return NextResponse.json(
         {
-          error: "This feature is available on the Pro plan. Upgrade to unlock all 10 AI tools.",
+          error: "This feature is available on the Pro plan. Upgrade to unlock all AI tools.",
           upgradeRequired: true,
         },
         { status: 403 }
