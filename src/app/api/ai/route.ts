@@ -478,36 +478,9 @@ export async function POST(req: NextRequest) {
       user.aiUsageCount = 0;
     }
 
-    /* Check if user has exceeded their plan limit */
-    const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
-    if (user.aiUsageCount >= limit) {
-      return NextResponse.json(
-        {
-          error: `You've used all ${limit} AI calls for this month. Upgrade to Pro for more.`,
-          limitReached: true,
-        },
-        { status: 429 }
-      );
-    }
-
-    /* ---- Feature Gating ---- */
-    /* Free users can access core tools; Pro unlocks advanced features */
-    const FREE_ACTIONS = [
-      "analyze_resume",
-      "match_score",
-      "cover_letter",
-      "optimize_resume",
-      "interview_questions",
-    ];
-    if (user.plan === "free" && !FREE_ACTIONS.includes(action)) {
-      return NextResponse.json(
-        {
-          error: "This feature is available on the Pro plan. Upgrade to unlock all AI tools.",
-          upgradeRequired: true,
-        },
-        { status: 403 }
-      );
-    }
+    /* ---- Usage & Feature Gating DISABLED for testing ---- */
+    /* TODO: Re-enable limits and feature gating after testing */
+    /* All users can access all tools with no call limits */
 
     /* Build the prompt and call Gemini */
     const prompt = buildPrompt(action, payload);
@@ -520,9 +493,8 @@ export async function POST(req: NextRequest) {
       data: { aiUsageCount: { increment: 1 } },
     });
 
-    /* Return the result along with remaining usage info */
-    const remaining = limit - user.aiUsageCount - 1;
-    return NextResponse.json({ result, remaining });
+    /* Return the result — unlimited during testing */
+    return NextResponse.json({ result, remaining: "unlimited" });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "AI request failed.";
     return NextResponse.json({ error: message }, { status: 500 });
