@@ -313,8 +313,7 @@ WRITING QUALITY STANDARDS:
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary
-   State their ACTUAL current role/title first, then address the career change — 3-4 sentences showing how their background uniquely positions them for the target role. NEVER claim they already hold the target title. Frame it as "seeking to transition" or "leveraging X experience into Y role". Mention specific transferable strengths.
+2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly adaptable Business Operations Executive seeking to transition..." or "Resourceful Marketing Specialist with transferable expertise in...". Then show how their background uniquely positions them for the target role. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target title. Mention specific transferable strengths.)
 3. ## Core Skills
    Bullet points grouped by category:
    - **Transferable Skills:** Skills that directly map to the target role

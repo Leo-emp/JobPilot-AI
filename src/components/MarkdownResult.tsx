@@ -104,8 +104,6 @@ function parseMarkdown(md: string): string {
 }
 
 /* ---- Professional download styles for PDF/Word exports ---- */
-/* Matches the standard resume layout: bold name, contact with pipes, */
-/* uppercase section headers with underlines, structured entries */
 const DOWNLOAD_STYLES = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.55; font-size: 14px; }
@@ -123,8 +121,6 @@ const DOWNLOAD_STYLES = `
 `;
 
 /* ---- Convert markdown to structured HTML for downloads ---- */
-/* Properly wraps consecutive <li> elements in <ul> tags and */
-/* converts contact-line paragraphs (with bullet separators) */
 function markdownToDownloadHTML(md: string): string {
   const lines = md.split("\n");
   const htmlParts: string[] = [];
@@ -133,13 +129,11 @@ function markdownToDownloadHTML(md: string): string {
   for (const line of lines) {
     const trimmed = line.trim();
 
-    /* Empty line — close any open list, add spacing */
     if (!trimmed) {
       if (inList) { htmlParts.push("</ul>"); inList = false; }
       continue;
     }
 
-    /* Headings */
     if (trimmed.startsWith("### ")) {
       if (inList) { htmlParts.push("</ul>"); inList = false; }
       htmlParts.push(`<h3>${trimmed.slice(4).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</h3>`);
@@ -156,14 +150,12 @@ function markdownToDownloadHTML(md: string): string {
       continue;
     }
 
-    /* Horizontal rules */
     if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
       if (inList) { htmlParts.push("</ul>"); inList = false; }
       htmlParts.push("<hr>");
       continue;
     }
 
-    /* List items — wrap in <ul> */
     if (/^[-*•] /.test(trimmed)) {
       if (!inList) { htmlParts.push("<ul>"); inList = true; }
       const content = trimmed.replace(/^[-*•] /, "")
@@ -173,7 +165,6 @@ function markdownToDownloadHTML(md: string): string {
       continue;
     }
 
-    /* Numbered list items */
     if (/^\d+\. /.test(trimmed)) {
       if (!inList) { htmlParts.push("<ul>"); inList = true; }
       const content = trimmed.replace(/^\d+\. /, "")
@@ -182,7 +173,6 @@ function markdownToDownloadHTML(md: string): string {
       continue;
     }
 
-    /* Regular paragraphs */
     if (inList) { htmlParts.push("</ul>"); inList = false; }
     const content = trimmed
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
@@ -192,6 +182,68 @@ function markdownToDownloadHTML(md: string): string {
 
   if (inList) htmlParts.push("</ul>");
   return htmlParts.join("\n");
+}
+
+/* ---- Render a line with inline **bold** to jsPDF ---- */
+/* Splits text at bold markers, switches font, measures width, positions each segment */
+interface JsPDFDoc {
+  setFontSize: (size: number) => void;
+  setFont: (name: string, style: string) => void;
+  setTextColor: (r: number, g: number, b: number) => void;
+  setDrawColor: (r: number, g: number, b: number) => void;
+  setLineWidth: (width: number) => void;
+  getTextWidth: (text: string) => number;
+  text: (text: string | string[], x: number, y: number) => void;
+  line: (x1: number, y1: number, x2: number, y2: number) => void;
+  splitTextToSize: (text: string, maxWidth: number) => string[];
+  addPage: () => void;
+  save: (filename: string) => void;
+  internal: { pageSize: { getWidth: () => number; getHeight: () => number } };
+}
+
+/* Render text with **bold** segments inline on one line */
+function renderBoldLine(doc: JsPDFDoc, text: string, x: number, y: number, baseFontSize: number, baseStyle: string) {
+  /* Split by **bold** markers, keeping the markers as separate segments */
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  let cx = x;
+  for (const part of parts) {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      const bold = part.slice(2, -2);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(baseFontSize);
+      doc.text(bold, cx, y);
+      cx += doc.getTextWidth(bold);
+    } else {
+      doc.setFont("helvetica", baseStyle);
+      doc.setFontSize(baseFontSize);
+      doc.text(part, cx, y);
+      cx += doc.getTextWidth(part);
+    }
+  }
+}
+
+/* Render wrapped text (potentially multi-line) with bold support, return new Y */
+function renderWrappedText(doc: JsPDFDoc, text: string, x: number, y: number, maxWidth: number, fontSize: number, lineHeight: number, pageHeight: number, margin: number): number {
+  /* Strip bold markers for wrapping calculation */
+  const plain = text.replace(/\*\*/g, "");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(fontSize);
+  const wrapped = doc.splitTextToSize(plain, maxWidth);
+
+  for (let i = 0; i < wrapped.length; i++) {
+    if (y > pageHeight - margin) {
+      doc.addPage();
+      y = margin;
+    }
+    /* First line uses bold rendering if the original had bold markers */
+    if (i === 0 && text.includes("**")) {
+      renderBoldLine(doc, text, x, y, fontSize, "normal");
+    } else {
+      doc.text(wrapped[i], x, y);
+    }
+    y += lineHeight;
+  }
+  return y;
 }
 
 /* ---- Props for the component ---- */
@@ -205,79 +257,133 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
   const [pdfLoading, setPdfLoading] = useState(false);
   const html = parseMarkdown(result);
 
-  /* Download as PDF — uses html2pdf.js from CDN */
-  /* html2canvas REQUIRES the element to be fully visible (opacity:1) to */
-  /* render content. We show a dark overlay so the user doesn't see the */
-  /* render container underneath while html2canvas captures it. */
+  /* Download as PDF — uses jsPDF directly, NO html2canvas */
+  /* Parses markdown and renders text/lines directly to PDF — guaranteed content */
   const downloadPDF = async () => {
     setPdfLoading(true);
-    const overlay = document.createElement("div");
-    const container = document.createElement("div");
     try {
-      /* Load html2pdf.js from CDN if not already loaded */
-      if (!(window as unknown as Record<string, unknown>).html2pdf) {
+      /* Load jsPDF from CDN if not already loaded */
+      if (!(window as unknown as Record<string, unknown>).jspdf) {
         await new Promise<void>((resolve, reject) => {
           const script = document.createElement("script");
-          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js";
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js";
           script.onload = () => resolve();
           script.onerror = () => reject(new Error("Failed to load PDF library"));
           document.head.appendChild(script);
         });
       }
 
-      /* Dark overlay covers the screen so user doesn't see the render container */
-      overlay.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;";
-      overlay.innerHTML = '<div style="color:white;font-size:16px;font-family:system-ui,sans-serif;">Generating PDF…</div>';
-      document.body.appendChild(overlay);
+      /* Create PDF document */
+      const jspdfModule = (window as unknown as Record<string, unknown>).jspdf as Record<string, new (opts: Record<string, string>) => JsPDFDoc>;
+      const doc = new jspdfModule.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
-      /* Build HTML content for PDF */
-      const downloadHTML = markdownToDownloadHTML(result);
-      container.innerHTML = downloadHTML;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - 2 * margin;
+      let y = margin;
+      const lineSpacing = 5;
 
-      /* Apply download styles */
-      const styleEl = document.createElement("style");
-      styleEl.textContent = DOWNLOAD_STYLES;
-      container.prepend(styleEl);
+      const lines = result.split("\n");
 
-      /* Container is FULLY VISIBLE — html2canvas needs this to capture content. */
-      /* It sits behind the overlay (z-index 99999 < 100000) so the user only */
-      /* sees the "Generating PDF..." overlay, not the raw HTML. */
-      container.style.position = "fixed";
-      container.style.top = "0";
-      container.style.left = "0";
-      container.style.width = "800px";
-      container.style.zIndex = "99999";
-      container.style.background = "white";
-      container.style.padding = "40px";
-      container.style.fontFamily = "'Calibri', 'Segoe UI', Arial, sans-serif";
-      container.style.color = "#1a1a1a";
-      container.style.lineHeight = "1.55";
-      container.style.fontSize = "14px";
-      document.body.appendChild(container);
+      for (const line of lines) {
+        const trimmed = line.trim();
 
-      /* Let the browser paint the container before html2canvas captures it */
-      await new Promise(r => setTimeout(r, 300));
+        /* Empty line — small gap */
+        if (!trimmed) { y += 3; continue; }
 
-      /* Generate and save PDF */
-      const html2pdf = (window as unknown as Record<string, unknown>).html2pdf as CallableFunction;
-      await html2pdf()
-        .set({
-          margin: [10, 10, 10, 10],
-          filename: "resume-jobpilot.pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        })
-        .from(container)
-        .save();
+        /* Page break check */
+        if (y > pageHeight - margin - 10) {
+          doc.addPage();
+          y = margin;
+        }
 
-      document.body.removeChild(container);
-      document.body.removeChild(overlay);
+        /* --- Headings --- */
+        if (trimmed.startsWith("# ") && !trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
+          const text = trimmed.slice(2).replace(/\*\*/g, "");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(22);
+          doc.setTextColor(17, 17, 17);
+          doc.text(text, margin, y);
+          y += 9;
+          continue;
+        }
+
+        if (trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
+          const text = trimmed.slice(3).replace(/\*\*/g, "").toUpperCase();
+          y += 5;
+          if (y > pageHeight - margin - 10) { doc.addPage(); y = margin; }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+          doc.setTextColor(17, 17, 17);
+          doc.text(text, margin, y);
+          y += 1.5;
+          doc.setDrawColor(17, 17, 17);
+          doc.setLineWidth(0.4);
+          doc.line(margin, y, margin + contentWidth, y);
+          y += 5;
+          continue;
+        }
+
+        if (trimmed.startsWith("### ")) {
+          const text = trimmed.slice(4).replace(/\*\*/g, "");
+          y += 3;
+          if (y > pageHeight - margin - 10) { doc.addPage(); y = margin; }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(17, 17, 17);
+          doc.text(text, margin, y);
+          y += 5;
+          continue;
+        }
+
+        /* --- Horizontal rule --- */
+        if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.3);
+          doc.line(margin, y, margin + contentWidth, y);
+          y += 4;
+          continue;
+        }
+
+        /* --- Bullet list items --- */
+        if (/^[-*•] /.test(trimmed)) {
+          const text = trimmed.replace(/^[-*•] /, "");
+          doc.setFontSize(10.5);
+          doc.setTextColor(51, 51, 51);
+          doc.setFont("helvetica", "normal");
+
+          /* Bullet character */
+          doc.text("•", margin + 2, y);
+
+          /* Wrapped text with bold support */
+          const bulletIndent = 8;
+          y = renderWrappedText(doc, text, margin + bulletIndent, y, contentWidth - bulletIndent, 10.5, lineSpacing, pageHeight, margin);
+          continue;
+        }
+
+        /* --- Numbered list items --- */
+        if (/^\d+\. /.test(trimmed)) {
+          const match = trimmed.match(/^(\d+)\. (.+)/);
+          if (match) {
+            doc.setFontSize(10.5);
+            doc.setTextColor(51, 51, 51);
+            doc.setFont("helvetica", "normal");
+            doc.text(`${match[1]}.`, margin + 1, y);
+            y = renderWrappedText(doc, match[2], margin + 8, y, contentWidth - 8, 10.5, lineSpacing, pageHeight, margin);
+          }
+          continue;
+        }
+
+        /* --- Regular paragraph --- */
+        doc.setTextColor(51, 51, 51);
+        y = renderWrappedText(doc, trimmed, margin, y, contentWidth, 10.5, lineSpacing, pageHeight, margin);
+        y += 1;
+      }
+
+      doc.save("resume-jobpilot.pdf");
     } catch {
-      /* Clean up DOM elements on failure */
-      if (container.parentNode) document.body.removeChild(container);
-      if (overlay.parentNode) document.body.removeChild(overlay);
-      /* Fallback to print dialog */
+      /* Fallback: open print dialog with styled HTML */
       const downloadHTML = markdownToDownloadHTML(result);
       const printWindow = window.open("", "_blank");
       if (printWindow) {
