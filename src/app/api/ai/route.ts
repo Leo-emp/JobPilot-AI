@@ -138,7 +138,7 @@ WRITING QUALITY STANDARDS:
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences — state their ACTUAL current role/title first, then explain why their experience makes them a strong fit for the target role. NEVER claim they already hold the target job title. If they're transitioning, frame it as "seeking to leverage X experience into Y role")
+2. ## Professional Summary (3-4 sentences written in FIRST PERSON — the user talking about themselves. NEVER use the candidate's name. NEVER use third-person pronouns like he/him/his or she/her/hers or they/them. Write as "I am..." / "I have..." / "I bring..." / "Seeking to...". State their ACTUAL current role/title first, then explain why their experience makes them a strong fit for the target role. NEVER claim they already hold the target job title. If they're transitioning, frame it as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill, Skill
@@ -182,7 +182,7 @@ WRITING QUALITY STANDARDS:
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences — state their ACTUAL current role/title first, then explain why their experience makes them a strong fit for the target role. NEVER claim they already hold the target job title. If they're transitioning, frame it as "seeking to leverage X experience into Y role")
+2. ## Professional Summary (3-4 sentences written in FIRST PERSON — the user talking about themselves. NEVER use the candidate's name. NEVER use third-person pronouns like he/him/his or she/her/hers or they/them. Write as "I am..." / "I have..." / "I bring..." / "Seeking to...". State their ACTUAL current role/title first, then explain why their experience makes them a strong fit for the target role. NEVER claim they already hold the target job title. If they're transitioning, frame it as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill, Skill
