@@ -230,10 +230,14 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       styleEl.textContent = DOWNLOAD_STYLES;
       container.prepend(styleEl);
 
-      /* Temporarily add to DOM for rendering */
-      container.style.position = "absolute";
-      container.style.left = "-9999px";
+      /* Must be on-screen for html2canvas to capture — hide visually with opacity */
+      container.style.position = "fixed";
+      container.style.top = "0";
+      container.style.left = "0";
       container.style.width = "800px";
+      container.style.zIndex = "-9999";
+      container.style.opacity = "0";
+      container.style.background = "white";
       document.body.appendChild(container);
 
       /* Generate and save PDF */
@@ -243,7 +247,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           margin: [10, 10, 10, 10],
           filename: "resume-jobpilot.pdf",
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         })
         .from(container)
