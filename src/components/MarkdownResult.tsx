@@ -205,7 +205,10 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
   const [pdfLoading, setPdfLoading] = useState(false);
   const html = parseMarkdown(result);
 
-  /* Download as PDF file — uses html2pdf.js from CDN for direct .pdf download */
+  /* Download as PDF — uses html2pdf.js from CDN */
+  /* html2canvas (used internally) renders transparent content when opacity=0, */
+  /* so we hide the container with opacity:0 but use the onclone callback to */
+  /* set opacity:1 on the CLONE that html2canvas actually captures. */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -223,6 +226,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       /* Build HTML content for PDF */
       const downloadHTML = markdownToDownloadHTML(result);
       const container = document.createElement("div");
+      container.id = "pdf-render";
       container.innerHTML = downloadHTML;
 
       /* Apply download styles */
@@ -230,14 +234,21 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       styleEl.textContent = DOWNLOAD_STYLES;
       container.prepend(styleEl);
 
-      /* Must be on-screen for html2canvas to capture — hide visually with opacity */
+      /* Position on-screen but invisible to the user */
       container.style.position = "fixed";
       container.style.top = "0";
       container.style.left = "0";
       container.style.width = "800px";
-      container.style.zIndex = "-9999";
       container.style.opacity = "0";
+      container.style.pointerEvents = "none";
+      container.style.zIndex = "-9999";
+      /* Body-equivalent styles — DOWNLOAD_STYLES targets <body> but container is a <div> */
       container.style.background = "white";
+      container.style.padding = "40px";
+      container.style.fontFamily = "'Calibri', 'Segoe UI', Arial, sans-serif";
+      container.style.color = "#1a1a1a";
+      container.style.lineHeight = "1.55";
+      container.style.fontSize = "14px";
       document.body.appendChild(container);
 
       /* Generate and save PDF */
@@ -247,7 +258,23 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           margin: [10, 10, 10, 10],
           filename: "resume-jobpilot.pdf",
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            /* KEY FIX: onclone runs after html2canvas clones the element but */
+            /* BEFORE it reads styles for rendering. Setting opacity:1 on the */
+            /* clone makes html2canvas render visible content while the */
+            /* original stays invisible to the user. */
+            onclone: (clonedDoc: Document) => {
+              const el = clonedDoc.getElementById("pdf-render");
+              if (el) {
+                el.style.opacity = "1";
+                el.style.position = "static";
+                el.style.zIndex = "auto";
+              }
+            },
+          },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         })
         .from(container)
