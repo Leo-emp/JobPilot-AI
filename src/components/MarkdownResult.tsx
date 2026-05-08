@@ -206,11 +206,13 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
   const html = parseMarkdown(result);
 
   /* Download as PDF — uses html2pdf.js from CDN */
-  /* html2canvas (used internally) renders transparent content when opacity=0, */
-  /* so we hide the container with opacity:0 but use the onclone callback to */
-  /* set opacity:1 on the CLONE that html2canvas actually captures. */
+  /* html2canvas REQUIRES the element to be fully visible (opacity:1) to */
+  /* render content. We show a dark overlay so the user doesn't see the */
+  /* render container underneath while html2canvas captures it. */
   const downloadPDF = async () => {
     setPdfLoading(true);
+    const overlay = document.createElement("div");
+    const container = document.createElement("div");
     try {
       /* Load html2pdf.js from CDN if not already loaded */
       if (!(window as unknown as Record<string, unknown>).html2pdf) {
@@ -223,10 +225,13 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         });
       }
 
+      /* Dark overlay covers the screen so user doesn't see the render container */
+      overlay.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;";
+      overlay.innerHTML = '<div style="color:white;font-size:16px;font-family:system-ui,sans-serif;">Generating PDF…</div>';
+      document.body.appendChild(overlay);
+
       /* Build HTML content for PDF */
       const downloadHTML = markdownToDownloadHTML(result);
-      const container = document.createElement("div");
-      container.id = "pdf-render";
       container.innerHTML = downloadHTML;
 
       /* Apply download styles */
@@ -234,15 +239,14 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       styleEl.textContent = DOWNLOAD_STYLES;
       container.prepend(styleEl);
 
-      /* Position on-screen but invisible to the user */
+      /* Container is FULLY VISIBLE — html2canvas needs this to capture content. */
+      /* It sits behind the overlay (z-index 99999 < 100000) so the user only */
+      /* sees the "Generating PDF..." overlay, not the raw HTML. */
       container.style.position = "fixed";
       container.style.top = "0";
       container.style.left = "0";
       container.style.width = "800px";
-      container.style.opacity = "0";
-      container.style.pointerEvents = "none";
-      container.style.zIndex = "-9999";
-      /* Body-equivalent styles — DOWNLOAD_STYLES targets <body> but container is a <div> */
+      container.style.zIndex = "99999";
       container.style.background = "white";
       container.style.padding = "40px";
       container.style.fontFamily = "'Calibri', 'Segoe UI', Arial, sans-serif";
@@ -251,6 +255,9 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       container.style.fontSize = "14px";
       document.body.appendChild(container);
 
+      /* Let the browser paint the container before html2canvas captures it */
+      await new Promise(r => setTimeout(r, 300));
+
       /* Generate and save PDF */
       const html2pdf = (window as unknown as Record<string, unknown>).html2pdf as CallableFunction;
       await html2pdf()
@@ -258,30 +265,18 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           margin: [10, 10, 10, 10],
           filename: "resume-jobpilot.pdf",
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            /* KEY FIX: onclone runs after html2canvas clones the element but */
-            /* BEFORE it reads styles for rendering. Setting opacity:1 on the */
-            /* clone makes html2canvas render visible content while the */
-            /* original stays invisible to the user. */
-            onclone: (clonedDoc: Document) => {
-              const el = clonedDoc.getElementById("pdf-render");
-              if (el) {
-                el.style.opacity = "1";
-                el.style.position = "static";
-                el.style.zIndex = "auto";
-              }
-            },
-          },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         })
         .from(container)
         .save();
 
       document.body.removeChild(container);
+      document.body.removeChild(overlay);
     } catch {
+      /* Clean up DOM elements on failure */
+      if (container.parentNode) document.body.removeChild(container);
+      if (overlay.parentNode) document.body.removeChild(overlay);
       /* Fallback to print dialog */
       const downloadHTML = markdownToDownloadHTML(result);
       const printWindow = window.open("", "_blank");
