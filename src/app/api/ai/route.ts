@@ -26,6 +26,7 @@ const GEMINI_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
 ];
 
 /* ---- Call Gemini API with Automatic Fallback ---- */
@@ -54,22 +55,28 @@ async function callGemini(prompt: string): Promise<string> {
         }
       );
 
-      /* If rate limited, try the next model */
-      if (response.status === 429) {
+      /* If rate limited (429) or overloaded (503), try the next model */
+      if (response.status === 429 || response.status === 503) {
         await new Promise((r) => setTimeout(r, 2000));
         continue;
       }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Gemini API error");
+        const msg = errorData.error?.message || "Gemini API error";
+        /* "high demand" / "overloaded" errors — retry with next model */
+        if (msg.toLowerCase().includes("overloaded") || msg.toLowerCase().includes("high demand") || msg.toLowerCase().includes("capacity")) {
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
+        }
+        throw new Error(msg);
       }
 
       const data = await response.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
     } catch (error: unknown) {
-      /* If it's a rate limit issue, try next model */
-      if (error instanceof Error && error.message.includes("429")) {
+      /* If it's a rate limit or overload issue, try next model */
+      if (error instanceof Error && (error.message.includes("429") || error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("high demand"))) {
         await new Promise((r) => setTimeout(r, 2000));
         continue;
       }
