@@ -27,9 +27,9 @@ export default function DashboardError({
           This page encountered an error. Try refreshing or go back to the dashboard.
         </p>
 
-        {/* Show error in dev mode */}
-        {process.env.NODE_ENV === "development" && error.message && (
-          <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6 font-mono">
+        {/* Show error details for debugging */}
+        {error.message && (
+          <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6 font-mono break-all">
             {error.message}
           </p>
         )}
