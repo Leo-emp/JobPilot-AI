@@ -20,6 +20,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
+import * as Sentry from "@sentry/nextjs";
 
 /* ---- Gemini Model Fallback List ---- */
 /* If the primary model hits a rate limit (429), we try the next one */
@@ -576,6 +577,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ result, remaining });
   } catch (error: unknown) {
+    /* Report error to Sentry with context */
+    Sentry.captureException(error, {
+      tags: { component: "ai_route" },
+    });
     const message = error instanceof Error ? error.message : "AI request failed.";
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   /* Fix Turbopack workspace root detection */
@@ -15,4 +16,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  /* Suppress noisy logs during build */
+  silent: true,
+  /* Disable Sentry telemetry */
+  disableLogger: true,
+});

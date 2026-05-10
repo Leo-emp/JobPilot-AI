@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import StarField from "@/components/StarField";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { SessionProvider } from "next-auth/react";
+import PostHogProvider from "@/components/PostHogProvider";
 
 export default async function DashboardLayout({
   children,
@@ -29,6 +30,7 @@ export default async function DashboardLayout({
   return (
     /* SessionProvider makes useSession() available in all child components */
     <SessionProvider session={session}>
+      <PostHogProvider>
       <div className="min-h-screen">
         {/* Star field background (behind everything) */}
         <StarField />
@@ -45,6 +47,7 @@ export default async function DashboardLayout({
           </div>
         </main>
       </div>
+      </PostHogProvider>
     </SessionProvider>
   );
 }
