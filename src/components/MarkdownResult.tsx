@@ -10,6 +10,7 @@
 "use client";
 
 import { useState } from "react";
+import { jsPDF } from "jspdf";
 
 /* ---- Convert a single line of markdown to HTML ---- */
 function processInline(text: string): string {
@@ -184,26 +185,8 @@ function markdownToDownloadHTML(md: string): string {
   return htmlParts.join("\n");
 }
 
-/* ---- Render a line with inline **bold** to jsPDF ---- */
-/* Splits text at bold markers, switches font, measures width, positions each segment */
-interface JsPDFDoc {
-  setFontSize: (size: number) => void;
-  setFont: (name: string, style: string) => void;
-  setTextColor: (r: number, g: number, b: number) => void;
-  setDrawColor: (r: number, g: number, b: number) => void;
-  setLineWidth: (width: number) => void;
-  getTextWidth: (text: string) => number;
-  text: (text: string | string[], x: number, y: number) => void;
-  line: (x1: number, y1: number, x2: number, y2: number) => void;
-  splitTextToSize: (text: string, maxWidth: number) => string[];
-  addPage: () => void;
-  save: (filename: string) => void;
-  internal: { pageSize: { getWidth: () => number; getHeight: () => number } };
-}
-
-/* Render text with **bold** segments inline on one line */
-function renderBoldLine(doc: JsPDFDoc, text: string, x: number, y: number, baseFontSize: number, baseStyle: string) {
-  /* Split by **bold** markers, keeping the markers as separate segments */
+/* ---- Render text with inline **bold** to jsPDF ---- */
+function renderBoldLine(doc: jsPDF, text: string, x: number, y: number, baseFontSize: number, baseStyle: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
   let cx = x;
   for (const part of parts) {
@@ -222,9 +205,8 @@ function renderBoldLine(doc: JsPDFDoc, text: string, x: number, y: number, baseF
   }
 }
 
-/* Render wrapped text (potentially multi-line) with bold support, return new Y */
-function renderWrappedText(doc: JsPDFDoc, text: string, x: number, y: number, maxWidth: number, fontSize: number, lineHeight: number, pageHeight: number, margin: number): number {
-  /* Strip bold markers for wrapping calculation */
+/* Render wrapped text with bold support, returns new Y position */
+function renderWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, fontSize: number, lineHeight: number, pageHeight: number, margin: number): number {
   const plain = text.replace(/\*\*/g, "");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(fontSize);
@@ -235,7 +217,6 @@ function renderWrappedText(doc: JsPDFDoc, text: string, x: number, y: number, ma
       doc.addPage();
       y = margin;
     }
-    /* First line uses bold rendering if the original had bold markers */
     if (i === 0 && text.includes("**")) {
       renderBoldLine(doc, text, x, y, fontSize, "normal");
     } else {
@@ -258,24 +239,10 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
   const html = parseMarkdown(result);
 
   /* Download as PDF — uses jsPDF directly, NO html2canvas */
-  /* Parses markdown and renders text/lines directly to PDF — guaranteed content */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      /* Load jsPDF from CDN if not already loaded */
-      if (!(window as unknown as Record<string, unknown>).jspdf) {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js";
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error("Failed to load PDF library"));
-          document.head.appendChild(script);
-        });
-      }
-
-      /* Create PDF document */
-      const jspdfModule = (window as unknown as Record<string, unknown>).jspdf as Record<string, new (opts: Record<string, string>) => JsPDFDoc>;
-      const doc = new jspdfModule.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
