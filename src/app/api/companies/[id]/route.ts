@@ -23,15 +23,6 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  /* Verify ownership */
-  const existing = await prisma.company.findFirst({
-    where: { id, userId: session.user.id },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Company not found." }, { status: 404 });
-  }
-
   /* Build update data — only include fields that were sent */
   const updateData: Record<string, unknown> = {};
   if (body.name !== undefined) updateData.name = body.name;
@@ -43,9 +34,18 @@ export async function PATCH(
   if (body.priority !== undefined) updateData.priority = body.priority;
   if (body.status !== undefined) updateData.status = body.status;
 
-  const company = await prisma.company.update({
-    where: { id },
+  /* Update only if this company belongs to the logged-in user */
+  const result = await prisma.company.updateMany({
+    where: { id, userId: session.user.id },
     data: updateData,
+  });
+
+  if (result.count === 0) {
+    return NextResponse.json({ error: "Company not found." }, { status: 404 });
+  }
+
+  const company = await prisma.company.findFirst({
+    where: { id, userId: session.user.id },
   });
 
   return NextResponse.json(company);
@@ -63,16 +63,14 @@ export async function DELETE(
 
   const { id } = await params;
 
-  /* Verify ownership */
-  const existing = await prisma.company.findFirst({
+  /* Delete only if this company belongs to the logged-in user */
+  const result = await prisma.company.deleteMany({
     where: { id, userId: session.user.id },
   });
 
-  if (!existing) {
+  if (result.count === 0) {
     return NextResponse.json({ error: "Company not found." }, { status: 404 });
   }
-
-  await prisma.company.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }

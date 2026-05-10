@@ -23,15 +23,6 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  /* Verify ownership — only update your own contacts */
-  const existing = await prisma.contact.findFirst({
-    where: { id, userId: session.user.id },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Contact not found." }, { status: 404 });
-  }
-
   /* Build update data — only include fields that were sent */
   const updateData: Record<string, unknown> = {};
   if (body.name !== undefined) updateData.name = body.name;
@@ -49,9 +40,18 @@ export async function PATCH(
     updateData.nextFollowUp = body.nextFollowUp ? new Date(body.nextFollowUp) : null;
   }
 
-  const contact = await prisma.contact.update({
-    where: { id },
+  /* Update only if this contact belongs to the logged-in user */
+  const result = await prisma.contact.updateMany({
+    where: { id, userId: session.user.id },
     data: updateData,
+  });
+
+  if (result.count === 0) {
+    return NextResponse.json({ error: "Contact not found." }, { status: 404 });
+  }
+
+  const contact = await prisma.contact.findFirst({
+    where: { id, userId: session.user.id },
   });
 
   return NextResponse.json(contact);
@@ -69,16 +69,14 @@ export async function DELETE(
 
   const { id } = await params;
 
-  /* Verify ownership */
-  const existing = await prisma.contact.findFirst({
+  /* Delete only if this contact belongs to the logged-in user */
+  const result = await prisma.contact.deleteMany({
     where: { id, userId: session.user.id },
   });
 
-  if (!existing) {
+  if (result.count === 0) {
     return NextResponse.json({ error: "Contact not found." }, { status: 404 });
   }
-
-  await prisma.contact.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }

@@ -23,22 +23,23 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  /* Only allow updating applications that belong to the logged-in user */
-  const existing = await prisma.application.findFirst({
+  /* Update only if this application belongs to the logged-in user */
+  const result = await prisma.application.updateMany({
     where: { id, userId: session.user.id },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  const updated = await prisma.application.update({
-    where: { id },
     data: {
       ...(body.status && { status: body.status }),
       ...(body.notes !== undefined && { notes: body.notes }),
       ...(body.status === "Applied" && { appliedDate: new Date() }),
     },
+  });
+
+  if (result.count === 0) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  /* Return the updated record */
+  const updated = await prisma.application.findFirst({
+    where: { id, userId: session.user.id },
   });
 
   return NextResponse.json(updated);
@@ -56,16 +57,14 @@ export async function DELETE(
 
   const { id } = await params;
 
-  /* Only allow deleting applications that belong to the logged-in user */
-  const existing = await prisma.application.findFirst({
+  /* Delete only if this application belongs to the logged-in user */
+  const result = await prisma.application.deleteMany({
     where: { id, userId: session.user.id },
   });
 
-  if (!existing) {
+  if (result.count === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-
-  await prisma.application.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }
