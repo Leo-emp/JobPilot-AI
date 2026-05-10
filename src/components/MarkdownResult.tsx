@@ -12,9 +12,22 @@
 import { useState } from "react";
 import { jsPDF } from "jspdf";
 
+/* ---- Escape HTML to prevent XSS ---- */
+/* Strips any raw HTML tags from AI output before we add our own safe markup */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /* ---- Convert a single line of markdown to HTML ---- */
 function processInline(text: string): string {
-  return text
+  /* Escape raw HTML first, then apply markdown formatting */
+  const safe = escapeHtml(text);
+  return safe
     /* Bold: **text** */
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
     /* Italic: *text* (but not inside bold) */

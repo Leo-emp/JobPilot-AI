@@ -72,6 +72,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   /* ---- Session Strategy ---- */
   session: {
     strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60, /* 7 days — session expires after 1 week of inactivity */
+    updateAge: 24 * 60 * 60,  /* Refresh the token every 24 hours */
+  },
+
+  /* ---- Cookie Security ---- */
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token",
+      options: {
+        httpOnly: true,   /* JS cannot read the cookie — prevents XSS token theft */
+        sameSite: "lax",  /* Prevents CSRF from cross-origin requests */
+        path: "/",
+        secure: process.env.NODE_ENV === "production", /* HTTPS only in production */
+      },
+    },
   },
 
   /* ---- Callbacks ---- */
@@ -142,6 +157,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
@@ -150,6 +166,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
       }
       return session;
     },
