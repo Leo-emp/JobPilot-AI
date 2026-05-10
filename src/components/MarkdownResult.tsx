@@ -240,6 +240,14 @@ function renderWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWi
   return y;
 }
 
+/* ---- Strip markdown code fences that Gemini sometimes wraps responses in ---- */
+function stripCodeFences(text: string): string {
+  return text
+    .replace(/^```(?:markdown|md|text)?\s*\n?/i, "")
+    .replace(/\n?```\s*$/i, "")
+    .trim();
+}
+
 /* ---- Props for the component ---- */
 interface MarkdownResultProps {
   result: string;
@@ -249,7 +257,8 @@ interface MarkdownResultProps {
 /* ---- Main Component ---- */
 export default function MarkdownResult({ result, showDownload = true }: MarkdownResultProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
-  const html = parseMarkdown(result);
+  const cleaned = stripCodeFences(result);
+  const html = parseMarkdown(cleaned);
 
   /* Download as PDF — uses jsPDF directly, NO html2canvas */
   const downloadPDF = async () => {
@@ -259,69 +268,92 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
 
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20;
-      const contentWidth = pageWidth - 2 * margin;
-      let y = margin;
-      const lineSpacing = 5;
+      const marginX = 18;
+      const marginTop = 20;
+      const marginBottom = 18;
+      const contentWidth = pageWidth - 2 * marginX;
+      let y = marginTop;
+      const bodyLineHeight = 4.8;
+      let isFirstHeading = true;
 
-      const lines = result.split("\n");
+      const lines = cleaned.split("\n");
 
       for (const line of lines) {
         const trimmed = line.trim();
 
+        /* Skip code fences that might remain */
+        if (/^```/.test(trimmed)) continue;
+
         /* Empty line — small gap */
-        if (!trimmed) { y += 3; continue; }
+        if (!trimmed) { y += 2; continue; }
 
         /* Page break check */
-        if (y > pageHeight - margin - 10) {
+        if (y > pageHeight - marginBottom - 8) {
           doc.addPage();
-          y = margin;
+          y = marginTop;
         }
 
-        /* --- Headings --- */
+        /* --- H1: Name --- */
         if (trimmed.startsWith("# ") && !trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
           const text = trimmed.slice(2).replace(/\*\*/g, "");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(22);
+          doc.setFontSize(isFirstHeading ? 24 : 18);
           doc.setTextColor(17, 17, 17);
-          doc.text(text, margin, y);
-          y += 9;
+          if (isFirstHeading) {
+            doc.text(text, pageWidth / 2, y, { align: "center" });
+            isFirstHeading = false;
+          } else {
+            doc.text(text, marginX, y);
+          }
+          y += 8;
           continue;
         }
 
+        /* --- H2: Section headers --- */
         if (trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
           const text = trimmed.slice(3).replace(/\*\*/g, "").toUpperCase();
-          y += 5;
-          if (y > pageHeight - margin - 10) { doc.addPage(); y = margin; }
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(12);
-          doc.setTextColor(17, 17, 17);
-          doc.text(text, margin, y);
-          y += 1.5;
-          doc.setDrawColor(17, 17, 17);
-          doc.setLineWidth(0.4);
-          doc.line(margin, y, margin + contentWidth, y);
-          y += 5;
-          continue;
-        }
-
-        if (trimmed.startsWith("### ")) {
-          const text = trimmed.slice(4).replace(/\*\*/g, "");
-          y += 3;
-          if (y > pageHeight - margin - 10) { doc.addPage(); y = margin; }
+          y += 4;
+          if (y > pageHeight - marginBottom - 8) { doc.addPage(); y = marginTop; }
           doc.setFont("helvetica", "bold");
           doc.setFontSize(11);
           doc.setTextColor(17, 17, 17);
-          doc.text(text, margin, y);
-          y += 5;
+          doc.text(text, marginX, y);
+          y += 1.2;
+          doc.setDrawColor(50, 50, 50);
+          doc.setLineWidth(0.5);
+          doc.line(marginX, y, marginX + contentWidth, y);
+          y += 4.5;
+          continue;
+        }
+
+        /* --- H3: Job titles / subsections --- */
+        if (trimmed.startsWith("### ")) {
+          const text = trimmed.slice(4).replace(/\*\*/g, "");
+          y += 2;
+          if (y > pageHeight - marginBottom - 8) { doc.addPage(); y = marginTop; }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.5);
+          doc.setTextColor(17, 17, 17);
+          doc.text(text, marginX, y);
+          y += 4.5;
           continue;
         }
 
         /* --- Horizontal rule --- */
         if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
-          doc.setDrawColor(200, 200, 200);
-          doc.setLineWidth(0.3);
-          doc.line(margin, y, margin + contentWidth, y);
+          doc.setDrawColor(180, 180, 180);
+          doc.setLineWidth(0.2);
+          doc.line(marginX, y, marginX + contentWidth, y);
+          y += 3;
+          continue;
+        }
+
+        /* --- Contact line detection (contains • or | separators) --- */
+        if (!trimmed.startsWith("-") && !trimmed.startsWith("*") && (trimmed.includes("•") || trimmed.includes("|")) && trimmed.includes("@")) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9.5);
+          doc.setTextColor(80, 80, 80);
+          doc.text(trimmed.replace(/\*\*/g, ""), pageWidth / 2, y, { align: "center" });
           y += 4;
           continue;
         }
@@ -329,16 +361,14 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         /* --- Bullet list items --- */
         if (/^[-*•] /.test(trimmed)) {
           const text = trimmed.replace(/^[-*•] /, "");
-          doc.setFontSize(10.5);
-          doc.setTextColor(51, 51, 51);
+          doc.setFontSize(10);
+          doc.setTextColor(40, 40, 40);
           doc.setFont("helvetica", "normal");
 
-          /* Bullet character */
-          doc.text("•", margin + 2, y);
+          doc.text("•", marginX + 2, y);
 
-          /* Wrapped text with bold support */
-          const bulletIndent = 8;
-          y = renderWrappedText(doc, text, margin + bulletIndent, y, contentWidth - bulletIndent, 10.5, lineSpacing, pageHeight, margin);
+          const bulletIndent = 7;
+          y = renderWrappedText(doc, text, marginX + bulletIndent, y, contentWidth - bulletIndent, 10, bodyLineHeight, pageHeight, marginTop);
           continue;
         }
 
@@ -346,25 +376,25 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         if (/^\d+\. /.test(trimmed)) {
           const match = trimmed.match(/^(\d+)\. (.+)/);
           if (match) {
-            doc.setFontSize(10.5);
-            doc.setTextColor(51, 51, 51);
+            doc.setFontSize(10);
+            doc.setTextColor(40, 40, 40);
             doc.setFont("helvetica", "normal");
-            doc.text(`${match[1]}.`, margin + 1, y);
-            y = renderWrappedText(doc, match[2], margin + 8, y, contentWidth - 8, 10.5, lineSpacing, pageHeight, margin);
+            doc.text(`${match[1]}.`, marginX + 1, y);
+            y = renderWrappedText(doc, match[2], marginX + 7, y, contentWidth - 7, 10, bodyLineHeight, pageHeight, marginTop);
           }
           continue;
         }
 
         /* --- Regular paragraph --- */
-        doc.setTextColor(51, 51, 51);
-        y = renderWrappedText(doc, trimmed, margin, y, contentWidth, 10.5, lineSpacing, pageHeight, margin);
-        y += 1;
+        doc.setTextColor(40, 40, 40);
+        y = renderWrappedText(doc, trimmed, marginX, y, contentWidth, 10, bodyLineHeight, pageHeight, marginTop);
+        y += 0.5;
       }
 
       doc.save("resume-jobpilot.pdf");
     } catch {
       /* Fallback: open print dialog with styled HTML */
-      const downloadHTML = markdownToDownloadHTML(result);
+      const downloadHTML = markdownToDownloadHTML(cleaned);
       const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
@@ -378,7 +408,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
 
   /* Download as Word — creates .doc blob */
   const downloadWord = () => {
-    const downloadHTML = markdownToDownloadHTML(result);
+    const downloadHTML = markdownToDownloadHTML(cleaned);
     const wordContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`;
     const blob = new Blob([wordContent], { type: "application/msword" });
     const url = URL.createObjectURL(blob);
@@ -396,7 +426,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         <h3 className="text-xl font-bold glow-text-subtle">AI Result</h3>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => navigator.clipboard.writeText(result)}
+            onClick={() => navigator.clipboard.writeText(cleaned)}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors"
           >
             Copy Text
