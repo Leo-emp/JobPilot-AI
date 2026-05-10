@@ -1,5 +1,5 @@
 /* ============================================================
-   AUTH MIDDLEWARE - Route Protection & Security Headers
+   AUTH PROXY - Route Protection & Security Headers
    ============================================================
    Runs on every matched request BEFORE the route handler.
    - Redirects unauthenticated users away from /dashboard
@@ -10,7 +10,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   /* Check for session token in cookies */
@@ -52,7 +52,7 @@ export function middleware(req: NextRequest) {
   return response;
 }
 
-/* Only run middleware on dashboard and API routes */
+/* Only run proxy on dashboard and API routes */
 export const config = {
   matcher: ["/dashboard/:path*", "/api/:path*"],
 };
