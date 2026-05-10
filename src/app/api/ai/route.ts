@@ -19,6 +19,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 
 /* ---- Gemini Model Fallback List ---- */
 /* If the primary model hits a rate limit (429), we try the next one */
@@ -444,10 +445,12 @@ function isAdmin(email: string | null | undefined): boolean {
   return admins.includes(email.toLowerCase());
 }
 
-/* ---- Plan Limits ---- */
+/* ---- Monthly Plan Limits ---- */
+/* Free: 10/month — enough to try all features, not enough to abuse */
+/* Pro: 200/month — power users, ~6-7 calls per day */
 const PLAN_LIMITS: Record<string, number> = {
-  free: 3,
-  pro: 100,
+  free: 10,
+  pro: 200,
 };
 
 /* ---- Features available per plan ---- */
@@ -489,6 +492,37 @@ export async function POST(req: NextRequest) {
 
     /* ---- Check admin status ---- */
     const admin = isAdmin(session.user.email);
+
+    /* ---- Burst Rate Limiting (skip for admins) ---- */
+    if (!admin) {
+      /* Per-IP check: 20 requests/min — blocks bots and scrapers */
+      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+      const ipCheck = ipPerMinute.check(ip);
+      if (!ipCheck.allowed) {
+        return NextResponse.json(
+          { error: "Too many requests from this network. Please wait a moment." },
+          { status: 429, headers: { "Retry-After": String(Math.ceil(ipCheck.resetIn / 1000)) } }
+        );
+      }
+
+      /* Per-user per-minute: 6 requests/min — normal use is fine, scripting is blocked */
+      const minuteCheck = userPerMinute.check(session.user.id);
+      if (!minuteCheck.allowed) {
+        return NextResponse.json(
+          { error: "Slow down! You can make 6 AI requests per minute." },
+          { status: 429, headers: { "Retry-After": String(Math.ceil(minuteCheck.resetIn / 1000)) } }
+        );
+      }
+
+      /* Per-user per-hour: 40 requests/hour — prevents sustained abuse */
+      const hourCheck = userPerHour.check(session.user.id);
+      if (!hourCheck.allowed) {
+        return NextResponse.json(
+          { error: "You've hit the hourly limit (40 requests). Take a break and come back shortly." },
+          { status: 429, headers: { "Retry-After": String(Math.ceil(hourCheck.resetIn / 1000)) } }
+        );
+      }
+    }
 
     /* ---- Usage Limit Check ---- */
     const user = await prisma.user.findUnique({
