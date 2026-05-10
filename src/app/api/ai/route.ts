@@ -446,15 +446,14 @@ function isAdmin(email: string | null | undefined): boolean {
 }
 
 /* ---- Monthly Plan Limits ---- */
-/* Free: 10/month — enough to try all features, not enough to abuse */
-/* Pro: 200/month — power users, ~6-7 calls per day */
+/* Free: 15/month — ~1.5 days across all 10 tools, enough to see value, drives upgrades */
+/* Pro: 1000/month — effectively unlimited for humans (~33/day), blocks automation abuse */
 const PLAN_LIMITS: Record<string, number> = {
-  free: 10,
-  pro: 200,
+  free: 15,
+  pro: 1000,
 };
 
-/* ---- Features available per plan ---- */
-const FREE_ACTIONS = ["analyze_resume", "cover_letter", "match_score"];
+/* ---- All features available to all plans (differentiated by call count only) ---- */
 
 /* ---- Max input size: 50KB to prevent abuse ---- */
 const MAX_PAYLOAD_SIZE = 50_000;
@@ -548,19 +547,14 @@ export async function POST(req: NextRequest) {
 
     /* Enforce limits for non-admin users */
     if (!admin) {
-      /* Feature gating — free users only get basic tools */
-      if (user.plan === "free" && !FREE_ACTIONS.includes(action)) {
-        return NextResponse.json(
-          { error: "Upgrade to Pro to access this tool." },
-          { status: 403 }
-        );
-      }
-
-      /* Usage cap */
+      /* Usage cap — all features available, differentiated by call count */
       const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
       if (user.aiUsageCount >= limit) {
+        const upgradeMsg = user.plan === "free"
+          ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 1,000 calls/month.`
+          : `You've reached your monthly limit of ${limit} calls. Contact support if you need more.`;
         return NextResponse.json(
-          { error: `You've used all ${limit} AI calls this month. Upgrade to Pro for more.` },
+          { error: upgradeMsg },
           { status: 429 }
         );
       }

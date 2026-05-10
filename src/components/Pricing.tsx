@@ -14,16 +14,16 @@ import Link from "next/link";
 /* ---- Feature rows shown inside each card ---- */
 /* Grouped into fewer, clearer lines */
 const featureRows = [
+  { name: "All 10 AI Tools (full access)", free: true, pro: true },
   { name: "Resume Analysis & ATS Scoring", free: true, pro: true },
+  { name: "Resume Rebuild Engine", free: true, pro: true },
+  { name: "Cover Letter Generator", free: true, pro: true },
+  { name: "Interview Prep AI", free: true, pro: true },
+  { name: "LinkedIn Optimizer", free: true, pro: true },
+  { name: "Career Pivot Mode", free: true, pro: true },
   { name: "Job Match Scoring", free: true, pro: true },
-  { name: "Resume Templates", free: true, pro: true },
   { name: "Application Tracker", free: true, pro: true },
-  { name: "Resume Rebuild Engine", free: false, pro: true },
-  { name: "Cover Letter Generator", free: false, pro: true },
-  { name: "Interview Prep AI", free: false, pro: true },
-  { name: "LinkedIn Optimizer", free: false, pro: true },
-  { name: "Career Pivot Mode", free: false, pro: true },
-  { name: "PDF & Word Download", free: false, pro: true },
+  { name: "PDF & Word Download", free: true, pro: true },
 ];
 
 export default function Pricing() {
@@ -78,7 +78,7 @@ export default function Pricing() {
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-5xl font-extrabold">$0</span>
             </div>
-            <p className="text-text-secondary text-sm mb-6">3 AI calls per month</p>
+            <p className="text-text-secondary text-sm mb-6">15 AI calls per month</p>
 
             {/* Feature list */}
             <div className="space-y-2.5 mb-8 flex-1">
@@ -121,7 +121,7 @@ export default function Pricing() {
             {annual ? (
               <p className="text-sm text-green-400 mb-6">$16.58/mo — save $149/year</p>
             ) : (
-              <p className="text-text-secondary text-sm mb-6">100 AI calls per month</p>
+              <p className="text-text-secondary text-sm mb-6">1,000 AI calls/month — effectively unlimited</p>
             )}
 
             {/* Feature list — all checked */}
