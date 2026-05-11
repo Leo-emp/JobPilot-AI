@@ -23,82 +23,119 @@ import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import * as Sentry from "@sentry/nextjs";
 
 /* ---- Gemini Model Fallback List ---- */
-/* If the primary model hits a rate limit (429), we try the next one */
+/* Wide fallback chain — if one model is rate-limited, the next picks up. */
+/* Ordered by preference: newest/fastest first, older stable models as backup. */
+/* All models below support both text and multimodal (vision) input. */
 const GEMINI_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
+  "gemini-1.5-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
 ];
 
-/* ---- Call Gemini API with Automatic Fallback ---- */
-/* Tries each model in order. If one returns 429 (rate limited), */
-/* waits 2 seconds and tries the next model in the list. */
-async function callGemini(prompt: string): Promise<string> {
+/* ---- Number of full passes through the model list before giving up ---- */
+/* Each pass tries every model once with increasing backoff between passes */
+const MAX_RETRY_PASSES = 3;
+
+/* ---- Check if an error is retryable (rate limit, overload, capacity) ---- */
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 503 || status === 404 || status === 500;
+}
+
+function isRetryableMessage(msg: string): boolean {
+  const lower = msg.toLowerCase();
+  return lower.includes("overloaded") || lower.includes("high demand") || lower.includes("capacity") || lower.includes("rate") || lower.includes("quota") || lower.includes("resource exhausted");
+}
+
+/* ---- Core Gemini API call with deep retry logic ---- */
+/* Makes up to MAX_RETRY_PASSES full sweeps through all models. */
+/* Pass 1: 1s delay between models. Pass 2: 3s. Pass 3: 6s. */
+/* This gives the free tier time to reset between attempts. */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function callGeminiCore(parts: any[]): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }
 
-  for (const model of GEMINI_MODELS) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 8192,
-            },
-          }),
-        }
-      );
+  let lastError = "";
 
-      /* If rate limited (429), overloaded (503), or model removed (404), try the next model */
-      if (response.status === 429 || response.status === 503 || response.status === 404) {
-        await new Promise((r) => setTimeout(r, 2000));
-        continue;
-      }
+  for (let pass = 0; pass < MAX_RETRY_PASSES; pass++) {
+    /* Backoff increases with each full pass: 1s → 3s → 6s */
+    const delayMs = pass === 0 ? 1000 : pass === 1 ? 3000 : 6000;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        const msg = errorData.error?.message || "Gemini API error";
-        /* "high demand" / "overloaded" errors — retry with next model */
-        if (msg.toLowerCase().includes("overloaded") || msg.toLowerCase().includes("high demand") || msg.toLowerCase().includes("capacity")) {
-          await new Promise((r) => setTimeout(r, 2000));
+    /* Wait before retry passes (not before the first attempt) */
+    if (pass > 0) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+
+    for (const model of GEMINI_MODELS) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 8192,
+              },
+            }),
+          }
+        );
+
+        /* Retryable HTTP status — try next model */
+        if (isRetryableStatus(response.status)) {
+          await new Promise((r) => setTimeout(r, delayMs));
           continue;
         }
-        throw new Error(msg);
-      }
 
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-    } catch (error: unknown) {
-      /* If it's a rate limit or overload issue, try next model */
-      if (error instanceof Error && (error.message.includes("429") || error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("high demand"))) {
-        await new Promise((r) => setTimeout(r, 2000));
-        continue;
+        if (!response.ok) {
+          const errorData = await response.json();
+          const msg = errorData.error?.message || "Gemini API error";
+          if (isRetryableMessage(msg)) {
+            lastError = msg;
+            await new Promise((r) => setTimeout(r, delayMs));
+            continue;
+          }
+          throw new Error(msg);
+        }
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        /* Sometimes the API returns a valid response but with no text (safety filter, empty) */
+        if (!text) {
+          lastError = "Empty response from AI model";
+          continue;
+        }
+
+        return text;
+      } catch (error: unknown) {
+        if (error instanceof Error && isRetryableMessage(error.message)) {
+          lastError = error.message;
+          await new Promise((r) => setTimeout(r, delayMs));
+          continue;
+        }
+        throw error;
       }
-      throw error;
     }
   }
 
-  throw new Error("All AI models are currently at capacity. Please try again later.");
+  throw new Error(lastError || "All AI models are currently at capacity. Please try again in a moment.");
 }
 
-/* ---- Multimodal Gemini Call (text + images) ---- */
-/* Used for actions that include screenshots/images (e.g., LinkedIn post review) */
-/* Images are sent as inline base64 data alongside the text prompt */
-async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not configured.");
-  }
+/* ---- Text-only Gemini call ---- */
+async function callGemini(prompt: string): Promise<string> {
+  return callGeminiCore([{ text: prompt }]);
+}
 
-  /* Build the parts array: text prompt + inline image data */
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+/* ---- Multimodal Gemini call (text + images) ---- */
+async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<string> {
   const parts: any[] = [{ text: prompt }];
   for (const img of images) {
     /* Strip the data URL prefix (e.g., "data:image/png;base64,") to get raw base64 */
@@ -110,51 +147,7 @@ async function callGeminiMultimodal(prompt: string, images: { data: string; mime
       },
     });
   }
-
-  for (const model of GEMINI_MODELS) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 8192,
-            },
-          }),
-        }
-      );
-
-      if (response.status === 429 || response.status === 503 || response.status === 404) {
-        await new Promise((r) => setTimeout(r, 2000));
-        continue;
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        const msg = errorData.error?.message || "Gemini API error";
-        if (msg.toLowerCase().includes("overloaded") || msg.toLowerCase().includes("high demand") || msg.toLowerCase().includes("capacity")) {
-          await new Promise((r) => setTimeout(r, 2000));
-          continue;
-        }
-        throw new Error(msg);
-      }
-
-      const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-    } catch (error: unknown) {
-      if (error instanceof Error && (error.message.includes("429") || error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("high demand"))) {
-        await new Promise((r) => setTimeout(r, 2000));
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw new Error("All AI models are currently at capacity. Please try again later.");
+  return callGeminiCore(parts);
 }
 
 /* ---- Sanitize user input for prompt injection defense ---- */
