@@ -544,6 +544,40 @@ Provide a comprehensive assessment. For EACH question-answer pair, give a score 
   "readinessLevel": "<Not Ready|Needs Work|Almost There|Interview Ready|Excellent>"
 }`;
 
+    /* ---- AI Outreach Hub: generate personalized networking messages ---- */
+    case "craft_outreach":
+      return `You are an expert career networking coach who writes messages that actually get replies. Craft a personalized outreach message.
+
+MESSAGE TYPE: ${payload.messageType}
+SENDER'S BACKGROUND: ${payload.senderBackground || "Not provided"}
+TARGET ROLE/POSITION: ${payload.targetRole}
+RECIPIENT NAME: ${payload.recipientName || "the recipient"}
+RECIPIENT TITLE: ${payload.recipientTitle || "Not specified"}
+RECIPIENT COMPANY: ${payload.recipientCompany || "Not specified"}
+ADDITIONAL CONTEXT: ${payload.context || "None"}
+TONE: ${payload.tone || "Professional yet friendly"}
+PLATFORM: ${payload.platform || "LinkedIn"}
+
+MESSAGE TYPE GUIDELINES:
+- "connection_request": LinkedIn connection note (max 300 chars). Brief, specific, no generic "I'd love to connect." Mention a shared interest, their work, or a specific reason.
+- "cold_outreach": Cold message/email to someone you don't know (150-250 words). Hook in first line, show you researched them, clear ask, easy to respond to.
+- "follow_up": Follow-up after no reply or after a conversation (80-150 words). Reference the previous interaction, add value, gentle nudge.
+- "thank_you": Thank you note after interview or coffee chat (100-150 words). Specific callback to something discussed, express genuine enthusiasm.
+- "referral_request": Asking someone in your network for a referral (150-200 words). Make it easy for them — include the role link/details, why you're a fit, and a draft blurb they can forward.
+- "informational_interview": Requesting an informational chat (100-150 words). Show genuine curiosity about their path, specific questions you'd ask, flexible on their time.
+- "recruiter_pitch": Message to a recruiter about a specific role (150-200 words). Lead with relevant experience, mention the specific job, quantified achievements.
+
+CRITICAL RULES:
+1. NEVER use generic filler like "I hope this message finds you well" or "I'd love to connect"
+2. Make the first sentence a hook — reference their specific work, company news, shared background, or mutual connection
+3. Be concise and scannable — short paragraphs, no walls of text
+4. End with ONE clear, low-friction call to action (not "let me know if you'd be open to...")
+5. Sound human, not AI-generated — use contractions, casual professionalism
+6. If platform is LinkedIn, keep connection requests under 300 characters
+7. Include [BRACKETS] for any details the user should customize
+
+Return ONLY the message text, ready to copy and send. No JSON, no markdown, no labels — just the message.`;
+
     default:
       throw new Error(`Unknown action: ${action}`);
   }
