@@ -423,50 +423,91 @@ Target Role: ${payload.jobTitle}
 Target Industry: ${payload.company}
 Target Job Description: ${payload.jobDescription}`;
 
-    case "linkedin_audit":
-      return `You are a LinkedIn optimization expert and personal branding strategist. Audit this LinkedIn profile text and provide a comprehensive score and improvement plan.
+    /* ---- LinkedIn Audit: profile + post screenshots analyzed together ---- */
+    /* When images are provided, the prompt includes post analysis sections */
+    /* Images are sent via callGeminiMultimodal alongside this text prompt */
+    case "linkedin_audit": {
+      const hasPostImages = payload.images?.length > 0;
+      return `You are a LinkedIn optimization expert, personal branding strategist, and content coach. Audit this LinkedIn profile and${hasPostImages ? " their recent post screenshots" : ""} provide a comprehensive score and improvement plan.
 
 IMPORTANT RULES:
 - Use the person's ACTUAL name, headline, and content — never use placeholders
 - Be specific — reference their actual experience and wording
 - Score each section honestly, not generously
+${hasPostImages ? "- For post screenshots: analyze the ACTUAL content visible in each image — text, formatting, engagement metrics, visuals" : ""}
+${payload.postContext ? `\nADDITIONAL CONTEXT FROM USER: ${payload.postContext}` : ""}
 
 Provide this EXACT structure:
 
-## LinkedIn Score: X/100
+## Overall LinkedIn Score: X/100
 
-## Headline
+---
+
+## PROFILE AUDIT
+
+### Headline
 **Current:** (quote their current headline)
 **Score:** X/10
 **Issues:** (what's wrong)
 **Suggested Headline:** (write a specific improved headline using their real info)
 
-## About / Summary
+### About / Summary
 **Score:** X/10
 **Issues:** (what's missing or weak)
 **Suggestions:** (specific improvements with examples)
 
-## Experience Section
+### Experience Section
 **Score:** X/10
 **Issues:** (vague bullets, missing metrics, weak verbs, etc.)
 **Key Fixes:** (rewrite 2-3 of their weakest bullet points as examples)
 
-## Skills & Endorsements
+### Skills & Endorsements
 **Score:** X/10
 **Suggestions:** (specific skills they should add based on their field)
 
-## Recommendations
+### Recommendations
 **Score:** X/10
 **Suggestions:** (who to ask and how)
 
-## Profile Completeness
+### Profile Completeness
 **Missing Sections:** (list any missing: banner image, featured, volunteer, certifications, etc.)
+${hasPostImages ? `
+---
+
+## POST CONTENT AUDIT
+
+### Per-Post Breakdown
+(For EACH screenshot, analyze:)
+- **Content Quality** — Is the hook strong? Message clear and valuable?
+- **Engagement Potential** — Will people like, comment, share? Why or why not?
+- **Visual Appeal** — Formatting, whitespace, emojis, line breaks?
+- **Score:** X/10
+
+### Content Strategy Score: X/100
+
+### What You're Doing Well
+(Specific strengths across all posts)
+
+### Top Issues to Fix
+(Ranked list of the most impactful improvements)
+
+### Recommended Content Pillars
+(3-5 content themes they should regularly post about)
+
+### Post Templates
+(2-3 ready-to-use post templates/frameworks they can fill in and post immediately)
+
+### Posting Strategy
+(Frequency, best times, hashtag strategy, engagement tips)
+` : ""}
+---
 
 ## Top 5 Priority Actions
-(Numbered list of the highest-impact changes they should make immediately)
+(Numbered list of the highest-impact changes they should make immediately${hasPostImages ? " — include both profile AND content improvements" : ""})
 
 LinkedIn Profile:
 ${payload.linkedinText}`;
+    }
 
     case "linkedin_rewrite":
       return `You are a LinkedIn copywriter and personal branding expert. Rewrite this person's LinkedIn profile sections to be compelling, keyword-rich, and optimized for recruiter search.
@@ -647,45 +688,6 @@ CRITICAL RULES:
 
 Return ONLY the message text, ready to copy and send. No JSON, no markdown, no labels — just the message.`;
 
-    /* ---- LinkedIn Post Review: analyze screenshots of recent posts ---- */
-    /* The actual images are sent separately via callGeminiMultimodal */
-    /* This prompt is prepended to the image data */
-    case "linkedin_post_review":
-      return `You are a LinkedIn content strategist and personal branding expert. Analyze the LinkedIn post screenshots provided and give a comprehensive content review.
-
-${payload.targetRole ? `TARGET AUDIENCE: ${payload.targetRole}` : ""}
-${payload.postContext ? `ADDITIONAL CONTEXT FROM USER: ${payload.postContext}` : ""}
-
-For EACH post screenshot, analyze:
-1. **Content Quality** — Is the hook strong? Is the message clear and valuable?
-2. **Engagement Potential** — Will people like, comment, or share? Why or why not?
-3. **Visual Appeal** — Is the formatting clean? Good use of whitespace, emojis, line breaks?
-4. **Audience Relevance** — Does it speak to the right audience?
-
-Then provide an OVERALL analysis:
-
-## Per-Post Breakdown
-(Analyze each post individually with a score out of 10)
-
-## Content Strategy Score: X/100
-
-## What You're Doing Well
-(Specific strengths across all posts)
-
-## Top Issues to Fix
-(Ranked list of the most impactful improvements)
-
-## Recommended Content Pillars
-(3-5 content themes/topics you should regularly post about based on your niche)
-
-## Post Templates
-(Give 2-3 ready-to-use post templates/frameworks they can fill in and post immediately)
-
-## Posting Strategy
-(Frequency, best times, hashtag strategy, engagement tips)
-
-Be specific — reference the actual content in each screenshot. Don't be generic.`;
-
     default:
       throw new Error(`Unknown action: ${action}`);
   }
@@ -739,7 +741,8 @@ export async function POST(req: NextRequest) {
 
     /* ---- Input size validation ---- */
     /* Multimodal actions (images) get a higher size limit than text-only */
-    const isMultimodal = action === "linkedin_post_review" && payload.images?.length > 0;
+    /* Audit becomes multimodal when post screenshots are attached */
+    const isMultimodal = action === "linkedin_audit" && payload.images?.length > 0;
     const sizeLimit = isMultimodal ? MAX_MULTIMODAL_PAYLOAD_SIZE : MAX_PAYLOAD_SIZE;
     const payloadSize = JSON.stringify(payload).length;
     if (payloadSize > sizeLimit) {

@@ -1,18 +1,19 @@
 /* ============================================================
    LINKEDIN OPTIMIZER PAGE
    ============================================================
-   AI-powered LinkedIn profile optimization with three input
-   methods and three analysis actions.
-
-   Input methods (tab toggle):
-   1. Import PDF — Upload LinkedIn profile PDF export
-   2. Paste Text — Paste full profile text directly
-   3. Post Screenshots — Upload screenshots of LinkedIn posts
-
-   Actions:
-   1. Profile Audit — Score 0-100 across all sections
+   AI-powered LinkedIn profile optimization with two actions:
+   1. Profile Audit — Comprehensive score (0-100) across all
+      profile sections + post content analysis if screenshots
+      are provided. Everything reviewed in one step.
    2. Profile Rewrite — AI rewrites optimized for recruiters
-   3. Post Review — AI analyzes screenshots of recent posts
+
+   Profile input (toggle):
+   - Import PDF — Upload LinkedIn "Save to PDF" export
+   - Paste Text — Copy-paste full profile text
+
+   Post screenshots (optional, always visible):
+   - Upload up to 5 screenshots of recent LinkedIn posts
+   - Included in the audit automatically when provided
    ============================================================ */
 
 "use client";
@@ -21,11 +22,9 @@ import { useState, useRef, useCallback } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 
 /* ---- Action tab configuration ---- */
-/* Each tab maps to a different AI analysis mode */
 const actionTabs = [
-  { id: "audit", label: "Profile Audit", desc: "Score your profile and find weaknesses" },
+  { id: "audit", label: "Profile Audit", desc: "Score your profile + posts and find weaknesses" },
   { id: "rewrite", label: "Profile Rewrite", desc: "AI rewrites your profile sections" },
-  { id: "posts", label: "Post Review", desc: "Analyze your recent LinkedIn posts" },
 ];
 
 /* ---- Maximum file sizes ---- */
@@ -75,12 +74,12 @@ async function fileToBase64(file: File): Promise<string> {
 }
 
 export default function LinkedInPage() {
-  /* ---- Input mode: pdf, manual text, or post screenshots ---- */
-  const [inputMode, setInputMode] = useState<"pdf" | "manual" | "posts">("pdf");
+  /* ---- Profile input mode: PDF or manual text ---- */
+  const [profileMode, setProfileMode] = useState<"pdf" | "manual">("pdf");
 
   /* ---- PDF import state ---- */
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [pdfText, setPdfText] = useState(""); /* extracted text from PDF */
+  const [pdfText, setPdfText] = useState("");
   const [pdfParsing, setPdfParsing] = useState(false);
   const [pdfError, setPdfError] = useState("");
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -88,9 +87,9 @@ export default function LinkedInPage() {
   /* ---- Manual text paste state ---- */
   const [linkedinText, setLinkedinText] = useState("");
 
-  /* ---- Post screenshots state ---- */
+  /* ---- Post screenshots state (always available, included in audit) ---- */
   const [postScreenshots, setPostScreenshots] = useState<{ file: File; preview: string }[]>([]);
-  const [postContext, setPostContext] = useState(""); /* optional context about the posts */
+  const [postContext, setPostContext] = useState("");
   const postInputRef = useRef<HTMLInputElement>(null);
 
   /* ---- Action tab state ---- */
@@ -103,24 +102,21 @@ export default function LinkedInPage() {
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState<number | string | null>(null);
 
-  /* ---- Get combined profile text for audit/rewrite ---- */
+  /* ---- Get profile text from whichever input mode is active ---- */
   const getFullProfileText = () => {
-    if (inputMode === "pdf") return pdfText;
-    if (inputMode === "manual") return linkedinText;
-    return "";
+    if (profileMode === "pdf") return pdfText;
+    return linkedinText;
   };
 
   /* ============================================================
      PDF IMPORT HANDLER
      ============================================================ */
   const handlePdfUpload = useCallback(async (file: File) => {
-    /* Validate file type */
     if (file.type !== "application/pdf") {
       setPdfError("Please upload a PDF file.");
       return;
     }
 
-    /* Validate file size */
     if (file.size > MAX_PDF_SIZE_MB * 1024 * 1024) {
       setPdfError(`File too large. Maximum size is ${MAX_PDF_SIZE_MB}MB.`);
       return;
@@ -134,7 +130,6 @@ export default function LinkedInPage() {
     try {
       const text = await extractTextFromPdf(file);
 
-      /* Make sure we got meaningful text */
       if (text.trim().length < 20) {
         setPdfError("Could not extract enough text from this PDF. It may be image-based. Please paste your profile text manually instead.");
         setPdfParsing(false);
@@ -149,13 +144,11 @@ export default function LinkedInPage() {
     }
   }, []);
 
-  /* ---- Handle file input change for PDF ---- */
   const onPdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handlePdfUpload(file);
   };
 
-  /* ---- Handle drag and drop for PDF ---- */
   const [pdfDragActive, setPdfDragActive] = useState(false);
 
   const onPdfDrop = useCallback((e: React.DragEvent) => {
@@ -172,18 +165,12 @@ export default function LinkedInPage() {
     const newScreenshots: { file: File; preview: string }[] = [];
 
     for (let i = 0; i < files.length; i++) {
-      /* Enforce maximum screenshot limit */
       if (postScreenshots.length + newScreenshots.length >= MAX_POST_SCREENSHOTS) break;
 
       const file = files[i];
-
-      /* Only accept images */
       if (!file.type.startsWith("image/")) continue;
-
-      /* Validate size */
       if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) continue;
 
-      /* Generate preview URL */
       const preview = URL.createObjectURL(file);
       newScreenshots.push({ file, preview });
     }
@@ -191,23 +178,18 @@ export default function LinkedInPage() {
     setPostScreenshots(prev => [...prev, ...newScreenshots]);
   }, [postScreenshots.length]);
 
-  /* ---- Remove a screenshot by index ---- */
   const removeScreenshot = (index: number) => {
     setPostScreenshots(prev => {
-      /* Revoke the preview URL to free memory */
       URL.revokeObjectURL(prev[index].preview);
       return prev.filter((_, i) => i !== index);
     });
   };
 
-  /* ---- Handle file input change for screenshots ---- */
   const onPostFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) handlePostScreenshots(e.target.files);
-    /* Reset input so same file can be re-selected */
     e.target.value = "";
   };
 
-  /* ---- Handle drag and drop for screenshots ---- */
   const [postDragActive, setPostDragActive] = useState(false);
 
   const onPostDrop = useCallback((e: React.DragEvent) => {
@@ -217,7 +199,10 @@ export default function LinkedInPage() {
   }, [handlePostScreenshots]);
 
   /* ============================================================
-     AI API CALL — Profile Audit / Rewrite (text only)
+     AI API CALL — Handles both text-only and multimodal requests
+     ============================================================
+     For audit: sends profile text + post screenshots (if any)
+     For rewrite: sends profile text only (no images needed)
      ============================================================ */
   const callAI = async (action: string) => {
     const fullText = getFullProfileText();
@@ -231,13 +216,26 @@ export default function LinkedInPage() {
     setResult("");
 
     try {
+      /* Build the payload — include images for audit if screenshots exist */
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const payload: any = { linkedinText: fullText, targetRole };
+
+      /* For audit action: attach post screenshots as base64 images */
+      if (action === "linkedin_audit" && postScreenshots.length > 0) {
+        const images = await Promise.all(
+          postScreenshots.map(async (s) => {
+            const base64 = await fileToBase64(s.file);
+            return { data: base64, mimeType: s.file.type };
+          })
+        );
+        payload.images = images;
+        if (postContext.trim()) payload.postContext = postContext.trim();
+      }
+
       const res = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action,
-          payload: { linkedinText: fullText, targetRole },
-        }),
+        body: JSON.stringify({ action, payload }),
       });
 
       const data = await res.json();
@@ -256,60 +254,8 @@ export default function LinkedInPage() {
     }
   };
 
-  /* ============================================================
-     AI API CALL — Post Review (sends images as base64)
-     ============================================================ */
-  const callPostReview = async () => {
-    if (postScreenshots.length === 0) {
-      setError("Please upload at least one screenshot of your LinkedIn posts.");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setResult("");
-
-    try {
-      /* Convert all screenshots to base64 for the API */
-      const images = await Promise.all(
-        postScreenshots.map(async (s) => {
-          const base64 = await fileToBase64(s.file);
-          return { data: base64, mimeType: s.file.type };
-        })
-      );
-
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "linkedin_post_review",
-          payload: {
-            images,
-            postContext: postContext.trim() || undefined,
-            targetRole: targetRole.trim() || undefined,
-          },
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "AI request failed.");
-        return;
-      }
-
-      setResult(data.result);
-      if (data.remaining !== undefined) setRemaining(data.remaining);
-    } catch {
-      setError("Failed to connect to AI. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ---- Check if we have enough data to run the selected action ---- */
+  /* ---- Check if we have enough profile data to run AI ---- */
   const hasProfileData = getFullProfileText().trim().length > 20;
-  const hasPostData = postScreenshots.length > 0;
 
   return (
     <div>
@@ -319,7 +265,7 @@ export default function LinkedInPage() {
           LinkedIn Optimizer
         </h1>
         <p className="text-text-secondary">
-          Get an AI-powered audit of your LinkedIn profile and optimized rewrites that attract recruiters.
+          Get an AI-powered audit of your LinkedIn profile and posts, plus optimized rewrites that attract recruiters.
         </p>
       </div>
 
@@ -334,68 +280,49 @@ export default function LinkedInPage() {
       )}
 
       {/* ============================================================
-         PROFILE INPUT SECTION
+         SECTION 1: PROFILE DATA INPUT
+         ============================================================
+         Two modes: Import PDF or Paste Text. Always visible.
          ============================================================ */}
-      <div className="glass-card p-6 mb-8">
+      <div className="glass-card p-6 mb-6">
         <h2 className="text-lg font-bold mb-4">Your LinkedIn Profile</h2>
 
-        {/* ---- Input mode tabs: PDF / Paste Text / Post Screenshots ---- */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {/* PDF Import tab */}
+        {/* ---- Profile input mode toggle (PDF vs Text) ---- */}
+        <div className="flex gap-2 mb-5">
           <button
-            onClick={() => { setInputMode("pdf"); setError(""); }}
+            onClick={() => { setProfileMode("pdf"); setError(""); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              inputMode === "pdf"
+              profileMode === "pdf"
                 ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
                 : "bg-space-700/50 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/20"
             }`}
           >
-            {/* PDF icon */}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
             Import PDF
           </button>
-
-          {/* Paste Text tab */}
           <button
-            onClick={() => { setInputMode("manual"); setError(""); }}
+            onClick={() => { setProfileMode("manual"); setError(""); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              inputMode === "manual"
+              profileMode === "manual"
                 ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
                 : "bg-space-700/50 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/20"
             }`}
           >
-            {/* Clipboard icon */}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Paste Text
-          </button>
-
-          {/* Post Screenshots tab */}
-          <button
-            onClick={() => { setInputMode("posts"); setActiveTab("posts"); setError(""); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              inputMode === "posts"
-                ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
-                : "bg-space-700/50 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/20"
-            }`}
-          >
-            {/* Camera/image icon */}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Post Screenshots
           </button>
         </div>
 
         {/* ============================================================
            PDF IMPORT MODE
            ============================================================ */}
-        {inputMode === "pdf" && (
+        {profileMode === "pdf" && (
           <div>
-            {/* Step-by-step instructions for downloading LinkedIn PDF */}
+            {/* Step-by-step download instructions */}
             <div className="mb-5 p-4 rounded-xl bg-space-700/60 border border-card-border">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <svg className="w-4 h-4 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -421,7 +348,7 @@ export default function LinkedInPage() {
               </ol>
             </div>
 
-            {/* ---- PDF Drop Zone ---- */}
+            {/* PDF Drop Zone */}
             {!pdfFile ? (
               <div
                 onDragOver={(e) => { e.preventDefault(); setPdfDragActive(true); }}
@@ -434,7 +361,6 @@ export default function LinkedInPage() {
                     : "border-card-border hover:border-brand-indigo/40 hover:bg-space-700/30"
                 }`}
               >
-                {/* Upload icon */}
                 <svg className="w-10 h-10 mx-auto mb-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
@@ -442,8 +368,6 @@ export default function LinkedInPage() {
                   <span className="text-brand-light font-medium">Click to upload</span> or drag and drop
                 </p>
                 <p className="text-xs text-text-muted">PDF files only, up to {MAX_PDF_SIZE_MB}MB</p>
-
-                {/* Hidden file input */}
                 <input
                   ref={pdfInputRef}
                   type="file"
@@ -453,11 +377,10 @@ export default function LinkedInPage() {
                 />
               </div>
             ) : (
-              /* ---- PDF file loaded — show status ---- */
+              /* PDF file loaded — show status */
               <div className="rounded-xl border border-card-border bg-space-700/50 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {/* PDF icon */}
                     <div className="w-10 h-10 rounded-lg bg-red-500/15 border border-red-500/20 flex items-center justify-center">
                       <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -472,8 +395,6 @@ export default function LinkedInPage() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Remove file button */}
                   <button
                     onClick={() => { setPdfFile(null); setPdfText(""); setPdfError(""); setResult(""); }}
                     className="text-text-muted hover:text-red-400 transition-colors p-1"
@@ -485,7 +406,6 @@ export default function LinkedInPage() {
                   </button>
                 </div>
 
-                {/* Parsing status */}
                 {pdfParsing && (
                   <div className="mt-3 flex items-center gap-2 text-sm text-text-secondary">
                     <div className="w-4 h-4 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
@@ -493,7 +413,6 @@ export default function LinkedInPage() {
                   </div>
                 )}
 
-                {/* Success: show extracted text length */}
                 {pdfText && !pdfParsing && (
                   <div className="mt-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-sm text-green-400">
                     <span className="font-medium">Profile extracted successfully!</span>{" "}
@@ -501,7 +420,6 @@ export default function LinkedInPage() {
                   </div>
                 )}
 
-                {/* PDF-specific error */}
                 {pdfError && (
                   <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">
                     {pdfError}
@@ -515,14 +433,11 @@ export default function LinkedInPage() {
         {/* ============================================================
            MANUAL TEXT INPUT MODE
            ============================================================ */}
-        {inputMode === "manual" && (
+        {profileMode === "manual" && (
           <div>
-            {/* Instruction */}
             <p className="text-sm text-text-muted mb-3">
               Go to your LinkedIn profile → select all (Ctrl+A) → copy (Ctrl+C) → paste below. Include headline, about, experience, education, and skills.
             </p>
-
-            {/* Profile text input */}
             <textarea
               value={linkedinText}
               onChange={e => setLinkedinText(e.target.value)}
@@ -530,8 +445,6 @@ export default function LinkedInPage() {
               rows={10}
               className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm leading-relaxed"
             />
-
-            {/* Character count */}
             {linkedinText && (
               <div className="mt-2 flex items-center justify-between">
                 <p className="text-sm text-green-400">
@@ -547,122 +460,124 @@ export default function LinkedInPage() {
             )}
           </div>
         )}
+      </div>
 
-        {/* ============================================================
-           POST SCREENSHOTS MODE
-           ============================================================ */}
-        {inputMode === "posts" && (
+      {/* ============================================================
+         SECTION 2: POST SCREENSHOTS (optional, always visible)
+         ============================================================
+         These are included in the profile audit automatically.
+         Users can upload screenshots of their recent LinkedIn posts
+         for a combined profile + content strategy review.
+         ============================================================ */}
+      <div className="glass-card p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            {/* Instructions */}
-            <div className="mb-4 p-4 rounded-xl bg-space-700/60 border border-card-border">
-              <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                How to capture your LinkedIn post screenshots
-              </h3>
-              <ol className="text-sm text-text-secondary space-y-1.5 list-decimal list-inside">
-                <li>Go to your LinkedIn profile → <span className="text-white font-medium">&quot;Activity&quot;</span> section → <span className="text-white font-medium">&quot;Show all posts&quot;</span></li>
-                <li>Take a screenshot of each post you want reviewed <span className="text-text-muted">(Windows: Win+Shift+S, Mac: Cmd+Shift+4)</span></li>
-                <li>Make sure the full post is visible — text, images, engagement metrics (likes, comments)</li>
-                <li>Upload up to {MAX_POST_SCREENSHOTS} screenshots below</li>
-              </ol>
+            <h2 className="text-lg font-bold">Recent Post Screenshots</h2>
+            <p className="text-sm text-text-muted mt-1">
+              Optional — upload screenshots of your recent LinkedIn posts for a combined profile + content audit
+            </p>
+          </div>
+          {/* Post count badge */}
+          {postScreenshots.length > 0 && (
+            <span className="px-3 py-1 rounded-full bg-brand-indigo/20 border border-brand-indigo/30 text-xs font-medium text-brand-light">
+              {postScreenshots.length}/{MAX_POST_SCREENSHOTS}
+            </span>
+          )}
+        </div>
+
+        {/* Instructions (collapsible feel — always visible but compact) */}
+        <div className="mb-4 p-3 rounded-xl bg-space-700/40 border border-card-border text-xs text-text-muted">
+          <span className="text-text-secondary font-medium">How to capture:</span>{" "}
+          Go to your LinkedIn profile → Activity → Show all posts → screenshot each post
+          <span className="text-text-muted"> (Windows: Win+Shift+S, Mac: Cmd+Shift+4)</span>.
+          Include the full post with engagement metrics (likes, comments).
+        </div>
+
+        {/* Screenshot Drop Zone */}
+        {postScreenshots.length < MAX_POST_SCREENSHOTS && (
+          <div
+            onDragOver={(e) => { e.preventDefault(); setPostDragActive(true); }}
+            onDragLeave={() => setPostDragActive(false)}
+            onDrop={onPostDrop}
+            onClick={() => postInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+              postDragActive
+                ? "border-brand-indigo bg-brand-indigo/10"
+                : "border-card-border hover:border-brand-indigo/40 hover:bg-space-700/30"
+            }`}
+          >
+            <svg className="w-8 h-8 mx-auto mb-2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-sm text-text-secondary mb-1">
+              <span className="text-brand-light font-medium">Click to upload</span> or drag and drop screenshots
+            </p>
+            <p className="text-xs text-text-muted">
+              PNG, JPG, or WEBP — up to {MAX_IMAGE_SIZE_MB}MB each — {MAX_POST_SCREENSHOTS - postScreenshots.length} more allowed
+            </p>
+            <input
+              ref={postInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              onChange={onPostFileChange}
+              className="hidden"
+            />
+          </div>
+        )}
+
+        {/* Screenshot Previews Grid */}
+        {postScreenshots.length > 0 && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-text-secondary">
+                {postScreenshots.length} screenshot{postScreenshots.length !== 1 ? "s" : ""} uploaded
+              </p>
+              <button
+                onClick={() => {
+                  postScreenshots.forEach(s => URL.revokeObjectURL(s.preview));
+                  setPostScreenshots([]);
+                }}
+                className="text-xs text-text-muted hover:text-red-400 transition-colors"
+              >
+                Clear all
+              </button>
             </div>
 
-            {/* ---- Screenshot Drop Zone ---- */}
-            {postScreenshots.length < MAX_POST_SCREENSHOTS && (
-              <div
-                onDragOver={(e) => { e.preventDefault(); setPostDragActive(true); }}
-                onDragLeave={() => setPostDragActive(false)}
-                onDrop={onPostDrop}
-                onClick={() => postInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-                  postDragActive
-                    ? "border-brand-indigo bg-brand-indigo/10"
-                    : "border-card-border hover:border-brand-indigo/40 hover:bg-space-700/30"
-                }`}
-              >
-                {/* Upload icon */}
-                <svg className="w-8 h-8 mx-auto mb-2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-sm text-text-secondary mb-1">
-                  <span className="text-brand-light font-medium">Click to upload</span> or drag and drop screenshots
-                </p>
-                <p className="text-xs text-text-muted">
-                  PNG, JPG, or WEBP — up to {MAX_IMAGE_SIZE_MB}MB each — {MAX_POST_SCREENSHOTS - postScreenshots.length} more allowed
-                </p>
-
-                {/* Hidden file input — accepts multiple images */}
-                <input
-                  ref={postInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  multiple
-                  onChange={onPostFileChange}
-                  className="hidden"
-                />
-              </div>
-            )}
-
-            {/* ---- Screenshot Previews Grid ---- */}
-            {postScreenshots.length > 0 && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-text-secondary">
-                    {postScreenshots.length} screenshot{postScreenshots.length !== 1 ? "s" : ""} uploaded
-                  </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {postScreenshots.map((screenshot, index) => (
+                <div key={index} className="relative group rounded-xl overflow-hidden border border-card-border bg-space-700/50">
+                  <img
+                    src={screenshot.preview}
+                    alt={`Post screenshot ${index + 1}`}
+                    className="w-full aspect-[3/4] object-cover object-top"
+                  />
                   <button
-                    onClick={() => {
-                      /* Revoke all preview URLs before clearing */
-                      postScreenshots.forEach(s => URL.revokeObjectURL(s.preview));
-                      setPostScreenshots([]);
-                    }}
-                    className="text-xs text-text-muted hover:text-red-400 transition-colors"
+                    onClick={() => removeScreenshot(index)}
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                    title="Remove screenshot"
                   >
-                    Clear all
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
+                  <div className="absolute bottom-2 left-2 w-5 h-5 rounded-full bg-brand-indigo/80 text-white text-xs flex items-center justify-center font-bold">
+                    {index + 1}
+                  </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {postScreenshots.map((screenshot, index) => (
-                    <div key={index} className="relative group rounded-xl overflow-hidden border border-card-border bg-space-700/50">
-                      {/* Screenshot thumbnail */}
-                      <img
-                        src={screenshot.preview}
-                        alt={`Post screenshot ${index + 1}`}
-                        className="w-full aspect-[3/4] object-cover object-top"
-                      />
-                      {/* Remove button overlay */}
-                      <button
-                        onClick={() => removeScreenshot(index)}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
-                        title="Remove screenshot"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                      {/* Index badge */}
-                      <div className="absolute bottom-2 left-2 w-5 h-5 rounded-full bg-brand-indigo/80 text-white text-xs flex items-center justify-center font-bold">
-                        {index + 1}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Optional context text area */}
+            {/* Optional context about the posts */}
             <div className="mt-4">
               <label className="block text-sm font-medium text-text-secondary mb-2">
-                Additional context (optional)
+                Additional context about your posts (optional)
               </label>
               <textarea
                 value={postContext}
                 onChange={e => setPostContext(e.target.value)}
-                placeholder="e.g., I'm trying to build an audience in AI/tech, my target audience is recruiters and hiring managers, I post 3x per week..."
-                rows={3}
+                placeholder="e.g., I'm trying to build an audience in AI/tech, my target audience is recruiters, I post 3x per week..."
+                rows={2}
                 className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm leading-relaxed"
               />
             </div>
@@ -671,9 +586,9 @@ export default function LinkedInPage() {
       </div>
 
       {/* ============================================================
-         ACTION TABS (Audit / Rewrite / Post Review)
+         ACTION TABS (Audit / Rewrite)
          ============================================================ */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
         {actionTabs.map(tab => (
           <button
             key={tab.id}
@@ -693,7 +608,7 @@ export default function LinkedInPage() {
       </div>
 
       {/* ============================================================
-         TAB CONTENT (Audit / Rewrite / Post Review action panels)
+         TAB CONTENT (Audit / Rewrite action panels)
          ============================================================ */}
       <div className="glass-card p-6 sm:p-8">
 
@@ -701,15 +616,50 @@ export default function LinkedInPage() {
         {activeTab === "audit" && (
           <div>
             <h2 className="text-xl font-bold mb-2">Profile Audit</h2>
-            <p className="text-text-secondary text-sm mb-6">
+            <p className="text-text-secondary text-sm mb-4">
               Get a comprehensive score (0-100) across all profile sections with specific improvement suggestions.
+              {postScreenshots.length > 0
+                ? ` Your ${postScreenshots.length} post screenshot${postScreenshots.length !== 1 ? "s" : ""} will also be analyzed for content strategy.`
+                : " Add post screenshots above for a combined profile + content review."
+              }
             </p>
+
+            {/* Shows what will be included in the audit */}
+            <div className="flex flex-wrap gap-2 mb-5">
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
+                hasProfileData
+                  ? "bg-green-500/10 border border-green-500/20 text-green-400"
+                  : "bg-space-700/50 border border-card-border text-text-muted"
+              }`}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {hasProfileData
+                    ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  }
+                </svg>
+                Profile Data
+              </span>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
+                postScreenshots.length > 0
+                  ? "bg-green-500/10 border border-green-500/20 text-green-400"
+                  : "bg-space-700/50 border border-card-border text-text-muted"
+              }`}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {postScreenshots.length > 0
+                    ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  }
+                </svg>
+                {postScreenshots.length > 0 ? `${postScreenshots.length} Post Screenshot${postScreenshots.length !== 1 ? "s" : ""}` : "Post Screenshots (optional)"}
+              </span>
+            </div>
+
             <button
               onClick={() => callAI("linkedin_audit")}
               disabled={!hasProfileData || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading && activeTab === "audit" ? "Analyzing profile..." : "Audit My Profile"}
+              {loading && activeTab === "audit" ? "Analyzing profile & posts..." : "Audit My Profile"}
             </button>
           </div>
         )}
@@ -722,7 +672,6 @@ export default function LinkedInPage() {
               AI rewrites your headline, about, and experience sections optimized for recruiter search.
             </p>
 
-            {/* Optional target role */}
             <div className="mb-5">
               <label className="block text-sm font-medium text-text-secondary mb-2">
                 Target Role (optional — helps focus the optimization)
@@ -746,45 +695,6 @@ export default function LinkedInPage() {
           </div>
         )}
 
-        {/* ---- Post Review Tab ---- */}
-        {activeTab === "posts" && (
-          <div>
-            <h2 className="text-xl font-bold mb-2">Post Review</h2>
-            <p className="text-text-secondary text-sm mb-6">
-              AI analyzes your recent LinkedIn posts — content quality, engagement potential, and how to improve your posting strategy.
-            </p>
-
-            {/* Optional target role for post context */}
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Target Audience / Role (optional)
-              </label>
-              <input
-                type="text"
-                value={targetRole}
-                onChange={e => setTargetRole(e.target.value)}
-                placeholder="e.g., Tech recruiters, Startup founders, AI community"
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
-              />
-            </div>
-
-            <button
-              onClick={callPostReview}
-              disabled={!hasPostData || loading}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading && activeTab === "posts" ? "Analyzing posts..." : "Review My Posts"}
-            </button>
-
-            {/* Tip for post analysis */}
-            {!hasPostData && (
-              <p className="mt-3 text-xs text-text-muted">
-                Switch to the &quot;Post Screenshots&quot; input tab above to upload your post screenshots first.
-              </p>
-            )}
-          </div>
-        )}
-
         {/* ---- Error Display ---- */}
         {error && (
           <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
@@ -800,7 +710,10 @@ export default function LinkedInPage() {
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
             <span className="text-sm">
-              {activeTab === "posts" ? "AI is analyzing your LinkedIn posts..." : "AI is analyzing your LinkedIn profile..."}
+              {postScreenshots.length > 0 && activeTab === "audit"
+                ? "AI is analyzing your LinkedIn profile and posts..."
+                : "AI is analyzing your LinkedIn profile..."
+              }
             </span>
           </div>
         )}
