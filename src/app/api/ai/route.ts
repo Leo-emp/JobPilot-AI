@@ -28,7 +28,6 @@ const GEMINI_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
-  "gemini-1.5-flash",
 ];
 
 /* ---- Call Gemini API with Automatic Fallback ---- */
@@ -57,8 +56,8 @@ async function callGemini(prompt: string): Promise<string> {
         }
       );
 
-      /* If rate limited (429) or overloaded (503), try the next model */
-      if (response.status === 429 || response.status === 503) {
+      /* If rate limited (429), overloaded (503), or model removed (404), try the next model */
+      if (response.status === 429 || response.status === 503 || response.status === 404) {
         await new Promise((r) => setTimeout(r, 2000));
         continue;
       }
