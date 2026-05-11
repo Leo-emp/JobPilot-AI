@@ -249,25 +249,76 @@ function renderBoldLine(doc: jsPDF, text: string, x: number, y: number, baseFont
   }
 }
 
-/* Render wrapped text with bold support, returns new Y position */
+/* Render wrapped text with proper bold support across multiple lines.
+   Splits text into word-level tokens, measures each in its correct font
+   (bold vs normal), and breaks lines when they exceed maxWidth. */
 function renderWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWidth: number, fontSize: number, lineHeight: number, pageHeight: number, margin: number): number {
-  const plain = text.replace(/\*\*/g, "");
-  doc.setFont("helvetica", "normal");
   doc.setFontSize(fontSize);
-  const wrapped = doc.splitTextToSize(plain, maxWidth);
 
-  for (let i = 0; i < wrapped.length; i++) {
-    if (y > pageHeight - margin) {
-      doc.addPage();
-      y = margin;
+  /* Fast path: no bold markers — use built-in wrapping */
+  if (!text.includes("**")) {
+    doc.setFont("helvetica", "normal");
+    const wrapped = doc.splitTextToSize(text, maxWidth);
+    for (const ln of wrapped) {
+      if (y > pageHeight - margin) { doc.addPage(); y = margin; }
+      doc.text(ln, x, y);
+      y += lineHeight;
     }
-    if (i === 0 && text.includes("**")) {
-      renderBoldLine(doc, text, x, y, fontSize, "normal");
+    return y;
+  }
+
+  /* Parse **bold** markers into typed chunks */
+  const chunks: { t: string; b: boolean }[] = [];
+  for (const p of text.split(/(\*\*[^*]+\*\*)/g)) {
+    if (!p) continue;
+    if (p.startsWith("**") && p.endsWith("**")) {
+      chunks.push({ t: p.slice(2, -2), b: true });
     } else {
-      doc.text(wrapped[i], x, y);
+      chunks.push({ t: p, b: false });
+    }
+  }
+
+  /* Flatten to word-level tokens (spaces are separate so we can measure them) */
+  const tokens: { t: string; b: boolean }[] = [];
+  for (const c of chunks) {
+    for (const w of c.t.split(/( +)/)) {
+      if (w) tokens.push({ t: w, b: c.b });
+    }
+  }
+
+  /* Build wrapped lines that respect maxWidth */
+  const lines: { t: string; b: boolean }[][] = [];
+  let cur: { t: string; b: boolean }[] = [];
+  let lw = 0;
+
+  for (const tok of tokens) {
+    doc.setFont("helvetica", tok.b ? "bold" : "normal");
+    doc.setFontSize(fontSize);
+    const tw = doc.getTextWidth(tok.t);
+    if (lw + tw > maxWidth && cur.length > 0 && tok.t.trim()) {
+      lines.push(cur);
+      cur = [];
+      lw = 0;
+      if (!tok.t.trim()) continue;
+    }
+    cur.push(tok);
+    lw += tw;
+  }
+  if (cur.length > 0) lines.push(cur);
+
+  /* Render each line token by token with correct font */
+  for (const line of lines) {
+    if (y > pageHeight - margin) { doc.addPage(); y = margin; }
+    let cx = x;
+    for (const tok of line) {
+      doc.setFont("helvetica", tok.b ? "bold" : "normal");
+      doc.setFontSize(fontSize);
+      doc.text(tok.t, cx, y);
+      cx += doc.getTextWidth(tok.t);
     }
     y += lineHeight;
   }
+
   return y;
 }
 
@@ -299,14 +350,14 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
 
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const mL = 16;
-      const mR = 16;
-      const mTop = 16;
-      const mBot = 14;
+      const mL = 20;
+      const mR = 20;
+      const mTop = 18;
+      const mBot = 16;
       const cW = pageWidth - mL - mR;
       let y = mTop;
       const bSize = 9.5;
-      const bLH = 4.2;
+      const bLH = 4.8;
       let nameRendered = false;
       let contactRendered = false;
       let seenSection = false;
@@ -346,8 +397,8 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       for (const line of lines) {
         const trimmed = line.trim();
         if (/^```/.test(trimmed)) continue;
-        if (!trimmed) { y += 1.5; continue; }
-        checkPage(8);
+        if (!trimmed) { y += 2.5; continue; }
+        checkPage(10);
 
         /* ---- H1: Name — large bold, left-aligned ---- */
         if (/^# (?!#)/.test(trimmed)) {
@@ -357,7 +408,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           doc.setTextColor(17, 17, 17);
           doc.text(text, mL, y);
           nameRendered = true;
-          y += 7;
+          y += 8;
           continue;
         }
 
@@ -365,17 +416,17 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         if (/^## (?!#)/.test(trimmed)) {
           seenSection = true;
           const text = trimmed.slice(3).replace(/\*\*/g, "").toUpperCase();
-          y += 4;
-          checkPage(10);
+          y += 5;
+          checkPage(12);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
           doc.setTextColor(17, 17, 17);
           doc.text(text, mL, y);
-          y += 1.5;
+          y += 1.8;
           doc.setDrawColor(30, 30, 30);
           doc.setLineWidth(0.5);
           doc.line(mL, y, pageWidth - mR, y);
-          y += 4;
+          y += 5;
           continue;
         }
 
@@ -383,24 +434,23 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         if (/^### /.test(trimmed)) {
           const raw = trimmed.slice(4);
           const clean = raw.replace(/\*\*/g, "");
-          y += 1;
-          checkPage(8);
-          doc.setFontSize(10);
+          y += 2;
+          checkPage(10);
+          doc.setFontSize(10.5);
           doc.setTextColor(17, 17, 17);
 
           const dateInfo = extractDate(clean);
           if (dateInfo) {
-            const rawInfo = extractDate(raw.replace(/\*\*/g, ""));
             const rawMatch = raw.match(/^(.*?)(?:\s*[—–\-]{1,2}\s*\d|,\s*\d{1,2}\/\d{4})/);
             const leftRaw = rawMatch ? rawMatch[1].trim() : dateInfo.left;
-            renderBoldLine(doc, leftRaw, mL, y, 10, "normal");
+            renderBoldLine(doc, leftRaw, mL, y, 10.5, "normal");
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
+            doc.setFontSize(10.5);
             doc.text(dateInfo.date, pageWidth - mR, y, { align: "right" });
           } else {
-            renderBoldLine(doc, raw, mL, y, 10, "bold");
+            renderBoldLine(doc, raw, mL, y, 10.5, "bold");
           }
-          y += 4.5;
+          y += 5.5;
           continue;
         }
 
@@ -409,7 +459,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           doc.setDrawColor(180, 180, 180);
           doc.setLineWidth(0.2);
           doc.line(mL, y, pageWidth - mR, y);
-          y += 3;
+          y += 4;
           continue;
         }
 
@@ -420,18 +470,18 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           doc.setTextColor(17, 17, 17);
           doc.text(trimmed.replace(/\*\*/g, ""), mL, y);
           nameRendered = true;
-          y += 7;
+          y += 8;
           continue;
         }
 
         /* ---- Auto-detect contact: line with separators + email/phone before sections ---- */
         if (!seenSection && !contactRendered && isContactLine(trimmed)) {
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(9.5);
+          doc.setFontSize(10);
           doc.setTextColor(60, 60, 60);
           doc.text(trimmed.replace(/\*\*/g, ""), mL, y);
           contactRendered = true;
-          y += 5;
+          y += 6;
           continue;
         }
 
@@ -479,7 +529,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         /* ---- Regular paragraph ---- */
         doc.setTextColor(40, 40, 40);
         y = renderWrappedText(doc, trimmed, mL, y, cW, bSize, bLH, pageHeight, mTop);
-        y += 0.5;
+        y += 1;
       }
 
       doc.save("resume-jobpilot.pdf");
