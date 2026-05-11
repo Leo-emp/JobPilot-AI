@@ -5,20 +5,30 @@
    data is available without authentication:
    - Meta tags (og:title, og:description, og:image)
    - JSON-LD structured data (name, headline, location)
-   - Any visible text in the page HTML
 
-   LinkedIn blocks most server-side requests, so this is best-effort.
-   Returns partial data + a flag indicating if the full profile was found.
-   The frontend falls back to manual paste if scraping is limited.
+   LinkedIn blocks most server-side requests or redirects to a
+   login page. This scraper handles that gracefully:
+   - Tries multiple User-Agent strings
+   - Accepts ANY response (even login walls) and still extracts meta tags
+   - Returns partial data with a clear message to paste more
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-/* ---- Validate that the URL is a real LinkedIn profile URL ---- */
+/* ---- Normalize URL: add https:// if missing ---- */
+function normalizeUrl(url: string): string {
+  let u = url.trim().replace(/\/+$/, "");
+  if (!u.startsWith("http://") && !u.startsWith("https://")) {
+    u = "https://" + u;
+  }
+  return u;
+}
+
+/* ---- Validate that the URL points to a LinkedIn profile ---- */
 function isValidLinkedInUrl(url: string): boolean {
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(normalizeUrl(url));
     return (
       (parsed.hostname === "www.linkedin.com" || parsed.hostname === "linkedin.com") &&
       parsed.pathname.startsWith("/in/")
@@ -30,7 +40,6 @@ function isValidLinkedInUrl(url: string): boolean {
 
 /* ---- Extract content from meta tags ---- */
 function extractMeta(html: string, property: string): string {
-  /* Try property="..." first (Open Graph), then name="..." */
   const patterns = [
     new RegExp(`<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']+)["']`, "i"),
     new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${property}["']`, "i"),
@@ -60,7 +69,6 @@ function decodeHtmlEntities(text: string): string {
 function extractJsonLd(html: string): Record<string, string> {
   const result: Record<string, string> = {};
   try {
-    /* LinkedIn sometimes includes Person schema in JSON-LD */
     const match = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
     if (match) {
       const data = JSON.parse(match[1]);
@@ -88,19 +96,60 @@ function extractJsonLd(html: string): Record<string, string> {
   return result;
 }
 
-/* ---- Strip HTML tags and clean up whitespace ---- */
-function stripHtml(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+/* ---- Fetch HTML from LinkedIn, trying multiple strategies ---- */
+async function fetchLinkedInPage(url: string): Promise<string | null> {
+  /* Different User-Agents to try — LinkedIn treats some better than others */
+  const strategies: Record<string, string>[] = [
+    {
+      "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      "Accept": "text/html",
+    },
+    {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+    },
+    {
+      "User-Agent": "LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)",
+      "Accept": "text/html",
+    },
+  ];
+
+  for (const headers of strategies) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(url, {
+        headers,
+        redirect: "follow",
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      /* Accept ANY response — even login walls have meta tags */
+      const html = await response.text();
+      /* If we got HTML with meta tags, that's good enough */
+      if (html.includes("og:title") || html.includes("og:description") || html.includes("ld+json")) {
+        return html;
+      }
+      /* If we got substantial HTML, return it even without meta tags */
+      if (html.length > 1000) return html;
+    } catch {
+      /* This strategy failed — try the next one */
+      continue;
+    }
+  }
+  return null;
 }
 
 /* ---- Main POST handler ---- */
 export async function POST(req: NextRequest) {
-  /* Auth check — only logged-in users can scrape */
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Please log in first." }, { status: 401 });
@@ -108,68 +157,67 @@ export async function POST(req: NextRequest) {
 
   const { url } = await req.json();
 
-  /* Validate the URL */
   if (!url || typeof url !== "string") {
     return NextResponse.json({ error: "Please provide a LinkedIn profile URL." }, { status: 400 });
   }
 
   if (!isValidLinkedInUrl(url)) {
     return NextResponse.json(
-      { error: "Invalid LinkedIn URL. Please use a URL like: https://www.linkedin.com/in/your-username" },
+      { error: "Invalid LinkedIn URL. Use a URL like: linkedin.com/in/your-username" },
       { status: 400 }
     );
   }
 
-  try {
-    /* Fetch the LinkedIn page with browser-like headers */
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
-      },
-      redirect: "follow",
-    });
+  /* Normalize the URL (add https:// etc.) */
+  const normalizedUrl = normalizeUrl(url);
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: "Could not reach LinkedIn. The profile may be private or the URL is incorrect." },
-        { status: 502 }
-      );
+  try {
+    /* Try multiple strategies to fetch the page */
+    const html = await fetchLinkedInPage(normalizedUrl);
+
+    if (!html) {
+      /* All strategies failed — return a helpful message instead of an error */
+      return NextResponse.json({
+        success: true,
+        profileText: "",
+        name: "",
+        headline: "",
+        about: "",
+        location: "",
+        currentCompany: "",
+        education: "",
+        photoUrl: "",
+        isPartial: true,
+        message: "LinkedIn is blocking automated access to this profile. Please paste your profile text manually — go to your LinkedIn profile, press Ctrl+A to select all, Ctrl+C to copy, then paste below.",
+      });
     }
 
-    const html = await response.text();
-
     /* Extract Open Graph meta tags */
-    const ogTitle = extractMeta(html, "og:title");           /* "FirstName LastName - Headline | LinkedIn" */
-    const ogDescription = extractMeta(html, "og:description"); /* About section preview */
-    const ogImage = extractMeta(html, "og:image");            /* Profile photo */
-    const description = extractMeta(html, "description");     /* Sometimes has more detail */
+    const ogTitle = extractMeta(html, "og:title");
+    const ogDescription = extractMeta(html, "og:description");
+    const ogImage = extractMeta(html, "og:image");
+    const description = extractMeta(html, "description");
+    const twitterTitle = extractMeta(html, "twitter:title");
+    const twitterDesc = extractMeta(html, "twitter:description");
 
-    /* Extract JSON-LD structured data (name, jobTitle, education, employer) */
+    /* Extract JSON-LD structured data */
     const jsonLd = extractJsonLd(html);
 
-    /* Parse name and headline from og:title: "FirstName LastName - Headline | LinkedIn" */
+    /* Parse name and headline from og:title or twitter:title */
     let name = jsonLd.name || "";
     let headline = jsonLd.headline || "";
-    if (ogTitle && !name) {
-      const titleParts = ogTitle.replace(/ \| LinkedIn$/, "").split(" - ");
+    const titleStr = ogTitle || twitterTitle || "";
+    if (titleStr && !name) {
+      const titleParts = titleStr.replace(/ \| LinkedIn$/i, "").split(" - ");
       name = titleParts[0]?.trim() || "";
       headline = titleParts.slice(1).join(" - ").trim() || "";
     }
 
-    /* Use the longer description available */
-    const about = ogDescription && description
-      ? (description.length > ogDescription.length ? description : ogDescription)
-      : (ogDescription || description || jsonLd.description || "");
+    /* Use the longest description available */
+    const descriptions = [ogDescription, description, twitterDesc, jsonLd.description || ""].filter(Boolean);
+    const about = descriptions.sort((a, b) => b.length - a.length)[0] || "";
 
-    /* Try to extract any visible body text (limited — LinkedIn is JS-rendered) */
-    const bodyText = stripHtml(html);
-    /* Check if we got meaningful profile content (not just a login wall) */
-    const hasRichContent = bodyText.length > 2000 && !bodyText.includes("Sign in") && bodyText.includes(name);
-
-    /* Build the profile text from whatever we extracted */
+    /* Build profile text from extracted data */
     const sections: string[] = [];
     if (name) sections.push(`Name: ${name}`);
     if (headline) sections.push(`Headline: ${headline}`);
@@ -179,7 +227,7 @@ export async function POST(req: NextRequest) {
     if (jsonLd.education) sections.push(`\nEducation: ${jsonLd.education}`);
 
     const profileText = sections.join("\n");
-    const isPartial = !hasRichContent;
+    const hasData = name || headline || about;
 
     return NextResponse.json({
       success: true,
@@ -191,15 +239,25 @@ export async function POST(req: NextRequest) {
       currentCompany: jsonLd.currentCompany || "",
       education: jsonLd.education || "",
       photoUrl: ogImage || "",
-      isPartial,
-      message: isPartial
-        ? "We extracted basic info from your public profile. For a complete audit, please paste your full profile text below — go to your LinkedIn profile, select all (Ctrl+A), copy (Ctrl+C), and paste."
-        : "Profile data loaded successfully!",
+      isPartial: true,
+      message: hasData
+        ? "We extracted basic info from your public profile. For a more thorough analysis, paste your full profile text below."
+        : "LinkedIn limited what we could access. Please paste your full profile text below for analysis.",
     });
   } catch {
-    return NextResponse.json(
-      { error: "Failed to fetch LinkedIn profile. Please paste your profile text manually instead." },
-      { status: 500 }
-    );
+    /* Even on error, return a success response with guidance instead of failing */
+    return NextResponse.json({
+      success: true,
+      profileText: "",
+      name: "",
+      headline: "",
+      about: "",
+      location: "",
+      currentCompany: "",
+      education: "",
+      photoUrl: "",
+      isPartial: true,
+      message: "Could not access this LinkedIn profile. Please paste your profile text manually — go to your LinkedIn profile, press Ctrl+A, Ctrl+C, and paste below.",
+    });
   }
 }
