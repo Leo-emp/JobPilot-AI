@@ -1,55 +1,97 @@
 /* ============================================================
    LINKEDIN OPTIMIZER PAGE
    ============================================================
-   AI-powered LinkedIn profile optimization with two modes:
-   1. Audit — Score and analyze the current profile (0-100)
-   2. Rewrite — Generate optimized profile sections
+   AI-powered LinkedIn profile optimization with three input
+   methods and three analysis actions.
 
    Input methods (tab toggle):
-   - URL mode: Paste LinkedIn profile URL → auto-scrape public data
-   - Manual mode: Paste full profile text directly
+   1. Import PDF — Upload LinkedIn profile PDF export
+   2. Paste Text — Paste full profile text directly
+   3. Post Screenshots — Upload screenshots of LinkedIn posts
 
-   The URL scraper extracts what it can from the public page.
-   If the profile is private or data is limited, the user is
-   prompted to supplement with pasted text.
+   Actions:
+   1. Profile Audit — Score 0-100 across all sections
+   2. Profile Rewrite — AI rewrites optimized for recruiters
+   3. Post Review — AI analyzes screenshots of recent posts
    ============================================================ */
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 
 /* ---- Action tab configuration ---- */
+/* Each tab maps to a different AI analysis mode */
 const actionTabs = [
   { id: "audit", label: "Profile Audit", desc: "Score your profile and find weaknesses" },
   { id: "rewrite", label: "Profile Rewrite", desc: "AI rewrites your profile sections" },
+  { id: "posts", label: "Post Review", desc: "Analyze your recent LinkedIn posts" },
 ];
 
-/* ---- Type for scraped profile data ---- */
-interface ScrapedProfile {
-  name: string;
-  headline: string;
-  about: string;
-  location: string;
-  currentCompany: string;
-  education: string;
-  photoUrl: string;
-  isPartial: boolean;
-  message: string;
+/* ---- Maximum file sizes ---- */
+const MAX_PDF_SIZE_MB = 10;
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_POST_SCREENSHOTS = 5;
+
+/* ---- Extract text from a PDF file client-side using pdfjs-dist ---- */
+async function extractTextFromPdf(file: File): Promise<string> {
+  /* Read the file into an ArrayBuffer */
+  const arrayBuffer = await file.arrayBuffer();
+
+  /* Dynamically import pdfjs-dist (only loaded when needed) */
+  const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
+
+  /* Set up the PDF worker for background processing */
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+  ).toString();
+
+  /* Load the PDF document */
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+
+  /* Extract text from every page */
+  const pages: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    /* Join all text items on the page with spaces */
+    const text = content.items.map((item: { str?: string }) => item.str || "").join(" ");
+    pages.push(text);
+  }
+
+  /* Combine all pages with double newlines */
+  return pages.join("\n\n");
+}
+
+/* ---- Convert an image file to a base64 data URL ---- */
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function LinkedInPage() {
-  /* ---- Input mode: URL or manual paste ---- */
-  const [inputMode, setInputMode] = useState<"url" | "manual">("url");
+  /* ---- Input mode: pdf, manual text, or post screenshots ---- */
+  const [inputMode, setInputMode] = useState<"pdf" | "manual" | "posts">("pdf");
 
-  /* ---- URL input state ---- */
-  const [profileUrl, setProfileUrl] = useState("");
-  const [scraping, setScraping] = useState(false);
-  const [scrapedProfile, setScrapedProfile] = useState<ScrapedProfile | null>(null);
+  /* ---- PDF import state ---- */
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfText, setPdfText] = useState(""); /* extracted text from PDF */
+  const [pdfParsing, setPdfParsing] = useState(false);
+  const [pdfError, setPdfError] = useState("");
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
-  /* ---- Profile text (from scraping or manual paste) ---- */
+  /* ---- Manual text paste state ---- */
   const [linkedinText, setLinkedinText] = useState("");
-  const [supplementText, setSupplementText] = useState(""); /* extra text user adds after scraping */
+
+  /* ---- Post screenshots state ---- */
+  const [postScreenshots, setPostScreenshots] = useState<{ file: File; preview: string }[]>([]);
+  const [postContext, setPostContext] = useState(""); /* optional context about the posts */
+  const postInputRef = useRef<HTMLInputElement>(null);
 
   /* ---- Action tab state ---- */
   const [activeTab, setActiveTab] = useState("audit");
@@ -61,57 +103,122 @@ export default function LinkedInPage() {
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState<number | string | null>(null);
 
-  /* ---- Combined profile text (scraped + supplement or manual) ---- */
+  /* ---- Get combined profile text for audit/rewrite ---- */
   const getFullProfileText = () => {
+    if (inputMode === "pdf") return pdfText;
     if (inputMode === "manual") return linkedinText;
-    /* URL mode: combine scraped data with any supplementary text */
-    const parts = [linkedinText, supplementText].filter(Boolean);
-    return parts.join("\n\n");
+    return "";
   };
 
-  /* ---- Scrape LinkedIn URL ---- */
-  const handleScrapeUrl = async () => {
-    if (!profileUrl.trim()) {
-      setError("Please enter your LinkedIn profile URL.");
+  /* ============================================================
+     PDF IMPORT HANDLER
+     ============================================================ */
+  const handlePdfUpload = useCallback(async (file: File) => {
+    /* Validate file type */
+    if (file.type !== "application/pdf") {
+      setPdfError("Please upload a PDF file.");
       return;
     }
 
-    /* Quick client-side URL validation */
-    if (!profileUrl.includes("linkedin.com/in/")) {
-      setError("Please enter a valid LinkedIn profile URL (e.g., https://www.linkedin.com/in/your-username)");
+    /* Validate file size */
+    if (file.size > MAX_PDF_SIZE_MB * 1024 * 1024) {
+      setPdfError(`File too large. Maximum size is ${MAX_PDF_SIZE_MB}MB.`);
       return;
     }
 
-    setScraping(true);
-    setError("");
-    setScrapedProfile(null);
-    setLinkedinText("");
+    setPdfFile(file);
+    setPdfParsing(true);
+    setPdfError("");
+    setPdfText("");
 
     try {
-      const res = await fetch("/api/linkedin/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: profileUrl.trim() }),
-      });
+      const text = await extractTextFromPdf(file);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to fetch profile.");
+      /* Make sure we got meaningful text */
+      if (text.trim().length < 20) {
+        setPdfError("Could not extract enough text from this PDF. It may be image-based. Please paste your profile text manually instead.");
+        setPdfParsing(false);
         return;
       }
 
-      /* Store the scraped data */
-      setScrapedProfile(data);
-      setLinkedinText(data.profileText || "");
+      setPdfText(text);
     } catch {
-      setError("Failed to connect. Please try pasting your profile text manually.");
+      setPdfError("Failed to read this PDF. Please try pasting your profile text manually instead.");
     } finally {
-      setScraping(false);
+      setPdfParsing(false);
     }
+  }, []);
+
+  /* ---- Handle file input change for PDF ---- */
+  const onPdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handlePdfUpload(file);
   };
 
-  /* ---- Call AI API for audit or rewrite ---- */
+  /* ---- Handle drag and drop for PDF ---- */
+  const [pdfDragActive, setPdfDragActive] = useState(false);
+
+  const onPdfDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setPdfDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handlePdfUpload(file);
+  }, [handlePdfUpload]);
+
+  /* ============================================================
+     POST SCREENSHOT HANDLERS
+     ============================================================ */
+  const handlePostScreenshots = useCallback(async (files: FileList) => {
+    const newScreenshots: { file: File; preview: string }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      /* Enforce maximum screenshot limit */
+      if (postScreenshots.length + newScreenshots.length >= MAX_POST_SCREENSHOTS) break;
+
+      const file = files[i];
+
+      /* Only accept images */
+      if (!file.type.startsWith("image/")) continue;
+
+      /* Validate size */
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) continue;
+
+      /* Generate preview URL */
+      const preview = URL.createObjectURL(file);
+      newScreenshots.push({ file, preview });
+    }
+
+    setPostScreenshots(prev => [...prev, ...newScreenshots]);
+  }, [postScreenshots.length]);
+
+  /* ---- Remove a screenshot by index ---- */
+  const removeScreenshot = (index: number) => {
+    setPostScreenshots(prev => {
+      /* Revoke the preview URL to free memory */
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  /* ---- Handle file input change for screenshots ---- */
+  const onPostFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) handlePostScreenshots(e.target.files);
+    /* Reset input so same file can be re-selected */
+    e.target.value = "";
+  };
+
+  /* ---- Handle drag and drop for screenshots ---- */
+  const [postDragActive, setPostDragActive] = useState(false);
+
+  const onPostDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setPostDragActive(false);
+    if (e.dataTransfer.files) handlePostScreenshots(e.dataTransfer.files);
+  }, [handlePostScreenshots]);
+
+  /* ============================================================
+     AI API CALL — Profile Audit / Rewrite (text only)
+     ============================================================ */
   const callAI = async (action: string) => {
     const fullText = getFullProfileText();
     if (!fullText.trim()) {
@@ -149,8 +256,60 @@ export default function LinkedInPage() {
     }
   };
 
-  /* ---- Check if we have enough profile data to run AI ---- */
+  /* ============================================================
+     AI API CALL — Post Review (sends images as base64)
+     ============================================================ */
+  const callPostReview = async () => {
+    if (postScreenshots.length === 0) {
+      setError("Please upload at least one screenshot of your LinkedIn posts.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setResult("");
+
+    try {
+      /* Convert all screenshots to base64 for the API */
+      const images = await Promise.all(
+        postScreenshots.map(async (s) => {
+          const base64 = await fileToBase64(s.file);
+          return { data: base64, mimeType: s.file.type };
+        })
+      );
+
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "linkedin_post_review",
+          payload: {
+            images,
+            postContext: postContext.trim() || undefined,
+            targetRole: targetRole.trim() || undefined,
+          },
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "AI request failed.");
+        return;
+      }
+
+      setResult(data.result);
+      if (data.remaining !== undefined) setRemaining(data.remaining);
+    } catch {
+      setError("Failed to connect to AI. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---- Check if we have enough data to run the selected action ---- */
   const hasProfileData = getFullProfileText().trim().length > 20;
+  const hasPostData = postScreenshots.length > 0;
 
   return (
     <div>
@@ -180,22 +339,25 @@ export default function LinkedInPage() {
       <div className="glass-card p-6 mb-8">
         <h2 className="text-lg font-bold mb-4">Your LinkedIn Profile</h2>
 
-        {/* ---- Input mode toggle (URL vs Manual) ---- */}
-        <div className="flex gap-2 mb-5">
+        {/* ---- Input mode tabs: PDF / Paste Text / Post Screenshots ---- */}
+        <div className="flex flex-wrap gap-2 mb-5">
+          {/* PDF Import tab */}
           <button
-            onClick={() => { setInputMode("url"); setError(""); }}
+            onClick={() => { setInputMode("pdf"); setError(""); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              inputMode === "url"
+              inputMode === "pdf"
                 ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
                 : "bg-space-700/50 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/20"
             }`}
           >
-            {/* Link icon */}
+            {/* PDF icon */}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            Paste URL
+            Import PDF
           </button>
+
+          {/* Paste Text tab */}
           <button
             onClick={() => { setInputMode("manual"); setError(""); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -204,139 +366,147 @@ export default function LinkedInPage() {
                 : "bg-space-700/50 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/20"
             }`}
           >
-            {/* Document icon */}
+            {/* Clipboard icon */}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Paste Text
           </button>
+
+          {/* Post Screenshots tab */}
+          <button
+            onClick={() => { setInputMode("posts"); setActiveTab("posts"); setError(""); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              inputMode === "posts"
+                ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
+                : "bg-space-700/50 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/20"
+            }`}
+          >
+            {/* Camera/image icon */}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Post Screenshots
+          </button>
         </div>
 
         {/* ============================================================
-           URL INPUT MODE
+           PDF IMPORT MODE
            ============================================================ */}
-        {inputMode === "url" && (
+        {inputMode === "pdf" && (
           <div>
-            {/* URL input field + Fetch button */}
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                {/* LinkedIn icon inside input */}
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
-                  <svg className="w-5 h-5 text-[#0A66C2]" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </div>
-                <input
-                  type="url"
-                  value={profileUrl}
-                  onChange={e => setProfileUrl(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter") handleScrapeUrl(); }}
-                  placeholder="https://www.linkedin.com/in/your-username"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo transition-colors text-sm"
-                />
-              </div>
-              <button
-                onClick={handleScrapeUrl}
-                disabled={scraping || !profileUrl.trim()}
-                className="px-5 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center gap-2"
-              >
-                {scraping ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                    Fetching...
-                  </>
-                ) : "Fetch Profile"}
-              </button>
+            {/* Step-by-step instructions for downloading LinkedIn PDF */}
+            <div className="mb-5 p-4 rounded-xl bg-space-700/60 border border-card-border">
+              <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                How to download your LinkedIn profile as PDF
+              </h3>
+              <ol className="text-sm text-text-secondary space-y-2 list-decimal list-inside">
+                <li>
+                  Go to your LinkedIn profile page
+                  <span className="text-text-muted"> (click your photo → &quot;View Profile&quot;)</span>
+                </li>
+                <li>
+                  Click the <span className="text-white font-medium">&quot;More&quot;</span> button below your profile header
+                  <span className="text-text-muted"> (next to &quot;Open to&quot; and &quot;Add profile section&quot;)</span>
+                </li>
+                <li>
+                  Select <span className="text-white font-medium">&quot;Save to PDF&quot;</span> from the dropdown menu
+                </li>
+                <li>
+                  Upload the downloaded PDF file below
+                </li>
+              </ol>
             </div>
 
-            {/* ---- Scraped Profile Preview ---- */}
-            {scrapedProfile && (
-              <div className="mt-5">
-                {/* Profile card showing extracted data */}
-                <div className="p-4 rounded-xl bg-space-700/80 border border-card-border">
-                  <div className="flex items-start gap-4">
-                    {/* Profile photo (if available) */}
-                    {scrapedProfile.photoUrl && (
-                      <img
-                        src={scrapedProfile.photoUrl}
-                        alt={scrapedProfile.name}
-                        className="w-16 h-16 rounded-full border-2 border-brand-indigo/30 flex-shrink-0 object-cover"
-                        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      {scrapedProfile.name && (
-                        <h3 className="font-bold text-white text-lg">{scrapedProfile.name}</h3>
-                      )}
-                      {scrapedProfile.headline && (
-                        <p className="text-sm text-brand-light mt-0.5">{scrapedProfile.headline}</p>
-                      )}
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
-                        {scrapedProfile.location && (
-                          <span className="text-xs text-text-muted flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                            {scrapedProfile.location}
-                          </span>
-                        )}
-                        {scrapedProfile.currentCompany && (
-                          <span className="text-xs text-text-muted flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                            {scrapedProfile.currentCompany}
-                          </span>
-                        )}
-                        {scrapedProfile.education && (
-                          <span className="text-xs text-text-muted flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" /></svg>
-                            {scrapedProfile.education}
-                          </span>
-                        )}
-                      </div>
+            {/* ---- PDF Drop Zone ---- */}
+            {!pdfFile ? (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setPdfDragActive(true); }}
+                onDragLeave={() => setPdfDragActive(false)}
+                onDrop={onPdfDrop}
+                onClick={() => pdfInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
+                  pdfDragActive
+                    ? "border-brand-indigo bg-brand-indigo/10"
+                    : "border-card-border hover:border-brand-indigo/40 hover:bg-space-700/30"
+                }`}
+              >
+                {/* Upload icon */}
+                <svg className="w-10 h-10 mx-auto mb-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-sm text-text-secondary mb-1">
+                  <span className="text-brand-light font-medium">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-text-muted">PDF files only, up to {MAX_PDF_SIZE_MB}MB</p>
+
+                {/* Hidden file input */}
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={onPdfFileChange}
+                  className="hidden"
+                />
+              </div>
+            ) : (
+              /* ---- PDF file loaded — show status ---- */
+              <div className="rounded-xl border border-card-border bg-space-700/50 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* PDF icon */}
+                    <div className="w-10 h-10 rounded-lg bg-red-500/15 border border-red-500/20 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white truncate max-w-[200px] sm:max-w-[400px]">
+                        {pdfFile.name}
+                      </p>
+                      <p className="text-xs text-text-muted">
+                        {(pdfFile.size / 1024).toFixed(0)} KB
+                      </p>
                     </div>
                   </div>
 
-                  {/* About section preview */}
-                  {scrapedProfile.about && (
-                    <div className="mt-3 p-3 rounded-lg bg-space-600/50">
-                      <p className="text-xs text-text-muted font-medium mb-1">About</p>
-                      <p className="text-sm text-text-secondary leading-relaxed">{scrapedProfile.about}</p>
-                    </div>
-                  )}
+                  {/* Remove file button */}
+                  <button
+                    onClick={() => { setPdfFile(null); setPdfText(""); setPdfError(""); setResult(""); }}
+                    className="text-text-muted hover:text-red-400 transition-colors p-1"
+                    title="Remove file"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
 
-                {/* Status message (partial vs full) */}
-                <div className={`mt-3 p-3 rounded-xl text-sm ${
-                  scrapedProfile.isPartial
-                    ? "bg-yellow-500/10 border border-yellow-500/20 text-yellow-400"
-                    : "bg-green-500/10 border border-green-500/20 text-green-400"
-                }`}>
-                  {scrapedProfile.isPartial ? (
-                    <>
-                      <span className="font-medium">Partial data extracted.</span>{" "}
-                      LinkedIn limits what&apos;s visible publicly. For a more thorough audit, paste your full profile text below — go to your profile, press Ctrl+A, Ctrl+C, and paste.
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-medium">Profile loaded successfully!</span>{" "}
-                      You can add more details below if needed.
-                    </>
-                  )}
-                </div>
+                {/* Parsing status */}
+                {pdfParsing && (
+                  <div className="mt-3 flex items-center gap-2 text-sm text-text-secondary">
+                    <div className="w-4 h-4 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
+                    Extracting profile data from PDF...
+                  </div>
+                )}
 
-                {/* Supplementary text area (for adding more profile data after scraping) */}
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    {scrapedProfile.isPartial
-                      ? "Paste your full profile text here for a complete analysis:"
-                      : "Add extra details (optional):"}
-                  </label>
-                  <textarea
-                    value={supplementText}
-                    onChange={e => setSupplementText(e.target.value)}
-                    placeholder="Go to your LinkedIn profile → Ctrl+A → Ctrl+C → paste here for the most thorough analysis..."
-                    rows={6}
-                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm leading-relaxed"
-                  />
-                </div>
+                {/* Success: show extracted text length */}
+                {pdfText && !pdfParsing && (
+                  <div className="mt-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-sm text-green-400">
+                    <span className="font-medium">Profile extracted successfully!</span>{" "}
+                    {pdfText.length.toLocaleString()} characters of profile data ready for analysis.
+                  </div>
+                )}
+
+                {/* PDF-specific error */}
+                {pdfError && (
+                  <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+                    {pdfError}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -377,12 +547,133 @@ export default function LinkedInPage() {
             )}
           </div>
         )}
+
+        {/* ============================================================
+           POST SCREENSHOTS MODE
+           ============================================================ */}
+        {inputMode === "posts" && (
+          <div>
+            {/* Instructions */}
+            <div className="mb-4 p-4 rounded-xl bg-space-700/60 border border-card-border">
+              <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                <svg className="w-4 h-4 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                How to capture your LinkedIn post screenshots
+              </h3>
+              <ol className="text-sm text-text-secondary space-y-1.5 list-decimal list-inside">
+                <li>Go to your LinkedIn profile → <span className="text-white font-medium">&quot;Activity&quot;</span> section → <span className="text-white font-medium">&quot;Show all posts&quot;</span></li>
+                <li>Take a screenshot of each post you want reviewed <span className="text-text-muted">(Windows: Win+Shift+S, Mac: Cmd+Shift+4)</span></li>
+                <li>Make sure the full post is visible — text, images, engagement metrics (likes, comments)</li>
+                <li>Upload up to {MAX_POST_SCREENSHOTS} screenshots below</li>
+              </ol>
+            </div>
+
+            {/* ---- Screenshot Drop Zone ---- */}
+            {postScreenshots.length < MAX_POST_SCREENSHOTS && (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setPostDragActive(true); }}
+                onDragLeave={() => setPostDragActive(false)}
+                onDrop={onPostDrop}
+                onClick={() => postInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                  postDragActive
+                    ? "border-brand-indigo bg-brand-indigo/10"
+                    : "border-card-border hover:border-brand-indigo/40 hover:bg-space-700/30"
+                }`}
+              >
+                {/* Upload icon */}
+                <svg className="w-8 h-8 mx-auto mb-2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-sm text-text-secondary mb-1">
+                  <span className="text-brand-light font-medium">Click to upload</span> or drag and drop screenshots
+                </p>
+                <p className="text-xs text-text-muted">
+                  PNG, JPG, or WEBP — up to {MAX_IMAGE_SIZE_MB}MB each — {MAX_POST_SCREENSHOTS - postScreenshots.length} more allowed
+                </p>
+
+                {/* Hidden file input — accepts multiple images */}
+                <input
+                  ref={postInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  multiple
+                  onChange={onPostFileChange}
+                  className="hidden"
+                />
+              </div>
+            )}
+
+            {/* ---- Screenshot Previews Grid ---- */}
+            {postScreenshots.length > 0 && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-text-secondary">
+                    {postScreenshots.length} screenshot{postScreenshots.length !== 1 ? "s" : ""} uploaded
+                  </p>
+                  <button
+                    onClick={() => {
+                      /* Revoke all preview URLs before clearing */
+                      postScreenshots.forEach(s => URL.revokeObjectURL(s.preview));
+                      setPostScreenshots([]);
+                    }}
+                    className="text-xs text-text-muted hover:text-red-400 transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {postScreenshots.map((screenshot, index) => (
+                    <div key={index} className="relative group rounded-xl overflow-hidden border border-card-border bg-space-700/50">
+                      {/* Screenshot thumbnail */}
+                      <img
+                        src={screenshot.preview}
+                        alt={`Post screenshot ${index + 1}`}
+                        className="w-full aspect-[3/4] object-cover object-top"
+                      />
+                      {/* Remove button overlay */}
+                      <button
+                        onClick={() => removeScreenshot(index)}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/80"
+                        title="Remove screenshot"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      {/* Index badge */}
+                      <div className="absolute bottom-2 left-2 w-5 h-5 rounded-full bg-brand-indigo/80 text-white text-xs flex items-center justify-center font-bold">
+                        {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Optional context text area */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Additional context (optional)
+              </label>
+              <textarea
+                value={postContext}
+                onChange={e => setPostContext(e.target.value)}
+                placeholder="e.g., I'm trying to build an audience in AI/tech, my target audience is recruiters and hiring managers, I post 3x per week..."
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm leading-relaxed"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ============================================================
-         ACTION TABS (Audit / Rewrite)
+         ACTION TABS (Audit / Rewrite / Post Review)
          ============================================================ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         {actionTabs.map(tab => (
           <button
             key={tab.id}
@@ -402,7 +693,7 @@ export default function LinkedInPage() {
       </div>
 
       {/* ============================================================
-         TAB CONTENT (Audit / Rewrite action panels)
+         TAB CONTENT (Audit / Rewrite / Post Review action panels)
          ============================================================ */}
       <div className="glass-card p-6 sm:p-8">
 
@@ -418,7 +709,7 @@ export default function LinkedInPage() {
               disabled={!hasProfileData || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Analyzing profile..." : "Audit My Profile"}
+              {loading && activeTab === "audit" ? "Analyzing profile..." : "Audit My Profile"}
             </button>
           </div>
         )}
@@ -450,8 +741,47 @@ export default function LinkedInPage() {
               disabled={!hasProfileData || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Rewriting profile..." : "Rewrite My Profile"}
+              {loading && activeTab === "rewrite" ? "Rewriting profile..." : "Rewrite My Profile"}
             </button>
+          </div>
+        )}
+
+        {/* ---- Post Review Tab ---- */}
+        {activeTab === "posts" && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">Post Review</h2>
+            <p className="text-text-secondary text-sm mb-6">
+              AI analyzes your recent LinkedIn posts — content quality, engagement potential, and how to improve your posting strategy.
+            </p>
+
+            {/* Optional target role for post context */}
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Target Audience / Role (optional)
+              </label>
+              <input
+                type="text"
+                value={targetRole}
+                onChange={e => setTargetRole(e.target.value)}
+                placeholder="e.g., Tech recruiters, Startup founders, AI community"
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+              />
+            </div>
+
+            <button
+              onClick={callPostReview}
+              disabled={!hasPostData || loading}
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading && activeTab === "posts" ? "Analyzing posts..." : "Review My Posts"}
+            </button>
+
+            {/* Tip for post analysis */}
+            {!hasPostData && (
+              <p className="mt-3 text-xs text-text-muted">
+                Switch to the &quot;Post Screenshots&quot; input tab above to upload your post screenshots first.
+              </p>
+            )}
           </div>
         )}
 
@@ -469,7 +799,9 @@ export default function LinkedInPage() {
         {loading && (
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">AI is analyzing your LinkedIn profile...</span>
+            <span className="text-sm">
+              {activeTab === "posts" ? "AI is analyzing your LinkedIn posts..." : "AI is analyzing your LinkedIn profile..."}
+            </span>
           </div>
         )}
       </div>
@@ -489,9 +821,9 @@ export default function LinkedInPage() {
           </p>
         </div>
         <div className="glass-card p-5">
-          <h3 className="font-bold text-white text-sm mb-2">Skills Drive Search</h3>
+          <h3 className="font-bold text-white text-sm mb-2">Post Consistently</h3>
           <p className="text-xs text-text-secondary leading-relaxed">
-            LinkedIn&apos;s algorithm uses your skills list to match you with opportunities. Add at least 20 relevant skills.
+            Regular posting boosts your profile visibility. Aim for 2-3 posts per week with value-driven content in your niche.
           </p>
         </div>
       </div>

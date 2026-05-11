@@ -88,6 +88,75 @@ async function callGemini(prompt: string): Promise<string> {
   throw new Error("All AI models are currently at capacity. Please try again later.");
 }
 
+/* ---- Multimodal Gemini Call (text + images) ---- */
+/* Used for actions that include screenshots/images (e.g., LinkedIn post review) */
+/* Images are sent as inline base64 data alongside the text prompt */
+async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not configured.");
+  }
+
+  /* Build the parts array: text prompt + inline image data */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const parts: any[] = [{ text: prompt }];
+  for (const img of images) {
+    /* Strip the data URL prefix (e.g., "data:image/png;base64,") to get raw base64 */
+    const base64Data = img.data.includes(",") ? img.data.split(",")[1] : img.data;
+    parts.push({
+      inlineData: {
+        mimeType: img.mimeType,
+        data: base64Data,
+      },
+    });
+  }
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 8192,
+            },
+          }),
+        }
+      );
+
+      if (response.status === 429 || response.status === 503 || response.status === 404) {
+        await new Promise((r) => setTimeout(r, 2000));
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const msg = errorData.error?.message || "Gemini API error";
+        if (msg.toLowerCase().includes("overloaded") || msg.toLowerCase().includes("high demand") || msg.toLowerCase().includes("capacity")) {
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
+        }
+        throw new Error(msg);
+      }
+
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+    } catch (error: unknown) {
+      if (error instanceof Error && (error.message.includes("429") || error.message.includes("503") || error.message.toLowerCase().includes("overloaded") || error.message.toLowerCase().includes("high demand"))) {
+        await new Promise((r) => setTimeout(r, 2000));
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("All AI models are currently at capacity. Please try again later.");
+}
+
 /* ---- Sanitize user input for prompt injection defense ---- */
 /* Wraps user-provided text in clear delimiters so the AI treats it as data, not instructions */
 function wrapUserInput(label: string, text: string): string {
@@ -578,6 +647,45 @@ CRITICAL RULES:
 
 Return ONLY the message text, ready to copy and send. No JSON, no markdown, no labels — just the message.`;
 
+    /* ---- LinkedIn Post Review: analyze screenshots of recent posts ---- */
+    /* The actual images are sent separately via callGeminiMultimodal */
+    /* This prompt is prepended to the image data */
+    case "linkedin_post_review":
+      return `You are a LinkedIn content strategist and personal branding expert. Analyze the LinkedIn post screenshots provided and give a comprehensive content review.
+
+${payload.targetRole ? `TARGET AUDIENCE: ${payload.targetRole}` : ""}
+${payload.postContext ? `ADDITIONAL CONTEXT FROM USER: ${payload.postContext}` : ""}
+
+For EACH post screenshot, analyze:
+1. **Content Quality** — Is the hook strong? Is the message clear and valuable?
+2. **Engagement Potential** — Will people like, comment, or share? Why or why not?
+3. **Visual Appeal** — Is the formatting clean? Good use of whitespace, emojis, line breaks?
+4. **Audience Relevance** — Does it speak to the right audience?
+
+Then provide an OVERALL analysis:
+
+## Per-Post Breakdown
+(Analyze each post individually with a score out of 10)
+
+## Content Strategy Score: X/100
+
+## What You're Doing Well
+(Specific strengths across all posts)
+
+## Top Issues to Fix
+(Ranked list of the most impactful improvements)
+
+## Recommended Content Pillars
+(3-5 content themes/topics you should regularly post about based on your niche)
+
+## Post Templates
+(Give 2-3 ready-to-use post templates/frameworks they can fill in and post immediately)
+
+## Posting Strategy
+(Frequency, best times, hashtag strategy, engagement tips)
+
+Be specific — reference the actual content in each screenshot. Don't be generic.`;
+
     default:
       throw new Error(`Unknown action: ${action}`);
   }
@@ -602,8 +710,10 @@ const PLAN_LIMITS: Record<string, number> = {
 
 /* ---- All features available to all plans (differentiated by call count only) ---- */
 
-/* ---- Max input size: 50KB to prevent abuse ---- */
+/* ---- Max input size ---- */
+/* Text-only actions: 50KB. Multimodal actions (with images): 20MB */
 const MAX_PAYLOAD_SIZE = 50_000;
+const MAX_MULTIMODAL_PAYLOAD_SIZE = 20_000_000;
 
 /* ---- Main POST Handler ---- */
 export async function POST(req: NextRequest) {
@@ -628,10 +738,13 @@ export async function POST(req: NextRequest) {
     }
 
     /* ---- Input size validation ---- */
+    /* Multimodal actions (images) get a higher size limit than text-only */
+    const isMultimodal = action === "linkedin_post_review" && payload.images?.length > 0;
+    const sizeLimit = isMultimodal ? MAX_MULTIMODAL_PAYLOAD_SIZE : MAX_PAYLOAD_SIZE;
     const payloadSize = JSON.stringify(payload).length;
-    if (payloadSize > MAX_PAYLOAD_SIZE) {
+    if (payloadSize > sizeLimit) {
       return NextResponse.json(
-        { error: "Input too large. Please shorten your resume or job description." },
+        { error: isMultimodal ? "Images too large. Please use smaller screenshots." : "Input too large. Please shorten your resume or job description." },
         { status: 413 }
       );
     }
@@ -708,8 +821,11 @@ export async function POST(req: NextRequest) {
     }
 
     /* Build the prompt and call Gemini */
+    /* Multimodal actions send images alongside the text prompt */
     const prompt = buildPrompt(action, payload);
-    const result = await callGemini(prompt);
+    const result = isMultimodal
+      ? await callGeminiMultimodal(prompt, payload.images)
+      : await callGemini(prompt);
 
     /* Increment usage counter */
     await prisma.user.update({
