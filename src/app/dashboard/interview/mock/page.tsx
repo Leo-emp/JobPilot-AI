@@ -1,13 +1,15 @@
 /* ============================================================
-   INTERACTIVE MOCK INTERVIEW — Video Interview Simulation
+   INTERACTIVE MOCK INTERVIEW — Google Meet Style
    ============================================================
-   Realistic interview experience with:
-   - User's live webcam feed (practice body language & eye contact)
-   - AI interviewer with avatar and speaking animation
-   - Voice input via browser Speech Recognition API (free)
-   - AI speaks questions aloud via SpeechSynthesis API (free)
-   - Real-time feedback after each answer
-   - Final score dashboard with detailed breakdown
+   Realistic video-call interview experience with:
+   - Google Meet-style layout (side-by-side video tiles)
+   - Animated AI interviewer avatar with speaking/idle states
+   - Adaptive conversation (AI responds to your actual answers)
+   - High-quality female TTS voice (warm, professional)
+   - Live webcam feed for body language practice
+   - Voice input via Speech Recognition API
+   - Classic + role-specific interview questions
+   - Final score dashboard with per-question breakdown
    ============================================================ */
 
 "use client";
@@ -16,32 +18,39 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 /* ---- Types ---- */
-interface QuestionFeedback {
+/* Each message in the conversation (AI or user) */
+interface ChatMessage {
+  role: "ai" | "user";
+  text: string;
+}
+
+/* Per-question score returned in the final summary */
+interface QuestionScore {
+  question: string;
   score: number;
   strengths: string[];
   improvements: string[];
-  betterAnswer: string;
-  starAnalysis: { situation: boolean; task: boolean; action: boolean; result: boolean };
 }
 
-interface InterviewResult {
-  question: string;
-  answer: string;
-  feedback: QuestionFeedback;
-}
-
+/* Final assessment after the interview */
 interface FinalScore {
   overallScore: number;
   categories: Record<string, number>;
+  questionScores: QuestionScore[];
   topStrengths: string[];
   keyImprovements: string[];
   overallFeedback: string;
   readinessLevel: string;
 }
 
+/* Three phases of the interview flow */
 type Phase = "setup" | "interview" | "results";
 
-/* ---- Helper: call AI endpoint ---- */
+/* ---- Constants ---- */
+/* Total AI exchanges: 0=greeting, 1-5=questions, 6=closing */
+const TOTAL_EXCHANGES = 7;
+
+/* ---- Helper: call the /api/ai endpoint ---- */
 async function callAI(action: string, payload: Record<string, string>): Promise<string> {
   const res = await fetch("/api/ai", {
     method: "POST",
@@ -59,32 +68,61 @@ function parseAIJson<T>(text: string): T {
   return JSON.parse(cleaned);
 }
 
-/* ---- Helper: speak text aloud ---- */
+/* ---- Helper: find the best female English voice for TTS ---- */
+/* Priority: Google UK Female > Google US Female > Microsoft Zira > Samantha > any English female */
+function getBestVoice(): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return null;
+
+  /* Ordered preference list — first match wins */
+  const tests: ((v: SpeechSynthesisVoice) => boolean)[] = [
+    v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en-GB"),
+    v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en"),
+    v => v.name.includes("Zira"),
+    v => v.name.includes("Samantha"),
+    v => v.lang.startsWith("en") && /female|woman/i.test(v.name),
+    v => v.lang.startsWith("en") && v.localService,
+    v => v.lang.startsWith("en"),
+  ];
+
+  for (const test of tests) {
+    const match = voices.find(test);
+    if (match) return match;
+  }
+  return voices[0];
+}
+
+/* ---- Helper: speak text aloud with a warm, professional female voice ---- */
 function speakText(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (!window.speechSynthesis) { resolve(); return; }
+    /* Cancel any in-progress speech first */
     window.speechSynthesis.cancel();
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    /* Try to pick a natural-sounding English voice */
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v => v.lang.startsWith("en") && v.name.includes("Female"))
-      || voices.find(v => v.lang.startsWith("en") && v.localService)
-      || voices.find(v => v.lang.startsWith("en"));
-    if (preferred) utterance.voice = preferred;
+    /* Voice settings tuned for natural, energetic delivery */
+    utterance.rate = 1.0;       /* natural speed — not too fast, not too slow */
+    utterance.pitch = 1.1;      /* slightly higher pitch = friendlier, more energetic */
+    utterance.volume = 1.0;     /* maximum volume */
+
+    /* Pick the best available female voice */
+    const voice = getBestVoice();
+    if (voice) utterance.voice = voice;
+
     utterance.onend = () => resolve();
     utterance.onerror = () => resolve();
     window.speechSynthesis.speak(utterance);
   });
 }
 
-/* ============================================================ */
+/* ============================================================
+   MAIN COMPONENT
+   ============================================================ */
 export default function MockInterviewPage() {
   /* ---- Phase state ---- */
   const [phase, setPhase] = useState<Phase>("setup");
 
-  /* ---- Setup form ---- */
+  /* ---- Setup form fields ---- */
   const [role, setRole] = useState("");
   const [industry, setIndustry] = useState("");
   const [experience, setExperience] = useState("Mid-level");
@@ -95,17 +133,16 @@ export default function MockInterviewPage() {
   const [resumeUploading, setResumeUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /* ---- Interview state ---- */
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [currentQ, setCurrentQ] = useState(0);
-  const [results, setResults] = useState<InterviewResult[]>([]);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [currentFeedback, setCurrentFeedback] = useState<QuestionFeedback | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  /* ---- Interview conversation state ---- */
+  const [messages, setMessages] = useState<ChatMessage[]>([]);          /* full conversation log */
+  const [currentAIMessage, setCurrentAIMessage] = useState("");         /* currently displayed AI message */
+  const [exchangeNumber, setExchangeNumber] = useState(0);              /* tracks which exchange we're on */
+  const [userAnswer, setUserAnswer] = useState("");                     /* what the user is typing/saying */
+  const [isAISpeaking, setIsAISpeaking] = useState(false);              /* AI voice is playing */
+  const [isAIThinking, setIsAIThinking] = useState(false);              /* waiting for AI response */
+  const [isListening, setIsListening] = useState(false);                /* mic is recording */
+  const [elapsedTime, setElapsedTime] = useState(0);                    /* seconds since interview started */
+  const [waitingForUser, setWaitingForUser] = useState(false);          /* AI finished speaking, user's turn */
 
   /* ---- Results state ---- */
   const [finalScore, setFinalScore] = useState<FinalScore | null>(null);
@@ -116,30 +153,41 @@ export default function MockInterviewPage() {
   const [error, setError] = useState("");
 
   /* ---- Refs ---- */
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);                      /* user's webcam element */
+  const streamRef = useRef<MediaStream | null>(null);                   /* webcam MediaStream */
+  const recognitionRef = useRef<SpeechRecognition | null>(null);        /* speech recognition instance */
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null); /* interview timer */
+  const messagesRef = useRef<ChatMessage[]>([]);                        /* sync ref for messages in closures */
 
-  /* ---- Webcam ---- */
+  /* Keep messagesRef in sync with messages state */
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
+
+  /* ---- Preload browser voices (Chrome loads them asynchronously) ---- */
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+  }, []);
+
+  /* ---- Webcam: start user's camera ---- */
   const startWebcam = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = stream;
     } catch {
       /* Webcam not available — interview still works without it */
     }
   }, []);
 
+  /* ---- Webcam: stop user's camera ---- */
   const stopWebcam = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
   }, []);
 
-  /* ---- Timer ---- */
+  /* ---- Timer: count seconds while in interview phase ---- */
   useEffect(() => {
     if (phase === "interview") {
       timerRef.current = setInterval(() => setElapsedTime(t => t + 1), 1000);
@@ -147,13 +195,12 @@ export default function MockInterviewPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    return `${m}:${String(s % 60).padStart(2, "0")}`;
-  };
+  /* Format seconds as M:SS */
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-  /* ---- Resume File Upload ---- */
+  /* ---- Resume File Upload (PDF parsed client-side, TXT read directly) ---- */
   const handleResumeUpload = async (file: File) => {
+    /* Reject files over 5MB */
     if (file.size > 5 * 1024 * 1024) {
       setError("File too large. Maximum 5MB.");
       return;
@@ -197,17 +244,16 @@ export default function MockInterviewPage() {
     setError("Unsupported file type. Upload a PDF or TXT file.");
   };
 
-  /* ---- Speech Recognition ---- */
+  /* ---- Speech Recognition: start listening to user's microphone ---- */
   const startListening = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { return; }
+    if (!SR) return;
     const recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
     let finalTranscript = "";
-
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -219,7 +265,6 @@ export default function MockInterviewPage() {
       }
       setUserAnswer(finalTranscript + interim);
     };
-
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
     recognition.start();
@@ -227,90 +272,117 @@ export default function MockInterviewPage() {
     setIsListening(true);
   }, []);
 
+  /* ---- Speech Recognition: stop listening ---- */
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     setIsListening(false);
   }, []);
 
-  /* ---- Start Interview ---- */
+  /* ---- Format conversation history as a string for the AI prompt ---- */
+  const formatHistory = (msgs: ChatMessage[]) => {
+    if (msgs.length === 0) return "";
+    return msgs.map(m => `${m.role === "ai" ? "Sarah" : "Candidate"}: ${m.text}`).join("\n");
+  };
+
+  /* ---- Send a message to AI and get the next response ---- */
+  const getAIResponse = useCallback(async (currentMessages: ChatMessage[], exchNum: number) => {
+    const result = await callAI("mock_interview_respond", {
+      role,
+      industry,
+      experience,
+      interviewType,
+      company,
+      resume,
+      history: formatHistory(currentMessages),
+      exchangeNumber: String(exchNum),
+    });
+
+    const parsed = parseAIJson<{ message: string; isComplete: boolean }>(result);
+    return parsed;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, industry, experience, interviewType, company, resume]);
+
+  /* ---- Start the interview: get AI greeting and begin ---- */
   const handleStartInterview = async () => {
     if (!role.trim()) { setError("Please enter the role you're interviewing for."); return; }
     setLoading(true);
     setError("");
 
     try {
-      const result = await callAI("mock_interview_start", {
-        role, industry, experience, interviewType, company, resume,
-      });
-      const parsed = parseAIJson<string[]>(result);
-      if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("No questions generated");
-      setQuestions(parsed);
-      setCurrentQ(0);
-      setResults([]);
-      setElapsedTime(0);
+      /* Switch to interview phase and start webcam */
       setPhase("interview");
+      setMessages([]);
+      setExchangeNumber(0);
+      setElapsedTime(0);
       await startWebcam();
 
-      /* Load voices then speak first question */
-      setTimeout(async () => {
-        setIsSpeaking(true);
-        await speakText(parsed[0]);
-        setIsSpeaking(false);
-      }, 1000);
+      /* Get AI's opening greeting */
+      setIsAIThinking(true);
+      const greeting = await getAIResponse([], 0);
+      const aiMsg: ChatMessage = { role: "ai", text: greeting.message };
+      setMessages([aiMsg]);
+      setCurrentAIMessage(greeting.message);
+      setIsAIThinking(false);
+
+      /* Speak the greeting aloud */
+      setIsAISpeaking(true);
+      await speakText(greeting.message);
+      setIsAISpeaking(false);
+      setWaitingForUser(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to start interview");
+      setPhase("setup");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---- Submit Answer ---- */
+  /* ---- Submit the user's answer and get the AI's next response ---- */
   const handleSubmitAnswer = async () => {
-    if (!userAnswer.trim()) return;
+    if (!userAnswer.trim() || isAIThinking || isAISpeaking) return;
     stopListening();
-    setIsEvaluating(true);
-    setShowFeedback(false);
+    setWaitingForUser(false);
 
-    try {
-      const result = await callAI("mock_interview_evaluate", {
-        question: questions[currentQ],
-        answer: userAnswer,
-        role,
-        interviewType,
-      });
-      const feedback = parseAIJson<QuestionFeedback>(result);
-      setCurrentFeedback(feedback);
-      setShowFeedback(true);
-      setResults(prev => [...prev, { question: questions[currentQ], answer: userAnswer, feedback }]);
-    } catch {
-      setCurrentFeedback({ score: 5, strengths: ["Answer recorded"], improvements: ["Could not evaluate"], betterAnswer: "", starAnalysis: { situation: false, task: false, action: false, result: false } });
-      setShowFeedback(true);
-      setResults(prev => [...prev, { question: questions[currentQ], answer: userAnswer, feedback: { score: 5, strengths: ["Recorded"], improvements: ["Evaluation unavailable"], betterAnswer: "", starAnalysis: { situation: false, task: false, action: false, result: false } } }]);
-    } finally {
-      setIsEvaluating(false);
-    }
-  };
-
-  /* ---- Next Question ---- */
-  const handleNextQuestion = async () => {
-    const next = currentQ + 1;
-    if (next >= questions.length) {
-      await handleFinishInterview();
-      return;
-    }
-    setCurrentQ(next);
+    /* Add the user's message to conversation */
+    const userMsg: ChatMessage = { role: "user", text: userAnswer.trim() };
+    const updatedMessages = [...messagesRef.current, userMsg];
+    setMessages(updatedMessages);
     setUserAnswer("");
-    setShowFeedback(false);
-    setCurrentFeedback(null);
 
-    setIsSpeaking(true);
-    await speakText(questions[next]);
-    setIsSpeaking(false);
+    /* Calculate the next exchange number */
+    const nextExchange = exchangeNumber + 1;
+    setExchangeNumber(nextExchange);
+
+    /* Get AI's next response */
+    setIsAIThinking(true);
+    try {
+      const response = await getAIResponse(updatedMessages, nextExchange);
+      const aiMsg: ChatMessage = { role: "ai", text: response.message };
+      setMessages(prev => [...prev, aiMsg]);
+      setCurrentAIMessage(response.message);
+      setIsAIThinking(false);
+
+      /* Speak the AI's response */
+      setIsAISpeaking(true);
+      await speakText(response.message);
+      setIsAISpeaking(false);
+
+      /* If AI says interview is complete, go to results */
+      if (response.isComplete || nextExchange >= TOTAL_EXCHANGES - 1) {
+        await handleFinishInterview([...updatedMessages, aiMsg]);
+      } else {
+        setWaitingForUser(true);
+      }
+    } catch (e) {
+      setIsAIThinking(false);
+      setError(e instanceof Error ? e.message : "AI response failed. Try again.");
+      setWaitingForUser(true);
+    }
   };
 
-  /* ---- Finish Interview ---- */
-  const handleFinishInterview = async () => {
+  /* ---- Finish the interview and generate the summary ---- */
+  const handleFinishInterview = async (finalMessages?: ChatMessage[]) => {
     stopWebcam();
     stopListening();
     window.speechSynthesis?.cancel();
@@ -319,26 +391,35 @@ export default function MockInterviewPage() {
     setPhase("results");
 
     try {
-      const transcript = results.map((r, i) =>
-        `Q${i + 1}: ${r.question}\nAnswer: ${r.answer}\nScore: ${r.feedback.score}/10`
-      ).join("\n\n");
+      /* Build transcript from conversation for the summary */
+      const msgs = finalMessages || messagesRef.current;
+      const transcript = msgs
+        .map(m => `${m.role === "ai" ? "Sarah (Interviewer)" : "Candidate"}: ${m.text}`)
+        .join("\n\n");
 
       const result = await callAI("mock_interview_summary", {
-        role, interviewType, transcript,
+        role,
+        interviewType,
+        transcript,
       });
       const score = parseAIJson<FinalScore>(result);
       setFinalScore(score);
     } catch {
       setFinalScore({
-        overallScore: 0, categories: {}, topStrengths: [], keyImprovements: [],
-        overallFeedback: "Could not generate final assessment.", readinessLevel: "Unknown",
+        overallScore: 0,
+        categories: {},
+        questionScores: [],
+        topStrengths: [],
+        keyImprovements: [],
+        overallFeedback: "Could not generate final assessment.",
+        readinessLevel: "Unknown",
       });
     } finally {
       setLoadingResults(false);
     }
   };
 
-  /* ---- Cleanup on unmount ---- */
+  /* ---- Cleanup all media/timers on unmount ---- */
   useEffect(() => {
     return () => {
       stopWebcam();
@@ -348,58 +429,45 @@ export default function MockInterviewPage() {
     };
   }, [stopWebcam, stopListening]);
 
+
   /* ============================================================
-     RENDER: SETUP PHASE
+     RENDER: SETUP PHASE — Interview configuration form
      ============================================================ */
   if (phase === "setup") {
     return (
       <div>
+        {/* ---- Header with back navigation ---- */}
         <div className="flex items-center gap-3 mb-2">
           <Link href="/dashboard/interview" className="text-text-secondary hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </Link>
-          <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold">
-            Mock Interview
-          </h1>
+          <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold">Mock Interview</h1>
         </div>
-        <p className="text-text-secondary mb-8">
-          Practice in a realistic video interview simulation with AI feedback.
-        </p>
+        <p className="text-text-secondary mb-8">Practice in a realistic video interview with an AI interviewer.</p>
 
         <div className="max-w-2xl space-y-6">
-          {/* Role */}
+          {/* Role (required) */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-2">Role You&apos;re Interviewing For *</label>
-            <input
-              type="text"
-              value={role}
-              onChange={e => setRole(e.target.value)}
+            <input type="text" value={role} onChange={e => setRole(e.target.value)}
               placeholder="e.g., Software Engineer, Product Manager, Sales Executive"
-              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors"
-            />
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors" />
           </div>
 
           {/* Industry */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-2">Industry</label>
-            <input
-              type="text"
-              value={industry}
-              onChange={e => setIndustry(e.target.value)}
+            <input type="text" value={industry} onChange={e => setIndustry(e.target.value)}
               placeholder="e.g., Tech, Finance, Consulting, Healthcare"
-              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors"
-            />
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors" />
           </div>
 
           {/* Experience Level + Interview Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">Experience Level</label>
-              <select
-                value={experience}
-                onChange={e => setExperience(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:border-brand-indigo/50 focus:outline-none transition-colors"
-              >
+              <select value={experience} onChange={e => setExperience(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:border-brand-indigo/50 focus:outline-none transition-colors">
                 <option value="Fresh Graduate">Fresh Graduate</option>
                 <option value="Junior (1-2 years)">Junior (1-2 years)</option>
                 <option value="Mid-level">Mid-level (3-5 years)</option>
@@ -409,11 +477,8 @@ export default function MockInterviewPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">Interview Type</label>
-              <select
-                value={interviewType}
-                onChange={e => setInterviewType(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:border-brand-indigo/50 focus:outline-none transition-colors"
-              >
+              <select value={interviewType} onChange={e => setInterviewType(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:border-brand-indigo/50 focus:outline-none transition-colors">
                 <option value="Behavioral">Behavioral</option>
                 <option value="Technical">Technical</option>
                 <option value="Case Interview">Case Interview</option>
@@ -427,30 +492,19 @@ export default function MockInterviewPage() {
           {/* Company (optional) */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-2">Target Company <span className="text-text-muted">(optional — enables company-specific questions)</span></label>
-            <input
-              type="text"
-              value={company}
-              onChange={e => setCompany(e.target.value)}
+            <input type="text" value={company} onChange={e => setCompany(e.target.value)}
               placeholder="e.g., Google, Amazon, McKinsey, Deloitte"
-              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors"
-            />
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors" />
           </div>
 
           {/* Resume Upload (optional) */}
           <div>
             <label className="block text-sm font-medium text-text-secondary mb-2">Your Resume <span className="text-text-muted">(optional — AI asks about your real experience)</span></label>
-
-            {/* Hidden file input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.txt"
-              className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); }}
-            />
+            <input ref={fileInputRef} type="file" accept=".pdf,.txt" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); }} />
 
             {!resume ? (
-              /* Upload zone */
+              /* Upload dropzone */
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add("border-brand-indigo/50"); }}
@@ -472,7 +526,7 @@ export default function MockInterviewPage() {
                 )}
               </div>
             ) : (
-              /* Resume loaded — show preview */
+              /* Resume loaded preview */
               <div className="w-full rounded-xl bg-space-700 border border-card-border overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 bg-space-600/50 border-b border-card-border">
                   <div className="flex items-center gap-2">
@@ -480,12 +534,8 @@ export default function MockInterviewPage() {
                     <span className="text-sm text-white font-medium">{resumeFileName || "Pasted resume"}</span>
                     <span className="text-xs text-text-muted">({resume.length.toLocaleString()} chars)</span>
                   </div>
-                  <button
-                    onClick={() => { setResume(""); setResumeFileName(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                    className="text-sm text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    Remove
-                  </button>
+                  <button onClick={() => { setResume(""); setResumeFileName(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                    className="text-sm text-red-400 hover:text-red-300 transition-colors">Remove</button>
                 </div>
                 <div className="px-4 py-3 max-h-28 overflow-y-auto">
                   <p className="text-xs text-text-muted whitespace-pre-wrap line-clamp-4">{resume.slice(0, 500)}{resume.length > 500 ? "..." : ""}</p>
@@ -494,257 +544,313 @@ export default function MockInterviewPage() {
             )}
           </div>
 
-          {/* Info box */}
+          {/* How it works info box */}
           <div className="p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20">
             <p className="text-sm text-text-secondary">
-              <span className="text-brand-light font-medium">How it works:</span> The AI interviewer will ask you 6 questions one by one.
-              You can answer by <strong className="text-white">speaking into your microphone</strong> or typing.
-              Your <strong className="text-white">webcam</strong> will be shown so you can practice body language and eye contact.
-              After each answer, you&apos;ll get instant feedback. A final score dashboard is shown at the end.
+              <span className="text-brand-light font-medium">How it works:</span> You&apos;ll join a video call with Sarah, your AI interviewer.
+              She&apos;ll greet you naturally and ask 6 real interview questions based on your role and experience.
+              Speak into your <strong className="text-white">microphone</strong> or type — your <strong className="text-white">webcam</strong> will be on so you can practice eye contact and body language.
+              At the end, you&apos;ll get a detailed score breakdown.
             </p>
           </div>
 
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
           {/* Start button */}
-          <button
-            onClick={handleStartInterview}
-            disabled={loading}
-            className="w-full py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button onClick={handleStartInterview} disabled={loading}
+            className="w-full py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                Preparing your interview...
+                Connecting to interview...
               </span>
-            ) : "Start Mock Interview"}
+            ) : "Join Interview"}
           </button>
         </div>
       </div>
     );
   }
 
+
   /* ============================================================
-     RENDER: INTERVIEW PHASE
+     RENDER: INTERVIEW PHASE — Google Meet Style Layout
      ============================================================ */
   if (phase === "interview") {
     return (
-      <div className="flex flex-col h-[calc(100vh-120px)]">
-        {/* ---- Top bar: timer + progress + end ---- */}
-        <div className="flex items-center justify-between mb-4 px-1">
+      <div className="flex flex-col h-[calc(100vh-80px)]">
+        {/* ---- Inline CSS for avatar animations ---- */}
+        <style>{`
+          /* Eyelid blink: skin-colored rects scale over eyes periodically */
+          @keyframes blink {
+            0%, 93%, 100% { transform: scaleY(0); }
+            95%, 97% { transform: scaleY(1); }
+          }
+          .avatar-eyelid { animation: blink 3.5s ease-in-out infinite; }
+
+          /* Mouth opens/closes when AI is speaking */
+          @keyframes speak-mouth {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(2.2); }
+          }
+          .avatar-mouth-speaking { animation: speak-mouth 0.35s ease-in-out infinite; }
+
+          /* Subtle idle breathing/float on the whole avatar */
+          @keyframes breathe {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+          }
+          .avatar-breathe { animation: breathe 4s ease-in-out infinite; }
+
+          /* Glowing ring around avatar when speaking */
+          @keyframes glow-ring {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+          }
+          .avatar-glow { animation: glow-ring 1.5s ease-in-out infinite; }
+
+          /* Audio visualizer bar animation */
+          @keyframes audio-bar {
+            0%, 100% { height: 8px; }
+            50% { height: 24px; }
+          }
+        `}</style>
+
+        {/* ---- Top bar: timer + question info + end button ---- */}
+        <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-4">
+            {/* Timer */}
             <span className="text-sm font-mono text-text-secondary bg-space-700 px-3 py-1.5 rounded-lg">
               {formatTime(elapsedTime)}
             </span>
+            {/* Exchange indicator */}
             <span className="text-sm text-text-secondary">
-              Question <span className="text-white font-semibold">{currentQ + 1}</span> of {questions.length}
+              {exchangeNumber === 0 ? "Getting started..." : (
+                <>Question <span className="text-white font-semibold">{Math.min(exchangeNumber, TOTAL_EXCHANGES - 1)}</span> of {TOTAL_EXCHANGES - 1}</>
+              )}
             </span>
           </div>
-          <button
-            onClick={handleFinishInterview}
-            className="text-sm text-red-400 hover:text-red-300 transition-colors"
-          >
+          {/* End interview button */}
+          <button onClick={() => handleFinishInterview()} className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" /></svg>
             End Interview
           </button>
         </div>
 
         {/* ---- Progress bar ---- */}
-        <div className="w-full h-1.5 bg-space-700 rounded-full mb-5">
-          <div
-            className="h-full bg-gradient-to-r from-brand-indigo to-purple-500 rounded-full transition-all duration-500"
-            style={{ width: `${((currentQ + (showFeedback ? 1 : 0)) / questions.length) * 100}%` }}
-          />
+        <div className="w-full h-1 bg-space-700 rounded-full mb-4">
+          <div className="h-full bg-gradient-to-r from-brand-indigo to-purple-500 rounded-full transition-all duration-700"
+            style={{ width: `${(exchangeNumber / (TOTAL_EXCHANGES - 1)) * 100}%` }} />
         </div>
 
-        {/* ---- Main interview area ---- */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-5 min-h-0">
+        {/* ---- Video tiles: Google Meet style (side-by-side) ---- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 flex-shrink-0">
 
-          {/* ---- LEFT: AI Interviewer + Question ---- */}
-          <div className="flex flex-col gap-4">
-            {/* AI Interviewer card */}
-            <div className="p-5 rounded-2xl bg-space-700/80 border border-card-border">
-              <div className="flex items-center gap-4 mb-4">
-                {/* Avatar */}
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-indigo to-purple-500 flex items-center justify-center text-2xl">
-                    👩‍💼
-                  </div>
-                  {isSpeaking && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-500 border-2 border-space-700 animate-pulse" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Sarah Mitchell</p>
-                  <p className="text-sm text-text-secondary">AI Interviewer{company ? ` • ${company}` : ""}</p>
-                </div>
-                {isSpeaking && (
-                  <div className="ml-auto flex items-center gap-1">
-                    <div className="w-1 h-3 bg-green-400 rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" />
-                    <div className="w-1 h-5 bg-green-400 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.15s]" />
-                    <div className="w-1 h-4 bg-green-400 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.3s]" />
-                    <div className="w-1 h-6 bg-green-400 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.45s]" />
-                    <div className="w-1 h-3 bg-green-400 rounded-full animate-[pulse_0.8s_ease-in-out_infinite_0.6s]" />
-                  </div>
-                )}
+          {/* ---- LEFT TILE: AI Interviewer (Sarah) ---- */}
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-space-800 via-space-700 to-space-800 border border-card-border aspect-video flex items-center justify-center">
+            {/* Animated avatar */}
+            <div className="avatar-breathe flex flex-col items-center">
+              {/* Glowing ring behind avatar (visible when speaking) */}
+              <div className={`absolute rounded-full w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-brand-indigo/30 to-purple-500/30 blur-xl ${isAISpeaking ? "avatar-glow" : "opacity-20"}`} />
+
+              {/* Avatar SVG — professional woman illustration */}
+              <div className="relative z-10">
+                <svg width="120" height="120" viewBox="0 0 200 200" className="md:w-[160px] md:h-[160px]">
+                  <defs>
+                    <linearGradient id="avatarBg" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#4338CA" />
+                      <stop offset="100%" stopColor="#7C3AED" />
+                    </linearGradient>
+                    <clipPath id="avatarClip"><circle cx="100" cy="100" r="94" /></clipPath>
+                  </defs>
+                  {/* Background circle */}
+                  <circle cx="100" cy="100" r="96" fill="url(#avatarBg)" opacity="0.3" />
+                  <circle cx="100" cy="100" r="94" fill="#1E1B4B" />
+                  <g clipPath="url(#avatarClip)">
+                    {/* Body / Blazer */}
+                    <path d="M35 195 Q35 160 65 148 L90 140 L100 143 L110 140 L135 148 Q165 160 165 195 L165 220 L35 220 Z" fill="#4338CA" />
+                    {/* Shirt collar V-neck */}
+                    <path d="M88 142 L100 155 L112 142" fill="none" stroke="#E2E8F0" strokeWidth="2" />
+                    {/* Neck */}
+                    <rect x="91" y="121" width="18" height="22" rx="9" fill="#DEB0A0" />
+                    {/* Face — oval */}
+                    <ellipse cx="100" cy="92" rx="40" ry="46" fill="#DEB0A0" />
+                    {/* Hair back (dark brunette) */}
+                    <path d="M56 78 Q56 38 100 32 Q144 38 144 78 L146 108 Q148 120 140 125 L137 112 L132 98 Q132 55 100 48 Q68 55 68 98 L63 112 L60 125 Q52 120 54 108 Z" fill="#3D2424" />
+                    {/* Hair front bangs */}
+                    <path d="M62 72 Q68 55 85 50 Q75 62 72 75 Z" fill="#3D2424" />
+                    <path d="M138 72 Q132 55 115 50 Q125 62 128 75 Z" fill="#3D2424" />
+                    {/* Eyes — expressive */}
+                    <ellipse cx="82" cy="88" rx="5.5" ry="5" fill="#2D1B0E" />
+                    <ellipse cx="118" cy="88" rx="5.5" ry="5" fill="#2D1B0E" />
+                    {/* Eye shine */}
+                    <circle cx="84" cy="86" r="2" fill="white" opacity="0.85" />
+                    <circle cx="120" cy="86" r="2" fill="white" opacity="0.85" />
+                    {/* Eyelids for blink animation (skin-colored, scales over eyes) */}
+                    <rect className="avatar-eyelid" x="74" y="81" width="17" height="14" rx="7" fill="#DEB0A0" style={{ transformOrigin: "82.5px 88px" }} />
+                    <rect className="avatar-eyelid" x="110" y="81" width="17" height="14" rx="7" fill="#DEB0A0" style={{ transformOrigin: "118.5px 88px" }} />
+                    {/* Eyebrows */}
+                    <path d="M72 77 Q82 73 92 76" stroke="#3D2424" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                    <path d="M108 76 Q118 73 128 77" stroke="#3D2424" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                    {/* Nose */}
+                    <path d="M100 92 Q97 100 95 103 Q98 105 100 105 Q102 105 105 103 Q103 100 100 92" fill="#C9998A" opacity="0.5" />
+                    {/* Mouth — switches between smile and open when speaking */}
+                    <g className={isAISpeaking ? "avatar-mouth-speaking" : ""} style={{ transformOrigin: "100px 115px" }}>
+                      {isAISpeaking ? (
+                        /* Open mouth (speaking) */
+                        <ellipse cx="100" cy="115" rx="10" ry="6" fill="#C25F5F" />
+                      ) : (
+                        /* Closed smile (idle) */
+                        <path d="M88 113 Q94 119 100 119 Q106 119 112 113" stroke="#C25F5F" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                      )}
+                    </g>
+                    {/* Cheek blush */}
+                    <circle cx="70" cy="102" r="9" fill="rgba(194, 95, 95, 0.1)" />
+                    <circle cx="130" cy="102" r="9" fill="rgba(194, 95, 95, 0.1)" />
+                    {/* Earrings */}
+                    <circle cx="58" cy="103" r="2.5" fill="#F59E0B" opacity="0.8" />
+                    <circle cx="142" cy="103" r="2.5" fill="#F59E0B" opacity="0.8" />
+                  </g>
+                </svg>
               </div>
 
-              {/* Current question */}
-              <div className="p-4 rounded-xl bg-space-600/50 border border-card-border/50">
-                <p className="text-white leading-relaxed text-[15px]">{questions[currentQ]}</p>
-              </div>
-            </div>
-
-            {/* Feedback panel (shown after evaluation) */}
-            {showFeedback && currentFeedback && (
-              <div className="p-5 rounded-2xl bg-space-700/80 border border-card-border overflow-y-auto flex-1">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-white">Feedback</h3>
-                  <span className={`text-lg font-bold ${currentFeedback.score >= 7 ? "text-green-400" : currentFeedback.score >= 5 ? "text-yellow-400" : "text-red-400"}`}>
-                    {currentFeedback.score}/10
-                  </span>
-                </div>
-
-                {/* STAR indicators */}
-                <div className="flex gap-2 mb-4">
-                  {(["situation", "task", "action", "result"] as const).map(key => (
-                    <span
-                      key={key}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-medium ${currentFeedback.starAnalysis[key] ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-space-600 text-text-muted border border-card-border"}`}
-                    >
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </span>
+              {/* Audio visualizer bars (visible when speaking) */}
+              {isAISpeaking && (
+                <div className="flex items-end gap-1 mt-2 h-6">
+                  {[0, 0.15, 0.3, 0.45, 0.6, 0.45, 0.3, 0.15, 0].map((delay, i) => (
+                    <div key={i} className="w-1 bg-brand-indigo rounded-full"
+                      style={{ animation: `audio-bar 0.6s ease-in-out ${delay}s infinite`, height: "8px" }} />
                   ))}
-                </div>
-
-                {currentFeedback.strengths.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-sm font-medium text-green-400 mb-1">Strengths</p>
-                    {currentFeedback.strengths.map((s, i) => (
-                      <p key={i} className="text-sm text-text-secondary ml-3">• {s}</p>
-                    ))}
-                  </div>
-                )}
-                {currentFeedback.improvements.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-sm font-medium text-yellow-400 mb-1">Improvements</p>
-                    {currentFeedback.improvements.map((s, i) => (
-                      <p key={i} className="text-sm text-text-secondary ml-3">• {s}</p>
-                    ))}
-                  </div>
-                )}
-                {currentFeedback.betterAnswer && (
-                  <div>
-                    <p className="text-sm font-medium text-brand-light mb-1">Better Answer</p>
-                    <p className="text-sm text-text-secondary italic">&ldquo;{currentFeedback.betterAnswer}&rdquo;</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ---- RIGHT: Webcam + Answer area ---- */}
-          <div className="flex flex-col gap-4">
-            {/* Webcam feed */}
-            <div className="relative rounded-2xl overflow-hidden bg-space-800 border border-card-border aspect-video">
-              <video
-                ref={videoRef}
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-full object-cover mirror"
-                style={{ transform: "scaleX(-1)" }}
-              />
-              {/* Overlay: name badge */}
-              <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
-                <p className="text-xs text-white font-medium">You • {role}</p>
-              </div>
-              {/* Recording indicator */}
-              {isListening && (
-                <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/80 backdrop-blur-sm">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  <span className="text-xs text-white font-medium">Recording</span>
                 </div>
               )}
             </div>
 
-            {/* Answer input area */}
-            <div className="flex-1 flex flex-col gap-3">
-              <textarea
-                value={userAnswer}
-                onChange={e => setUserAnswer(e.target.value)}
-                placeholder={isListening ? "Listening... speak your answer" : "Type your answer or click the mic to speak..."}
-                rows={4}
-                disabled={showFeedback}
-                className="flex-1 w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors resize-none disabled:opacity-50"
-              />
-
-              {/* Controls */}
-              <div className="flex items-center gap-3">
-                {!showFeedback ? (
-                  <>
-                    {/* Mic toggle */}
-                    <button
-                      onClick={isListening ? stopListening : startListening}
-                      className={`p-3 rounded-xl border transition-all ${isListening ? "bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30" : "bg-space-600 border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"}`}
-                      title={isListening ? "Stop recording" : "Start speaking"}
-                    >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                      </svg>
-                    </button>
-
-                    {/* Submit answer */}
-                    <button
-                      onClick={handleSubmitAnswer}
-                      disabled={!userAnswer.trim() || isEvaluating}
-                      className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {isEvaluating ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                          Evaluating...
-                        </span>
-                      ) : "Submit Answer"}
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={handleNextQuestion}
-                    className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all"
-                  >
-                    {currentQ + 1 >= questions.length ? "See Final Results" : `Next Question (${currentQ + 2}/${questions.length})`}
-                  </button>
-                )}
-              </div>
+            {/* Name badge (bottom-left, Meet style) */}
+            <div className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
+              <p className="text-xs text-white font-medium">Sarah Mitchell</p>
+              {/* Status dot */}
+              {isAISpeaking && <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
+              {isAIThinking && <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />}
             </div>
+
+            {/* Speaking/Thinking indicator (top-right) */}
+            {(isAISpeaking || isAIThinking) && (
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                <span className="text-xs text-text-secondary">
+                  {isAIThinking ? "Thinking..." : "Speaking..."}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ---- RIGHT TILE: User's Webcam ---- */}
+          <div className="relative rounded-2xl overflow-hidden bg-space-800 border border-card-border aspect-video">
+            <video ref={videoRef} autoPlay muted playsInline
+              className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+            {/* Fallback if no webcam */}
+            {!streamRef.current && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-space-600 flex items-center justify-center text-3xl text-text-muted">👤</div>
+              </div>
+            )}
+            {/* Name badge */}
+            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
+              <p className="text-xs text-white font-medium">You{role ? ` • ${role}` : ""}</p>
+            </div>
+            {/* Recording indicator */}
+            {isListening && (
+              <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/80 backdrop-blur-sm">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                <span className="text-xs text-white font-medium">REC</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ---- AI's current message (caption bar, like subtitles) ---- */}
+        {currentAIMessage && (
+          <div className="mb-3 p-3 rounded-xl bg-space-700/80 border border-card-border/50 flex-shrink-0">
+            <p className="text-sm text-text-secondary leading-relaxed">
+              <span className="text-brand-light font-medium">Sarah: </span>
+              {currentAIMessage}
+            </p>
+          </div>
+        )}
+
+        {/* ---- User input area (bottom bar, Meet style) ---- */}
+        <div className="mt-auto flex-shrink-0">
+          {error && <p className="text-red-400 text-sm mb-2">{error}</p>}
+
+          <div className="flex items-end gap-3">
+            {/* Mic toggle button */}
+            <button
+              onClick={isListening ? stopListening : startListening}
+              disabled={!waitingForUser}
+              className={`p-3.5 rounded-xl border transition-all flex-shrink-0 ${
+                isListening
+                  ? "bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30"
+                  : "bg-space-600 border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"
+              } disabled:opacity-30 disabled:cursor-not-allowed`}
+              title={isListening ? "Stop recording" : "Start speaking"}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+              </svg>
+            </button>
+
+            {/* Text input */}
+            <textarea
+              value={userAnswer}
+              onChange={e => setUserAnswer(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmitAnswer(); } }}
+              placeholder={
+                isAIThinking ? "Sarah is thinking..."
+                  : isAISpeaking ? "Sarah is speaking..."
+                    : waitingForUser ? "Type your answer or click the mic..."
+                      : "Waiting..."
+              }
+              rows={2}
+              disabled={!waitingForUser}
+              className="flex-1 px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors resize-none disabled:opacity-40"
+            />
+
+            {/* Submit button */}
+            <button
+              onClick={handleSubmitAnswer}
+              disabled={!userAnswer.trim() || !waitingForUser}
+              className="p-3.5 rounded-xl bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+              title="Send answer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+
   /* ============================================================
-     RENDER: RESULTS PHASE
+     RENDER: RESULTS PHASE — Final Score Dashboard
      ============================================================ */
   return (
     <div>
+      {/* ---- Header ---- */}
       <div className="flex items-center gap-3 mb-2">
         <Link href="/dashboard/interview" className="text-text-secondary hover:text-white transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </Link>
-        <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold">
-          Interview Results
-        </h1>
+        <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold">Interview Results</h1>
       </div>
-      <p className="text-text-secondary mb-8">
-        {role} • {interviewType} Interview • {formatTime(elapsedTime)}
-      </p>
+      <p className="text-text-secondary mb-8">{role} • {interviewType} Interview • {formatTime(elapsedTime)}</p>
 
       {loadingResults ? (
+        /* ---- Loading spinner ---- */
         <div className="flex flex-col items-center justify-center py-20">
           <svg className="animate-spin h-8 w-8 text-brand-indigo mb-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-          <p className="text-text-secondary">Generating your final assessment...</p>
+          <p className="text-text-secondary">Sarah is writing up your assessment...</p>
         </div>
       ) : finalScore ? (
         <div className="space-y-6">
@@ -768,16 +874,14 @@ export default function MockInterviewPage() {
             )}
           </div>
 
-          {/* ---- Category Scores ---- */}
+          {/* ---- Category Scores (bar chart) ---- */}
           {Object.keys(finalScore.categories).length > 0 && (
             <div className="p-6 rounded-2xl bg-space-700/80 border border-card-border">
               <h3 className="font-semibold text-white mb-4">Skill Breakdown</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {Object.entries(finalScore.categories).map(([key, val]) => (
                   <div key={key} className="text-center">
-                    <div className={`text-2xl font-bold ${val >= 7 ? "text-green-400" : val >= 5 ? "text-yellow-400" : "text-red-400"}`}>
-                      {val}
-                    </div>
+                    <div className={`text-2xl font-bold ${val >= 7 ? "text-green-400" : val >= 5 ? "text-yellow-400" : "text-red-400"}`}>{val}</div>
                     <p className="text-xs text-text-secondary mt-1 capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
                     <div className="mt-2 h-1.5 bg-space-600 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${val >= 7 ? "bg-green-400" : val >= 5 ? "bg-yellow-400" : "bg-red-400"}`} style={{ width: `${val * 10}%` }} />
@@ -793,59 +897,66 @@ export default function MockInterviewPage() {
             {finalScore.topStrengths.length > 0 && (
               <div className="p-5 rounded-2xl bg-space-700/80 border border-card-border">
                 <h3 className="font-semibold text-green-400 mb-3">Top Strengths</h3>
-                {finalScore.topStrengths.map((s, i) => (
-                  <p key={i} className="text-sm text-text-secondary mb-2">✓ {s}</p>
-                ))}
+                {finalScore.topStrengths.map((s, i) => <p key={i} className="text-sm text-text-secondary mb-2">✓ {s}</p>)}
               </div>
             )}
             {finalScore.keyImprovements.length > 0 && (
               <div className="p-5 rounded-2xl bg-space-700/80 border border-card-border">
                 <h3 className="font-semibold text-yellow-400 mb-3">Key Improvements</h3>
-                {finalScore.keyImprovements.map((s, i) => (
-                  <p key={i} className="text-sm text-text-secondary mb-2">→ {s}</p>
-                ))}
+                {finalScore.keyImprovements.map((s, i) => <p key={i} className="text-sm text-text-secondary mb-2">→ {s}</p>)}
               </div>
             )}
           </div>
 
           {/* ---- Per-Question Breakdown ---- */}
-          <div className="p-6 rounded-2xl bg-space-700/80 border border-card-border">
-            <h3 className="font-semibold text-white mb-4">Question-by-Question Review</h3>
-            <div className="space-y-4">
-              {results.map((r, i) => (
-                <details key={i} className="group">
-                  <summary className="flex items-center justify-between cursor-pointer p-3 rounded-xl bg-space-600/50 hover:bg-space-600 transition-colors">
-                    <span className="text-sm text-white">Q{i + 1}: {r.question.slice(0, 80)}{r.question.length > 80 ? "..." : ""}</span>
-                    <span className={`text-sm font-bold ml-3 ${r.feedback.score >= 7 ? "text-green-400" : r.feedback.score >= 5 ? "text-yellow-400" : "text-red-400"}`}>
-                      {r.feedback.score}/10
-                    </span>
-                  </summary>
-                  <div className="mt-2 ml-3 p-3 rounded-xl bg-space-800/50 space-y-2">
-                    <p className="text-sm text-text-secondary"><span className="text-text-muted">Your answer:</span> {r.answer}</p>
-                    {r.feedback.strengths.map((s, j) => (
-                      <p key={j} className="text-sm text-green-400/80">✓ {s}</p>
-                    ))}
-                    {r.feedback.improvements.map((s, j) => (
-                      <p key={j} className="text-sm text-yellow-400/80">→ {s}</p>
-                    ))}
-                  </div>
-                </details>
-              ))}
+          {finalScore.questionScores && finalScore.questionScores.length > 0 && (
+            <div className="p-6 rounded-2xl bg-space-700/80 border border-card-border">
+              <h3 className="font-semibold text-white mb-4">Question-by-Question Review</h3>
+              <div className="space-y-4">
+                {finalScore.questionScores.map((q, i) => (
+                  <details key={i} className="group">
+                    <summary className="flex items-center justify-between cursor-pointer p-3 rounded-xl bg-space-600/50 hover:bg-space-600 transition-colors">
+                      <span className="text-sm text-white">Q{i + 1}: {q.question.slice(0, 80)}{q.question.length > 80 ? "..." : ""}</span>
+                      <span className={`text-sm font-bold ml-3 ${q.score >= 7 ? "text-green-400" : q.score >= 5 ? "text-yellow-400" : "text-red-400"}`}>
+                        {q.score}/10
+                      </span>
+                    </summary>
+                    <div className="mt-2 ml-3 p-3 rounded-xl bg-space-800/50 space-y-2">
+                      {q.strengths.map((s, j) => <p key={j} className="text-sm text-green-400/80">✓ {s}</p>)}
+                      {q.improvements.map((s, j) => <p key={j} className="text-sm text-yellow-400/80">→ {s}</p>)}
+                    </div>
+                  </details>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* ---- Full Transcript (collapsible) ---- */}
+          {messages.length > 0 && (
+            <details className="p-6 rounded-2xl bg-space-700/80 border border-card-border">
+              <summary className="font-semibold text-white cursor-pointer">Full Interview Transcript</summary>
+              <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
+                {messages.map((m, i) => (
+                  <div key={i} className={`p-3 rounded-xl text-sm ${m.role === "ai" ? "bg-brand-indigo/10 border border-brand-indigo/20" : "bg-space-600/50 border border-card-border/50"}`}>
+                    <span className={`font-medium ${m.role === "ai" ? "text-brand-light" : "text-white"}`}>
+                      {m.role === "ai" ? "Sarah:" : "You:"}
+                    </span>
+                    <span className="text-text-secondary ml-2">{m.text}</span>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
 
           {/* ---- Action buttons ---- */}
           <div className="flex gap-4">
             <button
-              onClick={() => { setPhase("setup"); setFinalScore(null); setResults([]); setQuestions([]); setError(""); }}
-              className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all"
-            >
+              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setError(""); }}
+              className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all">
               Try Again
             </button>
-            <Link
-              href="/dashboard/interview"
-              className="flex-1 py-3 rounded-xl font-semibold text-center bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-all"
-            >
+            <Link href="/dashboard/interview"
+              className="flex-1 py-3 rounded-xl font-semibold text-center bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-all">
               Back to Interview Prep
             </Link>
           </div>
