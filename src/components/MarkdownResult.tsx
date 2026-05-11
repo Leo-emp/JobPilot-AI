@@ -120,25 +120,34 @@ function parseMarkdown(md: string): string {
 /* ---- Professional download styles for PDF/Word exports ---- */
 const DOWNLOAD_STYLES = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.55; font-size: 14px; }
-  h1 { font-size: 28px; font-weight: 700; margin: 0 0 4px 0; color: #111; }
-  h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin: 20px 0 10px 0; color: #111; }
-  h3 { font-size: 14px; font-weight: 700; margin: 12px 0 2px 0; color: #111; }
-  p { margin: 0 0 8px 0; font-size: 13.5px; color: #333; }
-  .contact-line { font-size: 13px; color: #444; margin-bottom: 14px; }
-  ul, ol { padding-left: 20px; margin: 4px 0 10px 0; }
-  li { margin-bottom: 3px; font-size: 13.5px; color: #333; line-height: 1.5; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 30px 36px; color: #1a1a1a; line-height: 1.45; font-size: 13px; }
+  h1 { font-size: 26px; font-weight: 700; margin: 0 0 2px 0; color: #111; }
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #111; padding-bottom: 2px; margin: 16px 0 8px 0; color: #111; }
+  h3, .entry-row { font-size: 13px; font-weight: 700; margin: 8px 0 2px 0; color: #111; }
+  .entry-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .entry-row .date { font-weight: 700; white-space: nowrap; margin-left: 12px; }
+  p { margin: 0 0 6px 0; font-size: 12.5px; color: #333; }
+  .contact-line { font-size: 12px; color: #444; margin-bottom: 10px; }
+  ul, ol { padding-left: 20px; margin: 2px 0 8px 0; list-style-type: disc; }
+  li { margin-bottom: 2px; font-size: 12.5px; color: #333; line-height: 1.45; }
   strong { color: #111; font-weight: 700; }
   em { font-style: italic; }
-  hr { border: none; border-top: 1px solid #ddd; margin: 14px 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 10px 0; }
   @media print { body { padding: 20px; } }
 `;
 
 /* ---- Convert markdown to structured HTML for downloads ---- */
+/* Splits H3 lines into left title + right-aligned date, matching reference resume layout */
 function markdownToDownloadHTML(md: string): string {
   const lines = md.split("\n");
   const htmlParts: string[] = [];
   let inList = false;
+
+  /* Extract date range from end: "... — MM/YYYY – MM/YYYY" */
+  const splitDate = (text: string): { left: string; date: string } | null => {
+    const m = text.match(/^(.*?)\s*[—–\-]\s*((?:\d{1,2}\/\d{4})\s*[—–\-]\s*(?:\d{1,2}\/\d{4}|Current|Present|Ongoing))\s*$/i);
+    return m ? { left: m[1].trim(), date: m[2].trim() } : null;
+  };
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -150,7 +159,19 @@ function markdownToDownloadHTML(md: string): string {
 
     if (trimmed.startsWith("### ")) {
       if (inList) { htmlParts.push("</ul>"); inList = false; }
-      htmlParts.push(`<h3>${trimmed.slice(4).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</h3>`);
+      const raw = trimmed.slice(4);
+      const clean = raw.replace(/\*\*/g, "");
+      const dateInfo = splitDate(clean);
+      if (dateInfo) {
+        const leftHtml = raw.slice(0, raw.replace(/\*\*/g, "").indexOf(dateInfo.left) + dateInfo.left.length + (raw.length - clean.length))
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        const rawInfo = splitDate(raw);
+        const leftRaw = rawInfo ? rawInfo.left : dateInfo.left;
+        const leftFormatted = leftRaw.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        htmlParts.push(`<div class="entry-row"><span>${leftFormatted}</span><span class="date">${dateInfo.date}</span></div>`);
+      } else {
+        htmlParts.push(`<h3>${raw.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</h3>`);
+      }
       continue;
     }
     if (trimmed.startsWith("## ")) {
@@ -172,10 +193,20 @@ function markdownToDownloadHTML(md: string): string {
 
     if (/^[-*•] /.test(trimmed)) {
       if (!inList) { htmlParts.push("<ul>"); inList = true; }
-      const content = trimmed.replace(/^[-*•] /, "")
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
-      htmlParts.push(`<li>${content}</li>`);
+      const text = trimmed.replace(/^[-*•] /, "");
+      const clean = text.replace(/\*\*/g, "");
+      const bulletDate = splitDate(clean);
+      if (bulletDate) {
+        const rawInfo = splitDate(text);
+        const leftRaw = rawInfo ? rawInfo.left : bulletDate.left;
+        const leftFormatted = leftRaw.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        htmlParts.push(`<li><div class="entry-row"><span>${leftFormatted}</span><span class="date">${bulletDate.date}</span></div></li>`);
+      } else {
+        const content = text
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
+        htmlParts.push(`<li>${content}</li>`);
+      }
       continue;
     }
 
@@ -260,7 +291,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
   const cleaned = stripCodeFences(result);
   const html = parseMarkdown(cleaned);
 
-  /* Download as PDF — uses jsPDF directly, NO html2canvas */
+  /* Download as PDF — matches reference resume layout exactly */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -268,126 +299,186 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
 
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const marginX = 18;
-      const marginTop = 20;
-      const marginBottom = 18;
-      const contentWidth = pageWidth - 2 * marginX;
-      let y = marginTop;
-      const bodyLineHeight = 4.8;
-      let isFirstHeading = true;
+      const mL = 16;
+      const mR = 16;
+      const mTop = 16;
+      const mBot = 14;
+      const cW = pageWidth - mL - mR;
+      let y = mTop;
+      const bSize = 9.5;
+      const bLH = 4.2;
+      let nameRendered = false;
+      let contactRendered = false;
+      let seenSection = false;
+
+      const checkPage = (need: number) => {
+        if (y + need > pageHeight - mBot) { doc.addPage(); y = mTop; }
+      };
+
+      /* Draw a filled bullet circle (since jsPDF helvetica lacks ● glyph) */
+      const drawBullet = (bx: number, by: number) => {
+        doc.setFillColor(40, 40, 40);
+        doc.circle(bx, by - 1, 0.7, "F");
+      };
+
+      /* Detect if a line looks like contact info: has separators + email or phone */
+      const isContactLine = (t: string) =>
+        (t.includes("|") || t.includes("•") || t.includes("·") || t.includes(" - ")) &&
+        (t.includes("@") || /\+?\d[\d\s()\-]{7,}/.test(t));
+
+      /* Extract date range from end of text. Handles multiple separator and date styles:
+         "... — 11/2024 – Current", "... — Nov 2024 – Jan 2025", "... — 2024 – Present" */
+      const DATE_RE = [
+        /^(.*?)\s*[—–\-]{1,2}\s*((?:\d{1,2}\/\d{4})\s*[—–\-]\s*(?:\d{1,2}\/\d{4}|Current|Present|Ongoing))\s*$/i,
+        /^(.*?)\s*[—–\-]{1,2}\s*((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\.?\s+\d{4}\s*[—–\-]\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\.?\s+\d{4}|Current|Present|Ongoing))\s*$/i,
+        /^(.*?),\s*((?:\d{1,2}\/\d{4})\s*[—–\-]\s*(?:\d{1,2}\/\d{4}|Current|Present|Ongoing))\s*$/i,
+      ];
+      const extractDate = (text: string): { left: string; date: string } | null => {
+        for (const re of DATE_RE) {
+          const m = text.match(re);
+          if (m) return { left: m[1].trim(), date: m[2].trim() };
+        }
+        return null;
+      };
 
       const lines = cleaned.split("\n");
 
       for (const line of lines) {
         const trimmed = line.trim();
-
-        /* Skip code fences that might remain */
         if (/^```/.test(trimmed)) continue;
+        if (!trimmed) { y += 1.5; continue; }
+        checkPage(8);
 
-        /* Empty line — small gap */
-        if (!trimmed) { y += 2; continue; }
-
-        /* Page break check */
-        if (y > pageHeight - marginBottom - 8) {
-          doc.addPage();
-          y = marginTop;
-        }
-
-        /* --- H1: Name --- */
-        if (trimmed.startsWith("# ") && !trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
+        /* ---- H1: Name — large bold, left-aligned ---- */
+        if (/^# (?!#)/.test(trimmed)) {
           const text = trimmed.slice(2).replace(/\*\*/g, "");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(isFirstHeading ? 24 : 18);
+          doc.setFontSize(24);
           doc.setTextColor(17, 17, 17);
-          if (isFirstHeading) {
-            doc.text(text, pageWidth / 2, y, { align: "center" });
-            isFirstHeading = false;
-          } else {
-            doc.text(text, marginX, y);
-          }
-          y += 8;
+          doc.text(text, mL, y);
+          nameRendered = true;
+          y += 7;
           continue;
         }
 
-        /* --- H2: Section headers --- */
-        if (trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
+        /* ---- H2: Section headers — bold uppercase with full-width underline ---- */
+        if (/^## (?!#)/.test(trimmed)) {
+          seenSection = true;
           const text = trimmed.slice(3).replace(/\*\*/g, "").toUpperCase();
           y += 4;
-          if (y > pageHeight - marginBottom - 8) { doc.addPage(); y = marginTop; }
+          checkPage(10);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(11);
+          doc.setFontSize(12);
           doc.setTextColor(17, 17, 17);
-          doc.text(text, marginX, y);
-          y += 1.2;
-          doc.setDrawColor(50, 50, 50);
+          doc.text(text, mL, y);
+          y += 1.5;
+          doc.setDrawColor(30, 30, 30);
           doc.setLineWidth(0.5);
-          doc.line(marginX, y, marginX + contentWidth, y);
-          y += 4.5;
+          doc.line(mL, y, pageWidth - mR, y);
+          y += 4;
           continue;
         }
 
-        /* --- H3: Job titles / subsections --- */
-        if (trimmed.startsWith("### ")) {
-          const text = trimmed.slice(4).replace(/\*\*/g, "");
-          y += 2;
-          if (y > pageHeight - marginBottom - 8) { doc.addPage(); y = marginTop; }
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(10.5);
+        /* ---- H3: Job/education entries — title+company LEFT, dates RIGHT ---- */
+        if (/^### /.test(trimmed)) {
+          const raw = trimmed.slice(4);
+          const clean = raw.replace(/\*\*/g, "");
+          y += 1;
+          checkPage(8);
+          doc.setFontSize(10);
           doc.setTextColor(17, 17, 17);
-          doc.text(text, marginX, y);
+
+          const dateInfo = extractDate(clean);
+          if (dateInfo) {
+            const rawInfo = extractDate(raw.replace(/\*\*/g, ""));
+            const rawMatch = raw.match(/^(.*?)(?:\s*[—–\-]{1,2}\s*\d|,\s*\d{1,2}\/\d{4})/);
+            const leftRaw = rawMatch ? rawMatch[1].trim() : dateInfo.left;
+            renderBoldLine(doc, leftRaw, mL, y, 10, "normal");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text(dateInfo.date, pageWidth - mR, y, { align: "right" });
+          } else {
+            renderBoldLine(doc, raw, mL, y, 10, "bold");
+          }
           y += 4.5;
           continue;
         }
 
-        /* --- Horizontal rule --- */
+        /* ---- Horizontal rule ---- */
         if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
           doc.setDrawColor(180, 180, 180);
           doc.setLineWidth(0.2);
-          doc.line(marginX, y, marginX + contentWidth, y);
+          doc.line(mL, y, pageWidth - mR, y);
           y += 3;
           continue;
         }
 
-        /* --- Contact line detection (contains • or | separators) --- */
-        if (!trimmed.startsWith("-") && !trimmed.startsWith("*") && (trimmed.includes("•") || trimmed.includes("|")) && trimmed.includes("@")) {
+        /* ---- Auto-detect name: first plain text line before any section heading ---- */
+        if (!seenSection && !nameRendered && !/^[-*•\d#]/.test(trimmed) && !isContactLine(trimmed)) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(24);
+          doc.setTextColor(17, 17, 17);
+          doc.text(trimmed.replace(/\*\*/g, ""), mL, y);
+          nameRendered = true;
+          y += 7;
+          continue;
+        }
+
+        /* ---- Auto-detect contact: line with separators + email/phone before sections ---- */
+        if (!seenSection && !contactRendered && isContactLine(trimmed)) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9.5);
-          doc.setTextColor(80, 80, 80);
-          doc.text(trimmed.replace(/\*\*/g, ""), pageWidth / 2, y, { align: "center" });
-          y += 4;
+          doc.setTextColor(60, 60, 60);
+          doc.text(trimmed.replace(/\*\*/g, ""), mL, y);
+          contactRendered = true;
+          y += 5;
           continue;
         }
 
-        /* --- Bullet list items --- */
+        /* ---- Bullet list items — filled circle + hanging indent ---- */
         if (/^[-*•] /.test(trimmed)) {
           const text = trimmed.replace(/^[-*•] /, "");
-          doc.setFontSize(10);
+          const clean = text.replace(/\*\*/g, "");
+          doc.setFontSize(bSize);
           doc.setTextColor(40, 40, 40);
-          doc.setFont("helvetica", "normal");
 
-          doc.text("•", marginX + 2, y);
+          const textX = mL + 8;
+          const textW = cW - 8;
 
-          const bulletIndent = 7;
-          y = renderWrappedText(doc, text, marginX + bulletIndent, y, contentWidth - bulletIndent, 10, bodyLineHeight, pageHeight, marginTop);
-          continue;
-        }
-
-        /* --- Numbered list items --- */
-        if (/^\d+\. /.test(trimmed)) {
-          const match = trimmed.match(/^(\d+)\. (.+)/);
-          if (match) {
-            doc.setFontSize(10);
-            doc.setTextColor(40, 40, 40);
+          const bulletDate = extractDate(clean);
+          if (bulletDate) {
+            drawBullet(mL + 4, y);
+            const rawMatch = text.match(/^(.*?)(?:\s*[—–\-]{1,2}\s*\d|,\s*\d{1,2}\/\d{4})/);
+            const leftRaw = rawMatch ? rawMatch[1].trim() : bulletDate.left;
+            renderBoldLine(doc, leftRaw, textX, y, bSize, "normal");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(bSize);
+            doc.text(bulletDate.date, pageWidth - mR, y, { align: "right" });
+            y += bLH;
+          } else {
+            drawBullet(mL + 4, y);
             doc.setFont("helvetica", "normal");
-            doc.text(`${match[1]}.`, marginX + 1, y);
-            y = renderWrappedText(doc, match[2], marginX + 7, y, contentWidth - 7, 10, bodyLineHeight, pageHeight, marginTop);
+            y = renderWrappedText(doc, text, textX, y, textW, bSize, bLH, pageHeight, mTop);
           }
           continue;
         }
 
-        /* --- Regular paragraph --- */
+        /* ---- Numbered list items ---- */
+        if (/^\d+\. /.test(trimmed)) {
+          const match = trimmed.match(/^(\d+)\. (.+)/);
+          if (match) {
+            doc.setFontSize(bSize);
+            doc.setTextColor(40, 40, 40);
+            doc.setFont("helvetica", "normal");
+            doc.text(`${match[1]}.`, mL + 1, y);
+            y = renderWrappedText(doc, match[2], mL + 7, y, cW - 7, bSize, bLH, pageHeight, mTop);
+          }
+          continue;
+        }
+
+        /* ---- Regular paragraph ---- */
         doc.setTextColor(40, 40, 40);
-        y = renderWrappedText(doc, trimmed, marginX, y, contentWidth, 10, bodyLineHeight, pageHeight, marginTop);
+        y = renderWrappedText(doc, trimmed, mL, y, cW, bSize, bLH, pageHeight, mTop);
         y += 0.5;
       }
 
