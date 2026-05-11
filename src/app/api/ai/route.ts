@@ -431,6 +431,74 @@ Provide this EXACT structure:
 LinkedIn Profile:
 ${payload.linkedinText}`;
 
+    case "mock_interview_start":
+      return `You are a professional interviewer conducting a real job interview. Generate exactly 6 interview questions for this candidate.
+
+ROLE: ${payload.role}
+INDUSTRY: ${payload.industry}
+EXPERIENCE LEVEL: ${payload.experience}
+INTERVIEW TYPE: ${payload.interviewType}
+${payload.company ? `COMPANY: ${payload.company}` : ""}
+${payload.resume ? `CANDIDATE RESUME:\n${payload.resume}` : ""}
+
+RULES:
+- Mix of behavioral, technical, and situational questions appropriate for the role and level
+- If a company is specified, include company-specific questions (e.g., Amazon leadership principles, Google problem-solving)
+- If a resume is provided, include 1-2 questions about specific experiences mentioned
+- Questions should progressively increase in difficulty
+- Make questions feel natural and conversational, like a real interviewer would ask
+
+Return ONLY a JSON array of strings, no other text. Example:
+["Tell me about yourself and why you're interested in this role.", "Describe a time you led a project under pressure."]`;
+
+    case "mock_interview_evaluate":
+      return `You are a senior interview coach evaluating a candidate's answer in a mock interview.
+
+QUESTION: ${payload.question}
+CANDIDATE'S ANSWER: ${payload.answer}
+ROLE: ${payload.role}
+INTERVIEW TYPE: ${payload.interviewType}
+
+Evaluate the answer and return ONLY valid JSON (no markdown, no code fences) in this exact format:
+{
+  "score": <number 1-10>,
+  "strengths": ["strength 1", "strength 2"],
+  "improvements": ["improvement 1", "improvement 2"],
+  "betterAnswer": "A brief example of how to improve the answer",
+  "starAnalysis": {
+    "situation": <true/false - did they set context?>,
+    "task": <true/false - did they explain their responsibility?>,
+    "action": <true/false - did they describe specific actions?>,
+    "result": <true/false - did they share measurable outcomes?>
+  }
+}`;
+
+    case "mock_interview_summary":
+      return `You are a senior interview coach providing a final assessment after a complete mock interview.
+
+ROLE: ${payload.role}
+INTERVIEW TYPE: ${payload.interviewType}
+
+QUESTIONS AND ANSWERS:
+${payload.transcript}
+
+Provide a comprehensive final assessment. Return ONLY valid JSON (no markdown, no code fences):
+{
+  "overallScore": <number 1-100>,
+  "categories": {
+    "communication": <1-10>,
+    "confidence": <1-10>,
+    "technicalDepth": <1-10>,
+    "behavioralQuality": <1-10>,
+    "conciseness": <1-10>,
+    "starMethod": <1-10>
+  },
+  "topStrengths": ["strength 1", "strength 2", "strength 3"],
+  "keyImprovements": ["improvement 1", "improvement 2", "improvement 3"],
+  "overallFeedback": "2-3 sentence summary of performance and next steps",
+  "readinessLevel": "<Not Ready|Needs Work|Almost There|Interview Ready|Excellent>"
+}`;
+
     default:
       throw new Error(`Unknown action: ${action}`);
   }

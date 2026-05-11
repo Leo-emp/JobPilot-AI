@@ -9,6 +9,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
 
 export default function InterviewPage() {
@@ -83,9 +84,30 @@ export default function InterviewPage() {
       <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold mb-2">
         Interview Prep AI
       </h1>
-      <p className="text-text-secondary mb-8">
+      <p className="text-text-secondary mb-6">
         Predict likely questions and practice your answers with AI coaching.
       </p>
+
+      {/* ---- Mock Interview CTA ---- */}
+      <Link
+        href="/dashboard/interview/mock"
+        className="flex items-center gap-4 p-5 mb-8 rounded-2xl bg-gradient-to-r from-brand-indigo/10 to-purple-500/10 border border-brand-indigo/20 hover:border-brand-indigo/40 transition-all group"
+      >
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-indigo to-purple-500 flex items-center justify-center text-xl shrink-0">
+          🎥
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-white group-hover:text-brand-light transition-colors">
+            Interactive Mock Interview
+          </p>
+          <p className="text-sm text-text-secondary">
+            Practice with video, voice &amp; AI — just like a real interview. Get scored and feedback instantly.
+          </p>
+        </div>
+        <svg className="w-5 h-5 text-text-muted group-hover:text-brand-light transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </Link>
 
       {/* ---- Tab Switcher ---- */}
       <div className="flex gap-2 mb-8">
