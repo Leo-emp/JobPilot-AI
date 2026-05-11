@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
-  /* Keep unpdf external — pdfjs-dist native bindings crash Turbopack workers */
-  serverExternalPackages: ["unpdf", "pdfjs-dist"],
+  /* Keep unpdf external — native bindings crash Turbopack workers */
+  serverExternalPackages: ["unpdf"],
   /* Server-side env vars — read from .env.local / Vercel env vars only */
   env: {
     ADZUNA_APP_ID: process.env.ADZUNA_APP_ID || "",

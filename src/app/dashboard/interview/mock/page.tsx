@@ -167,20 +167,27 @@ export default function MockInterviewPage() {
       return;
     }
 
-    /* .pdf files: send to server for parsing */
+    /* .pdf files: parse client-side with pdfjs-dist (no server needed) */
     if (file.name.endsWith(".pdf")) {
       setResumeUploading(true);
       setError("");
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/parse-resume", { method: "POST", body: formData });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setResume(data.text);
+        const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+        const arrayBuffer = await file.arrayBuffer();
+        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+        let text = "";
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const content = await page.getTextContent();
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+          text += content.items.filter((item: any) => item.str !== undefined).map((item: any) => item.str).join(" ") + "\n";
+        }
+        if (!text.trim()) throw new Error("Could not extract text from PDF");
+        setResume(text.trim());
         setResumeFileName(file.name);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to parse resume file");
+        setError(e instanceof Error ? e.message : "Failed to parse PDF. Try a .txt file instead.");
       } finally {
         setResumeUploading(false);
       }
