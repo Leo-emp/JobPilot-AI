@@ -91,6 +91,9 @@ export default function MockInterviewPage() {
   const [interviewType, setInterviewType] = useState("Behavioral");
   const [company, setCompany] = useState("");
   const [resume, setResume] = useState("");
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ---- Interview state ---- */
   const [questions, setQuestions] = useState<string[]>([]);
@@ -147,6 +150,44 @@ export default function MockInterviewPage() {
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
     return `${m}:${String(s % 60).padStart(2, "0")}`;
+  };
+
+  /* ---- Resume File Upload ---- */
+  const handleResumeUpload = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File too large. Maximum 5MB.");
+      return;
+    }
+
+    /* .txt files: read client-side */
+    if (file.name.endsWith(".txt")) {
+      const text = await file.text();
+      setResume(text);
+      setResumeFileName(file.name);
+      return;
+    }
+
+    /* .pdf files: send to server for parsing */
+    if (file.name.endsWith(".pdf")) {
+      setResumeUploading(true);
+      setError("");
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/parse-resume", { method: "POST", body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        setResume(data.text);
+        setResumeFileName(file.name);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to parse resume file");
+      } finally {
+        setResumeUploading(false);
+      }
+      return;
+    }
+
+    setError("Unsupported file type. Upload a PDF or TXT file.");
   };
 
   /* ---- Speech Recognition ---- */
@@ -388,16 +429,62 @@ export default function MockInterviewPage() {
             />
           </div>
 
-          {/* Resume (optional) */}
+          {/* Resume Upload (optional) */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">Paste Your Resume <span className="text-text-muted">(optional — AI asks about your real experience)</span></label>
-            <textarea
-              value={resume}
-              onChange={e => setResume(e.target.value)}
-              rows={4}
-              placeholder="Paste your resume text here for personalized questions..."
-              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors resize-none"
+            <label className="block text-sm font-medium text-text-secondary mb-2">Your Resume <span className="text-text-muted">(optional — AI asks about your real experience)</span></label>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.txt"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); }}
             />
+
+            {!resume ? (
+              /* Upload zone */
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add("border-brand-indigo/50"); }}
+                onDragLeave={e => { e.preventDefault(); e.currentTarget.classList.remove("border-brand-indigo/50"); }}
+                onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove("border-brand-indigo/50"); const f = e.dataTransfer.files[0]; if (f) handleResumeUpload(f); }}
+                className="w-full px-4 py-8 rounded-xl bg-space-700 border-2 border-dashed border-card-border text-center cursor-pointer hover:border-brand-indigo/40 transition-colors"
+              >
+                {resumeUploading ? (
+                  <div className="flex items-center justify-center gap-2 text-text-secondary">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    Extracting text from resume...
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-3xl mb-2">📄</div>
+                    <p className="text-white font-medium">Drop your resume here or click to upload</p>
+                    <p className="text-sm text-text-muted mt-1">PDF or TXT — max 5MB</p>
+                  </>
+                )}
+              </div>
+            ) : (
+              /* Resume loaded — show preview */
+              <div className="w-full rounded-xl bg-space-700 border border-card-border overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-space-600/50 border-b border-card-border">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📄</span>
+                    <span className="text-sm text-white font-medium">{resumeFileName || "Pasted resume"}</span>
+                    <span className="text-xs text-text-muted">({resume.length.toLocaleString()} chars)</span>
+                  </div>
+                  <button
+                    onClick={() => { setResume(""); setResumeFileName(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                    className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="px-4 py-3 max-h-28 overflow-y-auto">
+                  <p className="text-xs text-text-muted whitespace-pre-wrap line-clamp-4">{resume.slice(0, 500)}{resume.length > 500 ? "..." : ""}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Info box */}
