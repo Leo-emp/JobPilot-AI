@@ -10,14 +10,36 @@
    - Informational interview requests
    - Recruiter pitch messages for specific roles
 
-   Users fill in recipient details + their background + target
-   role, pick a message type and tone, and AI crafts a ready-
-   to-copy message that sounds human and actually gets replies.
+   Users can upload a resume PDF or type their background.
+   The AI uses this + recipient details to craft personalized
+   messages that sound human and actually get replies.
    ============================================================ */
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+
+/* ---- Max resume PDF size ---- */
+const MAX_PDF_SIZE_MB = 10;
+
+/* ---- Extract text from a PDF file client-side using pdfjs-dist ---- */
+async function extractTextFromPdf(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+  ).toString();
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+  const pages: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items.map((item: { str?: string }) => item.str || "").join(" ");
+    pages.push(text);
+  }
+  return pages.join("\n\n");
+}
 
 /* ---- Message type options ---- */
 const MESSAGE_TYPES = [
@@ -112,6 +134,13 @@ export default function OutreachHubPage() {
   const [tone, setTone] = useState("professional");
   const [platform, setPlatform] = useState("LinkedIn");
 
+  /* ---- Resume PDF upload state ---- */
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeText, setResumeText] = useState("");
+  const [resumeParsing, setResumeParsing] = useState(false);
+  const [resumeError, setResumeError] = useState("");
+  const resumeInputRef = useRef<HTMLInputElement>(null);
+
   /* ---- Result state ---- */
   const [generatedMessage, setGeneratedMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -122,6 +151,47 @@ export default function OutreachHubPage() {
   /* ---- Message history (session only) ---- */
   const [savedMessages, setSavedMessages] = useState<SavedMessage[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+
+  /* ---- Resume PDF upload handler ---- */
+  const handleResumeUpload = useCallback(async (file: File) => {
+    if (file.type !== "application/pdf") {
+      setResumeError("Please upload a PDF file.");
+      return;
+    }
+    if (file.size > MAX_PDF_SIZE_MB * 1024 * 1024) {
+      setResumeError(`File too large. Maximum size is ${MAX_PDF_SIZE_MB}MB.`);
+      return;
+    }
+
+    setResumeFile(file);
+    setResumeParsing(true);
+    setResumeError("");
+    setResumeText("");
+
+    try {
+      const text = await extractTextFromPdf(file);
+      if (text.trim().length < 20) {
+        setResumeError("Could not extract text from this PDF. Please type your background manually below.");
+        setResumeParsing(false);
+        return;
+      }
+      setResumeText(text);
+    } catch {
+      setResumeError("Failed to read this PDF. Please type your background manually below.");
+    } finally {
+      setResumeParsing(false);
+    }
+  }, []);
+
+  /* ---- Resume drag-and-drop state ---- */
+  const [resumeDragActive, setResumeDragActive] = useState(false);
+
+  const onResumeDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setResumeDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleResumeUpload(file);
+  }, [handleResumeUpload]);
 
   /* ---- Auto-set platform when message type changes ---- */
   const handleTypeChange = (typeId: string) => {
@@ -156,7 +226,7 @@ export default function OutreachHubPage() {
             recipientTitle: recipientTitle || "",
             recipientCompany: recipientCompany || "",
             targetRole,
-            senderBackground: senderBackground || "",
+            senderBackground: [resumeText, senderBackground].filter(Boolean).join("\n\nAdditional details:\n") || "",
             context: context || "",
             tone,
             platform,
@@ -336,16 +406,99 @@ export default function OutreachHubPage() {
           <p className="text-xs text-text-muted mb-5">Help the AI personalize your message</p>
 
           <div className="space-y-4">
-            {/* Sender background */}
+            {/* Resume upload or manual background */}
             <div>
-              <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-1">
-                Your Background <span className="normal-case font-normal">(experience, skills, achievements)</span>
+              <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">
+                Your Background
               </label>
+
+              {/* Resume PDF upload zone */}
+              {!resumeFile ? (
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setResumeDragActive(true); }}
+                  onDragLeave={() => setResumeDragActive(false)}
+                  onDrop={onResumeDrop}
+                  onClick={() => resumeInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all mb-3 ${
+                    resumeDragActive
+                      ? "border-brand-indigo bg-brand-indigo/10"
+                      : "border-card-border hover:border-brand-indigo/40 hover:bg-space-700/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    {/* Upload icon */}
+                    <svg className="w-8 h-8 text-text-muted flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <div className="text-left">
+                      <p className="text-sm text-text-secondary">
+                        <span className="text-brand-light font-medium">Upload your resume PDF</span>
+                      </p>
+                      <p className="text-xs text-text-muted">AI will extract your experience automatically</p>
+                    </div>
+                  </div>
+                  <input
+                    ref={resumeInputRef}
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); }}
+                    className="hidden"
+                  />
+                </div>
+              ) : (
+                /* Resume file loaded — show status */
+                <div className="rounded-xl border border-card-border bg-space-700/50 p-3 mb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-white truncate max-w-[180px]">{resumeFile.name}</p>
+                        <p className="text-xs text-text-muted">{(resumeFile.size / 1024).toFixed(0)} KB</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setResumeFile(null); setResumeText(""); setResumeError(""); }}
+                      className="text-text-muted hover:text-red-400 transition-colors p-1"
+                      title="Remove resume"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Parsing spinner */}
+                  {resumeParsing && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-text-secondary">
+                      <div className="w-3.5 h-3.5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
+                      Extracting resume data...
+                    </div>
+                  )}
+
+                  {/* Success */}
+                  {resumeText && !resumeParsing && (
+                    <div className="mt-2 text-xs text-green-400">
+                      Resume loaded — {resumeText.length.toLocaleString()} characters extracted
+                    </div>
+                  )}
+
+                  {/* Error */}
+                  {resumeError && (
+                    <div className="mt-2 text-xs text-red-400">{resumeError}</div>
+                  )}
+                </div>
+              )}
+
+              {/* Manual background — always visible as fallback / supplement */}
               <textarea
                 value={senderBackground}
                 onChange={e => setSenderBackground(e.target.value)}
-                placeholder="e.g., 3 years in data analytics at a fintech startup, Python/SQL expert, led a team of 4, reduced churn by 15%..."
-                rows={3}
+                placeholder={resumeText ? "Add anything not on your resume (optional)..." : "Or type your background: 3 years in data analytics, Python/SQL expert, led a team of 4..."}
+                rows={2}
                 className={inputClass + " resize-none"}
               />
             </div>
