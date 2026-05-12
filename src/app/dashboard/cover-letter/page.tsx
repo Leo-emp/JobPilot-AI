@@ -41,6 +41,8 @@ export default function CoverLetterPage() {
   const [error, setError] = useState("");
   /* Copy button feedback */
   const [copied, setCopied] = useState(false);
+  /* Edit mode for AI result */
+  const [editing, setEditing] = useState(false);
   /* Saved cover letters history */
   const [savedLetters, setSavedLetters] = useState<SavedLetter[]>([]);
   /* Track remaining AI calls */
@@ -116,6 +118,7 @@ export default function CoverLetterPage() {
     setLoading(true);
     setError("");
     setResult("");
+    setEditing(false);
 
     try {
       const res = await fetch("/api/ai", {
@@ -359,12 +362,20 @@ export default function CoverLetterPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Your Cover Letter</h2>
             {result && (
-              <button
-                onClick={handleCopy}
-                className="text-sm text-brand-light hover:text-white transition-colors"
-              >
-                {copied ? "Copied!" : "Copy"}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setEditing(!editing)}
+                  className="text-sm text-brand-light hover:text-white transition-colors"
+                >
+                  {editing ? "Done Editing" : "Edit"}
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className="text-sm text-brand-light hover:text-white transition-colors"
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
             )}
           </div>
 
@@ -383,9 +394,18 @@ export default function CoverLetterPage() {
             </div>
           )}
 
-          {/* Result text */}
+          {/* Result — editable or formatted view */}
           {result ? (
-            <MarkdownResult result={result} showDownload={true} />
+            editing ? (
+              <textarea
+                value={result}
+                onChange={(e) => setResult(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-brand-indigo/30 text-white focus:outline-none focus:border-brand-indigo resize-none text-sm leading-relaxed"
+                style={{ minHeight: "500px" }}
+              />
+            ) : (
+              <MarkdownResult result={result} showDownload={true} />
+            )
           ) : (
             !loading && (
               <div className="py-12 text-center">
