@@ -122,7 +122,7 @@ async function callGeminiCore(parts: any[]): Promise<string> {
     }
   }
 
-  throw new Error(lastError || "AI is temporarily unavailable. Please try again in a moment.");
+  throw new Error("AI is temporarily unavailable. Please try again in a moment.");
 }
 
 /* ---- Text-only Gemini call ---- */
