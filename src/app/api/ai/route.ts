@@ -551,17 +551,43 @@ ${payload.history || "(Interview just started — no conversation yet)"}
 
 CURRENT EXCHANGE NUMBER: ${payload.exchangeNumber} of 12
 
-YOUR QUESTION PLAN (10 real questions — classic standard questions first, then role-specific):
+YOUR QUESTION PLAN (10 questions — 4 universal classics, then 6 type-specific):
+
+UNIVERSAL CLASSICS (always ask these first):
 0 — Warm greeting (hardcoded, skip — you won't be called for exchange 0)
-1 — "Tell me about yourself." (THE classic opener — let the candidate walk through their background)
-2 — "What are your greatest strengths, and what would you say is your biggest weakness?" (Standard HR question)
+1 — "Tell me about yourself." (THE classic opener — walk through background)
+2 — "What are your greatest strengths, and what would you say is your biggest weakness?"
 3 — "Why are you interested in this ${payload.role} role${payload.company ? " at " + payload.company : ""}? What attracted you to it?"
-4 — "Where do you see yourself in 5 years?" (Classic future-vision question)
-5 — "Tell me about a time you faced a challenge at work. How did you handle it?" (Behavioral STAR question)
-6 — ${payload.interviewType === "Technical" ? "Technical question specific to " + payload.role + " — test real practical knowledge they'd need on the job" : "Teamwork: \"Tell me about a time you had a disagreement with a coworker or manager. How did you resolve it?\""}
-7 — Situational: A realistic scenario they'd face as a ${payload.role}${payload.company ? " at " + payload.company : ""} — "How would you handle..." (test problem-solving)
-8 — ${payload.company ? "Company-specific: Ask about " + payload.company + "'s mission, products, culture, or recent news — test if they did their homework" : payload.interviewType === "Technical" ? "Second technical question — harder, testing system design or architecture for " + payload.role : "\"Tell me about a project you're most proud of. What was your role and what was the impact?\""}
-9 — "Tell me about a time you failed or something didn't go as planned. What did you learn?" (Resilience question)
+4 — "Where do you see yourself in 5 years?"
+
+TYPE-SPECIFIC QUESTIONS (5-9 depend on interview type "${payload.interviewType}"):
+${payload.interviewType === "Technical" ? `5 — Technical fundamentals: Ask a real technical question specific to ${payload.role} — test core knowledge they'd use daily (algorithms, frameworks, tools, languages relevant to the role)
+6 — System design / architecture: "How would you design..." or "Walk me through how you'd build..." — a realistic system or feature for ${payload.role}
+7 — Debugging / problem-solving: Present a realistic technical problem or bug scenario for ${payload.role} — ask how they'd diagnose and fix it
+8 — ${payload.company ? "Company tech stack: Ask about " + payload.company + "'s technology, engineering culture, or a technical challenge they'd face there" : "Code quality: Ask about their approach to testing, code reviews, technical debt, or engineering best practices"}
+9 — Technical leadership: "Tell me about a technical decision you made that had significant impact. What tradeoffs did you consider?"` :
+payload.interviewType === "Case Interview" ? `5 — Market sizing: "How would you estimate..." — a classic market sizing question relevant to ${payload.industry || "business"} (e.g. estimate revenue, market size, number of users)
+6 — Business strategy: Present a real business problem for a ${payload.role} in ${payload.industry || "this industry"} — ask them to structure their approach and recommend a solution
+7 — Profitability: "A company's profits have dropped 20% year over year. Walk me through how you'd diagnose the problem and what you'd recommend."
+8 — ${payload.company ? "Company case: Present a realistic strategic challenge " + payload.company + " might face — ask them to analyze and recommend" : "New market entry: A company wants to expand into a new market. What framework would you use to evaluate the opportunity?"}
+9 — Creative problem-solving: An unconventional case question that tests lateral thinking — something unexpected they haven't practiced for` :
+payload.interviewType === "HR Screening" ? `5 — Culture fit: "What kind of work environment do you thrive in? Describe your ideal team culture."
+6 — Motivation: "What motivates you to do your best work? Can you give me an example?"
+7 — Conflict resolution: "Tell me about a time you had a disagreement with a coworker or manager. How did you handle it?"
+8 — ${payload.company ? "Company values: Ask about " + payload.company + "'s culture and values — do they align with what the candidate wants?" : "Work style: \"How do you prioritize when you have multiple deadlines competing for your attention?\""}
+9 — Salary & expectations: "What are your salary expectations?" followed by "What's most important to you in your next role beyond compensation?"` :
+payload.interviewType === "Final Round" ? `5 — Leadership: "Tell me about a time you led a team or initiative. What was your approach and what was the outcome?"
+6 — Strategic thinking: "If you were hired for this ${payload.role} role, what would your first 90 days look like? What would you prioritize?"
+7 — Stakeholder management: "Describe a situation where you had to influence or persuade someone senior to change direction. How did you approach it?"
+8 — ${payload.company ? "Company vision: Ask about " + payload.company + "'s long-term strategy — how would the candidate contribute to it?" : "Impact: \"Tell me about the biggest impact you've had in your career. What made it possible?\""}
+9 — Tough call: "Tell me about a difficult decision you had to make with incomplete information. How did you decide and what happened?"` :
+`5 — Behavioral STAR: "Tell me about a time you faced a significant challenge at work. How did you handle it?" (expect Situation, Task, Action, Result)
+6 — Teamwork: "Tell me about a time you had a disagreement with a coworker or manager. How did you resolve it?"
+7 — Situational: A realistic day-to-day scenario they'd face as a ${payload.role}${payload.company ? " at " + payload.company : ""} — "How would you handle..."
+8 — ${payload.company ? "Company-specific: Ask about " + payload.company + "'s mission, products, culture, or recent news — test if they did their homework" : "Ownership: \"Tell me about a project you took initiative on beyond your normal responsibilities. What was the impact?\""}
+9 — Resilience: "Tell me about a time something didn't go as planned or you failed. What happened and what did you learn?"`}
+
+CLOSING (always):
 10 — "Do you have any questions for me about the role, the team, or the company?" → Answer their questions naturally
 11 — After they finish, wrap up warmly: "This was really great — I enjoyed our conversation. Thank you so much for your time! We'll definitely be in touch soon." Set isComplete to true.
 
