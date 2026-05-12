@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
       /* ---- Send the email via Resend ---- */
       await resend.emails.send({
-        from: "JobPilot AI <noreply@resend.dev>",
+        from: "JobPilot AI <onboarding@resend.dev>",
         to: normalizedEmail,
         subject: "Reset your JobPilot AI password",
         html: `
