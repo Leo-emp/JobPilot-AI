@@ -324,7 +324,7 @@ STRUCTURE:
 
 4. **Edge paragraph (2-3 sentences)** — What sets you apart. Specific tools, domain knowledge, or complementary skills from the job description that you actually have.
 
-5. **Close (1-2 sentences)** — Confident call to action. NOT "I hope to hear from you." Instead something like: "I'd welcome 20 minutes to talk about how [specific thing] could move the needle for [company]." Sound like someone they want on the team.
+5. **Close (1-2 sentences)** — Professional and energetic, not cocky. Express genuine enthusiasm for the role and invite a conversation. Example: "I'd love the chance to discuss how my experience with [specific thing] could contribute to [company]'s goals — happy to connect whenever works best." Warm and forward-leaning, never pushy or arrogant.
 
 6. **Sign-off** — "Sincerely," then full name
 
