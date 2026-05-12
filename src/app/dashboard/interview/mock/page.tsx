@@ -173,6 +173,9 @@ export default function MockInterviewPage() {
   const [finalScore, setFinalScore] = useState<FinalScore | null>(null);
   const [loadingResults, setLoadingResults] = useState(false);
 
+  /* ---- Webcam state (triggers re-render so video element gets the stream) ---- */
+  const [webcamReady, setWebcamReady] = useState(false);
+
   /* ---- Shared state ---- */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -201,24 +204,18 @@ export default function MockInterviewPage() {
   }, []);
 
   /* ---- Webcam: start user's camera + request mic permission early ---- */
-  /* Requesting audio: true here triggers the browser's mic permission prompt */
-  /* at interview start, so the mic is ready when the user clicks it later */
   const startWebcam = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.muted = true;
-      }
+      setWebcamReady(true);
     } catch {
-      /* Fallback: try video only if audio+video fails */
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        setWebcamReady(true);
       } catch {
-        /* No camera at all — interview still works without it */
+        /* No camera — interview still works without it */
       }
     }
   }, []);
@@ -227,7 +224,16 @@ export default function MockInterviewPage() {
   const stopWebcam = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
+    setWebcamReady(false);
   }, []);
+
+  /* ---- Connect webcam stream to video element after DOM renders ---- */
+  useEffect(() => {
+    if (webcamReady && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.muted = true;
+    }
+  }, [webcamReady, phase]);
 
   /* ---- Timer: count seconds while in interview phase ---- */
   useEffect(() => {
@@ -832,7 +838,7 @@ export default function MockInterviewPage() {
             <video ref={videoRef} autoPlay muted playsInline
               className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
             {/* Fallback if no webcam */}
-            {!streamRef.current && (
+            {!webcamReady && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-20 h-20 rounded-full bg-space-600 flex items-center justify-center text-3xl text-text-muted">👤</div>
               </div>
@@ -1036,7 +1042,7 @@ export default function MockInterviewPage() {
           {/* ---- Action buttons ---- */}
           <div className="flex gap-4">
             <button
-              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setError(""); }}
+              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setError(""); setWebcamReady(false); }}
               className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all">
               Try Again
             </button>
