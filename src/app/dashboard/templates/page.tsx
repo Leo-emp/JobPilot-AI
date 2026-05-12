@@ -720,7 +720,7 @@ export default function TemplatesPage() {
       /* Step 1: Extract text from PDF on the client */
       const text = await extractTextFromPDF(file);
       if (!text.trim()) {
-        setUploadError("Could not extract text from this PDF. It may be image-based.");
+        setUploadError("Couldn't read text from this PDF. It may be a scanned image — please fill in your details manually below.");
         setUploadStatus("error");
         return;
       }
@@ -737,8 +737,7 @@ export default function TemplatesPage() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        setUploadError(err.error || "AI parsing failed. Please fill in details manually.");
+        setUploadError("Auto-fill is temporarily busy. Please fill in your details manually below — it only takes a minute!");
         setUploadStatus("error");
         return;
       }
@@ -751,7 +750,7 @@ export default function TemplatesPage() {
         const cleaned = result.replace(/```json\s*|```\s*/g, "").trim();
         parsed = JSON.parse(cleaned);
       } catch {
-        setUploadError("AI returned an unexpected format. Please fill in details manually.");
+        setUploadError("Couldn't read that format. Please fill in your details manually below.");
         setUploadStatus("error");
         return;
       }
@@ -775,7 +774,7 @@ export default function TemplatesPage() {
       setUploadStatus("done");
     } catch (err) {
       console.error("PDF upload error:", err);
-      setUploadError("Something went wrong. Please try again or fill in details manually.");
+      setUploadError("Something went wrong. Please try again or fill in your details manually below.");
       setUploadStatus("error");
     }
   };
