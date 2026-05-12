@@ -76,16 +76,18 @@ function getBestVoice(): SpeechSynthesisVoice | null {
   if (voices.length === 0) return null;
 
   /* Ordered preference list — first match wins */
+  /* Google US voices are loud and clear on Chrome; Microsoft Neural are best on Edge/Win */
   const tests: ((v: SpeechSynthesisVoice) => boolean)[] = [
-    /* Windows 11 Neural voices — sound almost human */
+    /* Google Chrome voices — loud, clear, widely available */
+    v => /Google US English/i.test(v.name) && v.lang.startsWith("en-US"),
+    v => v.name.includes("Google") && v.lang.startsWith("en-US"),
+    v => v.name.includes("Google") && v.lang.startsWith("en"),
+    /* Windows 11 Neural voices — sound natural on Edge */
     v => /Microsoft.*Jenny.*Online/i.test(v.name),
     v => /Microsoft.*Aria.*Online/i.test(v.name),
     v => /Microsoft.*Jenny/i.test(v.name),
     v => /Microsoft.*Aria/i.test(v.name),
     v => /Microsoft.*Zira/i.test(v.name),
-    /* Google Chrome voices */
-    v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en-US"),
-    v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en"),
     /* Mac voices */
     v => v.name.includes("Samantha"),
     v => v.name.includes("Karen"),
@@ -127,8 +129,8 @@ function speakText(text: string): Promise<void> {
       const utterance = new SpeechSynthesisUtterance(sentence);
 
       /* Slight rate variation per sentence for natural rhythm */
-      utterance.rate = 1.0 + (Math.random() - 0.5) * 0.1;
-      utterance.pitch = 1.1;
+      utterance.rate = 1.02 + (Math.random() - 0.5) * 0.08;
+      utterance.pitch = 1.2;   /* Higher pitch = brighter, clearer, more audible */
       utterance.volume = 1.0;
 
       if (cachedVoice) utterance.voice = cachedVoice;

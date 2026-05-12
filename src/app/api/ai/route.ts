@@ -551,19 +551,19 @@ ${payload.history || "(Interview just started — no conversation yet)"}
 
 CURRENT EXCHANGE NUMBER: ${payload.exchangeNumber} of 12
 
-YOUR QUESTION PLAN (10 real questions — adapt naturally based on answers):
-0 — Warm greeting (hardcoded, skip this — you won't be called for exchange 0)
-1 — Classic opener: "Tell me about yourself and what brought you to this ${payload.role} role${payload.company ? " at " + payload.company : ""}."
-2 — Motivation: "Why do you want to work ${payload.company ? "at " + payload.company : "in " + (payload.industry || "this field")}? What excites you about it?"
-3 — ${payload.interviewType === "Technical" ? "Technical question specific to " + payload.role + " — test real knowledge, not textbook definitions" : payload.interviewType === "Case Interview" ? "Case/problem-solving question relevant to " + payload.industry : "Behavioral: Tell me about a time you faced a significant challenge at work and how you handled it"}
-4 — Strengths & weaknesses: "What do you consider your greatest strengths? And what's one area you're actively working to improve?"
-5 — ${payload.interviewType === "Technical" ? "Second technical question — harder than Q3, test system design or architecture thinking for " + payload.role : "Teamwork/collaboration: Describe a time you had to work with a difficult colleague or team. How did you navigate it?"}
-6 — Situational: A realistic day-to-day scenario they'd face as a ${payload.role}${payload.company ? " at " + payload.company : ""} — ask how they'd handle it
-7 — Leadership/ownership: "Tell me about a project or initiative where you took ownership beyond your normal responsibilities. What was the outcome?"
-8 — ${payload.company ? "Company-specific: A question about " + payload.company + "'s culture, values, products, or industry position that tests if the candidate did their research" : "Industry question: A question about current trends, challenges, or changes in " + (payload.industry || "their field") + " and how they stay current"}
-9 — Failure/learning: "Tell me about a time something didn't go as planned. What happened and what did you learn from it?"
-10 — "Do you have any questions for me about the role, the team, or what a typical day looks like?" → Let them ask, then answer naturally
-11 — After they finish their questions, wrap up: "This was really great — I enjoyed our conversation. Thank you so much for your time! We'll be in touch soon." Set isComplete to true.
+YOUR QUESTION PLAN (10 real questions — classic standard questions first, then role-specific):
+0 — Warm greeting (hardcoded, skip — you won't be called for exchange 0)
+1 — "Tell me about yourself." (THE classic opener — let the candidate walk through their background)
+2 — "What are your greatest strengths, and what would you say is your biggest weakness?" (Standard HR question)
+3 — "Why are you interested in this ${payload.role} role${payload.company ? " at " + payload.company : ""}? What attracted you to it?"
+4 — "Where do you see yourself in 5 years?" (Classic future-vision question)
+5 — "Tell me about a time you faced a challenge at work. How did you handle it?" (Behavioral STAR question)
+6 — ${payload.interviewType === "Technical" ? "Technical question specific to " + payload.role + " — test real practical knowledge they'd need on the job" : "Teamwork: \"Tell me about a time you had a disagreement with a coworker or manager. How did you resolve it?\""}
+7 — Situational: A realistic scenario they'd face as a ${payload.role}${payload.company ? " at " + payload.company : ""} — "How would you handle..." (test problem-solving)
+8 — ${payload.company ? "Company-specific: Ask about " + payload.company + "'s mission, products, culture, or recent news — test if they did their homework" : payload.interviewType === "Technical" ? "Second technical question — harder, testing system design or architecture for " + payload.role : "\"Tell me about a project you're most proud of. What was your role and what was the impact?\""}
+9 — "Tell me about a time you failed or something didn't go as planned. What did you learn?" (Resilience question)
+10 — "Do you have any questions for me about the role, the team, or the company?" → Answer their questions naturally
+11 — After they finish, wrap up warmly: "This was really great — I enjoyed our conversation. Thank you so much for your time! We'll definitely be in touch soon." Set isComplete to true.
 
 CRITICAL RULES:
 1. ALWAYS acknowledge the candidate's previous answer with genuine warmth (1 sentence) before asking the next question
