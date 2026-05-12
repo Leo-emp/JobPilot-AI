@@ -24,36 +24,26 @@ import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import * as Sentry from "@sentry/nextjs";
 
 /* ---- Gemini Model Fallback List ---- */
-/* Wide fallback chain — if one model is rate-limited, the next picks up. */
-/* Ordered by preference: newest/fastest first, older stable models as backup. */
-/* All models below support both text and multimodal (vision) input. */
+/* Ordered by preference: fastest/cheapest first, then older stable models. */
+/* Each model has independent free-tier rate limits (15 RPM for flash). */
+/* If one model is rate-limited, the next picks up instantly. */
 const GEMINI_MODELS = [
-  "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
   "gemini-1.5-flash",
   "gemini-1.5-flash-8b",
-  "gemini-1.5-pro",
 ];
 
+/* ---- Track models that returned 404 so we never waste time retrying them ---- */
+const deadModels = new Set<string>();
+
 /* ---- Number of full passes through the model list before giving up ---- */
-/* Each pass tries every model once with increasing backoff between passes */
-const MAX_RETRY_PASSES = 3;
+const MAX_RETRY_PASSES = 2;
 
-/* ---- Check if an error is retryable (rate limit, overload, capacity) ---- */
-function isRetryableStatus(status: number): boolean {
-  return status === 429 || status === 503 || status === 404 || status === 500;
-}
-
-function isRetryableMessage(msg: string): boolean {
-  const lower = msg.toLowerCase();
-  return lower.includes("overloaded") || lower.includes("high demand") || lower.includes("capacity") || lower.includes("rate") || lower.includes("quota") || lower.includes("resource exhausted");
-}
-
-/* ---- Core Gemini API call with deep retry logic ---- */
-/* Makes up to MAX_RETRY_PASSES full sweeps through all models. */
-/* Pass 1: 1s delay between models. Pass 2: 3s. Pass 3: 6s. */
-/* This gives the free tier time to reset between attempts. */
+/* ---- Core Gemini API call with smart retry logic ---- */
+/* Pass 1: try each model immediately with no delay. */
+/* Pass 2: wait 2s then try again (rate limits reset quickly on free tier). */
+/* 404 models are permanently skipped — no wasted retries. */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function callGeminiCore(parts: any[]): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -64,15 +54,15 @@ async function callGeminiCore(parts: any[]): Promise<string> {
   let lastError = "";
 
   for (let pass = 0; pass < MAX_RETRY_PASSES; pass++) {
-    /* Backoff increases with each full pass: 1s → 3s → 6s */
-    const delayMs = pass === 0 ? 1000 : pass === 1 ? 3000 : 6000;
-
-    /* Wait before retry passes (not before the first attempt) */
+    /* Wait before retry pass (not before the first attempt) */
     if (pass > 0) {
-      await new Promise((r) => setTimeout(r, delayMs));
+      await new Promise((r) => setTimeout(r, 2000));
     }
 
     for (const model of GEMINI_MODELS) {
+      /* Skip models we already know don't exist */
+      if (deadModels.has(model)) continue;
+
       try {
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -89,27 +79,34 @@ async function callGeminiCore(parts: any[]): Promise<string> {
           }
         );
 
-        /* Retryable HTTP status — try next model */
-        if (isRetryableStatus(response.status)) {
-          await new Promise((r) => setTimeout(r, delayMs));
+        /* 404 = model doesn't exist — mark dead, skip instantly */
+        if (response.status === 404) {
+          deadModels.add(model);
+          continue;
+        }
+
+        /* 429 = rate-limited, 503 = overloaded — try next model immediately */
+        if (response.status === 429 || response.status === 503) {
+          lastError = `Model ${model} rate-limited`;
+          continue;
+        }
+
+        /* 500 = server error — try next model */
+        if (response.status === 500) {
+          lastError = `Model ${model} server error`;
           continue;
         }
 
         if (!response.ok) {
           const errorData = await response.json();
           const msg = errorData.error?.message || "Gemini API error";
-          if (isRetryableMessage(msg)) {
-            lastError = msg;
-            await new Promise((r) => setTimeout(r, delayMs));
-            continue;
-          }
-          throw new Error(msg);
+          lastError = msg;
+          continue;
         }
 
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-        /* Sometimes the API returns a valid response but with no text (safety filter, empty) */
         if (!text) {
           lastError = "Empty response from AI model";
           continue;
@@ -117,17 +114,13 @@ async function callGeminiCore(parts: any[]): Promise<string> {
 
         return text;
       } catch (error: unknown) {
-        if (error instanceof Error && isRetryableMessage(error.message)) {
-          lastError = error.message;
-          await new Promise((r) => setTimeout(r, delayMs));
-          continue;
-        }
-        throw error;
+        lastError = error instanceof Error ? error.message : "Network error";
+        continue;
       }
     }
   }
 
-  throw new Error(lastError || "All AI models are currently at capacity. Please try again in a moment.");
+  throw new Error(lastError || "AI is temporarily unavailable. Please try again in a moment.");
 }
 
 /* ---- Text-only Gemini call ---- */
