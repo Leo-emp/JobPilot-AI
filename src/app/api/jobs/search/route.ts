@@ -1,216 +1,285 @@
 /* ============================================================
-   JOB SEARCH API - Adzuna Job Board Integration
+   JOB SEARCH API - Multi-Source Job Aggregator
    ============================================================
    GET /api/jobs/search?q=...&location=...&page=1
-   Searches for jobs using the Adzuna API and returns results.
-   Falls back to a curated sample if Adzuna keys aren't configured.
-   Requires authentication.
+   Searches for jobs across multiple free sources in parallel:
+   - Adzuna (requires API keys)
+   - Remotive (free, no key)
+   - RemoteOK (free, no key)
+   - We Work Remotely (free RSS feed, no key)
+   Merges and deduplicates results. Requires authentication.
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-/* ---- Adzuna API Configuration ---- */
-const ADZUNA_BASE_URL = "https://api.adzuna.com/v1/api/jobs";
-
-/* ---- Type for Adzuna API response ---- */
-interface AdzunaJob {
+/* ---- Standardized job format returned to the frontend ---- */
+interface Job {
   id: string;
   title: string;
-  company: { display_name: string };
-  location: { display_name: string };
+  company: string;
+  location: string;
   description: string;
-  redirect_url: string;
-  salary_min?: number;
-  salary_max?: number;
-  created: string;
-  category?: { label: string };
-  contract_time?: string;
+  url: string;
+  salary: string;
+  category: string;
+  contractTime: string;
+  postedDate: string;
+  source: string;
 }
 
-interface AdzunaResponse {
-  results: AdzunaJob[];
-  count: number;
+/* ============================================================
+   SOURCE 1: ADZUNA (requires ADZUNA_APP_ID + ADZUNA_APP_KEY)
+   ============================================================ */
+async function fetchAdzuna(query: string, location: string, page: number, country: string): Promise<Job[]> {
+  const appId = process.env.ADZUNA_APP_ID;
+  const appKey = process.env.ADZUNA_APP_KEY;
+  if (!appId || !appKey) return [];
+
+  const params = new URLSearchParams({
+    app_id: appId,
+    app_key: appKey,
+    results_per_page: "15",
+    what: query,
+  });
+  if (location) params.set("where", location);
+
+  const res = await fetch(
+    `https://api.adzuna.com/v1/api/jobs/${country}/search/${page}?${params.toString()}`
+  );
+  if (!res.ok) return [];
+
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.results || []).map((j: any) => ({
+    id: `adzuna-${j.id}`,
+    title: j.title || "",
+    company: j.company?.display_name || "Unknown",
+    location: j.location?.display_name || "Remote",
+    description: j.description || "",
+    url: j.redirect_url || "",
+    salary: formatSalary(j.salary_min, j.salary_max),
+    category: j.category?.label || "",
+    contractTime: j.contract_time || "",
+    postedDate: j.created || "",
+    source: "Adzuna",
+  }));
 }
 
-/* ---- GET: Search for jobs ---- */
+/* ============================================================
+   SOURCE 2: REMOTIVE (free, no key, JSON)
+   ============================================================ */
+async function fetchRemotive(query: string): Promise<Job[]> {
+  const params = new URLSearchParams();
+  if (query) params.set("search", query);
+  params.set("limit", "20");
+
+  const res = await fetch(`https://remotive.com/api/remote-jobs?${params.toString()}`);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.jobs || []).map((j: any) => ({
+    id: `remotive-${j.id}`,
+    title: j.title || "",
+    company: j.company_name || "Unknown",
+    location: j.candidate_required_location || "Worldwide",
+    description: stripHTML(j.description || ""),
+    url: j.url || "",
+    salary: j.salary || "",
+    category: j.category || "",
+    contractTime: j.job_type || "",
+    postedDate: j.publication_date || "",
+    source: "Remotive",
+  }));
+}
+
+/* ============================================================
+   SOURCE 3: REMOTEOK (free, no key, JSON array)
+   ============================================================ */
+async function fetchRemoteOK(query: string): Promise<Job[]> {
+  const res = await fetch("https://remoteok.com/api", {
+    headers: { "User-Agent": "JobPilotAI/1.0" },
+  });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  /* First element is a legal notice — skip it */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const jobs: any[] = Array.isArray(data) ? data.slice(1) : [];
+
+  const q = query.toLowerCase();
+  const filtered = q
+    ? jobs.filter(
+        (j) =>
+          (j.position || "").toLowerCase().includes(q) ||
+          (j.company || "").toLowerCase().includes(q) ||
+          (j.description || "").toLowerCase().includes(q) ||
+          (j.tags || []).some((t: string) => t.toLowerCase().includes(q))
+      )
+    : jobs;
+
+  return filtered.slice(0, 20).map((j) => ({
+    id: `remoteok-${j.id}`,
+    title: j.position || "",
+    company: j.company || "Unknown",
+    location: j.location || "Remote",
+    description: stripHTML(j.description || ""),
+    url: j.url || j.apply_url || "",
+    salary: formatSalary(j.salary_min, j.salary_max),
+    category: (j.tags || []).slice(0, 3).join(", "),
+    contractTime: "",
+    postedDate: j.date || "",
+    source: "RemoteOK",
+  }));
+}
+
+/* ============================================================
+   SOURCE 4: WE WORK REMOTELY (free RSS feed, no key)
+   ============================================================ */
+async function fetchWWR(query: string): Promise<Job[]> {
+  const res = await fetch("https://weworkremotely.com/remote-jobs.rss");
+  if (!res.ok) return [];
+
+  const xml = await res.text();
+
+  /* Simple XML parsing — extract <item> blocks */
+  const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+  const q = query.toLowerCase();
+
+  const jobs: Job[] = [];
+  for (const item of items) {
+    const rawTitle = extractXML(item, "title");
+    const link = extractXML(item, "link");
+    const pubDate = extractXML(item, "pubDate");
+    const region = extractXML(item, "region") || "Remote";
+    const category = extractXML(item, "category") || "";
+    const type = extractXML(item, "type") || "";
+    const desc = stripHTML(extractCDATA(item, "description") || extractXML(item, "description") || "");
+
+    /* Title format: "Company : Job Title" */
+    let company = "Unknown";
+    let title = rawTitle;
+    if (rawTitle.includes(":")) {
+      const parts = rawTitle.split(":");
+      company = parts[0].trim();
+      title = parts.slice(1).join(":").trim();
+    }
+
+    /* Filter by query if provided */
+    if (q && !title.toLowerCase().includes(q) && !company.toLowerCase().includes(q) && !desc.toLowerCase().includes(q)) {
+      continue;
+    }
+
+    jobs.push({
+      id: `wwr-${link || jobs.length}`,
+      title,
+      company,
+      location: region,
+      description: desc.slice(0, 500),
+      url: link,
+      salary: "",
+      category,
+      contractTime: type,
+      postedDate: pubDate,
+      source: "WeWorkRemotely",
+    });
+
+    if (jobs.length >= 15) break;
+  }
+
+  return jobs;
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function formatSalary(min?: number, max?: number): string {
+  if (!min && !max) return "";
+  if (min && max) return `$${Math.round(min / 1000)}k - $${Math.round(max / 1000)}k`;
+  if (min) return `From $${Math.round(min / 1000)}k`;
+  if (max) return `Up to $${Math.round(max / 1000)}k`;
+  return "";
+}
+
+function stripHTML(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim();
+}
+
+function extractXML(xml: string, tag: string): string {
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`));
+  return match ? match[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").trim() : "";
+}
+
+function extractCDATA(xml: string, tag: string): string {
+  const match = xml.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>`));
+  return match ? match[1].trim() : "";
+}
+
+/* Deduplicate by normalized title+company */
+function deduplicateJobs(jobs: Job[]): Job[] {
+  const seen = new Set<string>();
+  return jobs.filter((j) => {
+    const key = `${j.title.toLowerCase().trim()}|${j.company.toLowerCase().trim()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/* ============================================================
+   MAIN HANDLER
+   ============================================================ */
 export async function GET(req: NextRequest) {
-  /* Check authentication */
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  /* Parse search parameters */
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("q") || "";
   const location = searchParams.get("location") || "";
   const page = parseInt(searchParams.get("page") || "1");
   const country = searchParams.get("country") || "us";
 
-  /* Get Adzuna API credentials */
-  const appId = process.env.ADZUNA_APP_ID;
-  const appKey = process.env.ADZUNA_APP_KEY;
-
-  /* If Adzuna keys aren't configured, return sample data */
-  if (!appId || !appKey) {
-    const sampleJobs = getSampleJobs(query, location);
-    return NextResponse.json({
-      jobs: sampleJobs,
-      total: sampleJobs.length,
-      page: 1,
-      source: "sample",
-      message: "Showing sample jobs. Configure ADZUNA_APP_ID and ADZUNA_APP_KEY for real job listings.",
-    });
-  }
-
   try {
-    /* Build the Adzuna API URL */
-    const params = new URLSearchParams({
-      app_id: appId,
-      app_key: appKey,
-      results_per_page: "20",
-      what: query,
-    });
+    /* Fetch all sources in parallel — each one fails gracefully */
+    const [adzunaJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
+      fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
+      fetchRemotive(query).catch(() => [] as Job[]),
+      fetchRemoteOK(query).catch(() => [] as Job[]),
+      fetchWWR(query).catch(() => [] as Job[]),
+    ]);
 
-    /* Add location filter if provided */
-    if (location) {
-      params.set("where", location);
-    }
+    /* Merge all results and deduplicate */
+    const allJobs = deduplicateJobs([
+      ...adzunaJobs,
+      ...remotiveJobs,
+      ...remoteOKJobs,
+      ...wwrJobs,
+    ]);
 
-    const url = `${ADZUNA_BASE_URL}/${country}/search/${page}?${params.toString()}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Adzuna API error ${response.status}: ${text.slice(0, 200)}`);
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      throw new Error("Adzuna returned non-JSON response");
-    }
-
-    const data: AdzunaResponse = await response.json();
-
-    /* Transform Adzuna results into our format */
-    const jobs = data.results.map((job) => ({
-      id: job.id,
-      title: job.title,
-      company: job.company?.display_name || "Unknown Company",
-      location: job.location?.display_name || "Remote",
-      description: job.description,
-      url: job.redirect_url,
-      salary: formatSalary(job.salary_min, job.salary_max),
-      category: job.category?.label || "",
-      contractTime: job.contract_time || "",
-      postedDate: job.created,
-    }));
+    /* Build source summary */
+    const sources = [
+      adzunaJobs.length > 0 && "Adzuna",
+      remotiveJobs.length > 0 && "Remotive",
+      remoteOKJobs.length > 0 && "RemoteOK",
+      wwrJobs.length > 0 && "WeWorkRemotely",
+    ].filter(Boolean);
 
     return NextResponse.json({
-      jobs,
-      total: data.count,
+      jobs: allJobs,
+      total: allJobs.length,
       page,
-      source: "adzuna",
+      source: sources.join(", ") || "none",
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Job search failed";
+  } catch {
     return NextResponse.json(
-      { error: message, jobs: getSampleJobs(query, location), source: "sample" },
+      { error: "Job search failed", jobs: [], source: "none" },
       { status: 200 }
     );
   }
-}
-
-/* ---- Format salary range into readable string ---- */
-function formatSalary(min?: number, max?: number): string {
-  if (!min && !max) return "";
-  if (min && max) {
-    return `$${Math.round(min / 1000)}k - $${Math.round(max / 1000)}k`;
-  }
-  if (min) return `From $${Math.round(min / 1000)}k`;
-  if (max) return `Up to $${Math.round(max / 1000)}k`;
-  return "";
-}
-
-/* ---- Sample Jobs Fallback ---- */
-/* Returns realistic sample jobs when Adzuna API is not configured */
-function getSampleJobs(query: string, location: string) {
-  const title = query || "Software Engineer";
-  const loc = location || "Remote";
-
-  return [
-    {
-      id: "sample-1",
-      title: `Senior ${title}`,
-      company: "TechCorp Inc.",
-      location: loc,
-      description: `We're looking for an experienced ${title} to join our growing team. You'll be working on cutting-edge projects, collaborating with cross-functional teams, and mentoring junior developers. Requirements: 5+ years of experience, strong problem-solving skills, and excellent communication abilities. We offer competitive salary, equity, unlimited PTO, and remote work options.`,
-      url: "",
-      salary: "$120k - $160k",
-      category: "IT Jobs",
-      contractTime: "full_time",
-      postedDate: new Date().toISOString(),
-    },
-    {
-      id: "sample-2",
-      title: `${title} - Mid Level`,
-      company: "InnovateTech",
-      location: loc,
-      description: `Join our dynamic team as a ${title}. You'll design and implement scalable solutions, participate in code reviews, and contribute to architectural decisions. We value collaboration, continuous learning, and work-life balance. Requirements: 3+ years of experience, proficiency in modern frameworks, and a passion for clean code.`,
-      url: "",
-      salary: "$90k - $120k",
-      category: "IT Jobs",
-      contractTime: "full_time",
-      postedDate: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-      id: "sample-3",
-      title: `Junior ${title}`,
-      company: "StartupXYZ",
-      location: loc,
-      description: `Exciting opportunity for a motivated ${title} to join our fast-growing startup! You'll work directly with senior engineers, ship features rapidly, and have massive impact on our product. Requirements: 1+ years of experience or relevant bootcamp/degree, eagerness to learn, and a growth mindset. We offer mentorship, equity, and flexible hours.`,
-      url: "",
-      salary: "$65k - $85k",
-      category: "IT Jobs",
-      contractTime: "full_time",
-      postedDate: new Date(Date.now() - 172800000).toISOString(),
-    },
-    {
-      id: "sample-4",
-      title: `Lead ${title}`,
-      company: "Enterprise Solutions",
-      location: loc,
-      description: `We're seeking a Lead ${title} to drive technical strategy and lead a team of 8 engineers. You'll set coding standards, architect solutions for scale, and work closely with product leadership. Requirements: 7+ years of experience, team leadership experience, and expertise in distributed systems. Competitive compensation package with bonus and RSUs.`,
-      url: "",
-      salary: "$150k - $200k",
-      category: "IT Jobs",
-      contractTime: "full_time",
-      postedDate: new Date(Date.now() - 259200000).toISOString(),
-    },
-    {
-      id: "sample-5",
-      title: `${title} (Contract)`,
-      company: "ConsultingPro",
-      location: "Remote",
-      description: `6-month contract role for an experienced ${title}. You'll be embedded in a client team working on a greenfield project. Requirements: 4+ years of experience, ability to work independently, and strong documentation skills. Competitive hourly rate with possibility of extension or conversion to full-time.`,
-      url: "",
-      salary: "$70 - $95/hr",
-      category: "IT Jobs",
-      contractTime: "contract",
-      postedDate: new Date(Date.now() - 345600000).toISOString(),
-    },
-    {
-      id: "sample-6",
-      title: `Remote ${title}`,
-      company: "GlobalTech",
-      location: "Fully Remote",
-      description: `100% remote position for a talented ${title}. Join a distributed team across 15 countries working on products used by millions. Flexible hours, async-first culture, annual team retreats. Requirements: 3+ years of experience, self-motivated, excellent written communication. Salary adjusted by location with transparent bands.`,
-      url: "",
-      salary: "$80k - $140k",
-      category: "IT Jobs",
-      contractTime: "full_time",
-      postedDate: new Date(Date.now() - 432000000).toISOString(),
-    },
-  ];
 }
