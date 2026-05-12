@@ -107,8 +107,8 @@ function getBestVoice(): SpeechSynthesisVoice | null {
 let cachedVoice: SpeechSynthesisVoice | null = null;
 
 /* ---- Helper: speak text aloud with a warm, professional female voice ---- */
-/* Splits text into sentences, adds natural pauses between them, and varies */
-/* rate slightly per sentence so it doesn't sound like a monotone robot. */
+/* Queues all sentences at once so the browser handles pacing naturally. */
+/* Varying rate slightly per sentence prevents flat monotone delivery. */
 function speakText(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (!window.speechSynthesis) { resolve(); return; }
@@ -116,38 +116,31 @@ function speakText(text: string): Promise<void> {
 
     if (!cachedVoice) cachedVoice = getBestVoice();
 
-    /* Split into sentences for smoother, more natural delivery */
-    const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+    /* Split into sentences for smoother delivery */
+    const sentences = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text])
+      .map(s => s.trim()).filter(Boolean);
 
-    let index = 0;
-    const speakNext = () => {
-      if (index >= sentences.length) { resolve(); return; }
+    if (sentences.length === 0) { resolve(); return; }
 
-      const sentence = sentences[index].trim();
-      if (!sentence) { index++; speakNext(); return; }
-
+    /* Queue all sentences at once — the browser chains them seamlessly */
+    sentences.forEach((sentence, i) => {
       const utterance = new SpeechSynthesisUtterance(sentence);
 
-      /* Vary rate per sentence for natural rhythm (0.95–1.08) */
-      const baseRate = 1.0;
-      const variation = (Math.random() - 0.5) * 0.13;
-      utterance.rate = baseRate + variation;
+      /* Slight rate variation per sentence for natural rhythm */
+      utterance.rate = 1.0 + (Math.random() - 0.5) * 0.1;
       utterance.pitch = 1.1;
       utterance.volume = 1.0;
 
       if (cachedVoice) utterance.voice = cachedVoice;
 
-      utterance.onend = () => {
-        index++;
-        /* Natural pause between sentences (120–280ms) */
-        const pause = 120 + Math.random() * 160;
-        setTimeout(speakNext, pause);
-      };
-      utterance.onerror = () => { index++; speakNext(); };
-      window.speechSynthesis.speak(utterance);
-    };
+      /* Resolve when the last sentence finishes */
+      if (i === sentences.length - 1) {
+        utterance.onend = () => resolve();
+        utterance.onerror = () => resolve();
+      }
 
-    speakNext();
+      window.speechSynthesis.speak(utterance);
+    });
   });
 }
 
@@ -247,9 +240,52 @@ export default function MockInterviewPage() {
   }, [webcamReady, phase]);
 
   /* ---- Auto-start mic when it's the user's turn ---- */
+  /* Silently attempts to start — if mic permission was already granted via */
+  /* the webcam setup (audio:true), this works instantly. If not, fails */
+  /* silently and user can click the mic button manually. */
   useEffect(() => {
     if (waitingForUser && phase === "interview" && !isListening) {
-      startListening();
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) return;
+
+      const recognition = new SR();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      let finalTranscript = "";
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript + " ";
+          } else {
+            interim = event.results[i][0].transcript;
+          }
+        }
+        setUserAnswer(finalTranscript + interim);
+      };
+
+      recognition.onerror = (e: Event) => {
+        const err = (e as unknown as { error?: string }).error || "";
+        if (err === "no-speech" || err === "aborted") return;
+        /* Silent fail on auto-start — user can click mic manually */
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        if (recognitionRef.current === recognition) {
+          try { recognition.start(); } catch { setIsListening(false); }
+        }
+      };
+
+      try {
+        recognition.start();
+        recognitionRef.current = recognition;
+        setIsListening(true);
+      } catch {
+        /* Silent fail — mic button is still available */
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [waitingForUser]);
