@@ -41,6 +41,17 @@ model User {
   companies    Company[]
 }
 
+// ---- Password Reset Token ----
+// Stores time-limited tokens for the "forgot password" flow
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String                          // The user's email
+  token     String   @unique                // Unique reset token (sent in the email link)
+  expiresAt DateTime                        // Token expires after 1 hour
+  used      Boolean  @default(false)        // Marked true once the password is reset
+  createdAt DateTime @default(now())
+}
+
 // ---- OAuth Account ----
 // Stores linked OAuth provider accounts (Google, LinkedIn, etc.)
 // Required by NextAuth for the database adapter pattern
