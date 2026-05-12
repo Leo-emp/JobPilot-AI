@@ -295,40 +295,40 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "cover_letter":
-      return `You are a professional cover letter writer who creates personalized, human-sounding cover letters that get interviews.
+      return `Write a cover letter that sounds like a real person typed it — not AI-generated.
 
-CRITICAL RULES:
-- Extract the candidate's REAL full name, email, phone, and location from their resume — NEVER use [Your Name], [Your Email], or any placeholder brackets
-- Reference SPECIFIC achievements, metrics, and projects from their actual resume — not vague generalities
-- Address it to "Dear Hiring Manager" unless a specific name is given
-- Write like a confident human, not a corporate robot — vary sentence length, use natural transitions, show personality
-- NEVER use generic filler like "I am writing to express my interest" or "I believe I would be a great fit" — these scream template
-- Connect the candidate's REAL past results to what the company needs — show you understand THEIR business
-- Keep it 3 paragraphs for the body (not counting header/closing) — around 300-350 words total
-- Every sentence must earn its place — if it could apply to any candidate, delete it
+HARD RULES:
+- MAXIMUM 300 words total (header to sign-off). If you go over, you failed.
+- Today's date is: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+- Every paragraph: 4 lines MAX. Short paragraphs, plenty of white space.
+- Use the candidate's REAL name, email, phone, location from their resume. NEVER use [Your Name] or any brackets.
+- Reference SPECIFIC achievements and numbers from the resume — no vague generalities.
+- Every sentence must earn its place — if it could describe any candidate, cut it.
 
-STRUCTURE (follow this EXACT format):
+SOUND HUMAN — NOT AI:
+- NEVER use these AI giveaway phrases: "I am writing to express my interest", "I believe I would be a great fit", "I am excited to apply", "With my proven track record", "I am confident that", "leverage my expertise", "I look forward to the opportunity"
+- Write like you're emailing someone you respect, not writing a formal essay
+- Mix short punchy sentences with longer ones. A two-word sentence after a long one creates rhythm.
+- Use contractions sometimes — "I've" not "I have", "I'd" not "I would". Real people use contractions.
+- Start sentences differently — not every line should begin with "I"
+- Be specific and concrete. "Grew the team's pipeline from $800K to $2.1M" beats "significantly increased revenue"
+- Sound like someone already doing the work, not someone asking for permission to start
 
-1. **Header** — Candidate's full name, email, phone, location (from resume), then today's date, then company name and "Dear Hiring Manager,"
+STRUCTURE:
 
-2. **Opening paragraph** — Lead with the specific role title at the specific company. Open with something genuine about WHY this role excites you based on what the company does or what the role involves. Mention your current/most recent title and one headline achievement with a number.
+1. **Header** — Full name, email, phone, location (from resume). Then the date. Then company name and "Dear Hiring Manager,"
 
-3. **Body paragraph 1** — Pick 2-3 of your strongest achievements from the resume that directly match the job description's top requirements. Use specific metrics and results. Show HOW your experience solves THEIR problems.
+2. **Opening (2-3 sentences)** — Name the role and company. Say something specific about WHY this role caught your eye — reference what the company actually does. Drop your current title and one big number.
 
-4. **Body paragraph 2** — Highlight complementary skills, tools, or experiences from the resume that add value beyond the core requirements. Connect your unique background to what makes you different from other candidates. Mention specific tools, methodologies, or domain expertise from the job description that you actually have.
+3. **Impact paragraph (3-4 sentences)** — Your 2-3 strongest results that match what the job needs. Real metrics, real outcomes. Connect YOUR results to THEIR problems.
 
-5. **Closing paragraph** — Express genuine enthusiasm for contributing to the company's mission or goals (be specific, not generic). Include a confident call to action requesting an interview. Thank them for their time.
+4. **Edge paragraph (2-3 sentences)** — What sets you apart. Specific tools, domain knowledge, or complementary skills from the job description that you actually have.
 
-6. **Sign-off** — "Sincerely," followed by the candidate's full name
+5. **Close (1-2 sentences)** — Confident call to action. NOT "I hope to hear from you." Instead something like: "I'd welcome 20 minutes to talk about how [specific thing] could move the needle for [company]." Sound like someone they want on the team.
 
-TONE GUIDELINES:
-- Write as if you're a real person excited about a real opportunity — not filling out a template
-- Use active voice throughout — "I led" not "I was responsible for leading"
-- Show don't tell — instead of "I am a strong communicator" say "I presented strategic recommendations to C-suite leadership that drove international expansion"
-- Mirror 2-3 keywords from the job description naturally — don't keyword-stuff
-- Sound warm and professional — not desperate or arrogant
+6. **Sign-off** — "Sincerely," then full name
 
-Return ONLY the cover letter text — no commentary, no "Here's your cover letter", no markdown formatting except line breaks between sections.
+Return ONLY the cover letter. No commentary, no "Here's your cover letter", no markdown.
 
 Resume:
 ${payload.resume}
