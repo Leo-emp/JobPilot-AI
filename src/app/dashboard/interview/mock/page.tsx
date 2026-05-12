@@ -47,8 +47,8 @@ interface FinalScore {
 type Phase = "setup" | "interview" | "results";
 
 /* ---- Constants ---- */
-/* Total AI exchanges: 0=greeting, 1-5=questions, 6=closing */
-const TOTAL_EXCHANGES = 7;
+/* Total AI exchanges: 0=greeting, 1-10=questions, 11=closing */
+const TOTAL_EXCHANGES = 12;
 
 /* ---- Helper: call the /api/ai endpoint ---- */
 async function callAI(action: string, payload: Record<string, string>): Promise<string> {
@@ -107,31 +107,42 @@ function getBestVoice(): SpeechSynthesisVoice | null {
 let cachedVoice: SpeechSynthesisVoice | null = null;
 
 /* ---- Helper: speak text aloud with a warm, professional female voice ---- */
-/* Splits long text into sentences so the browser doesn't choke on large utterances */
+/* Splits text into sentences, adds natural pauses between them, and varies */
+/* rate slightly per sentence so it doesn't sound like a monotone robot. */
 function speakText(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (!window.speechSynthesis) { resolve(); return; }
     window.speechSynthesis.cancel();
 
-    /* Use cached voice or find the best one */
     if (!cachedVoice) cachedVoice = getBestVoice();
 
-    /* Split into sentences for smoother delivery — browser TTS often */
-    /* stutters or clips on long strings. Short chunks sound more natural. */
+    /* Split into sentences for smoother, more natural delivery */
     const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
 
     let index = 0;
     const speakNext = () => {
       if (index >= sentences.length) { resolve(); return; }
 
-      const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
-      utterance.rate = 1.05;      /* slightly faster = more energetic */
-      utterance.pitch = 1.15;     /* brighter pitch = friendlier, more lively */
-      utterance.volume = 1.0;     /* maximum volume */
+      const sentence = sentences[index].trim();
+      if (!sentence) { index++; speakNext(); return; }
+
+      const utterance = new SpeechSynthesisUtterance(sentence);
+
+      /* Vary rate per sentence for natural rhythm (0.95–1.08) */
+      const baseRate = 1.0;
+      const variation = (Math.random() - 0.5) * 0.13;
+      utterance.rate = baseRate + variation;
+      utterance.pitch = 1.1;
+      utterance.volume = 1.0;
 
       if (cachedVoice) utterance.voice = cachedVoice;
 
-      utterance.onend = () => { index++; speakNext(); };
+      utterance.onend = () => {
+        index++;
+        /* Natural pause between sentences (120–280ms) */
+        const pause = 120 + Math.random() * 160;
+        setTimeout(speakNext, pause);
+      };
       utterance.onerror = () => { index++; speakNext(); };
       window.speechSynthesis.speak(utterance);
     };
@@ -234,6 +245,14 @@ export default function MockInterviewPage() {
       videoRef.current.muted = true;
     }
   }, [webcamReady, phase]);
+
+  /* ---- Auto-start mic when it's the user's turn ---- */
+  useEffect(() => {
+    if (waitingForUser && phase === "interview" && !isListening) {
+      startListening();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waitingForUser]);
 
   /* ---- Timer: count seconds while in interview phase ---- */
   useEffect(() => {
@@ -639,7 +658,7 @@ export default function MockInterviewPage() {
           <div className="p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20">
             <p className="text-sm text-text-secondary">
               <span className="text-brand-light font-medium">How it works:</span> You&apos;ll join a video call with Sarah, your AI interviewer.
-              She&apos;ll greet you naturally and ask 6 real interview questions based on your role and experience.
+              She&apos;ll greet you naturally and ask 10 real interview questions based on your role, experience, and company.
               Speak into your <strong className="text-white">microphone</strong> or type — your <strong className="text-white">webcam</strong> will be on so you can practice eye contact and body language.
               At the end, you&apos;ll get a detailed score breakdown.
             </p>
@@ -713,10 +732,10 @@ export default function MockInterviewPage() {
             <span className="text-sm font-mono text-text-secondary bg-space-700 px-3 py-1.5 rounded-lg">
               {formatTime(elapsedTime)}
             </span>
-            {/* Exchange indicator */}
+            {/* Exchange indicator — 10 questions (exchanges 1-10), 0=greeting, 11=closing */}
             <span className="text-sm text-text-secondary">
-              {exchangeNumber === 0 ? "Getting started..." : (
-                <>Question <span className="text-white font-semibold">{Math.min(exchangeNumber, TOTAL_EXCHANGES - 1)}</span> of {TOTAL_EXCHANGES - 1}</>
+              {exchangeNumber === 0 ? "Getting started..." : exchangeNumber >= TOTAL_EXCHANGES - 1 ? "Wrapping up..." : (
+                <>Question <span className="text-white font-semibold">{Math.min(exchangeNumber, 10)}</span> of 10</>
               )}
             </span>
           </div>
