@@ -339,12 +339,19 @@ STRUCTURE (exactly 4 body paragraphs like the reference):
 
 6. **Sign-off** — "Sincerely," then full name
 
-TONE:
+TONE & FLOW:
 - Professional, polished, and human — like the reference. Not stiff, not casual.
 - Confident but never arrogant. You know your value and you state it clearly.
 - Active voice. Specific. Every sentence earns its place.
 - Okay to use "I am" — the reference does. Just don't start every sentence with "I".
 - No AI giveaway phrases like: "I believe I would be a great fit", "With my proven track record", "I am confident that", "leverage my expertise"
+
+NATURAL FLOW (critical):
+- The letter must read as ONE smooth narrative, not 4 disconnected paragraphs. Each paragraph should flow into the next with a natural thread.
+- Use transition bridges: Paragraph 1 introduces a theme → Paragraph 2 deepens it with a concrete story → Paragraph 3 broadens to complementary strengths → Paragraph 4 ties it all together.
+- Vary sentence openings and lengths. A long sentence followed by a short one creates rhythm. Don't let every sentence sound the same.
+- Read it aloud — if you stumble or it sounds robotic, rewrite it. It should sound like someone talking to a respected colleague, not reciting bullet points.
+- Avoid listing skills or achievements back-to-back. Weave them into sentences that connect cause and effect: what you did → why it mattered → how it applies HERE.
 
 Return ONLY the cover letter text. No commentary, no markdown formatting.
 
