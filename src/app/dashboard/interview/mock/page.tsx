@@ -69,19 +69,30 @@ function parseAIJson<T>(text: string): T {
 }
 
 /* ---- Helper: find the best female English voice for TTS ---- */
-/* Priority: Google UK Female > Google US Female > Microsoft Zira > Samantha > any English female */
+/* Priority order: Microsoft Neural voices (sound human on Win11) > Google > Apple > any English */
+/* Microsoft Online/Neural voices (Jenny, Aria, Zira Online) are dramatically better than old TTS */
 function getBestVoice(): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
   if (voices.length === 0) return null;
 
   /* Ordered preference list — first match wins */
   const tests: ((v: SpeechSynthesisVoice) => boolean)[] = [
-    v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en-GB"),
+    /* Windows 11 Neural voices — sound almost human */
+    v => /Microsoft.*Jenny.*Online/i.test(v.name),
+    v => /Microsoft.*Aria.*Online/i.test(v.name),
+    v => /Microsoft.*Jenny/i.test(v.name),
+    v => /Microsoft.*Aria/i.test(v.name),
+    v => /Microsoft.*Zira/i.test(v.name),
+    /* Google Chrome voices */
+    v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en-US"),
     v => v.name.includes("Google") && v.name.includes("Female") && v.lang.startsWith("en"),
-    v => v.name.includes("Zira"),
+    /* Mac voices */
     v => v.name.includes("Samantha"),
+    v => v.name.includes("Karen"),
+    /* Any English female */
     v => v.lang.startsWith("en") && /female|woman/i.test(v.name),
-    v => v.lang.startsWith("en") && v.localService,
+    /* Any English voice (prefer US) */
+    v => v.lang === "en-US",
     v => v.lang.startsWith("en"),
   ];
 
@@ -92,26 +103,40 @@ function getBestVoice(): SpeechSynthesisVoice | null {
   return voices[0];
 }
 
+/* ---- Cached voice reference (avoids re-searching every utterance) ---- */
+let cachedVoice: SpeechSynthesisVoice | null = null;
+
 /* ---- Helper: speak text aloud with a warm, professional female voice ---- */
+/* Splits long text into sentences so the browser doesn't choke on large utterances */
 function speakText(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (!window.speechSynthesis) { resolve(); return; }
-    /* Cancel any in-progress speech first */
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    /* Voice settings tuned for natural, energetic delivery */
-    utterance.rate = 1.0;       /* natural speed — not too fast, not too slow */
-    utterance.pitch = 1.1;      /* slightly higher pitch = friendlier, more energetic */
-    utterance.volume = 1.0;     /* maximum volume */
+    /* Use cached voice or find the best one */
+    if (!cachedVoice) cachedVoice = getBestVoice();
 
-    /* Pick the best available female voice */
-    const voice = getBestVoice();
-    if (voice) utterance.voice = voice;
+    /* Split into sentences for smoother delivery — browser TTS often */
+    /* stutters or clips on long strings. Short chunks sound more natural. */
+    const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
 
-    utterance.onend = () => resolve();
-    utterance.onerror = () => resolve();
-    window.speechSynthesis.speak(utterance);
+    let index = 0;
+    const speakNext = () => {
+      if (index >= sentences.length) { resolve(); return; }
+
+      const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
+      utterance.rate = 1.05;      /* slightly faster = more energetic */
+      utterance.pitch = 1.15;     /* brighter pitch = friendlier, more lively */
+      utterance.volume = 1.0;     /* maximum volume */
+
+      if (cachedVoice) utterance.voice = cachedVoice;
+
+      utterance.onend = () => { index++; speakNext(); };
+      utterance.onerror = () => { index++; speakNext(); };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    speakNext();
   });
 }
 
@@ -162,22 +187,39 @@ export default function MockInterviewPage() {
   /* Keep messagesRef in sync with messages state */
   useEffect(() => { messagesRef.current = messages; }, [messages]);
 
-  /* ---- Preload browser voices (Chrome loads them asynchronously) ---- */
+  /* ---- Preload browser voices and cache the best one ---- */
+  /* Chrome loads voices asynchronously — this ensures they're ready before the interview starts */
   useEffect(() => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
+      const cacheVoice = () => {
+        cachedVoice = getBestVoice();
+      };
       window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      cacheVoice();
+      window.speechSynthesis.onvoiceschanged = cacheVoice;
     }
   }, []);
 
-  /* ---- Webcam: start user's camera ---- */
+  /* ---- Webcam: start user's camera + request mic permission early ---- */
+  /* Requesting audio: true here triggers the browser's mic permission prompt */
+  /* at interview start, so the mic is ready when the user clicks it later */
   const startWebcam = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       streamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.muted = true;
+      }
     } catch {
-      /* Webcam not available — interview still works without it */
+      /* Fallback: try video only if audio+video fails */
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      } catch {
+        /* No camera at all — interview still works without it */
+      }
     }
   }, []);
 
@@ -245,14 +287,35 @@ export default function MockInterviewPage() {
   };
 
   /* ---- Speech Recognition: start listening to user's microphone ---- */
-  const startListening = useCallback(() => {
+  /* First requests mic permission via getUserMedia (needed on some browsers), */
+  /* then starts SpeechRecognition. If recognition dies (Chrome stops after ~60s */
+  /* of silence), we auto-restart as long as isListening is true. */
+  const startListening = useCallback(async () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
+    if (!SR) {
+      setError("Speech recognition is not supported in this browser. Please type your answer instead.");
+      return;
+    }
+
+    /* Request microphone permission first — some browsers need this before SpeechRecognition works */
+    try {
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      /* Stop the stream immediately — we just needed permission */
+      micStream.getTracks().forEach(t => t.stop());
+    } catch {
+      setError("Microphone access denied. Please allow microphone permission and try again, or type your answer.");
+      return;
+    }
+
+    /* Stop any existing recognition session */
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch { /* ignore */ }
+    }
+
     const recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
-
     let finalTranscript = "";
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = "";
@@ -265,18 +328,40 @@ export default function MockInterviewPage() {
       }
       setUserAnswer(finalTranscript + interim);
     };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-    recognition.start();
-    recognitionRef.current = recognition;
-    setIsListening(true);
+
+    recognition.onerror = (e: Event) => {
+      /* "no-speech" is normal — user just hasn't spoken yet, auto-restart */
+      const err = (e as unknown as { error?: string }).error || "";
+      if (err === "no-speech" || err === "aborted") return;
+      setIsListening(false);
+      setError(`Mic error: ${err}. Try clicking the mic again.`);
+    };
+
+    /* Auto-restart if recognition stops while user is still supposed to be talking */
+    recognition.onend = () => {
+      /* Chrome kills continuous recognition after silence — restart it */
+      if (recognitionRef.current === recognition) {
+        try { recognition.start(); } catch { setIsListening(false); }
+      }
+    };
+
+    try {
+      recognition.start();
+      recognitionRef.current = recognition;
+      setIsListening(true);
+      setError("");
+    } catch {
+      setError("Could not start microphone. Please try again or type your answer.");
+    }
   }, []);
 
   /* ---- Speech Recognition: stop listening ---- */
+  /* Clears the ref BEFORE stopping so the onend handler doesn't auto-restart */
   const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
+    const ref = recognitionRef.current;
     recognitionRef.current = null;
     setIsListening(false);
+    try { ref?.stop(); } catch { /* already stopped */ }
   }, []);
 
   /* ---- Format conversation history as a string for the AI prompt ---- */
@@ -303,7 +388,9 @@ export default function MockInterviewPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, industry, experience, interviewType, company, resume]);
 
-  /* ---- Start the interview: get AI greeting and begin ---- */
+  /* ---- Start the interview: instant greeting, no AI wait ---- */
+  /* The greeting is hardcoded so the interview starts in <1 second. */
+  /* The first AI call happens after the user responds to the greeting. */
   const handleStartInterview = async () => {
     if (!role.trim()) { setError("Please enter the role you're interviewing for."); return; }
     setLoading(true);
@@ -317,17 +404,15 @@ export default function MockInterviewPage() {
       setElapsedTime(0);
       await startWebcam();
 
-      /* Get AI's opening greeting */
-      setIsAIThinking(true);
-      const greeting = await getAIResponse([], 0);
-      const aiMsg: ChatMessage = { role: "ai", text: greeting.message };
+      /* Instant greeting — no AI call needed */
+      const greetingText = `Hey! How are you doing today? Thanks so much for joining — I'm Sarah, and I'll be your interviewer for the ${role} position${company ? ` at ${company}` : ""}. Ready to get started?`;
+      const aiMsg: ChatMessage = { role: "ai", text: greetingText };
       setMessages([aiMsg]);
-      setCurrentAIMessage(greeting.message);
-      setIsAIThinking(false);
+      setCurrentAIMessage(greetingText);
 
-      /* Speak the greeting aloud */
+      /* Speak the greeting immediately */
       setIsAISpeaking(true);
-      await speakText(greeting.message);
+      await speakText(greetingText);
       setIsAISpeaking(false);
       setWaitingForUser(true);
     } catch (e) {
