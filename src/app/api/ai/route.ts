@@ -295,40 +295,58 @@ Job Description:
 ${payload.jobDescription}`;
 
     case "cover_letter":
-      return `Write a cover letter that sounds like a real person typed it — not AI-generated.
+      return `Write a cover letter. Follow the reference example below EXACTLY in tone, length, and structure.
 
-HARD RULES:
-- MAXIMUM 300 words total (header to sign-off). If you go over, you failed.
+REFERENCE EXAMPLE (match this style precisely):
+---
+Pan Myint Zu Oo
+pmzo.mm08@gmail.com | +44 7570150580 | London, UK
+
+May 12, 2026
+
+Dear Hiring Manager,
+
+Google's focus on enhancing AI training through meticulous operational analysis is a perfect match for my background in workflow optimization and AI engineering. Having spearheaded critical business pivots and mastered both Microsoft 365 and Google Workspace ecosystems, I am eager to contribute to the efficiency and accuracy of your AI system development as an Operations Analyst.
+
+During my tenure at RealRate, I led the transition of our business model into a financial data provider. This required me to audit complex documentation and re-engineer cross-functional sales and marketing processes, ultimately delivering a 10% reduction in overall marketing expenses. This experience directly prepared me to analyze operational workflows, identify bottlenecks, and document best practices that ensure project compliance and data accuracy.
+
+Beyond my operational experience, I bring expert-level proficiency in Microsoft Word and the broader 365 suite, alongside a deep fluency in Google Workspace. My Certification in AI Engineering—specializing in Llama 3 and LLMOps—allows me to provide high-level feedback on tools meant for AI training. I don't just use these platforms; I understand how to leverage them to co-create collaborative documentation that serves as a "Source of Truth" for global teams.
+
+I am a proactive problem-solver dedicated to streamlining operations and ensuring consistency in high-stakes documentation. I look forward to the opportunity to discuss how my technical bridge between AI and operations can support Google's next phase of system development.
+
+Sincerely,
+Pan Myint Zu Oo
+---
+
+RULES:
+- MAXIMUM 300 words for the body (Dear Hiring Manager to Sincerely). Aim for 200-260 words like the reference.
 - Today's date is: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-- Every paragraph: 4 lines MAX. Short paragraphs, plenty of white space.
-- Use the candidate's REAL name, email, phone, location from their resume. NEVER use [Your Name] or any brackets.
+- Use the candidate's REAL name, email, phone, location from their resume. NEVER use [Your Name] or brackets.
+- NO company address or recipient address block. Just: name, contact line, date, then "Dear Hiring Manager,"
 - Reference SPECIFIC achievements and numbers from the resume — no vague generalities.
-- Every sentence must earn its place — if it could describe any candidate, cut it.
 
-SOUND HUMAN — NOT AI:
-- NEVER use these AI giveaway phrases: "I am writing to express my interest", "I believe I would be a great fit", "I am excited to apply", "With my proven track record", "I am confident that", "leverage my expertise", "I look forward to the opportunity"
-- Write like you're emailing someone you respect, not writing a formal essay
-- Mix short punchy sentences with longer ones. A two-word sentence after a long one creates rhythm.
-- Use contractions sometimes — "I've" not "I have", "I'd" not "I would". Real people use contractions.
-- Start sentences differently — not every line should begin with "I"
-- Be specific and concrete. "Grew the team's pipeline from $800K to $2.1M" beats "significantly increased revenue"
-- Sound like someone already doing the work, not someone asking for permission to start
+STRUCTURE (exactly 4 body paragraphs like the reference):
 
-STRUCTURE:
+1. **Contact header** — Full name on its own line. Then email | phone | location on one line. Then the date. Then "Dear Hiring Manager,"
 
-1. **Header** — Full name, email, phone, location (from resume). Then the date. Then company name and "Dear Hiring Manager,"
+2. **Paragraph 1 — Hook (3 sentences)** — Open by connecting something specific about the COMPANY to your background. Name the role. State your eagerness to contribute. This paragraph bridges what THEY do with what YOU bring.
 
-2. **Opening (2-3 sentences)** — Name the role and company. Say something specific about WHY this role caught your eye — reference what the company actually does. Drop your current title and one big number.
+3. **Paragraph 2 — Key achievement (4 sentences)** — Your single strongest experience that matches the job. Tell a mini-story: what you did, what it required, what result it delivered (with a number), and how it directly prepared you for THIS role.
 
-3. **Impact paragraph (3-4 sentences)** — Your 2-3 strongest results that match what the job needs. Real metrics, real outcomes. Connect YOUR results to THEIR problems.
+4. **Paragraph 3 — Differentiator (3-4 sentences)** — Complementary skills, tools, or certifications that add extra value. Show depth — don't just list skills, explain how you USE them in a way that matters for this role. One punchy line that shows personality.
 
-4. **Edge paragraph (2-3 sentences)** — What sets you apart. Specific tools, domain knowledge, or complementary skills from the job description that you actually have.
-
-5. **Close (1-2 sentences)** — Professional and energetic, not cocky. Express genuine enthusiasm for the role and invite a conversation. Example: "I'd love the chance to discuss how my experience with [specific thing] could contribute to [company]'s goals — happy to connect whenever works best." Warm and forward-leaning, never pushy or arrogant.
+5. **Paragraph 4 — Close (2 sentences)** — Professional and energetic. Restate your core value in one phrase, then express enthusiasm to discuss how your specific bridge of skills supports the company's goals. Warm, forward-leaning, never cocky.
 
 6. **Sign-off** — "Sincerely," then full name
 
-Return ONLY the cover letter. No commentary, no "Here's your cover letter", no markdown.
+TONE:
+- Professional, polished, and human — like the reference. Not stiff, not casual.
+- Confident but never arrogant. You know your value and you state it clearly.
+- Active voice. Specific. Every sentence earns its place.
+- Okay to use "I am" — the reference does. Just don't start every sentence with "I".
+- No AI giveaway phrases like: "I believe I would be a great fit", "With my proven track record", "I am confident that", "leverage my expertise"
+
+Return ONLY the cover letter text. No commentary, no markdown formatting.
 
 Resume:
 ${payload.resume}
