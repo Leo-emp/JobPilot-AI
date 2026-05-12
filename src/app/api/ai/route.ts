@@ -28,10 +28,12 @@ import * as Sentry from "@sentry/nextjs";
 /* Each model has independent free-tier rate limits (15 RPM for flash). */
 /* If one model is rate-limited, the next picks up instantly. */
 const GEMINI_MODELS = [
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
   "gemini-1.5-flash",
   "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
 ];
 
 /* ---- Track models that returned 404 so we never waste time retrying them ---- */
