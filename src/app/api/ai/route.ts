@@ -647,39 +647,77 @@ Provide a comprehensive assessment. For EACH question-answer pair, give a score 
   "readinessLevel": "<Not Ready|Needs Work|Almost There|Interview Ready|Excellent>"
 }`;
 
-    /* ---- AI Outreach Hub: generate personalized networking messages ---- */
+    /* ---- AI Outreach Hub: generate 3 personalized message versions ---- */
+    /* Returns 3 different styles so the user can pick their favorite */
     case "craft_outreach":
-      return `You are an expert career networking coach who writes messages that actually get replies. Craft a personalized outreach message.
+      return `You are a career networking expert who writes messages that actually get replies on LinkedIn and email. Generate 3 different versions of a ${payload.messageType?.replace(/_/g, " ")} message.
 
-MESSAGE TYPE: ${payload.messageType}
-SENDER'S BACKGROUND: ${payload.senderBackground || "Not provided"}
-TARGET ROLE/POSITION: ${payload.targetRole}
-RECIPIENT NAME: ${payload.recipientName || "the recipient"}
-RECIPIENT TITLE: ${payload.recipientTitle || "Not specified"}
-RECIPIENT COMPANY: ${payload.recipientCompany || "Not specified"}
-ADDITIONAL CONTEXT: ${payload.context || "None"}
-TONE: ${payload.tone || "Professional yet friendly"}
-PLATFORM: ${payload.platform || "LinkedIn"}
+DETAILS:
+- Message type: ${payload.messageType}
+- Target role: ${payload.targetRole}
+- Recipient: ${payload.recipientName || "[Name]"}${payload.recipientTitle ? ", " + payload.recipientTitle : ""}${payload.recipientCompany ? " at " + payload.recipientCompany : ""}
+- Sender background: ${payload.senderBackground || "Not provided"}
+- Additional context: ${payload.context || "None"}
+- Tone: ${payload.tone || "professional"}
+- Platform: ${payload.platform || "LinkedIn"}
 
-MESSAGE TYPE GUIDELINES:
-- "connection_request": LinkedIn connection note (max 300 chars). Brief, specific, no generic "I'd love to connect." Mention a shared interest, their work, or a specific reason.
-- "cold_outreach": Cold message/email to someone you don't know (150-250 words). Hook in first line, show you researched them, clear ask, easy to respond to.
-- "follow_up": Follow-up after no reply or after a conversation (80-150 words). Reference the previous interaction, add value, gentle nudge.
-- "thank_you": Thank you note after interview or coffee chat (100-150 words). Specific callback to something discussed, express genuine enthusiasm.
-- "referral_request": Asking someone in your network for a referral (150-200 words). Make it easy for them — include the role link/details, why you're a fit, and a draft blurb they can forward.
-- "informational_interview": Requesting an informational chat (100-150 words). Show genuine curiosity about their path, specific questions you'd ask, flexible on their time.
-- "recruiter_pitch": Message to a recruiter about a specific role (150-200 words). Lead with relevant experience, mention the specific job, quantified achievements.
+GENERATE EXACTLY 3 VERSIONS:
 
-CRITICAL RULES:
-1. NEVER use generic filler like "I hope this message finds you well" or "I'd love to connect"
-2. Make the first sentence a hook — reference their specific work, company news, shared background, or mutual connection
-3. Be concise and scannable — short paragraphs, no walls of text
-4. End with ONE clear, low-friction call to action (not "let me know if you'd be open to...")
-5. Sound human, not AI-generated — use contractions, casual professionalism
-6. If platform is LinkedIn, keep connection requests under 300 characters
-7. Include [BRACKETS] for any details the user should customize
+**Version 1 — Short & Direct** (highest reply rate)
+Shortest possible. 2-3 short paragraphs max. Get to the point fast. Mention the role and a brief reason you're a fit. End with a simple ask.
 
-Return ONLY the message text, ready to copy and send. No JSON, no markdown, no labels — just the message.`;
+**Version 2 — Confident & Detailed**
+3-4 paragraphs. Show more enthusiasm for the specific role/company. Mention what excites you about the opportunity. Include 1-2 concrete skills or experiences that make you relevant. Clear ask at the end.
+
+**Version 3 — Natural & Human**
+3 paragraphs. Most conversational — sounds like a real person wrote it, not a template. Mention genuine interest, briefly connect your background to the role naturally. Warm, approachable sign-off.
+
+MESSAGE TYPE RULES:
+- connection_request: LinkedIn connection note. Keep ALL versions under 300 characters. Ultra-concise.
+- cold_outreach: First message to someone you don't know. 80-200 words depending on version.
+- recruiter_pitch: Message to a recruiter about a specific role. Lead with relevant experience.
+- follow_up: Nudge after no reply or a past conversation. Reference previous interaction.
+- thank_you: After interview or coffee chat. Specific callback to something discussed.
+- referral_request: Asking for a referral. Make it easy — include why you're a fit.
+- informational_interview: Requesting an informational chat. Show genuine curiosity.
+
+CRITICAL WRITING RULES (apply to ALL 3 versions):
+1. Start with "Hi ${payload.recipientName || "[Name]"}," — NEVER "Dear" or "Hello"
+2. NEVER use "I hope this message finds you well" or "I hope you're doing well" — go straight to the point
+3. NEVER use "I'd love to connect" as the opening — it's generic and gets ignored
+4. Mention the SPECIFIC role and SPECIFIC company by name naturally
+5. Reference the sender's ACTUAL background — pull specific skills, job titles, education, achievements from what they provided. Don't be vague.
+6. Sound like a real human wrote this — use contractions (I'm, I'd, I've), casual confidence, no corporate buzzwords
+7. NO words like "synergy", "leverage", "utilize", "facilitate", "cross-functional collaboration" — use normal human words
+8. End each version with ONE clear, easy-to-answer ask (e.g., "Would love to hear more about the role and your team." or "I'd appreciate the chance to connect and learn more.")
+9. Sign off naturally: "Thanks for your time!" or "Looking forward to connecting!" or "Best regards," + [Your Name] — vary between versions
+10. If the sender provided a resume, pick out 2-3 SPECIFIC and RELEVANT details (job titles, skills, degree, achievements) — don't summarize their entire career
+
+FORMAT — Return EXACTLY this structure (no JSON, no code fences):
+
+## 1. Short & Direct
+
+Hi [Name],
+
+[message text]
+
+[sign-off]
+
+## 2. Confident & Detailed
+
+Hi [Name],
+
+[message text]
+
+[sign-off]
+
+## 3. Natural & Human
+
+Hi [Name],
+
+[message text]
+
+[sign-off]`;
 
     default:
       throw new Error(`Unknown action: ${action}`);

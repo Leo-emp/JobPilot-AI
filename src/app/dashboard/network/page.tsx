@@ -142,7 +142,10 @@ export default function OutreachHubPage() {
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
   /* ---- Result state ---- */
-  const [generatedMessage, setGeneratedMessage] = useState("");
+  const [generatedMessage, setGeneratedMessage] = useState(""); /* raw AI response */
+  const [messageVersions, setMessageVersions] = useState<{ title: string; text: string }[]>([]); /* parsed 3 versions */
+  const [selectedVersion, setSelectedVersion] = useState(0); /* which version is currently selected */
+  const [editedText, setEditedText] = useState(""); /* user-editable text of the selected version */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [remaining, setRemaining] = useState<number | string | null>(null);
@@ -193,10 +196,41 @@ export default function OutreachHubPage() {
     if (file) handleResumeUpload(file);
   }, [handleResumeUpload]);
 
+  /* ---- Parse the AI response into 3 separate message versions ---- */
+  /* The AI returns markdown with ## 1. Short & Direct, ## 2. Confident & Detailed, ## 3. Natural & Human */
+  const parseVersions = (raw: string): { title: string; text: string }[] => {
+    /* Split on ## followed by a number and title */
+    const sections = raw.split(/##\s*\d+\.\s*/);
+    const versions: { title: string; text: string }[] = [];
+
+    for (const section of sections) {
+      const trimmed = section.trim();
+      if (!trimmed) continue;
+
+      /* First line is the title, rest is the message body */
+      const lines = trimmed.split("\n");
+      const title = lines[0].replace(/\*\*/g, "").trim();
+      const text = lines.slice(1).join("\n").trim();
+
+      if (text) {
+        versions.push({ title, text });
+      }
+    }
+
+    /* Fallback: if parsing failed, return the whole response as one version */
+    if (versions.length === 0) {
+      return [{ title: "Your Message", text: raw.trim() }];
+    }
+
+    return versions;
+  };
+
   /* ---- Auto-set platform when message type changes ---- */
   const handleTypeChange = (typeId: string) => {
     setSelectedType(typeId);
     setGeneratedMessage("");
+    setMessageVersions([]);
+    setEditedText("");
     setError("");
     /* Set default platform based on message type */
     const type = MESSAGE_TYPES.find(t => t.id === typeId);
@@ -213,6 +247,8 @@ export default function OutreachHubPage() {
     setLoading(true);
     setError("");
     setGeneratedMessage("");
+    setMessageVersions([]);
+    setEditedText("");
 
     try {
       const res = await fetch("/api/ai", {
@@ -244,14 +280,20 @@ export default function OutreachHubPage() {
       setGeneratedMessage(data.result);
       if (data.remaining !== undefined) setRemaining(data.remaining);
 
-      /* Auto-save to session history */
+      /* Parse the 3 versions from the AI response */
+      const versions = parseVersions(data.result);
+      setMessageVersions(versions);
+      setSelectedVersion(0);
+      setEditedText(versions[0]?.text || data.result);
+
+      /* Auto-save the first version to session history */
       setSavedMessages(prev => [{
         id: Date.now().toString(),
         messageType: selectedType,
         recipientName: recipientName || "Unknown",
         recipientCompany: recipientCompany || "",
         targetRole,
-        message: data.result,
+        message: versions[0]?.text || data.result,
         createdAt: new Date(),
       }, ...prev]);
     } catch {
@@ -577,57 +619,97 @@ export default function OutreachHubPage() {
         </div>
       )}
 
-      {generatedMessage && (
-        <div className="glass-card p-6 mb-8">
+      {/* ---- 3 Message Versions ---- */}
+      {messageVersions.length > 0 && (
+        <div className="mb-8">
+          {/* Version selector tabs */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <span className="text-xl">{currentType.icon}</span>
-              Your {currentType.label}
-            </h2>
-            <div className="flex items-center gap-2">
-              {/* Regenerate button */}
+            <h2 className="text-lg font-bold">Choose a Version</h2>
+            <button
+              onClick={handleGenerate}
+              disabled={loading}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-all disabled:opacity-50"
+            >
+              ↻ Regenerate All
+            </button>
+          </div>
+
+          {/* Version cards — click to select */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+            {messageVersions.map((version, index) => (
               <button
-                onClick={handleGenerate}
-                disabled={loading}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-all disabled:opacity-50"
+                key={index}
+                onClick={() => { setSelectedVersion(index); setEditedText(version.text); setCopied(false); }}
+                className={`p-4 rounded-xl text-left transition-all ${
+                  selectedVersion === index
+                    ? "bg-brand-indigo/15 border-2 border-brand-indigo/40 shadow-lg shadow-brand-indigo/5"
+                    : "bg-space-700/50 border border-card-border hover:border-brand-indigo/20"
+                }`}
               >
-                ↻ Regenerate
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-bold uppercase tracking-wide ${
+                    selectedVersion === index ? "text-brand-light" : "text-text-muted"
+                  }`}>
+                    Version {index + 1}
+                  </span>
+                  {selectedVersion === index && (
+                    <svg className="w-4 h-4 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <p className={`text-sm font-semibold mb-2 ${selectedVersion === index ? "text-white" : "text-text-secondary"}`}>
+                  {version.title}
+                </p>
+                {/* Preview — first 120 chars */}
+                <p className="text-xs text-text-muted leading-relaxed line-clamp-3">
+                  {version.text.slice(0, 120)}...
+                </p>
               </button>
-              {/* Copy button */}
+            ))}
+          </div>
+
+          {/* Selected version — full editable message */}
+          <div className="glass-card p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-bold text-white flex items-center gap-2">
+                <span className="text-lg">{currentType.icon}</span>
+                {messageVersions[selectedVersion]?.title || "Your Message"}
+              </h3>
               <button
-                onClick={() => handleCopy(generatedMessage)}
+                onClick={() => handleCopy(editedText)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   copied
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                     : "bg-brand-indigo/20 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/30"
                 }`}
               >
-                {copied ? "✓ Copied!" : "Copy Message"}
+                {copied ? "Copied!" : "Copy Message"}
               </button>
             </div>
-          </div>
 
-          {/* Message content — editable */}
-          <textarea
-            value={generatedMessage}
-            onChange={e => setGeneratedMessage(e.target.value)}
-            rows={Math.max(4, generatedMessage.split("\n").length + 1)}
-            className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:outline-none focus:border-brand-indigo text-sm leading-relaxed resize-none"
-          />
+            {/* Editable message text */}
+            <textarea
+              value={editedText}
+              onChange={e => setEditedText(e.target.value)}
+              rows={Math.max(5, editedText.split("\n").length + 1)}
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:outline-none focus:border-brand-indigo text-sm leading-relaxed resize-none"
+            />
 
-          {/* Character count (important for LinkedIn connection requests) */}
-          <div className="mt-2 flex items-center justify-between">
-            <p className={`text-xs ${
-              selectedType === "connection_request" && generatedMessage.length > 300
-                ? "text-red-400"
-                : "text-text-muted"
-            }`}>
-              {generatedMessage.length} characters
-              {selectedType === "connection_request" && (
-                <span className="ml-1">(LinkedIn limit: 300)</span>
-              )}
-            </p>
-            <p className="text-xs text-text-muted">Edit the message above before sending</p>
+            {/* Character count */}
+            <div className="mt-2 flex items-center justify-between">
+              <p className={`text-xs ${
+                selectedType === "connection_request" && editedText.length > 300
+                  ? "text-red-400"
+                  : "text-text-muted"
+              }`}>
+                {editedText.length} characters
+                {selectedType === "connection_request" && (
+                  <span className="ml-1">(LinkedIn limit: 300)</span>
+                )}
+              </p>
+              <p className="text-xs text-text-muted">Edit before sending</p>
+            </div>
           </div>
         </div>
       )}
