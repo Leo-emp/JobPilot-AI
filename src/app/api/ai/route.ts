@@ -24,16 +24,16 @@ import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import * as Sentry from "@sentry/nextjs";
 
 /* ---- Gemini Model Fallback List ---- */
-/* Ordered by preference: fastest/cheapest first, then older stable models. */
-/* Each model has independent free-tier rate limits (15 RPM for flash). */
+/* Each model has independent free-tier rate limits (15 RPM, 1500 RPD). */
 /* If one model is rate-limited, the next picks up instantly. */
+/* Verified working on free tier as of 2026-05-12. */
 const GEMINI_MODELS = [
   "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3-flash-preview",
+  "gemini-3.1-flash-lite",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
-  "gemini-1.5-flash",
-  "gemini-1.5-flash-8b",
-  "gemini-1.5-pro",
 ];
 
 /* ---- Track models that returned 404 so we never waste time retrying them ---- */
