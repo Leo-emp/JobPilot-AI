@@ -1,9 +1,9 @@
 /* ============================================================
-   ECOSYSTEM SHOWCASE - Job Board & Networking CRM
+   ECOSYSTEM SHOWCASE - Job Board & AI Outreach Hub
    ============================================================
    Showcases two platform features below the AI tool showcase:
    1. Job Board Integration — search real listings, save & track
-   2. Networking CRM — manage contacts, companies, follow-ups
+   2. AI Outreach Hub — generate cold outreach messages with AI
    Concise benefit-driven copy with visual UI snapshots.
    ============================================================ */
 
@@ -24,7 +24,7 @@ export default function EcosystemShowcase() {
             <span className="glow-text">Command Center</span>
           </h2>
           <p className="max-w-xl mx-auto text-text-secondary text-lg">
-            Search real jobs and manage your network — without leaving your dashboard.
+            Search real jobs and craft perfect outreach — without leaving your dashboard.
           </p>
         </div>
 
@@ -158,7 +158,7 @@ export default function EcosystemShowcase() {
         </div>
 
         {/* ============================================================
-             FEATURE 2 - Networking CRM
+             FEATURE 2 - AI Outreach Hub
              ============================================================ */}
         <div className="flex flex-col lg:flex-row-reverse gap-10 lg:gap-16 items-center">
 
@@ -168,31 +168,31 @@ export default function EcosystemShowcase() {
             <div className="inline-flex items-center gap-2 mb-5">
               <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
               <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
-                Networking CRM
+                AI Outreach Hub
               </span>
             </div>
 
             {/* Headline */}
             <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-              Track every recruiter, referral, and follow-up in one place
+              Cold messages that actually get replies
             </h3>
 
             {/* Description */}
             <p className="text-base text-text-secondary leading-relaxed mb-6">
-              Referred candidates are 4x more likely to get hired. Manage your contacts, tag relationships,
-              set follow-up reminders, and track target companies — so no opportunity slips through the cracks.
+              Upload your resume, describe who you&apos;re reaching out to, and AI generates 3 personalized message
+              versions — from short and direct to detailed and confident. No more generic templates that get ignored.
             </p>
 
             {/* Capability bullets */}
             <ul className="space-y-3">
               {[
-                "Contact profiles with LinkedIn, role, company, and notes",
-                "Follow-up reminders with overdue alerts",
-                "Target company tracker with priority and status pipeline",
+                "Upload your resume PDF — AI extracts your background automatically",
+                "3 unique message styles: Short & Direct, Confident & Detailed, Natural & Human",
+                "References specific details from both your background and the recipient",
               ].map((cap, j) => (
                 <li key={j} className="flex items-start gap-3">
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +204,7 @@ export default function EcosystemShowcase() {
             </ul>
           </div>
 
-          {/* ---- Visual Side — Networking CRM Snapshot ---- */}
+          {/* ---- Visual Side — AI Outreach Hub Snapshot ---- */}
           <div className="flex-1 w-full max-w-lg">
             <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
               {/* Gradient accent bar */}
@@ -218,86 +218,48 @@ export default function EcosystemShowcase() {
                 <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50" />
               </div>
 
-              {/* Stats bar */}
-              <div className="grid grid-cols-4 gap-2 mb-5">
-                <div className="p-2 rounded-lg bg-space-700/50 text-center">
-                  <div className="text-lg font-bold text-white">24</div>
-                  <div className="text-[9px] text-text-muted">Contacts</div>
+              {/* Resume uploaded badge */}
+              <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-space-700/50 border border-card-border">
+                <span className="text-sm">📄</span>
+                <span className="text-[11px] text-white font-medium">resume_2026.pdf</span>
+                <span className="text-[9px] text-green-400 ml-auto">Uploaded</span>
+              </div>
+
+              {/* Recipient info */}
+              <div className="mb-4 px-3 py-2 rounded-lg bg-space-700/50 border border-card-border">
+                <div className="text-[10px] text-text-muted mb-1">Reaching out to:</div>
+                <div className="text-xs text-white font-medium">Sarah Chen — Engineering Manager at Google</div>
+              </div>
+
+              {/* 3 message version tabs */}
+              <div className="flex gap-2 mb-3">
+                <div className="px-3 py-1.5 rounded-lg bg-brand-indigo/20 border border-brand-indigo/30">
+                  <span className="text-[10px] text-white font-medium">Short & Direct</span>
                 </div>
-                <div className="p-2 rounded-lg bg-space-700/50 text-center">
-                  <div className="text-lg font-bold text-white">8</div>
-                  <div className="text-[9px] text-text-muted">Companies</div>
+                <div className="px-3 py-1.5 rounded-lg bg-space-700/50">
+                  <span className="text-[10px] text-text-muted font-medium">Confident</span>
                 </div>
-                <div className="p-2 rounded-lg bg-space-700/50 text-center">
-                  <div className="text-lg font-bold text-amber-400">3</div>
-                  <div className="text-[9px] text-text-muted">Follow-ups</div>
-                </div>
-                <div className="p-2 rounded-lg bg-space-700/50 text-center">
-                  <div className="text-lg font-bold text-white">5</div>
-                  <div className="text-[9px] text-text-muted">High Priority</div>
+                <div className="px-3 py-1.5 rounded-lg bg-space-700/50">
+                  <span className="text-[10px] text-text-muted font-medium">Natural</span>
                 </div>
               </div>
 
-              {/* Tab switcher */}
-              <div className="flex gap-2 mb-4">
-                <div className="px-3 py-1 rounded-lg bg-brand-indigo/20 border border-brand-indigo/30">
-                  <span className="text-[10px] text-white font-medium">Contacts (24)</span>
-                </div>
-                <div className="px-3 py-1 rounded-lg bg-space-700/50">
-                  <span className="text-[10px] text-text-muted font-medium">Companies (8)</span>
-                </div>
+              {/* Message preview */}
+              <div className="p-3 rounded-lg bg-space-700/50 border border-brand-indigo/20 mb-3">
+                <p className="text-[11px] text-text-secondary leading-relaxed">
+                  Hi Sarah, I saw Google&apos;s work on the Gemini API and it caught my attention — I&apos;ve been building AI-powered
+                  career tools with it. With 5 years in full-stack development and a focus on AI integration, I&apos;d love to
+                  chat about opportunities on your team...
+                </p>
               </div>
 
-              {/* Contact card 1 — with overdue follow-up */}
-              <div className="p-3 rounded-lg bg-space-700/50 border border-amber-500/30 mb-3">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-indigo to-brand-purple flex items-center justify-center text-xs font-bold text-white shrink-0">
-                    S
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-white">Sarah Chen</div>
-                    <div className="text-[10px] text-text-secondary">Engineering Manager at Google</div>
-                  </div>
-                  <svg className="w-4 h-4 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                <div className="flex-1 py-2 rounded-lg bg-gradient-to-r from-brand-indigo to-purple-500 text-center">
+                  <span className="text-[10px] text-white font-semibold">Copy Message</span>
                 </div>
-                <div className="flex gap-1.5">
-                  <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-[10px] text-purple-400 font-medium border border-purple-500/30">Recruiter</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-[10px] text-amber-400 font-medium border border-amber-500/30">Follow-up overdue</span>
-                </div>
-              </div>
-
-              {/* Contact card 2 */}
-              <div className="p-3 rounded-lg bg-space-700/50 border border-card-border mb-3">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                    M
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-white">Marcus Rivera</div>
-                    <div className="text-[10px] text-text-secondary">VP of Product at Stripe</div>
-                  </div>
-                  <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div className="flex gap-1.5">
-                  <span className="px-2 py-0.5 rounded-full bg-green-500/15 text-[10px] text-green-400 font-medium border border-green-500/30">Referral</span>
-                  <span className="px-2 py-0.5 rounded-full bg-space-600 text-[10px] text-text-muted">Last contact: May 3</span>
-                </div>
-              </div>
-
-              {/* Contact card 3 — partial */}
-              <div className="p-3 rounded-lg bg-space-700/50 border border-card-border opacity-60">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                    J
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-white">James Park</div>
-                    <div className="text-[10px] text-text-secondary">Hiring Manager at Meta</div>
-                  </div>
+                <div className="py-2 px-3 rounded-lg bg-space-700/50 border border-card-border">
+                  <span className="text-[10px] text-text-muted">Edit</span>
                 </div>
               </div>
             </div>
@@ -307,7 +269,7 @@ export default function EcosystemShowcase() {
         {/* ---- Bottom CTA ---- */}
         <div className="mt-24 sm:mt-32 text-center">
           <p className="text-text-secondary text-lg mb-6">
-            Find jobs. Build relationships. Land interviews.
+            Find jobs. Craft perfect outreach. Land interviews.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Get Started Free
