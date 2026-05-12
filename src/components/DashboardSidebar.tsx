@@ -30,10 +30,11 @@ const navItems = [
 ];
 
 interface DashboardSidebarProps {
-  userName: string; // Logged-in user's display name
+  userName: string;
+  isAdmin?: boolean;
 }
 
-export default function DashboardSidebar({ userName }: DashboardSidebarProps) {
+export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebarProps) {
   /* Track mobile drawer open/close state */
   const [mobileOpen, setMobileOpen] = useState(false);
   /* Get current path to highlight the active nav item */
@@ -67,16 +68,33 @@ export default function DashboardSidebar({ userName }: DashboardSidebarProps) {
             onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
               isActive(item.href)
-                ? /* Active state: highlighted with brand color */
-                  "bg-brand-indigo/15 text-white border border-brand-indigo/20"
-                : /* Inactive state: muted text, highlight on hover */
-                  "text-text-secondary hover:text-white hover:bg-space-600"
+                ? "bg-brand-indigo/15 text-white border border-brand-indigo/20"
+                : "text-text-secondary hover:text-white hover:bg-space-600"
             }`}
           >
             <span className="text-lg">{item.icon}</span>
             {item.label}
           </Link>
         ))}
+
+        {/* ---- Admin link (only visible to admin users) ---- */}
+        {isAdmin && (
+          <>
+            <div className="my-2 border-t border-card-border/50" />
+            <Link
+              href="/dashboard/admin"
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                isActive("/dashboard/admin")
+                  ? "bg-red-500/15 text-red-400 border border-red-500/20"
+                  : "text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+              }`}
+            >
+              <span className="text-lg">🛡️</span>
+              Admin Dashboard
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* ---- User Info + Logout ---- */}

@@ -36,7 +36,10 @@ export default async function DashboardLayout({
         <StarField />
 
         {/* Sidebar navigation */}
-        <DashboardSidebar userName={session.user.name || "User"} />
+        <DashboardSidebar
+          userName={session.user.name || "User"}
+          isAdmin={(process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).includes((session.user.email || "").toLowerCase())}
+        />
 
         {/* ---- Main Content Area ---- */}
         {/* lg:ml-64 pushes content right to make room for the desktop sidebar */}
