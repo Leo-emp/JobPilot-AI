@@ -1,9 +1,9 @@
 /* ============================================================
-   RESUME TEMPLATES PAGE — 20+ Professional Templates
+   RESUME TEMPLATES PAGE — 20 Professional Templates
    ============================================================
    Complete resume builder with:
    1. Visual template gallery (20 templates, mini previews)
-   2. Form to fill in resume details
+   2. Form to fill in resume details + PDF upload auto-fill via AI
    3. Live preview matching the selected template exactly
    4. Edit content before downloading
    5. PDF and Word export
@@ -63,6 +63,68 @@ const SAMPLE: ResumeData = {
 };
 
 /* ============================================================
+   PDF TEXT EXTRACTION — Client-side using PDF.js from CDN
+   ============================================================ */
+let pdfjsLoadPromise: Promise<unknown> | null = null;
+
+function loadPDFJS(): Promise<unknown> {
+  if (pdfjsLoadPromise) return pdfjsLoadPromise;
+  pdfjsLoadPromise = new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).pdfjsLib) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      resolve((window as any).pdfjsLib);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
+    script.onload = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const lib = (window as any).pdfjsLib;
+      lib.GlobalWorkerOptions.workerSrc =
+        "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+      resolve(lib);
+    };
+    script.onerror = () => {
+      pdfjsLoadPromise = null;
+      reject(new Error("Failed to load PDF parser"));
+    };
+    document.head.appendChild(script);
+  });
+  return pdfjsLoadPromise;
+}
+
+async function extractTextFromPDF(file: File): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdfjsLib = (await loadPDFJS()) as any;
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+  const pages: string[] = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    let lastY: number | null = null;
+    let lineText = "";
+    const lines: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const item of content.items as any[]) {
+      if (!("str" in item) || !item.str) continue;
+      const y = item.transform[5];
+      if (lastY !== null && Math.abs(y - lastY) > 3) {
+        if (lineText.trim()) lines.push(lineText.trim());
+        lineText = item.str;
+      } else {
+        lineText += (lineText && !lineText.endsWith(" ") ? " " : "") + item.str;
+      }
+      lastY = y;
+    }
+    if (lineText.trim()) lines.push(lineText.trim());
+    pages.push(lines.join("\n"));
+  }
+  return pages.join("\n\n");
+}
+
+/* ============================================================
    TEMPLATE DEFINITIONS — 20 Distinct Templates
    ============================================================ */
 type LayoutType = "single" | "sidebar-left" | "sidebar-right" | "banner";
@@ -73,11 +135,9 @@ interface Template {
   desc: string;
   category: string;
   layout: LayoutType;
-  /* Mini-preview styling hints */
-  previewBg: string;      /* sidebar/header bg color for mini preview */
-  previewAccent: string;   /* accent color for mini preview */
-  previewLight: boolean;   /* true = light sidebar text in mini preview */
-  /* Full CSS for this template */
+  previewBg: string;
+  previewAccent: string;
+  previewLight: boolean;
   css: string;
 }
 
@@ -601,11 +661,11 @@ function generateHTML(d: ResumeData, template: Template): string {
 function MiniPreview({ template, data }: { template: Template; data: ResumeData }) {
   const html = generateHTML(data, template);
   return (
-    <div className="relative w-full overflow-hidden rounded-lg bg-white" style={{ aspectRatio: "8.5/11" }}>
+    <div className="relative w-full overflow-hidden bg-white" style={{ aspectRatio: "8.5/11" }}>
       <iframe
         srcDoc={html}
         className="absolute top-0 left-0 border-0 pointer-events-none"
-        style={{ width: "800px", height: "1040px", transform: "scale(0.215)", transformOrigin: "top left" }}
+        style={{ width: "800px", height: "1040px", transform: "scale(0.25)", transformOrigin: "top left" }}
         title={template.name}
         loading="lazy"
       />
@@ -617,11 +677,17 @@ function MiniPreview({ template, data }: { template: Template; data: ResumeData 
    MAIN PAGE COMPONENT
    ============================================================ */
 export default function TemplatesPage() {
-  const [selectedId, setSelectedId] = useState("classic");
+  const [selectedId, setSelectedId] = useState("corporate");
   const [step, setStep] = useState<"gallery" | "form" | "preview">("gallery");
   const [formData, setFormData] = useState<ResumeData>(EMPTY_FORM);
   const [filter, setFilter] = useState("All");
   const [pdfLoading, setPdfLoading] = useState(false);
+
+  /* PDF upload state */
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "extracting" | "parsing" | "done" | "error">("idle");
+  const [uploadedFileName, setUploadedFileName] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selected = TEMPLATES.find(t => t.id === selectedId)!;
   const categories = ["All", "Single Column", "Sidebar", "Banner", "Special"];
@@ -632,6 +698,87 @@ export default function TemplatesPage() {
   }, []);
 
   const canPreview = String(formData.fullName).trim() && (String(formData.summary).trim() || String(formData.experience).trim());
+
+  /* ---- PDF Upload & AI Auto-Fill ---- */
+  const handlePdfUpload = async (file: File) => {
+    if (!file || !file.name.toLowerCase().endsWith(".pdf")) {
+      setUploadError("Please upload a PDF file.");
+      setUploadStatus("error");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("File too large. Maximum 10MB.");
+      setUploadStatus("error");
+      return;
+    }
+
+    setUploadedFileName(file.name);
+    setUploadError("");
+    setUploadStatus("extracting");
+
+    try {
+      /* Step 1: Extract text from PDF on the client */
+      const text = await extractTextFromPDF(file);
+      if (!text.trim()) {
+        setUploadError("Could not extract text from this PDF. It may be image-based.");
+        setUploadStatus("error");
+        return;
+      }
+
+      /* Step 2: Send to AI to parse into structured fields */
+      setUploadStatus("parsing");
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "parse_resume_fields",
+          payload: { resumeText: text.slice(0, 15000) },
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        setUploadError(err.error || "AI parsing failed. Please fill in details manually.");
+        setUploadStatus("error");
+        return;
+      }
+
+      const { result } = await res.json();
+
+      /* Step 3: Parse the JSON response from Gemini */
+      let parsed: Partial<ResumeData>;
+      try {
+        const cleaned = result.replace(/```json\s*|```\s*/g, "").trim();
+        parsed = JSON.parse(cleaned);
+      } catch {
+        setUploadError("AI returned an unexpected format. Please fill in details manually.");
+        setUploadStatus("error");
+        return;
+      }
+
+      /* Step 4: Populate the form with parsed data */
+      setFormData({
+        fullName: parsed.fullName || "",
+        jobTitle: parsed.jobTitle || "",
+        email: parsed.email || "",
+        phone: parsed.phone || "",
+        location: parsed.location || "",
+        linkedin: parsed.linkedin || "",
+        summary: parsed.summary || "",
+        skills: parsed.skills || "",
+        experience: parsed.experience || "",
+        education: parsed.education || "",
+        certifications: parsed.certifications || "",
+        languages: parsed.languages || "",
+      });
+
+      setUploadStatus("done");
+    } catch (err) {
+      console.error("PDF upload error:", err);
+      setUploadError("Something went wrong. Please try again or fill in details manually.");
+      setUploadStatus("error");
+    }
+  };
 
   /* ---- PDF Download ---- */
   const downloadPDF = async () => {
@@ -685,23 +832,55 @@ export default function TemplatesPage() {
     URL.revokeObjectURL(url);
   };
 
+  /* ---- Step labels ---- */
+  const stepLabels = [
+    { key: "gallery" as const, label: "Choose Template", icon: "1" },
+    { key: "form" as const, label: "Fill Details", icon: "2" },
+    { key: "preview" as const, label: "Preview & Download", icon: "3" },
+  ];
+
   return (
     <div>
       {/* ---- Page Header ---- */}
-      <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold mb-2">Resume Templates</h1>
-        <p className="text-text-secondary">Choose from 20 professional templates. Preview, fill your details, edit, and download.</p>
+      <div className="mb-8">
+        <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl sm:text-4xl font-bold mb-3">
+          Resume Templates
+        </h1>
+        <p className="text-text-secondary text-lg">
+          Pick a template, fill your details or upload your resume, and download a polished PDF.
+        </p>
       </div>
 
-      {/* ---- Step Indicator ---- */}
-      <div className="flex items-center gap-3 mb-6">
-        {(["gallery", "form", "preview"] as const).map((s, i) => (
-          <button key={s} onClick={() => { if (s === "preview" && !canPreview) return; setStep(s); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${step === s ? "bg-brand-indigo/15 text-white border border-brand-indigo/30" : "text-text-secondary hover:text-white border border-transparent"}`}>
-            <span className="w-6 h-6 rounded-full bg-brand-indigo/20 text-brand-light flex items-center justify-center text-xs font-bold">{i + 1}</span>
-            {s === "gallery" ? "Choose Template" : s === "form" ? "Fill Details" : "Preview & Edit"}
-          </button>
-        ))}
+      {/* ---- Step Progress Bar ---- */}
+      <div className="flex items-center gap-2 mb-8 p-1 rounded-2xl bg-space-800/50 border border-card-border w-fit">
+        {stepLabels.map((s, i) => {
+          const isActive = step === s.key;
+          const isPast = stepLabels.findIndex(sl => sl.key === step) > i;
+          return (
+            <button
+              key={s.key}
+              onClick={() => { if (s.key === "preview" && !canPreview) return; setStep(s.key); }}
+              className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-brand-indigo text-white shadow-lg shadow-brand-indigo/25"
+                  : isPast
+                    ? "text-brand-light hover:bg-brand-indigo/10"
+                    : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                isActive ? "bg-white/20 text-white" : isPast ? "bg-brand-indigo/20 text-brand-light" : "bg-space-600 text-text-muted"
+              }`}>
+                {isPast ? (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : s.icon}
+              </span>
+              <span className="hidden sm:inline">{s.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ============================================================
@@ -709,43 +888,103 @@ export default function TemplatesPage() {
          ============================================================ */}
       {step === "gallery" && (
         <div>
-          {/* Category filter tabs */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {categories.map(c => (
-              <button key={c} onClick={() => setFilter(c)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${filter === c ? "bg-brand-indigo text-white" : "bg-space-700 text-text-secondary hover:text-white border border-card-border"}`}>
-                {c}
-              </button>
-            ))}
+          {/* ---- Category Filter Chips ---- */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {categories.map(c => {
+              const count = c === "All" ? TEMPLATES.length : TEMPLATES.filter(t => t.category === c).length;
+              return (
+                <button key={c} onClick={() => setFilter(c)}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                    filter === c
+                      ? "bg-brand-indigo text-white shadow-md shadow-brand-indigo/25"
+                      : "bg-space-700/60 text-text-secondary hover:text-white hover:bg-space-600 border border-card-border"
+                  }`}>
+                  {c} <span className="ml-1 opacity-60">({count})</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Template grid with visual previews */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-            {filtered.map(t => (
-              <button key={t.id} onClick={() => setSelectedId(t.id)}
-                className={`relative rounded-xl overflow-hidden text-left transition-all ${selectedId === t.id ? "ring-2 ring-brand-indigo shadow-lg shadow-brand-indigo/20" : "ring-1 ring-card-border hover:ring-brand-indigo/40"}`}>
-                {/* Mini resume preview */}
-                <MiniPreview template={t} data={SAMPLE} />
-                {/* Template info overlay */}
-                <div className="p-3 bg-space-800 border-t border-card-border">
-                  <h3 className={`text-sm font-bold ${selectedId === t.id ? "text-white" : "text-text-secondary"}`}>{t.name}</h3>
-                  <p className="text-xs text-text-muted truncate">{t.desc}</p>
-                </div>
-                {/* Selected checkmark */}
-                {selectedId === t.id && (
-                  <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-indigo flex items-center justify-center">
-                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+          {/* ---- Template Grid — LiveCareer-style cards ---- */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-8">
+            {filtered.map(t => {
+              const isSelected = selectedId === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedId(t.id)}
+                  className={`group relative rounded-2xl overflow-hidden text-left transition-all duration-200 ${
+                    isSelected
+                      ? "ring-2 ring-brand-indigo shadow-xl shadow-brand-indigo/20 scale-[1.02]"
+                      : "ring-1 ring-card-border hover:ring-brand-indigo/50 hover:shadow-lg hover:shadow-brand-indigo/10 hover:scale-[1.01]"
+                  }`}
+                >
+                  {/* Resume preview with subtle shadow */}
+                  <div className="relative bg-space-700/30 p-3 pb-2">
+                    <div className="rounded-lg overflow-hidden shadow-md ring-1 ring-black/5">
+                      <MiniPreview template={t} data={SAMPLE} />
+                    </div>
+
+                    {/* Hover overlay */}
+                    <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
+                      isSelected ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+                    }`}>
+                      <div className="bg-brand-indigo/90 backdrop-blur-sm text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg">
+                        Select Template
+                      </div>
+                    </div>
+
+                    {/* Selected badge */}
+                    {isSelected && (
+                      <div className="absolute top-5 right-5 w-7 h-7 rounded-full bg-brand-indigo flex items-center justify-center shadow-lg">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                )}
-              </button>
-            ))}
+
+                  {/* Template info */}
+                  <div className="px-4 py-3 bg-space-800 border-t border-card-border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: t.previewAccent }} />
+                      <h3 className={`text-sm font-bold truncate ${isSelected ? "text-white" : "text-text-secondary group-hover:text-white"}`}>
+                        {t.name}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-text-muted truncate">{t.desc}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
-          <button onClick={() => setStep("form")} className="btn-primary">
-            Continue with {selected.name} Template
-          </button>
+          {/* ---- Selected Template Summary + Continue ---- */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl bg-space-800/60 border border-card-border">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-12 h-16 rounded-lg overflow-hidden ring-1 ring-card-border flex-shrink-0 bg-white">
+                <div className="relative w-full h-full overflow-hidden">
+                  <iframe
+                    srcDoc={generateHTML(SAMPLE, selected)}
+                    className="absolute top-0 left-0 border-0 pointer-events-none"
+                    style={{ width: "800px", height: "1040px", transform: "scale(0.015)", transformOrigin: "top left" }}
+                    title="Selected"
+                  />
+                </div>
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ background: selected.previewAccent }} />
+                  <span className="font-bold text-white">{selected.name}</span>
+                  <span className="text-xs text-text-muted px-2 py-0.5 rounded-full bg-space-700">{selected.category}</span>
+                </div>
+                <p className="text-sm text-text-muted truncate">{selected.desc}</p>
+              </div>
+            </div>
+            <button onClick={() => setStep("form")} className="btn-primary whitespace-nowrap px-8">
+              Use This Template
+            </button>
+          </div>
         </div>
       )}
 
@@ -754,13 +993,111 @@ export default function TemplatesPage() {
          ============================================================ */}
       {step === "form" && (
         <div>
+          {/* Template indicator */}
           <div className="mb-6 flex items-center gap-3">
-            <div className={`w-12 h-1.5 rounded-full`} style={{ background: selected.previewAccent }} />
+            <div className="w-12 h-1.5 rounded-full" style={{ background: selected.previewAccent }} />
             <span className="text-sm text-text-secondary">Using <strong className="text-white">{selected.name}</strong> template</span>
             <button onClick={() => setStep("gallery")} className="text-sm text-brand-light hover:text-white transition-colors ml-auto">Change template</button>
           </div>
 
           <div className="space-y-5">
+
+            {/* ---- PDF Upload Zone ---- */}
+            <div className="glass-card p-6 border-dashed border-2 border-brand-indigo/30">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold mb-1">Upload Your Resume PDF</h2>
+                  <p className="text-sm text-text-secondary mb-4">
+                    Upload an existing resume and AI will automatically fill in all the fields below. You can edit anything after.
+                  </p>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handlePdfUpload(file);
+                    }}
+                  />
+
+                  {/* Upload button / status */}
+                  {uploadStatus === "idle" && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-brand-indigo/15 border border-brand-indigo/30 text-brand-light hover:bg-brand-indigo/25 transition-colors"
+                    >
+                      Choose PDF File
+                    </button>
+                  )}
+
+                  {uploadStatus === "extracting" && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-brand-light border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-brand-light font-medium">Reading {uploadedFileName}...</span>
+                    </div>
+                  )}
+
+                  {uploadStatus === "parsing" && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-purple-400 font-medium">AI is extracting your details...</span>
+                    </div>
+                  )}
+
+                  {uploadStatus === "done" && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-sm text-green-400 font-medium">{uploadedFileName} — fields auto-filled!</span>
+                      <button
+                        onClick={() => { setUploadStatus("idle"); setUploadedFileName(""); fileInputRef.current && (fileInputRef.current.value = ""); }}
+                        className="text-xs text-text-muted hover:text-white ml-2"
+                      >
+                        Upload different
+                      </button>
+                    </div>
+                  )}
+
+                  {uploadStatus === "error" && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm text-red-400">{uploadError}</span>
+                      </div>
+                      <button
+                        onClick={() => { setUploadStatus("idle"); setUploadError(""); fileInputRef.current && (fileInputRef.current.value = ""); }}
+                        className="text-xs text-brand-light hover:text-white"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              {uploadStatus === "idle" && (
+                <div className="flex items-center gap-3 mt-5">
+                  <div className="flex-1 h-px bg-card-border" />
+                  <span className="text-xs text-text-muted font-medium">OR FILL IN MANUALLY BELOW</span>
+                  <div className="flex-1 h-px bg-card-border" />
+                </div>
+              )}
+            </div>
+
             {/* Personal Info */}
             <div className="glass-card p-6">
               <h2 className="text-lg font-bold mb-4">Personal Information</h2>
@@ -852,30 +1189,30 @@ export default function TemplatesPage() {
       {step === "preview" && (
         <div>
           {/* Action bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 p-4 rounded-2xl bg-space-800/60 border border-card-border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-1.5 rounded-full" style={{ background: selected.previewAccent }} />
               <span className="text-sm text-text-secondary"><strong className="text-white">{selected.name}</strong> template</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => setStep("form")} className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
+              <button onClick={() => setStep("form")} className="px-4 py-2.5 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
                 Edit Details
               </button>
-              <button onClick={() => setStep("gallery")} className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
+              <button onClick={() => setStep("gallery")} className="px-4 py-2.5 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
                 Change Template
               </button>
-              <button onClick={downloadWord} className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
+              <button onClick={downloadWord} className="px-4 py-2.5 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
                 Download Word
               </button>
               <button onClick={downloadPDF} disabled={pdfLoading}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50">
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50">
                 {pdfLoading ? "Generating..." : "Download PDF"}
               </button>
             </div>
           </div>
 
           {/* Full-size resume preview */}
-          <div className="rounded-xl overflow-hidden border border-card-border shadow-2xl bg-white">
+          <div className="rounded-2xl overflow-hidden border border-card-border shadow-2xl bg-white">
             <iframe
               srcDoc={generateHTML(formData, selected)}
               className="w-full border-0"
