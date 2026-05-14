@@ -15,6 +15,7 @@ import LinkedIn from "next-auth/providers/linkedin";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { audit } from "./audit";
+import { isLocked, recordFailure, resetFailures } from "./account-lock";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   /* ---- Auth Providers ---- */
@@ -44,6 +45,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        /* Check if account is locked from too many failed attempts */
+        const lockStatus = isLocked(credentials.email as string);
+        if (lockStatus.locked) {
+          audit("auth.account.locked", { email: credentials.email as string, detail: `locked for ${Math.ceil(lockStatus.retryAfterMs / 60000)}min` });
+          return null;
+        }
+
         /* Look up the user by email */
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
@@ -51,6 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         /* If no user found, OAuth-only account, or soft-deleted — fail */
         if (!user || !user.password || user.deletedAt) {
+          recordFailure(credentials.email as string);
           audit("auth.login.failed", { email: credentials.email as string, detail: !user ? "not_found" : user.deletedAt ? "soft_deleted" : "no_password" });
           return null;
         }
@@ -62,10 +71,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!passwordMatch) {
+          recordFailure(credentials.email as string);
           audit("auth.login.failed", { email: credentials.email as string, detail: "wrong_password" });
           return null;
         }
 
+        resetFailures(credentials.email as string);
         audit("auth.login.success", { userId: user.id, email: user.email });
 
         return {

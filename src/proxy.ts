@@ -4,7 +4,8 @@
    Runs on every matched request BEFORE the route handler.
    - Redirects unauthenticated users away from /dashboard
    - Blocks unauthenticated API requests with 401
-   - Adds security headers to all responses
+   - Adds security headers (CSP, CORS, HSTS) to all responses
+   - Enforces body size limits and CSRF origin verification
    ============================================================ */
 
 import { NextResponse } from "next/server";
@@ -41,7 +42,6 @@ export function proxy(req: NextRequest) {
   }
 
   /* ---- Request Body Size Limit (2MB) ---- */
-  /* Reject oversized payloads before they're parsed by route handlers */
   const contentLength = req.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) > 2 * 1024 * 1024) {
     audit("security.body_size.blocked", { ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown", detail: `${contentLength} bytes on ${pathname}` });
@@ -52,7 +52,6 @@ export function proxy(req: NextRequest) {
   }
 
   /* ---- CSRF Origin Verification for state-changing requests ---- */
-  /* POST/PATCH/DELETE must come from our own origin or a trusted source */
   const method = req.method;
   if (method === "POST" || method === "PATCH" || method === "DELETE") {
     const origin = req.headers.get("origin");
@@ -60,7 +59,6 @@ export function proxy(req: NextRequest) {
     const host = req.headers.get("host") || "";
     const requestOrigin = origin || (referer ? new URL(referer).origin : null);
 
-    /* Allow: same-origin, Chrome Extension, NextAuth callbacks (no origin on server-side), Stripe webhooks */
     const isSameOrigin = requestOrigin && (
       requestOrigin === `https://${host}` ||
       requestOrigin === `http://${host}`
@@ -68,7 +66,6 @@ export function proxy(req: NextRequest) {
     const isChromeExtension = requestOrigin?.startsWith("chrome-extension://");
     const isAuthCallback = pathname.startsWith("/api/auth");
     const isWebhook = pathname.startsWith("/api/stripe/webhook");
-    /* Server-to-server calls (e.g. NextAuth) send no origin header */
     const isServerCall = !origin && !referer;
 
     if (!isSameOrigin && !isChromeExtension && !isAuthCallback && !isWebhook && !isServerCall) {
@@ -84,7 +81,37 @@ export function proxy(req: NextRequest) {
   const requestId = crypto.randomUUID();
   response.headers.set("X-Request-Id", requestId);
 
-  /* Security headers — prevent common attacks */
+  /* ---- Content Security Policy (CSP) ---- */
+  /* Strongest XSS defense — only allows scripts/styles from trusted sources */
+  const csp = [
+    "default-src 'self'",
+    /* Scripts: self + inline (Next.js needs it) + eval (dev only hot reload) + Stripe + PostHog + Sentry */
+    `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://js.stripe.com https://us.i.posthog.com https://*.sentry.io`,
+    /* Styles: self + inline (Tailwind injects styles) */
+    "style-src 'self' 'unsafe-inline'",
+    /* Images: self + data URIs (base64) + blob (PDF previews) + common CDNs */
+    "img-src 'self' data: blob: https://*.googleusercontent.com https://*.licdn.com",
+    /* Fonts: self + Google Fonts */
+    "font-src 'self' https://fonts.gstatic.com",
+    /* API calls: self + Stripe + Gemini + PostHog + Sentry */
+    "connect-src 'self' https://api.stripe.com https://generativelanguage.googleapis.com https://us.i.posthog.com https://*.sentry.io",
+    /* Frames: only Stripe checkout iframe */
+    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    /* Block all other embeds */
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    /* Upgrade insecure requests in production */
+    ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
+  ].join("; ");
+  response.headers.set("Content-Security-Policy", csp);
+
+  /* ---- HSTS — force HTTPS in production ---- */
+  if (process.env.NODE_ENV === "production") {
+    response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  }
+
+  /* ---- Standard Security Headers ---- */
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-XSS-Protection", "1; mode=block");
@@ -93,17 +120,33 @@ export function proxy(req: NextRequest) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
-  /* Prevent MIME type confusion attacks */
   response.headers.set("X-DNS-Prefetch-Control", "off");
 
-  /* ---- CORS for Chrome Extension routes ---- */
-  if (pathname.startsWith("/api/extension")) {
+  /* ---- CORS — restrict API access to own origin + Chrome extension ---- */
+  if (pathname.startsWith("/api")) {
     const origin = req.headers.get("origin");
-    if (origin && origin.startsWith("chrome-extension://")) {
-      response.headers.set("Access-Control-Allow-Origin", origin);
-      response.headers.set("Access-Control-Allow-Credentials", "true");
-      response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+    if (pathname.startsWith("/api/extension")) {
+      /* Chrome extension gets its own CORS */
+      if (origin && origin.startsWith("chrome-extension://")) {
+        response.headers.set("Access-Control-Allow-Origin", origin);
+        response.headers.set("Access-Control-Allow-Credentials", "true");
+        response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+      }
+    } else if (origin) {
+      /* All other API routes: only allow same-origin requests */
+      const host = req.headers.get("host") || "";
+      const isSameOrigin =
+        origin === `https://${host}` || origin === `http://${host}`;
+
+      if (isSameOrigin) {
+        response.headers.set("Access-Control-Allow-Origin", origin);
+        response.headers.set("Access-Control-Allow-Credentials", "true");
+        response.headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+        response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+      }
+      /* If not same-origin: no CORS headers = browser blocks the request */
     }
   }
 
