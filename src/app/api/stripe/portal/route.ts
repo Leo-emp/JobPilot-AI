@@ -46,7 +46,10 @@ export async function POST() {
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Portal error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Stripe portal error:", error);
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

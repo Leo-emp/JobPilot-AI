@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
     user.aiUsageCount = 0;
   }
 
-  const PLAN_LIMITS: Record<string, number> = { free: 3, pro: 100 };
+  const PLAN_LIMITS: Record<string, number> = { free: 20, pro: 1000 };
   const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
 
   if (user.aiUsageCount >= limit) {

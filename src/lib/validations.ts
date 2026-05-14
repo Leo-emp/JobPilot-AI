@@ -228,7 +228,7 @@ export const createResumeSchema = z.object({
 
 /* POST /api/stripe/checkout */
 export const stripeCheckoutSchema = z.object({
-  plan: z.enum(["pro", "enterprise"], "Plan must be 'pro' or 'enterprise'."),
+  plan: z.enum(["pro"], "Plan must be 'pro'."),
 });
 
 

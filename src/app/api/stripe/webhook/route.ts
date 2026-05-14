@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     /* Always return 200 to acknowledge receipt of the webhook */
     return NextResponse.json({ received: true });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Webhook error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Stripe webhook error:", error);
+    return NextResponse.json({ error: "Webhook processing failed." }, { status: 500 });
   }
 }

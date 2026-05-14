@@ -36,5 +36,4 @@ export function getStripe(): Stripe {
 /* Replace with your actual Stripe Price IDs after creating products */
 export const PRICE_IDS = {
   pro: process.env.STRIPE_PRO_PRICE_ID || "",
-  enterprise: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
 };

@@ -820,7 +820,7 @@ function isAdmin(email: string | null | undefined): boolean {
 /* Free: 15/month — ~1.5 days across all 10 tools, enough to see value, drives upgrades */
 /* Pro: 1000/month — effectively unlimited for humans (~33/day), blocks automation abuse */
 const PLAN_LIMITS: Record<string, number> = {
-  free: 15,
+  free: 20,
   pro: 1000,
 };
 

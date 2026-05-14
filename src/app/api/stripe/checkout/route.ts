@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     const { plan } = parsed.data;
 
     /* Validate the requested plan */
-    const priceId = plan === "pro" ? PRICE_IDS.pro : PRICE_IDS.enterprise;
+    const priceId = plan === "pro" ? PRICE_IDS.pro : "";
     if (!priceId) {
       return NextResponse.json(
         { error: "Invalid plan or Stripe not configured." },
