@@ -43,10 +43,10 @@ export default function StarField() {
 
       {/* Ambient cyan-blue glow at top of page */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[700px] rounded-full opacity-20"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] rounded-full"
         style={{
           background:
-            "radial-gradient(ellipse, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0.04) 40%, transparent 70%)",
+            "radial-gradient(ellipse, rgba(56,189,248,0.12) 0%, rgba(56,189,248,0.04) 35%, transparent 65%)",
         }}
       />
 

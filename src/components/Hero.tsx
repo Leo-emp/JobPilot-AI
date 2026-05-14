@@ -21,12 +21,14 @@ export default function Hero() {
       </div>
 
       {/* ---- Rocket Icon ---- */}
-      <div className="relative mb-8 opacity-90">
+      <div className="relative mb-8">
         <div
-          className="absolute inset-0 -m-8 rounded-full blur-3xl opacity-20"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.4) 0%, transparent 70%)" }}
+          className="absolute -inset-16 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.25) 0%, rgba(56,189,248,0.08) 40%, transparent 70%)" }}
         />
-        <RocketIcon size={120} />
+        <div className="relative">
+          <RocketIcon size={120} />
+        </div>
       </div>
 
       {/* ---- Title ---- */}

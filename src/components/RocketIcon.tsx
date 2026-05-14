@@ -40,7 +40,7 @@ export default function RocketIcon({ size = 80, className = "" }: RocketIconProp
           <stop offset="100%" stopColor="#60a5fa" stopOpacity="0" />
         </linearGradient>
         <filter id="rocketShadow">
-          <feDropShadow dx="0" dy="2" stdDeviation="6" floodColor="#38bdf8" floodOpacity="0.35" />
+          <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#38bdf8" floodOpacity="0.5" />
         </filter>
       </defs>
 

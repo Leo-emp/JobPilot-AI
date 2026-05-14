@@ -53,28 +53,28 @@ body {
 }
 
 /* ---- Brand Text ---- */
-/* Gradient text with subtle cyan glow */
+/* Gradient text with cyan glow */
 .glow-text {
-  background: linear-gradient(135deg, #f0f0f3 30%, #38bdf8);
+  background: linear-gradient(135deg, #f0f0f3 20%, #38bdf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.15));
+  filter: drop-shadow(0 0 24px rgba(56, 189, 248, 0.4)) drop-shadow(0 0 60px rgba(56, 189, 248, 0.15));
 }
 
-/* Hero title — bold gradient with stronger cyan glow */
+/* Hero title — bold gradient with strong cyan glow */
 .glow-text-strong {
-  background: linear-gradient(135deg, #ffffff 20%, #38bdf8 80%);
+  background: linear-gradient(135deg, #ffffff 10%, #38bdf8 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.2));
+  filter: drop-shadow(0 0 40px rgba(56, 189, 248, 0.5)) drop-shadow(0 0 80px rgba(56, 189, 248, 0.2));
 }
 
-/* Tagline — cyan accent with soft glow */
+/* Tagline — cyan accent with visible glow */
 .glow-text-subtle {
   color: #38bdf8;
-  text-shadow: 0 0 24px rgba(56, 189, 248, 0.25);
+  text-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 0 0 60px rgba(56, 189, 248, 0.25);
 }
 
 /* ---- Animations ---- */
@@ -104,8 +104,8 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(56, 189, 248, 0.12);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.06);
+  border-color: rgba(56, 189, 248, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 30px rgba(56, 189, 248, 0.12), 0 0 60px rgba(56, 189, 248, 0.05);
 }
 
 /* ---- Buttons ---- */
@@ -128,7 +128,7 @@ body {
 
 .btn-primary:hover {
   background: #2563eb;
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3), 0 0 20px rgba(56, 189, 248, 0.15), 0 0 0 1px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4), 0 0 30px rgba(56, 189, 248, 0.25), 0 0 0 1px rgba(56, 189, 248, 0.3);
 }
 
 /* Secondary — ghost button with subtle border */
