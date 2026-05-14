@@ -8,18 +8,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { resetPasswordSchema, formatZodError } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, password } = await req.json();
+    /* Validate input with Zod */
+    const body = await req.json();
+    const parsed = resetPasswordSchema.safeParse(body);
 
-    if (!token || !password) {
-      return NextResponse.json({ error: "Token and password are required." }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
-    }
+    const { token, password } = parsed.data;
 
     /* ---- Find the reset token ---- */
     const resetRecord = await prisma.passwordReset.findUnique({ where: { token } });

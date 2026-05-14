@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
+import { aiSchema, formatZodError } from "@/lib/validations";
 import * as Sentry from "@sentry/nextjs";
 
 /* ---- Gemini Model Fallback List ---- */
@@ -842,15 +843,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* Parse request body */
-    const { action, payload } = await req.json();
+    /* Parse and validate request body with Zod */
+    const body = await req.json();
+    const parsed = aiSchema.safeParse(body);
 
-    if (!action || !payload) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Action and payload are required." },
+        { error: formatZodError(parsed.error) },
         { status: 400 }
       );
     }
+
+    const action = parsed.data.action;
+    /* Cast to Record<string, string> — buildPrompt reads string fields from payload */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    const payload = parsed.data.payload as Record<string, any>;
 
     /* ---- Input size validation ---- */
     /* Multimodal actions (images) get a higher size limit than text-only */

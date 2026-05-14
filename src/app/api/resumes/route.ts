@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createResumeSchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: List all resumes for the logged-in user ---- */
 export async function GET() {
@@ -33,15 +34,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { fileName, content, analysis } = await req.json();
+  const body = await req.json();
+  const parsed = createResumeSchema.safeParse(body);
 
-  /* Validate required fields */
-  if (!fileName || !content) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "File name and content are required." },
+      { error: formatZodError(parsed.error) },
       { status: 400 }
     );
   }
+
+  const { fileName, content, analysis } = parsed.data;
 
   /* Save the resume to the database */
   const resume = await prisma.resume.create({

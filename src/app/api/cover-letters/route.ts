@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createCoverLetterSchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: List all cover letters for the logged-in user ---- */
 export async function GET() {
@@ -33,15 +34,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { jobTitle, company, content } = await req.json();
+  const body = await req.json();
+  const parsed = createCoverLetterSchema.safeParse(body);
 
-  /* Validate required fields */
-  if (!jobTitle || !company || !content) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Job title, company, and content are required." },
+      { error: formatZodError(parsed.error) },
       { status: 400 }
     );
   }
+
+  const { jobTitle, company, content } = parsed.data;
 
   /* Save the cover letter to the database */
   const coverLetter = await prisma.coverLetter.create({

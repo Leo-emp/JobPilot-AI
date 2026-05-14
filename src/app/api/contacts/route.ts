@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createContactSchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: List all contacts for the logged-in user ---- */
 export async function GET() {
@@ -33,15 +34,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, email, phone, company, role, linkedinUrl, relationship, notes, nextFollowUp } = await req.json();
+  const body = await req.json();
+  const parsed = createContactSchema.safeParse(body);
 
-  /* Name is required */
-  if (!name) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Contact name is required." },
+      { error: formatZodError(parsed.error) },
       { status: 400 }
     );
   }
+
+  const { name, email, phone, company, role, linkedinUrl, relationship, notes, nextFollowUp } = parsed.data;
 
   const contact = await prisma.contact.create({
     data: {

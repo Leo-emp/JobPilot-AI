@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { deleteUserSchema, formatZodError } from "@/lib/validations";
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -25,11 +26,19 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    /* Parse confirmation email from request body */
-    const { confirmEmail } = await req.json();
+    /* Parse and validate confirmation email */
+    const body = await req.json();
+    const parsed = deleteUserSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: formatZodError(parsed.error) },
+        { status: 400 }
+      );
+    }
 
     /* Safety check: user must type their email to confirm deletion */
-    if (!confirmEmail || confirmEmail.toLowerCase() !== session.user.email.toLowerCase()) {
+    if (parsed.data.confirmEmail !== session.user.email.toLowerCase()) {
       return NextResponse.json(
         { error: "Please enter your email address correctly to confirm deletion." },
         { status: 400 }

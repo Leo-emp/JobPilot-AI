@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { updateCompanySchema, formatZodError } from "@/lib/validations";
 
 /* ---- PATCH: Update a company ---- */
 export async function PATCH(
@@ -21,7 +22,14 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await req.json();
+  const raw = await req.json();
+  const parsed = updateCompanySchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
+  }
+
+  const body = parsed.data;
 
   /* Build update data — only include fields that were sent */
   const updateData: Record<string, unknown> = {};

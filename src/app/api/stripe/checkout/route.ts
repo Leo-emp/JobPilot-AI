@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe, PRICE_IDS } from "@/lib/stripe";
+import { stripeCheckoutSchema, formatZodError } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +21,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { plan } = await req.json();
+    const body = await req.json();
+    const parsed = stripeCheckoutSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: formatZodError(parsed.error) },
+        { status: 400 }
+      );
+    }
+
+    const { plan } = parsed.data;
 
     /* Validate the requested plan */
     const priceId = plan === "pro" ? PRICE_IDS.pro : PRICE_IDS.enterprise;

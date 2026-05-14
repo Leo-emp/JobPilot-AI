@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createApplicationSchema, formatZodError } from "@/lib/validations";
 
 /* ---- Add CORS headers for Chrome Extension ---- */
 function corsHeaders(origin: string | null) {
@@ -59,11 +60,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders(origin) });
   }
 
-  const { jobTitle, company } = await req.json();
+  const body = await req.json();
+  const parsed = createApplicationSchema.safeParse(body);
 
-  if (!jobTitle || !company) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Job title and company are required." },
+      { error: formatZodError(parsed.error) },
       { status: 400, headers: corsHeaders(origin) }
     );
   }
@@ -71,8 +73,8 @@ export async function POST(req: NextRequest) {
   const application = await prisma.application.create({
     data: {
       userId: session.user.id,
-      jobTitle,
-      company,
+      jobTitle: parsed.data.jobTitle,
+      company: parsed.data.company,
       status: "Saved",
     },
   });

@@ -9,27 +9,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { signupSchema, formatZodError } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
   try {
-    /* Parse the JSON body from the request */
-    const { name, email, password } = await req.json();
+    /* Parse and validate the JSON body with Zod */
+    const body = await req.json();
+    const parsed = signupSchema.safeParse(body);
 
-    /* ---- Input Validation ---- */
-    if (!name || !email || !password) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Name, email, and password are required." },
+        { error: formatZodError(parsed.error) },
         { status: 400 }
       );
     }
 
-    /* Password must be at least 8 characters for security */
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Password must be at least 8 characters." },
-        { status: 400 }
-      );
-    }
+    const { name, email, password } = parsed.data;
 
     /* ---- Check for Existing User ---- */
     const existingUser = await prisma.user.findUnique({

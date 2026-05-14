@@ -10,19 +10,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import crypto from "crypto";
+import { forgotPasswordSchema, formatZodError } from "@/lib/validations";
 
 /* ---- Resend client for sending emails ---- */
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    /* Validate input with Zod */
+    const body = await req.json();
+    const parsed = forgotPasswordSchema.safeParse(body);
 
-    if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email is required." }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    /* Email is already trimmed + lowercased by the schema */
+    const normalizedEmail = parsed.data.email;
 
     /* ---- Look up the user ---- */
     /* Only credentials users (with a password) can reset. OAuth users should */

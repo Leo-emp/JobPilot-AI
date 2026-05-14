@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { extensionAiSchema, formatZodError } from "@/lib/validations";
 
 /* ---- Add CORS headers to response ---- */
 function corsHeaders(origin: string | null) {
@@ -101,14 +102,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { action, description, jobTitle, company } = await req.json();
+  const body = await req.json();
+  const parsed = extensionAiSchema.safeParse(body);
 
-  if (!action || !description) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Action and job description are required." },
+      { error: formatZodError(parsed.error) },
       { status: 400, headers: corsHeaders(origin) }
     );
   }
+
+  const { action, description, jobTitle, company } = parsed.data;
 
   /* Fetch the user's most recent resume for AI context */
   const latestResume = await prisma.resume.findFirst({

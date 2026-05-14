@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createCompanySchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: List all companies for the logged-in user ---- */
 export async function GET() {
@@ -33,15 +34,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, industry, website, location, size, notes, priority, status } = await req.json();
+  const body = await req.json();
+  const parsed = createCompanySchema.safeParse(body);
 
-  /* Company name is required */
-  if (!name) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Company name is required." },
+      { error: formatZodError(parsed.error) },
       { status: 400 }
     );
   }
+
+  const { name, industry, website, location, size, notes, priority, status } = parsed.data;
 
   const company = await prisma.company.create({
     data: {
