@@ -53,25 +53,25 @@ body {
 }
 
 /* ---- Brand Text ---- */
-/* Gradient text with cyan glow — used on section headings and stats */
+/* Gradient text with cyan glow — section headings, stats, navbar brand */
 .glow-text {
   color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6), 0 0 40px rgba(56, 189, 248, 0.3), 0 0 80px rgba(56, 189, 248, 0.15);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35), 0 0 40px rgba(56, 189, 248, 0.15);
 }
 
-/* Hero title — bold white-to-cyan gradient with strong glow aura */
+/* Hero title — white-to-cyan gradient with soft glow */
 .glow-text-strong {
-  background: linear-gradient(135deg, #ffffff 10%, #38bdf8 90%);
+  background: linear-gradient(135deg, #ffffff 20%, #38bdf8 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.6)) drop-shadow(0 0 60px rgba(56, 189, 248, 0.3)) drop-shadow(0 0 100px rgba(56, 189, 248, 0.15));
+  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.3)) drop-shadow(0 0 60px rgba(56, 189, 248, 0.12));
 }
 
-/* Tagline — bright cyan with strong glow */
+/* Tagline — cyan with moderate glow */
 .glow-text-subtle {
   color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 40px rgba(56, 189, 248, 0.4), 0 0 80px rgba(56, 189, 248, 0.2);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4), 0 0 40px rgba(56, 189, 248, 0.15);
 }
 
 /* ---- Animations ---- */

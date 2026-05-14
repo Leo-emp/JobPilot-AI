@@ -74,7 +74,7 @@ export default function RocketIcon({ size = 80, className = "" }: RocketIconProp
 
         {/* Cyan glow behind entire rocket */}
         <filter id="rGlow">
-          <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#22d3ee" floodOpacity="0.5" />
+          <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#22d3ee" floodOpacity="0.3" />
         </filter>
 
         {/* Soft window glow */}
