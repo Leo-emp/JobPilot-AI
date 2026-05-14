@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
 import { getStripe, PRICE_IDS } from "@/lib/stripe";
 import { stripeCheckoutSchema, formatZodError } from "@/lib/validations";
 
@@ -42,10 +43,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* Get the user from the database */
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
+    /* Get the user from the database (with retry for transient failures) */
+    const user = await dbRetry(() =>
+      prisma.user.findUnique({ where: { id: session.user.id } })
+    );
 
     if (!user) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
@@ -64,11 +65,13 @@ export async function POST(req: NextRequest) {
       });
       customerId = customer.id;
 
-      /* Save the Stripe customer ID to the database */
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId: customerId },
-      });
+      /* Save the Stripe customer ID to the database (with retry) */
+      await dbRetry(() =>
+        prisma.user.update({
+          where: { id: user.id },
+          data: { stripeCustomerId: customerId },
+        })
+      );
     }
 
     /* ---- Create Checkout Session ---- */

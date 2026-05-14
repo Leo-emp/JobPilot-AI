@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { resetPasswordSchema, formatZodError } from "@/lib/validations";
 import { authPerMinute, authPerHour } from "@/lib/rate-limit";
+import { audit, getClientIp } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,6 +69,8 @@ export async function POST(req: NextRequest) {
       where: { id: resetRecord.id },
       data: { used: true },
     });
+
+    audit("auth.password_reset.completed", { email: resetRecord.email, ip: getClientIp(req.headers) });
 
     return NextResponse.json({ message: "Password reset successfully. You can now sign in." });
   } catch (e) {

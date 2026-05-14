@@ -14,6 +14,7 @@ import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { audit } from "./audit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   /* ---- Auth Providers ---- */
@@ -48,8 +49,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email: credentials.email as string },
         });
 
-        /* If no user found or user has no password (OAuth-only account), fail */
-        if (!user || !user.password) return null;
+        /* If no user found, OAuth-only account, or soft-deleted — fail */
+        if (!user || !user.password || user.deletedAt) {
+          audit("auth.login.failed", { email: credentials.email as string, detail: !user ? "not_found" : user.deletedAt ? "soft_deleted" : "no_password" });
+          return null;
+        }
 
         /* Compare the provided password with the stored hash */
         const passwordMatch = await bcrypt.compare(
@@ -57,7 +61,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           user.password
         );
 
-        if (!passwordMatch) return null;
+        if (!passwordMatch) {
+          audit("auth.login.failed", { email: credentials.email as string, detail: "wrong_password" });
+          return null;
+        }
+
+        audit("auth.login.success", { userId: user.id, email: user.email });
 
         return {
           id: user.id,
@@ -102,6 +111,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email: user.email },
         });
 
+        /* Block soft-deleted users from signing in via OAuth */
+        if (dbUser?.deletedAt) {
+          audit("auth.login.failed", { email: user.email, detail: "soft_deleted_oauth" });
+          return false;
+        }
+
         /* If no user exists, create one (no password for OAuth users) */
         if (!dbUser) {
           dbUser = await prisma.user.create({
@@ -145,6 +160,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
           });
         }
+
+        audit("auth.login.success", { userId: dbUser.id, email: user.email, detail: `oauth_${account.provider}` });
 
         /* Attach the database user ID so the jwt callback can use it */
         user.id = dbUser.id;

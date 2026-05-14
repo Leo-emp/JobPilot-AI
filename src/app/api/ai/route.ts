@@ -20,9 +20,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
 import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { aiSchema, formatZodError } from "@/lib/validations";
 import * as Sentry from "@sentry/nextjs";
+import { audit } from "@/lib/audit";
 
 /* ---- Gemini Model Fallback List ---- */
 /* Each model has independent free-tier rate limits (15 RPM, 1500 RPD). */
@@ -906,11 +908,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    /* ---- Usage Limit Check ---- */
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true },
-    });
+    /* ---- Usage Limit Check (with retry for transient DB failures) ---- */
+    const user = await dbRetry(() =>
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true },
+      })
+    );
 
     if (!user) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
@@ -921,10 +925,12 @@ export async function POST(req: NextRequest) {
     if (user.usageResetDate < now) {
       const nextReset = new Date(now);
       nextReset.setMonth(nextReset.getMonth() + 1);
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { aiUsageCount: 0, usageResetDate: nextReset },
-      });
+      await dbRetry(() =>
+        prisma.user.update({
+          where: { id: session.user.id },
+          data: { aiUsageCount: 0, usageResetDate: nextReset },
+        })
+      );
       user.aiUsageCount = 0;
     }
 
@@ -936,6 +942,7 @@ export async function POST(req: NextRequest) {
         const upgradeMsg = user.plan === "free"
           ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 1,000 calls/month.`
           : `You've reached your monthly limit of ${limit} calls. Contact support if you need more.`;
+        audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action });
         return NextResponse.json(
           { error: upgradeMsg },
           { status: 429 }
@@ -950,11 +957,13 @@ export async function POST(req: NextRequest) {
       ? await callGeminiMultimodal(prompt, payload.images)
       : await callGemini(prompt);
 
-    /* Increment usage counter */
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { aiUsageCount: { increment: 1 } },
-    });
+    /* Increment usage counter (with retry) */
+    await dbRetry(() =>
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { aiUsageCount: { increment: 1 } },
+      })
+    );
 
     /* Calculate remaining calls */
     const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;

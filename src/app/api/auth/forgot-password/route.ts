@@ -12,6 +12,7 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import { forgotPasswordSchema, formatZodError } from "@/lib/validations";
 import { authPerMinute, authPerHour } from "@/lib/rate-limit";
+import { audit, getClientIp } from "@/lib/audit";
 
 /* ---- Resend client for sending emails ---- */
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -103,6 +104,8 @@ export async function POST(req: NextRequest) {
         `,
       });
     }
+
+    audit("auth.password_reset.requested", { email: parsed.data.email, ip: getClientIp(req.headers) });
 
     /* ---- Always return success (prevents email enumeration) ---- */
     return NextResponse.json({

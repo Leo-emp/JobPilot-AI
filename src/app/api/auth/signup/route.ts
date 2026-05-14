@@ -11,11 +11,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signupSchema, formatZodError } from "@/lib/validations";
 import { authPerMinute, authPerHour } from "@/lib/rate-limit";
+import { audit, getClientIp } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   try {
     /* ---- Rate limiting by IP — blocks brute-force signup attempts ---- */
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const ip = getClientIp(req.headers);
     const minuteCheck = authPerMinute.check(`signup:${ip}`);
     if (!minuteCheck.allowed) {
       return NextResponse.json(
@@ -69,6 +70,9 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
       },
     });
+
+    /* Log the successful signup */
+    audit("auth.signup", { userId: user.id, email: user.email, ip });
 
     /* Return success with the new user's info (never send password back) */
     return NextResponse.json(

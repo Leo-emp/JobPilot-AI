@@ -27,6 +27,7 @@ vi.mock("@/lib/rate-limit", () => ({
 /* Mock Sentry */
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
 }));
 
 /* Mock fetch for Gemini API */

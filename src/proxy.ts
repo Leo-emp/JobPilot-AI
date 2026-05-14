@@ -9,6 +9,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { audit } from "@/lib/audit";
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -43,6 +44,7 @@ export function proxy(req: NextRequest) {
   /* Reject oversized payloads before they're parsed by route handlers */
   const contentLength = req.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) > 2 * 1024 * 1024) {
+    audit("security.body_size.blocked", { ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown", detail: `${contentLength} bytes on ${pathname}` });
     return NextResponse.json(
       { error: "Request body too large." },
       { status: 413 }
@@ -70,6 +72,7 @@ export function proxy(req: NextRequest) {
     const isServerCall = !origin && !referer;
 
     if (!isSameOrigin && !isChromeExtension && !isAuthCallback && !isWebhook && !isServerCall) {
+      audit("security.csrf.blocked", { ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown", detail: `origin:${requestOrigin} on ${pathname}` });
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

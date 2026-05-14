@@ -17,6 +17,13 @@ Sentry.init({
   /* Only enable in production to keep dev console clean */
   enabled: process.env.NODE_ENV === "production",
 
+  /* Tag environment for filtering in Sentry dashboard */
+  environment: process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV,
+
+  /* Replay captures user session on error (helps reproduce bugs) */
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: 0,
+
   /* Ignore common noise that isn't actionable */
   ignoreErrors: [
     "ResizeObserver loop",
@@ -24,5 +31,7 @@ Sentry.init({
     "Load failed",
     "Failed to fetch",
     "NetworkError",
+    "AbortError",
+    "ChunkLoadError",
   ],
 });

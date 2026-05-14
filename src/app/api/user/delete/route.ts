@@ -1,19 +1,17 @@
 /* ============================================================
    ACCOUNT DELETION API - DELETE /api/user/delete
    ============================================================
-   Permanently deletes the authenticated user's account and ALL
-   associated data (resumes, cover letters, applications, jobs).
-   This is irreversible. Requires the user to confirm by sending
-   their email address in the request body as a safety check.
-
-   Prisma cascade deletes handle related records automatically
-   (onDelete: Cascade is set on all relations in the schema).
+   Soft-deletes the authenticated user's account by setting the
+   deletedAt timestamp. The account and data are preserved for
+   30 days (for recovery requests) before permanent cleanup.
+   Requires the user to confirm by sending their email address.
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteUserSchema, formatZodError } from "@/lib/validations";
+import { audit, getClientIp } from "@/lib/audit";
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -45,16 +43,23 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    /* Delete the user — Prisma cascade will remove all related records */
-    /* (resumes, saved jobs, applications, cover letters) */
-    await prisma.user.delete({
+    /* Soft-delete: set deletedAt timestamp instead of destroying data */
+    /* Account data is preserved for 30 days for recovery requests */
+    await prisma.user.update({
       where: { id: session.user.id },
+      data: { deletedAt: new Date() },
+    });
+
+    audit("auth.account.deleted", {
+      userId: session.user.id,
+      email: session.user.email,
+      ip: getClientIp(req.headers),
     });
 
     /* Return success — the client will sign out and redirect */
     return NextResponse.json({
       success: true,
-      message: "Your account and all associated data have been permanently deleted.",
+      message: "Your account has been deactivated. Data will be permanently removed after 30 days.",
     });
   } catch (error: unknown) {
     console.error("Account deletion error:", error);

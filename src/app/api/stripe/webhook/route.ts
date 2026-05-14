@@ -12,7 +12,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
 import { getStripe } from "@/lib/stripe";
+import { audit } from "@/lib/audit";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -57,16 +59,20 @@ export async function POST(req: NextRequest) {
           /* Determine plan name from the price ID */
           const plan = priceId === process.env.STRIPE_PRO_PRICE_ID ? "pro" : "enterprise";
 
-          /* Update the user's plan in our database */
-          await prisma.user.update({
-            where: { id: userId },
-            data: {
-              plan,
-              stripeSubId: subscriptionId,
-              /* Reset usage counter on upgrade */
-              aiUsageCount: 0,
-            },
-          });
+          /* Update the user's plan in our database (with retry — payment is critical) */
+          await dbRetry(() =>
+            prisma.user.update({
+              where: { id: userId },
+              data: {
+                plan,
+                stripeSubId: subscriptionId,
+                /* Reset usage counter on upgrade */
+                aiUsageCount: 0,
+              },
+            })
+          );
+
+          audit("payment.upgrade", { userId, plan, detail: `subscription:${subscriptionId}` });
         }
         break;
       }
@@ -76,18 +82,18 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
 
         /* Find the user with this subscription ID and downgrade to free */
-        const user = await prisma.user.findFirst({
-          where: { stripeSubId: subscription.id },
-        });
+        const user = await dbRetry(() =>
+          prisma.user.findFirst({ where: { stripeSubId: subscription.id } })
+        );
 
         if (user) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              plan: "free",
-              stripeSubId: null,
-            },
-          });
+          await dbRetry(() =>
+            prisma.user.update({
+              where: { id: user.id },
+              data: { plan: "free", stripeSubId: null },
+            })
+          );
+          audit("payment.cancelled", { userId: user.id, detail: `subscription:${subscription.id}` });
         }
         break;
       }
@@ -98,16 +104,15 @@ export async function POST(req: NextRequest) {
         const priceId = subscription.items.data[0]?.price.id;
 
         /* Find the user with this subscription */
-        const user = await prisma.user.findFirst({
-          where: { stripeSubId: subscription.id },
-        });
+        const user = await dbRetry(() =>
+          prisma.user.findFirst({ where: { stripeSubId: subscription.id } })
+        );
 
         if (user && priceId) {
           const plan = priceId === process.env.STRIPE_PRO_PRICE_ID ? "pro" : "enterprise";
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { plan },
-          });
+          await dbRetry(() =>
+            prisma.user.update({ where: { id: user.id }, data: { plan } })
+          );
         }
         break;
       }

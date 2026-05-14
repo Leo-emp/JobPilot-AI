@@ -15,4 +15,17 @@ Sentry.init({
 
   /* Only enable in production */
   enabled: process.env.NODE_ENV === "production",
+
+  /* Tag environment for filtering in Sentry dashboard */
+  environment: process.env.VERCEL_ENV || process.env.NODE_ENV,
+
+  /* Attach server-side context to errors */
+  beforeSend(event) {
+    /* Strip sensitive headers */
+    if (event.request?.headers) {
+      delete event.request.headers["cookie"];
+      delete event.request.headers["authorization"];
+    }
+    return event;
+  },
 });
