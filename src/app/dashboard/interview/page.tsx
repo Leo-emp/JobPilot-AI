@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    INTERVIEW PREP PAGE
    ============================================================
    Two-tab interface:
@@ -91,9 +91,9 @@ export default function InterviewPage() {
       {/* ---- Mock Interview CTA ---- */}
       <Link
         href="/dashboard/interview/mock"
-        className="flex items-center gap-4 p-5 mb-8 rounded-2xl bg-gradient-to-r from-brand-indigo/10 to-purple-500/10 border border-brand-indigo/20 hover:border-brand-indigo/40 transition-all group"
+        className="flex items-center gap-4 p-5 mb-8 rounded-2xl bg-gradient-to-r from-blue-500/10 to-blue-500/10 border border-brand-indigo/20 hover:border-brand-indigo/40 transition-all group"
       >
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-indigo to-purple-500 flex items-center justify-center text-xl shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-xl shrink-0">
           🎥
         </div>
         <div className="flex-1">

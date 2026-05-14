@@ -190,7 +190,7 @@ export default function SettingsPage() {
             <div>
               <span className={`px-3 py-1 text-sm font-bold uppercase tracking-wider rounded-full border ${
                 userPlan?.plan === "pro"
-                  ? "bg-brand-purple/20 text-brand-glow border-brand-purple/30"
+                  ? "bg-brand-indigo/20 text-brand-light border-brand-indigo/30"
                   : userPlan?.plan === "enterprise"
                   ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
                   : "bg-brand-indigo/20 text-brand-light border-brand-indigo/30"

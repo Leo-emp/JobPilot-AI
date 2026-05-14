@@ -28,7 +28,7 @@ export default function Navbar() {
             {/* Custom SVG rocket in brand colors (replaces emoji) */}
             <RocketIcon size={28} />
             {/* Brand name in Space Grotesk — premium geometric font */}
-            <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
+            <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight text-text-primary">
               JobPilot AI
             </span>
           </Link>
@@ -106,7 +106,7 @@ export default function Navbar() {
         {/* ---- Mobile Menu Dropdown ---- */}
         {/* Only renders when mobileOpen is true */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-card-border mt-2 pt-4">
+          <div className="md:hidden pb-4 border-t border-white/[0.06] mt-2 pt-4">
             <div className="flex flex-col gap-4">
               <Link
                 href="/#features"

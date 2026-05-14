@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    APPLICATION TRACKER PAGE
    ============================================================
    Kanban-style tracker for job applications.
@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 /* ---- Status options with colors ---- */
 const STATUSES = [
   { value: "Saved", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  { value: "Applied", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
+  { value: "Applied", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
   { value: "Interview", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
   { value: "Offer", color: "bg-green-500/20 text-green-400 border-green-500/30" },
   { value: "Rejected", color: "bg-red-500/20 text-red-400 border-red-500/30" },

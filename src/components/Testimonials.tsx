@@ -15,28 +15,28 @@ const testimonials = [
     role: "Software Engineer",
     avatar: "SM",
     text: "JobPilot completely transformed my resume. I went from zero callbacks to 5 interviews in two weeks. The ATS optimization is incredible.",
-    color: "from-brand-indigo to-brand-purple",
+    color: "bg-blue-600",
   },
   {
     name: "David K.",
     role: "Career Changer",
     avatar: "DK",
     text: "The Career Pivot mode is a game-changer. I transitioned from teaching to tech and JobPilot rewrote my entire resume to highlight transferable skills.",
-    color: "from-brand-purple to-brand-violet",
+    color: "bg-emerald-600",
   },
   {
     name: "Priya R.",
     role: "Marketing Manager",
     avatar: "PR",
     text: "Generated a perfect cover letter in 30 seconds. It was better than anything I'd spent hours writing myself. Absolutely worth it.",
-    color: "from-brand-violet to-brand-glow",
+    color: "bg-sky-600",
   },
   {
     name: "James L.",
     role: "Recent Graduate",
     avatar: "JL",
     text: "The interview prep predicted almost the exact questions I was asked. I walked in confident and got the offer. This tool is unreal.",
-    color: "from-brand-light to-brand-indigo",
+    color: "bg-amber-600",
   },
 ];
 
@@ -70,7 +70,7 @@ export default function Testimonials() {
               {/* Avatar circle with gradient background and initials */}
               <div className="flex items-center gap-3 mb-5">
                 <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-sm font-bold text-white`}
+                  className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-sm font-bold text-white`}
                 >
                   {t.avatar}
                 </div>

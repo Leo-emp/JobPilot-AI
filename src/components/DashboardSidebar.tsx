@@ -53,7 +53,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       <div className="p-6 border-b border-card-border">
         <Link href="/dashboard" className="flex items-center gap-1">
           <RocketIcon size={28} />
-          <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
+          <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight text-text-primary">
             JobPilot AI
           </span>
         </Link>
@@ -101,7 +101,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       <div className="p-4 border-t border-card-border">
         {/* User avatar and name */}
         <div className="flex items-center gap-3 mb-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-indigo to-brand-purple flex items-center justify-center text-xs font-bold text-white">
+          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
             {/* Show first letter of name as avatar */}
             {userName?.charAt(0).toUpperCase() || "U"}
           </div>
@@ -134,7 +134,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 nav-blur px-4 py-3 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-1">
           <RocketIcon size={24} />
-          <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight glow-text">
+          <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight text-text-primary">
             JobPilot AI
           </span>
         </Link>

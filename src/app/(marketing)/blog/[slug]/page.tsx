@@ -195,7 +195,7 @@ Tools like JobPilot AI can generate a tailored cover letter based on your resume
     category: "Career Change",
     date: "Apr 15, 2026",
     readTime: "7 min read",
-    color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    color: "bg-sky-500/10 text-sky-400 border-sky-500/20",
     content: `
 ## Switching Careers? Your Resume Needs a Different Strategy
 

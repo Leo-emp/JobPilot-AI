@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    ECOSYSTEM SHOWCASE - Job Board & AI Outreach Hub
    ============================================================
    Showcases two platform features below the AI tool showcase:
@@ -255,7 +255,7 @@ export default function EcosystemShowcase() {
 
               {/* Action buttons */}
               <div className="flex gap-2">
-                <div className="flex-1 py-2 rounded-lg bg-gradient-to-r from-brand-indigo to-purple-500 text-center">
+                <div className="flex-1 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-center">
                   <span className="text-[10px] text-white font-semibold">Copy Message</span>
                 </div>
                 <div className="py-2 px-3 rounded-lg bg-space-700/50 border border-card-border">

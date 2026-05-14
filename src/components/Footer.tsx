@@ -23,7 +23,7 @@ export default function Footer() {
               {/* Custom rocket icon matching brand colors */}
               <RocketIcon size={24} />
               {/* Space Grotesk font for brand consistency */}
-              <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight glow-text">
+              <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight text-text-primary">
                 JobPilot AI
               </span>
             </div>

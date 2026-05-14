@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    AI OUTREACH HUB
    ============================================================
    Generate personalized networking messages powered by AI:
@@ -592,7 +592,7 @@ export default function OutreachHubPage() {
             <button
               onClick={handleGenerate}
               disabled={loading || !targetRole.trim()}
-              className="w-full py-3.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

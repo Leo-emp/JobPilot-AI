@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    FEATURE SHOWCASE - Deep-Dive Feature Sections
    ============================================================
    Full-width alternating sections that explain each core feature
@@ -45,7 +45,7 @@ const showcaseFeatures = [
       "Keyword matching that mirrors the job post language naturally",
       "Professional summary rewritten to hook the recruiter in 6 seconds",
     ],
-    accent: "from-indigo-500 to-purple-600",
+    accent: "from-indigo-500 to-blue-600",
     iconBg: "bg-indigo-500/10 border-indigo-500/20",
     iconColor: "text-indigo-400",
     icon: (
@@ -65,9 +65,9 @@ const showcaseFeatures = [
       "Gap analysis showing exactly which skills to add or develop",
       "Actionable recommendations to increase your match percentage",
     ],
-    accent: "from-purple-500 to-pink-600",
-    iconBg: "bg-purple-500/10 border-purple-500/20",
-    iconColor: "text-purple-400",
+    accent: "from-sky-500 to-blue-600",
+    iconBg: "bg-sky-500/10 border-sky-500/20",
+    iconColor: "text-blue-400",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -125,7 +125,7 @@ const showcaseFeatures = [
       "Gap analysis showing what skills to highlight vs. what to learn",
       "Industry-specific keyword injection for your target career",
     ],
-    accent: "from-rose-500 to-pink-600",
+    accent: "from-rose-500 to-rose-600",
     iconBg: "bg-rose-500/10 border-rose-500/20",
     iconColor: "text-rose-400",
     icon: (
@@ -165,9 +165,9 @@ const showcaseFeatures = [
       "Direct PDF and Word download — no print dialog, no extra steps",
       "Single-column ATS-safe layouts that every hiring system can parse",
     ],
-    accent: "from-violet-500 to-fuchsia-600",
-    iconBg: "bg-violet-500/10 border-violet-500/20",
-    iconColor: "text-violet-400",
+    accent: "from-slate-500 to-slate-400",
+    iconBg: "bg-slate-500/10 border-slate-500/20",
+    iconColor: "text-slate-400",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -378,7 +378,7 @@ export default function FeatureShowcase() {
                             <div className="text-xs text-white">&ldquo;How would you design a scalable notification system?&rdquo;</div>
                           </div>
                           <div className="p-3 rounded-lg bg-space-600/40">
-                            <div className="text-xs text-purple-400 mb-1">Culture Fit</div>
+                            <div className="text-xs text-blue-400 mb-1">Culture Fit</div>
                             <div className="text-xs text-white">&ldquo;What does collaboration look like to you?&rdquo;</div>
                           </div>
                         </div>
@@ -451,18 +451,18 @@ export default function FeatureShowcase() {
                       <>
                         <div className="grid grid-cols-3 gap-2 mb-4">
                           {["Classic", "Modern", "Executive"].map((name, i) => (
-                            <div key={i} className={`p-2 rounded-lg border text-center ${i === 1 ? "bg-violet-500/10 border-violet-500/30" : "bg-space-600/40 border-space-600/60"}`}>
+                            <div key={i} className={`p-2 rounded-lg border text-center ${i === 1 ? "bg-slate-500/10 border-slate-500/30" : "bg-space-600/40 border-space-600/60"}`}>
                               <div className={`w-full h-1 rounded mb-2 ${i === 0 ? "bg-blue-500" : i === 1 ? "bg-indigo-500" : "bg-gray-500"}`} />
                               <div className="h-1.5 rounded bg-space-500/60 w-[70%] mx-auto mb-1" />
                               <div className="h-1 rounded bg-space-500/40 w-full mb-0.5" />
                               <div className="h-1 rounded bg-space-500/40 w-[80%]" />
-                              <div className={`text-[9px] mt-2 font-medium ${i === 1 ? "text-violet-400" : "text-text-muted"}`}>{name}</div>
+                              <div className={`text-[9px] mt-2 font-medium ${i === 1 ? "text-slate-400" : "text-text-muted"}`}>{name}</div>
                             </div>
                           ))}
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="px-3 py-1.5 rounded-md bg-violet-500/10 border border-violet-500/20">
-                            <span className="text-xs text-violet-400 font-medium">PDF</span>
+                          <div className="px-3 py-1.5 rounded-md bg-slate-500/10 border border-slate-500/20">
+                            <span className="text-xs text-slate-400 font-medium">PDF</span>
                           </div>
                           <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
                             <span className="text-xs text-blue-400 font-medium">Word</span>

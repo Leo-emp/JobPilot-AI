@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    BLOG PAGE
    ============================================================
    Career advice and job search tips blog. Static articles for
@@ -49,7 +49,7 @@ const posts = [
     category: "Career Change",
     date: "Apr 15, 2026",
     readTime: "7 min read",
-    color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    color: "bg-sky-500/10 text-blue-400 border-sky-500/20",
   },
   {
     slug: "interview-questions-you-will-be-asked",

@@ -76,9 +76,9 @@ export default function Pricing() {
           <div className="rounded-2xl border border-card-border bg-space-800/60 p-8 flex flex-col">
             <h3 className="text-2xl font-bold mb-2">Free</h3>
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-5xl font-extrabold">$0</span>
+              <span className="text-5xl font-extrabold">£0</span>
             </div>
-            <p className="text-text-secondary text-sm mb-6">15 AI calls per month</p>
+            <p className="text-text-secondary text-sm mb-6">20 AI calls per month</p>
 
             {/* Feature list */}
             <div className="space-y-2.5 mb-8 flex-1">
@@ -115,11 +115,11 @@ export default function Pricing() {
 
             <h3 className="text-2xl font-bold mb-2">Pro</h3>
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-5xl font-extrabold">{annual ? "$199" : "$29"}</span>
+              <span className="text-5xl font-extrabold">{annual ? "£199" : "£29"}</span>
               <span className="text-text-muted text-lg">{annual ? "/year" : "/month"}</span>
             </div>
             {annual ? (
-              <p className="text-sm text-green-400 mb-6">$16.58/mo — save $149/year</p>
+              <p className="text-sm text-green-400 mb-6">£16.58/mo — save £149/year</p>
             ) : (
               <p className="text-text-secondary text-sm mb-6">1,000 AI calls/month — effectively unlimited</p>
             )}

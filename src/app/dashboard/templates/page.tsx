@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    RESUME TEMPLATES PAGE — 20 Professional Templates
    ============================================================
    Complete resume builder with:
@@ -1046,8 +1046,8 @@ export default function TemplatesPage() {
 
                   {uploadStatus === "parsing" && (
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-purple-400 font-medium">AI is extracting your details...</span>
+                      <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-blue-400 font-medium">AI is extracting your details...</span>
                     </div>
                   )}
 

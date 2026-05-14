@@ -29,9 +29,9 @@ const features = [
     showcaseId: "showcase-smart-job-matching",
     description:
       "Find jobs that match your skills. Our AI calculates compatibility scores and highlights skill gaps.",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10",
-    border: "border-purple-500/20",
+    color: "text-sky-400",
+    bg: "bg-sky-500/10",
+    border: "border-sky-500/20",
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -57,9 +57,9 @@ const features = [
     showcaseId: "showcase-resume-rebuild-engine",
     description:
       "Completely rebuild your resume for a specific job — ATS-optimized format, power verbs, keyword injection.",
-    color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
-    border: "border-indigo-500/20",
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -99,9 +99,9 @@ const features = [
     showcaseId: "showcase-resume-templates",
     description:
       "Choose from 6 professional ATS-friendly templates. Fill in your details and download as PDF or Word.",
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
+    color: "text-slate-400",
+    bg: "bg-slate-500/10",
+    border: "border-slate-500/20",
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />

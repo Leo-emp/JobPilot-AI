@@ -26,7 +26,7 @@ export default function AuthLayout({
       <div className="relative z-10 p-6">
         <Link href="/" className="inline-flex items-center gap-1">
           <RocketIcon size={28} />
-          <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
+          <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight text-text-primary">
             JobPilot AI
           </span>
         </Link>

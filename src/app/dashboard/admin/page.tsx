@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    ADMIN DASHBOARD — Platform Analytics
    ============================================================
    Shows total users, plan breakdown, AI usage, content stats,
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
         {[
           { label: "Total Users", value: overview.totalUsers, color: "text-white", icon: "👥" },
           { label: "Free Users", value: overview.freeUsers, color: "text-blue-400", icon: "🆓" },
-          { label: "Pro Users", value: overview.proUsers, color: "text-purple-400", icon: "⭐" },
+          { label: "Pro Users", value: overview.proUsers, color: "text-blue-400", icon: "⭐" },
           { label: "This Week", value: overview.recentSignups, color: "text-green-400", icon: "📈" },
           { label: "This Month", value: overview.monthlySignups, color: "text-yellow-400", icon: "📅" },
           { label: "Total AI Calls", value: overview.totalAICalls, color: "text-brand-light", icon: "🤖" },
@@ -162,7 +162,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
             {overview.proUsers > 0 && (
-              <div className="bg-purple-500/60 flex items-center justify-center text-xs font-medium text-white"
+              <div className="bg-blue-500/60 flex items-center justify-center text-xs font-medium text-white"
                 style={{ width: `${(overview.proUsers / overview.totalUsers) * 100}%` }}>
                 Pro {Math.round((overview.proUsers / overview.totalUsers) * 100)}%
               </div>
@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
                       {user.image ? (
                         <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-indigo to-brand-purple flex items-center justify-center text-xs font-bold text-white">
+                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
                           {user.name?.charAt(0).toUpperCase() || "?"}
                         </div>
                       )}
@@ -239,7 +239,7 @@ export default function AdminDashboardPage() {
                   <td className="px-5 py-3">
                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                       user.plan === "pro"
-                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                         : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                     }`}>
                       {user.plan.charAt(0).toUpperCase() + user.plan.slice(1)}

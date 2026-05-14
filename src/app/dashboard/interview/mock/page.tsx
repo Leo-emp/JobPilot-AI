@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    INTERACTIVE MOCK INTERVIEW — Google Meet Style
    ============================================================
    Realistic video-call interview experience with:
@@ -706,7 +706,7 @@ export default function MockInterviewPage() {
 
           {/* Start button */}
           <button onClick={handleStartInterview} disabled={loading}
-            className="w-full py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
@@ -786,7 +786,7 @@ export default function MockInterviewPage() {
 
         {/* ---- Progress bar ---- */}
         <div className="w-full h-1 bg-space-700 rounded-full mb-4">
-          <div className="h-full bg-gradient-to-r from-brand-indigo to-purple-500 rounded-full transition-all duration-700"
+          <div className="h-full bg-gradient-to-r from-blue-600 to-blue-500 rounded-full transition-all duration-700"
             style={{ width: `${(exchangeNumber / (TOTAL_EXCHANGES - 1)) * 100}%` }} />
         </div>
 
@@ -798,7 +798,7 @@ export default function MockInterviewPage() {
             {/* Animated avatar */}
             <div className="avatar-breathe flex flex-col items-center">
               {/* Glowing ring behind avatar (visible when speaking) */}
-              <div className={`absolute rounded-full w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-brand-indigo/30 to-purple-500/30 blur-xl ${isAISpeaking ? "avatar-glow" : "opacity-20"}`} />
+              <div className={`absolute rounded-full w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-blue-500/20 to-blue-500/30 blur-xl ${isAISpeaking ? "avatar-glow" : "opacity-20"}`} />
 
               {/* Avatar SVG — professional woman illustration */}
               <div className="relative z-10">
@@ -966,7 +966,7 @@ export default function MockInterviewPage() {
             <button
               onClick={handleSubmitAnswer}
               disabled={!userAnswer.trim() || !waitingForUser}
-              className="p-3.5 rounded-xl bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+              className="p-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
               title="Send answer"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1100,7 +1100,7 @@ export default function MockInterviewPage() {
           <div className="flex gap-4">
             <button
               onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setError(""); setWebcamReady(false); }}
-              className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-brand-indigo to-purple-500 text-white hover:from-brand-indigo/90 hover:to-purple-500/90 transition-all">
+              className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all">
               Try Again
             </button>
             <Link href="/dashboard/interview"
