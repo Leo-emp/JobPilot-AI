@@ -18,6 +18,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import UpgradePrompt from "@/components/UpgradePrompt";
 
 /* ---- Max resume PDF size ---- */
 const MAX_PDF_SIZE_MB = 10;
@@ -329,12 +330,14 @@ export default function OutreachHubPage() {
       </div>
 
       {/* ---- AI Usage Indicator ---- */}
-      {remaining !== null && remaining !== "unlimited" && (
+      {remaining !== null && (
+        <UpgradePrompt remaining={remaining as number | "unlimited"} plan="free" />
+      )}
+      {remaining !== null && remaining !== "unlimited" && Number(remaining) > 5 && (
         <div className="mb-6 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-sm">
           <span className="text-brand-light font-medium">
             {remaining} AI {Number(remaining) === 1 ? "call" : "calls"} remaining this month
           </span>
-          <span className="text-text-muted ml-2">— Upgrade to Pro for unlimited</span>
         </div>
       )}
 

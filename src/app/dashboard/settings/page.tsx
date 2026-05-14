@@ -140,8 +140,8 @@ export default function SettingsPage() {
     }
   };
 
-  /* Calculate usage percentage */
-  const usageLimit = userPlan?.plan === "pro" ? 100 : 3;
+  /* Calculate usage percentage — must match PLAN_LIMITS in api/ai/route.ts */
+  const usageLimit = userPlan?.plan === "pro" ? 1000 : 20;
   const usagePercent = Math.min((userPlan?.aiUsageCount || 0) / usageLimit * 100, 100);
 
   return (
@@ -199,8 +199,8 @@ export default function SettingsPage() {
               </span>
               <p className="text-text-secondary text-sm mt-3">
                 {userPlan?.plan === "pro"
-                  ? "100 AI calls per month, all 10 tools unlocked."
-                  : "3 AI calls per month, 2 tools included."}
+                  ? "1,000 AI calls per month, all 10 tools unlocked."
+                  : "20 AI calls per month, all 10 tools included."}
               </p>
             </div>
             {userPlan?.plan === "free" && (
@@ -308,8 +308,8 @@ export default function SettingsPage() {
         <div className="glass-card p-6 border-red-500/20">
           <h2 className="text-lg font-bold mb-4 text-red-400">Danger Zone</h2>
           <p className="text-text-secondary text-sm mb-4">
-            Permanently delete your account and all associated data. This action is irreversible —
-            all resumes, cover letters, applications, and saved jobs will be permanently erased.
+            Deactivate your account and schedule all data for deletion. Your data will be preserved
+            for 30 days in case you change your mind, then permanently removed.
           </p>
           <button
             onClick={() => setShowDeleteModal(true)}
@@ -333,8 +333,8 @@ export default function SettingsPage() {
           <div className="relative w-full max-w-md bg-space-800 border border-red-500/20 rounded-2xl p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-red-400 mb-2">Delete Account</h3>
             <p className="text-text-secondary text-sm mb-4">
-              This will permanently delete your account and ALL data including resumes,
-              cover letters, applications, and saved jobs. This cannot be undone.
+              This will deactivate your account immediately. Your data will be preserved for 30 days,
+              then permanently deleted. You can contact support within 30 days to recover your account.
             </p>
             <p className="text-text-secondary text-sm mb-4">
               To confirm, type your email address: <strong className="text-white">{session?.user?.email}</strong>

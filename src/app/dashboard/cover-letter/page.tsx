@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
+import UpgradePrompt from "@/components/UpgradePrompt";
 
 /* ---- Type for saved cover letters ---- */
 interface SavedLetter {
@@ -193,13 +194,13 @@ export default function CoverLetterPage() {
       </p>
 
       {/* ---- AI Usage Indicator ---- */}
-      {remaining !== null && remaining !== "unlimited" && (
+      {remaining !== null && (
+        <UpgradePrompt remaining={remaining as number | "unlimited"} plan="free" />
+      )}
+      {remaining !== null && remaining !== "unlimited" && Number(remaining) > 5 && (
         <div className="mb-6 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-sm">
           <span className="text-brand-light font-medium">
             {remaining} AI {Number(remaining) === 1 ? "call" : "calls"} remaining this month
-          </span>
-          <span className="text-text-muted ml-2">
-            — Upgrade to Pro for unlimited
           </span>
         </div>
       )}
