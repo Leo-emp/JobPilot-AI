@@ -183,7 +183,7 @@ export default function FeatureShowcase() {
 
         {/* ---- Section Header ---- */}
         <div className="text-center mb-20 sm:mb-28">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand-light mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Built for Results
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">

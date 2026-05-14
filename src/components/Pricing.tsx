@@ -35,7 +35,7 @@ export default function Pricing() {
 
         {/* ---- Section Header ---- */}
         <div className="text-center mb-12 sm:mb-16">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand-light mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Pricing
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">

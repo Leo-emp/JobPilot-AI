@@ -53,28 +53,25 @@ body {
 }
 
 /* ---- Brand Text ---- */
-/* Gradient text with cyan glow */
+/* Gradient text with cyan glow — used on section headings and stats */
 .glow-text {
-  background: linear-gradient(135deg, #f0f0f3 20%, #38bdf8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 24px rgba(56, 189, 248, 0.4)) drop-shadow(0 0 60px rgba(56, 189, 248, 0.15));
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6), 0 0 40px rgba(56, 189, 248, 0.3), 0 0 80px rgba(56, 189, 248, 0.15);
 }
 
-/* Hero title — bold gradient with strong cyan glow */
+/* Hero title — bold white-to-cyan gradient with strong glow aura */
 .glow-text-strong {
   background: linear-gradient(135deg, #ffffff 10%, #38bdf8 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 40px rgba(56, 189, 248, 0.5)) drop-shadow(0 0 80px rgba(56, 189, 248, 0.2));
+  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.6)) drop-shadow(0 0 60px rgba(56, 189, 248, 0.3)) drop-shadow(0 0 100px rgba(56, 189, 248, 0.15));
 }
 
-/* Tagline — cyan accent with visible glow */
+/* Tagline — bright cyan with strong glow */
 .glow-text-subtle {
   color: #38bdf8;
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 0 0 60px rgba(56, 189, 248, 0.25);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 40px rgba(56, 189, 248, 0.4), 0 0 80px rgba(56, 189, 248, 0.2);
 }
 
 /* ---- Animations ---- */

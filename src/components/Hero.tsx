@@ -9,6 +9,14 @@ export default function Hero() {
   return (
     <section className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-36">
 
+      {/* ---- Ambient cyan light wash behind entire hero ---- */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[900px] pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse, rgba(56,189,248,0.08) 0%, rgba(56,189,248,0.03) 30%, transparent 60%)",
+        }}
+      />
+
       {/* ---- Badge ---- */}
       <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.07] bg-white/[0.03]">
         <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded-full uppercase">
@@ -23,8 +31,8 @@ export default function Hero() {
       {/* ---- Rocket Icon ---- */}
       <div className="relative mb-8">
         <div
-          className="absolute -inset-16 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.25) 0%, rgba(56,189,248,0.08) 40%, transparent 70%)" }}
+          className="absolute -inset-24 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.35) 0%, rgba(56,189,248,0.12) 40%, transparent 70%)" }}
         />
         <div className="relative">
           <RocketIcon size={120} />

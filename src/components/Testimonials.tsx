@@ -50,7 +50,7 @@ export default function Testimonials() {
 
         {/* ---- Section Header ---- */}
         <div className="text-center mb-16 sm:mb-20">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand-light mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Testimonials
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">

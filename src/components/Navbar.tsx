@@ -28,7 +28,7 @@ export default function Navbar() {
             {/* Custom SVG rocket in brand colors (replaces emoji) */}
             <RocketIcon size={28} />
             {/* Brand name in Space Grotesk — premium geometric font */}
-            <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight text-text-primary">
+            <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
               JobPilot AI
             </span>
           </Link>
