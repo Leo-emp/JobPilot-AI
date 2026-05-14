@@ -210,9 +210,9 @@ Job Description: ${description}`;
       { headers: corsHeaders(origin) }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "AI request failed.";
+    console.error("Extension AI error:", error);
     return NextResponse.json(
-      { error: message },
+      { error: "AI is temporarily unavailable. Please try again in a moment." },
       { status: 500, headers: corsHeaders(origin) }
     );
   }

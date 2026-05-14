@@ -10,9 +10,27 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signupSchema, formatZodError } from "@/lib/validations";
+import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    /* ---- Rate limiting by IP — blocks brute-force signup attempts ---- */
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const minuteCheck = authPerMinute.check(`signup:${ip}`);
+    if (!minuteCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a minute and try again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(minuteCheck.resetIn / 1000)) } }
+      );
+    }
+    const hourCheck = authPerHour.check(`signup:${ip}`);
+    if (!hourCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(hourCheck.resetIn / 1000)) } }
+      );
+    }
+
     /* Parse and validate the JSON body with Zod */
     const body = await req.json();
     const parsed = signupSchema.safeParse(body);

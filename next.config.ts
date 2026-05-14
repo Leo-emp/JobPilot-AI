@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
     ADZUNA_APP_ID: process.env.ADZUNA_APP_ID || "",
     ADZUNA_APP_KEY: process.env.ADZUNA_APP_KEY || "",
   },
+  /* Cap request body size — prevents memory exhaustion from oversized payloads */
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "2mb",
+    },
+  },
 };
 
 export default withSentryConfig(nextConfig, {

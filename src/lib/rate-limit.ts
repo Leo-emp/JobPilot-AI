@@ -95,3 +95,11 @@ export const userPerHour = createRateLimiter({ maxRequests: 40, windowMs: 60 * 6
 
 /* Per-IP: 20 requests per minute — allows multiple users behind same IP (office) */
 export const ipPerMinute = createRateLimiter({ maxRequests: 20, windowMs: 60_000 });
+
+/* ---- Auth route limiters — blocks brute-force attacks on login/signup/reset ---- */
+
+/* Per-IP: 5 auth attempts per minute — enough for typos, blocks credential stuffing */
+export const authPerMinute = createRateLimiter({ maxRequests: 5, windowMs: 60_000 });
+
+/* Per-IP: 15 auth attempts per hour — prevents slow-and-steady brute force */
+export const authPerHour = createRateLimiter({ maxRequests: 15, windowMs: 60 * 60_000 });

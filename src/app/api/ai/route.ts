@@ -966,7 +966,10 @@ export async function POST(req: NextRequest) {
     Sentry.captureException(error, {
       tags: { component: "ai_route" },
     });
-    const message = error instanceof Error ? error.message : "AI request failed.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("AI route error:", error);
+    return NextResponse.json(
+      { error: "AI is temporarily unavailable. Please try again in a moment." },
+      { status: 500 }
+    );
   }
 }

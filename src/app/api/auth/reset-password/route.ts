@@ -9,9 +9,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { resetPasswordSchema, formatZodError } from "@/lib/validations";
+import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    /* ---- Rate limiting by IP — blocks token brute-force attempts ---- */
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const minuteCheck = authPerMinute.check(`reset:${ip}`);
+    if (!minuteCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a minute and try again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(minuteCheck.resetIn / 1000)) } }
+      );
+    }
+    const hourCheck = authPerHour.check(`reset:${ip}`);
+    if (!hourCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(hourCheck.resetIn / 1000)) } }
+      );
+    }
+
     /* Validate input with Zod */
     const body = await req.json();
     const parsed = resetPasswordSchema.safeParse(body);

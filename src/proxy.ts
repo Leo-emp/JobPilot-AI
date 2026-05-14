@@ -39,6 +39,41 @@ export function proxy(req: NextRequest) {
     }
   }
 
+  /* ---- Request Body Size Limit (2MB) ---- */
+  /* Reject oversized payloads before they're parsed by route handlers */
+  const contentLength = req.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > 2 * 1024 * 1024) {
+    return NextResponse.json(
+      { error: "Request body too large." },
+      { status: 413 }
+    );
+  }
+
+  /* ---- CSRF Origin Verification for state-changing requests ---- */
+  /* POST/PATCH/DELETE must come from our own origin or a trusted source */
+  const method = req.method;
+  if (method === "POST" || method === "PATCH" || method === "DELETE") {
+    const origin = req.headers.get("origin");
+    const referer = req.headers.get("referer");
+    const host = req.headers.get("host") || "";
+    const requestOrigin = origin || (referer ? new URL(referer).origin : null);
+
+    /* Allow: same-origin, Chrome Extension, NextAuth callbacks (no origin on server-side), Stripe webhooks */
+    const isSameOrigin = requestOrigin && (
+      requestOrigin === `https://${host}` ||
+      requestOrigin === `http://${host}`
+    );
+    const isChromeExtension = requestOrigin?.startsWith("chrome-extension://");
+    const isAuthCallback = pathname.startsWith("/api/auth");
+    const isWebhook = pathname.startsWith("/api/stripe/webhook");
+    /* Server-to-server calls (e.g. NextAuth) send no origin header */
+    const isServerCall = !origin && !referer;
+
+    if (!isSameOrigin && !isChromeExtension && !isAuthCallback && !isWebhook && !isServerCall) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   /* ---- Security Headers + Request Tracing ---- */
   const response = NextResponse.next();
 

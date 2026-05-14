@@ -57,7 +57,10 @@ export async function DELETE(req: NextRequest) {
       message: "Your account and all associated data have been permanently deleted.",
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to delete account.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Account deletion error:", error);
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 }

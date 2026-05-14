@@ -90,7 +90,10 @@ export async function POST(req: NextRequest) {
     /* Return the checkout URL — frontend will redirect to it */
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Checkout failed.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Stripe checkout error:", error);
+    return NextResponse.json(
+      { error: "Something went wrong with checkout. Please try again." },
+      { status: 500 }
+    );
   }
 }

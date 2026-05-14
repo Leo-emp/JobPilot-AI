@@ -11,12 +11,30 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import crypto from "crypto";
 import { forgotPasswordSchema, formatZodError } from "@/lib/validations";
+import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 
 /* ---- Resend client for sending emails ---- */
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
+    /* ---- Rate limiting by IP — blocks email enumeration & abuse ---- */
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const minuteCheck = authPerMinute.check(`forgot:${ip}`);
+    if (!minuteCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a minute and try again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(minuteCheck.resetIn / 1000)) } }
+      );
+    }
+    const hourCheck = authPerHour.check(`forgot:${ip}`);
+    if (!hourCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(hourCheck.resetIn / 1000)) } }
+      );
+    }
+
     /* Validate input with Zod */
     const body = await req.json();
     const parsed = forgotPasswordSchema.safeParse(body);
