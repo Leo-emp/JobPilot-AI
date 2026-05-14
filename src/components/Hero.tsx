@@ -21,7 +21,11 @@ export default function Hero() {
       </div>
 
       {/* ---- Rocket Icon ---- */}
-      <div className="mb-8 opacity-90">
+      <div className="relative mb-8 opacity-90">
+        <div
+          className="absolute inset-0 -m-8 rounded-full blur-3xl opacity-20"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.4) 0%, transparent 70%)" }}
+        />
         <RocketIcon size={120} />
       </div>
 

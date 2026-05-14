@@ -41,12 +41,12 @@ export default function StarField() {
       {/* Dot grid pattern */}
       <div className="absolute inset-0 grid-bg" />
 
-      {/* Subtle top glow — very faint blue, not purple */}
+      {/* Ambient cyan-blue glow at top of page */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full opacity-15"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[700px] rounded-full opacity-20"
         style={{
           background:
-            "radial-gradient(ellipse, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.03) 40%, transparent 70%)",
+            "radial-gradient(ellipse, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0.04) 40%, transparent 70%)",
         }}
       />
 
@@ -64,7 +64,7 @@ export default function StarField() {
             animation: `pulse-subtle ${star.duration}s ease-in-out ${star.delay}s infinite`,
             boxShadow:
               star.size > 1.5
-                ? `0 0 ${star.size * 2}px rgba(147,197,253,0.15)`
+                ? `0 0 ${star.size * 3}px rgba(56,189,248,0.2)`
                 : "none",
           }}
         />

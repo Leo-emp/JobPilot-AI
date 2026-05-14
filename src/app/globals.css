@@ -22,7 +22,7 @@
   --color-brand-purple: #3b82f6;
   --color-brand-violet: #60a5fa;
   --color-brand-light: #93c5fd;
-  --color-brand-glow: #3b82f6;
+  --color-brand-glow: #38bdf8;
 
   /* Text — high-contrast hierarchy */
   --color-text-primary: #f0f0f3;
@@ -53,25 +53,28 @@ body {
 }
 
 /* ---- Brand Text ---- */
-/* Clean gradient — white to light blue, no glow or drop-shadow */
+/* Gradient text with subtle cyan glow */
 .glow-text {
-  background: linear-gradient(135deg, #f0f0f3 30%, #93c5fd);
+  background: linear-gradient(135deg, #f0f0f3 30%, #38bdf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.15));
 }
 
-/* Hero title — bold clean gradient, no neon */
+/* Hero title — bold gradient with stronger cyan glow */
 .glow-text-strong {
-  background: linear-gradient(135deg, #ffffff 20%, #93c5fd 80%);
+  background: linear-gradient(135deg, #ffffff 20%, #38bdf8 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.2));
 }
 
-/* Tagline — accent color, no text-shadow */
+/* Tagline — cyan accent with soft glow */
 .glow-text-subtle {
-  color: #60a5fa;
+  color: #38bdf8;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.25);
 }
 
 /* ---- Animations ---- */
@@ -101,8 +104,8 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(56, 189, 248, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.06);
 }
 
 /* ---- Buttons ---- */
@@ -125,7 +128,7 @@ body {
 
 .btn-primary:hover {
   background: #2563eb;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3), 0 0 20px rgba(56, 189, 248, 0.15), 0 0 0 1px rgba(56, 189, 248, 0.3);
 }
 
 /* Secondary — ghost button with subtle border */
