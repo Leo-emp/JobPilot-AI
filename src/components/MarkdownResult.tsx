@@ -10,7 +10,7 @@
 "use client";
 
 import { useState } from "react";
-import { jsPDF } from "jspdf";
+import type { jsPDF } from "jspdf";
 
 /* ---- Escape HTML to prevent XSS ---- */
 /* Strips any raw HTML tags from AI output before we add our own safe markup */
@@ -346,7 +346,8 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const { jsPDF: JsPDF } = await import("jspdf");
+      const doc = new JsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();

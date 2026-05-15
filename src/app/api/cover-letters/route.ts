@@ -1,30 +1,38 @@
 /* ============================================================
    COVER LETTERS API - Save & List Cover Letters
    ============================================================
-   GET  /api/cover-letters — list all cover letters for the user
+   GET  /api/cover-letters — list cover letters (paginated)
    POST /api/cover-letters — save a new cover letter
    Both endpoints require authentication.
+
+   Pagination: ?cursor=xxx&limit=20&sort=createdAt&order=desc
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createCoverLetterSchema, formatZodError } from "@/lib/validations";
+import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
-/* ---- GET: List all cover letters for the logged-in user ---- */
-export async function GET() {
+/* ---- GET: List cover letters for the logged-in user (paginated) ---- */
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  /* Fetch all cover letters, newest first */
-  const coverLetters = await prisma.coverLetter.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
+  const params = parsePaginationParams(req.url);
+  const query = buildPaginationQuery({
+    ...params,
+    allowedSorts: ["createdAt", "jobTitle", "company"],
   });
 
-  return NextResponse.json(coverLetters);
+  const coverLetters = await prisma.coverLetter.findMany({
+    where: { userId: session.user.id },
+    ...query,
+  });
+
+  return NextResponse.json(paginatedResponse(coverLetters, params.limit));
 }
 
 /* ---- POST: Save a new cover letter ---- */
@@ -46,7 +54,6 @@ export async function POST(req: NextRequest) {
 
   const { jobTitle, company, content } = parsed.data;
 
-  /* Save the cover letter to the database */
   const coverLetter = await prisma.coverLetter.create({
     data: {
       userId: session.user.id,

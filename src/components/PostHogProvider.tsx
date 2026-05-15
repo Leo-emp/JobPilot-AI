@@ -3,23 +3,25 @@
    ============================================================
    Initializes PostHog on the client side and identifies
    logged-in users so analytics are tied to their account.
+   PostHog is lazy-loaded to reduce initial bundle size.
    ============================================================ */
 
 "use client";
 
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { posthog } from "@/lib/posthog";
+import { getPosthog } from "@/lib/posthog";
 
 export default function PostHogProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
 
-  /* Identify user when they log in so events are tied to their account */
   useEffect(() => {
-    if (session?.user?.id && posthog) {
-      posthog.identify(session.user.id, {
-        email: session.user.email,
-        name: session.user.name,
+    if (session?.user?.id) {
+      getPosthog().then((ph) => {
+        ph?.identify(session.user!.id!, {
+          email: session.user!.email,
+          name: session.user!.name,
+        });
       });
     }
   }, [session]);

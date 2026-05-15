@@ -1,16 +1,19 @@
 /* ============================================================
    APPLICATIONS API - List & Create
    ============================================================
-   GET  /api/applications — list all applications for the user
+   GET  /api/applications — list applications (paginated)
    POST /api/applications — create a new application
    Both endpoints require authentication.
    Includes CORS headers for Chrome Extension access.
+
+   Pagination: ?cursor=xxx&limit=20&sort=createdAt&order=desc
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createApplicationSchema, formatZodError } from "@/lib/validations";
+import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
 /* ---- Add CORS headers for Chrome Extension ---- */
 function corsHeaders(origin: string | null) {
@@ -36,7 +39,7 @@ export async function OPTIONS(req: NextRequest) {
   });
 }
 
-/* ---- GET: List all applications for the logged-in user ---- */
+/* ---- GET: List applications for the logged-in user (paginated) ---- */
 export async function GET(req: NextRequest) {
   const origin = req.headers.get("origin");
   const session = await auth();
@@ -44,12 +47,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders(origin) });
   }
 
-  const applications = await prisma.application.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
+  const params = parsePaginationParams(req.url);
+  const query = buildPaginationQuery({
+    ...params,
+    allowedSorts: ["createdAt", "updatedAt", "company", "status"],
   });
 
-  return NextResponse.json(applications, { headers: corsHeaders(origin) });
+  const applications = await prisma.application.findMany({
+    where: { userId: session.user.id },
+    ...query,
+  });
+
+  return NextResponse.json(paginatedResponse(applications, params.limit), { headers: corsHeaders(origin) });
 }
 
 /* ---- POST: Create a new application ---- */

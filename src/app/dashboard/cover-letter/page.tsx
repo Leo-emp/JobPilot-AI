@@ -56,7 +56,7 @@ export default function CoverLetterPage() {
         const res = await fetch("/api/cover-letters");
         if (res.ok) {
           const data = await res.json();
-          setSavedLetters(data);
+          setSavedLetters(data.data);
         }
       } catch {
         /* Silent fail — list will just be empty */

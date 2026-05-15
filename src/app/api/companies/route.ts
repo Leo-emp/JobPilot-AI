@@ -1,30 +1,38 @@
 /* ============================================================
    COMPANIES API - Networking CRM
    ============================================================
-   GET  /api/companies — list all target companies for the user
+   GET  /api/companies — list target companies (paginated)
    POST /api/companies — add a new target company
    Both endpoints require authentication.
+
+   Pagination: ?cursor=xxx&limit=20&sort=updatedAt&order=desc
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createCompanySchema, formatZodError } from "@/lib/validations";
+import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
-/* ---- GET: List all companies for the logged-in user ---- */
-export async function GET() {
+/* ---- GET: List companies for the logged-in user (paginated) ---- */
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  /* Fetch all companies, newest first */
-  const companies = await prisma.company.findMany({
-    where: { userId: session.user.id },
-    orderBy: { updatedAt: "desc" },
+  const params = parsePaginationParams(req.url);
+  const query = buildPaginationQuery({
+    ...params,
+    allowedSorts: ["createdAt", "updatedAt", "name", "priority", "status"],
   });
 
-  return NextResponse.json(companies);
+  const companies = await prisma.company.findMany({
+    where: { userId: session.user.id },
+    ...query,
+  });
+
+  return NextResponse.json(paginatedResponse(companies, params.limit));
 }
 
 /* ---- POST: Add a new target company ---- */

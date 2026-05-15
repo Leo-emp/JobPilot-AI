@@ -1,30 +1,38 @@
 /* ============================================================
    CONTACTS API - Networking CRM
    ============================================================
-   GET  /api/contacts — list all contacts for the user
+   GET  /api/contacts — list contacts (paginated)
    POST /api/contacts — create a new contact
    Both endpoints require authentication.
+
+   Pagination: ?cursor=xxx&limit=20&sort=updatedAt&order=desc
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createContactSchema, formatZodError } from "@/lib/validations";
+import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
-/* ---- GET: List all contacts for the logged-in user ---- */
-export async function GET() {
+/* ---- GET: List contacts for the logged-in user (paginated) ---- */
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  /* Fetch all contacts, newest first */
-  const contacts = await prisma.contact.findMany({
-    where: { userId: session.user.id },
-    orderBy: { updatedAt: "desc" },
+  const params = parsePaginationParams(req.url);
+  const query = buildPaginationQuery({
+    ...params,
+    allowedSorts: ["createdAt", "updatedAt", "name", "company"],
   });
 
-  return NextResponse.json(contacts);
+  const contacts = await prisma.contact.findMany({
+    where: { userId: session.user.id },
+    ...query,
+  });
+
+  return NextResponse.json(paginatedResponse(contacts, params.limit));
 }
 
 /* ---- POST: Create a new contact ---- */

@@ -1,30 +1,38 @@
 /* ============================================================
    RESUMES API - Save & List Resumes
    ============================================================
-   GET  /api/resumes — list all resumes for the logged-in user
+   GET  /api/resumes — list resumes (paginated)
    POST /api/resumes — save a new resume to the database
    Both endpoints require authentication.
+
+   Pagination: ?cursor=xxx&limit=20&sort=createdAt&order=desc
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createResumeSchema, formatZodError } from "@/lib/validations";
+import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
-/* ---- GET: List all resumes for the logged-in user ---- */
-export async function GET() {
+/* ---- GET: List resumes for the logged-in user (paginated) ---- */
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  /* Fetch all resumes, newest first */
-  const resumes = await prisma.resume.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
+  const params = parsePaginationParams(req.url);
+  const query = buildPaginationQuery({
+    ...params,
+    allowedSorts: ["createdAt", "fileName"],
   });
 
-  return NextResponse.json(resumes);
+  const resumes = await prisma.resume.findMany({
+    where: { userId: session.user.id },
+    ...query,
+  });
+
+  return NextResponse.json(paginatedResponse(resumes, params.limit));
 }
 
 /* ---- POST: Save a new resume ---- */
@@ -46,7 +54,6 @@ export async function POST(req: NextRequest) {
 
   const { fileName, content, analysis } = parsed.data;
 
-  /* Save the resume to the database */
   const resume = await prisma.resume.create({
     data: {
       userId: session.user.id,
