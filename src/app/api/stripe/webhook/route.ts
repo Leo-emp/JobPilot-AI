@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { getStripe } from "@/lib/stripe";
 import { audit } from "@/lib/audit";
+import { cacheDel } from "@/lib/redis";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
           );
 
           audit("payment.upgrade", { userId, plan, detail: `subscription:${subscriptionId}` });
+          await cacheDel(`plan:${userId}`);
         }
         break;
       }
@@ -94,6 +96,7 @@ export async function POST(req: NextRequest) {
             })
           );
           audit("payment.cancelled", { userId: user.id, detail: `subscription:${subscription.id}` });
+          await cacheDel(`plan:${user.id}`);
         }
         break;
       }
@@ -113,6 +116,7 @@ export async function POST(req: NextRequest) {
           await dbRetry(() =>
             prisma.user.update({ where: { id: user.id }, data: { plan } })
           );
+          await cacheDel(`plan:${user.id}`);
         }
         break;
       }

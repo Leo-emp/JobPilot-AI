@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
   try {
     /* ---- Rate limiting by IP — blocks email enumeration & abuse ---- */
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const minuteCheck = authPerMinute.check(`forgot:${ip}`);
+    const minuteCheck = await authPerMinute.check(`forgot:${ip}`);
     if (!minuteCheck.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Please wait a minute and try again." },
         { status: 429, headers: { "Retry-After": String(Math.ceil(minuteCheck.resetIn / 1000)) } }
       );
     }
-    const hourCheck = authPerHour.check(`forgot:${ip}`);
+    const hourCheck = await authPerHour.check(`forgot:${ip}`);
     if (!hourCheck.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Please try again later." },

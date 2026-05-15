@@ -46,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         /* Check if account is locked from too many failed attempts */
-        const lockStatus = isLocked(credentials.email as string);
+        const lockStatus = await isLocked(credentials.email as string);
         if (lockStatus.locked) {
           audit("auth.account.locked", { email: credentials.email as string, detail: `locked for ${Math.ceil(lockStatus.retryAfterMs / 60000)}min` });
           return null;
@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         /* If no user found, OAuth-only account, or soft-deleted — fail */
         if (!user || !user.password || user.deletedAt) {
-          recordFailure(credentials.email as string);
+          await recordFailure(credentials.email as string);
           audit("auth.login.failed", { email: credentials.email as string, detail: !user ? "not_found" : user.deletedAt ? "soft_deleted" : "no_password" });
           return null;
         }
@@ -71,12 +71,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!passwordMatch) {
-          recordFailure(credentials.email as string);
+          await recordFailure(credentials.email as string);
           audit("auth.login.failed", { email: credentials.email as string, detail: "wrong_password" });
           return null;
         }
 
-        resetFailures(credentials.email as string);
+        await resetFailures(credentials.email as string);
         audit("auth.login.success", { userId: user.id, email: user.email });
 
         return {

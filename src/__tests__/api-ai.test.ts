@@ -17,17 +17,26 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-/* Mock rate limiters — allow by default */
+/* Mock rate limiters — allow by default (async) */
 vi.mock("@/lib/rate-limit", () => ({
-  userPerMinute: { check: vi.fn(() => ({ allowed: true, remaining: 5, resetIn: 60000 })) },
-  userPerHour: { check: vi.fn(() => ({ allowed: true, remaining: 39, resetIn: 3600000 })) },
-  ipPerMinute: { check: vi.fn(() => ({ allowed: true, remaining: 19, resetIn: 60000 })) },
+  userPerMinute: { check: vi.fn(async () => ({ allowed: true, remaining: 5, resetIn: 60000 })) },
+  userPerHour: { check: vi.fn(async () => ({ allowed: true, remaining: 39, resetIn: 3600000 })) },
+  ipPerMinute: { check: vi.fn(async () => ({ allowed: true, remaining: 19, resetIn: 60000 })) },
 }));
 
 /* Mock Sentry */
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
   addBreadcrumb: vi.fn(),
+}));
+
+/* Mock Redis cache */
+vi.mock("@/lib/redis", () => ({
+  cacheDel: vi.fn(async () => {}),
+  cacheGet: vi.fn(async () => null),
+  cacheSet: vi.fn(async () => {}),
+  getRedis: vi.fn(() => null),
+  isRedisConfigured: vi.fn(() => false),
 }));
 
 /* Mock fetch for Gemini API */
@@ -50,9 +59,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env.GEMINI_API_KEY = "test-key";
   process.env.ADMIN_EMAILS = "admin@test.com";
-  vi.mocked(userPerMinute.check).mockReturnValue({ allowed: true, remaining: 5, resetIn: 60000 });
-  vi.mocked(userPerHour.check).mockReturnValue({ allowed: true, remaining: 39, resetIn: 3600000 });
-  vi.mocked(ipPerMinute.check).mockReturnValue({ allowed: true, remaining: 19, resetIn: 60000 });
+  vi.mocked(userPerMinute.check).mockResolvedValue({ allowed: true, remaining: 5, resetIn: 60000 });
+  vi.mocked(userPerHour.check).mockResolvedValue({ allowed: true, remaining: 39, resetIn: 3600000 });
+  vi.mocked(ipPerMinute.check).mockResolvedValue({ allowed: true, remaining: 19, resetIn: 60000 });
 });
 
 describe("POST /api/ai", () => {
@@ -98,7 +107,7 @@ describe("POST /api/ai", () => {
 
   it("returns 429 when burst rate limit is exceeded", async () => {
     mockAuth.mockResolvedValue({ user: { id: "user-1", email: "test@test.com" } });
-    vi.mocked(userPerMinute.check).mockReturnValue({
+    vi.mocked(userPerMinute.check).mockResolvedValue({
       allowed: false, remaining: 0, resetIn: 30000,
     });
 

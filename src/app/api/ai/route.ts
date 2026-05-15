@@ -25,6 +25,7 @@ import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { aiSchema, formatZodError } from "@/lib/validations";
 import * as Sentry from "@sentry/nextjs";
 import { audit } from "@/lib/audit";
+import { cacheDel } from "@/lib/redis";
 
 /* ---- Gemini Model Fallback List ---- */
 /* Each model has independent free-tier rate limits (15 RPM, 1500 RPD). */
@@ -44,6 +45,9 @@ const deadModels = new Set<string>();
 
 /* ---- Number of full passes through the model list before giving up ---- */
 const MAX_RETRY_PASSES = 2;
+
+/* ---- Timeout for each Gemini API call (30 seconds) ---- */
+const AI_TIMEOUT_MS = 30_000;
 
 /* ---- Core Gemini API call with smart retry logic ---- */
 /* Pass 1: try each model immediately with no delay. */
@@ -69,6 +73,10 @@ async function callGeminiCore(parts: any[]): Promise<string> {
       if (deadModels.has(model)) continue;
 
       try {
+        /* # 30-second timeout prevents hanging on unresponsive models */
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
           {
@@ -81,8 +89,11 @@ async function callGeminiCore(parts: any[]): Promise<string> {
                 maxOutputTokens: 8192,
               },
             }),
+            signal: controller.signal,
           }
         );
+
+        clearTimeout(timeout);
 
         /* 404 = model doesn't exist — mark dead, skip instantly */
         if (response.status === 404) {
@@ -881,7 +892,7 @@ export async function POST(req: NextRequest) {
     if (!admin) {
       /* Per-IP check: 20 requests/min — blocks bots and scrapers */
       const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-      const ipCheck = ipPerMinute.check(ip);
+      const ipCheck = await ipPerMinute.check(ip);
       if (!ipCheck.allowed) {
         return NextResponse.json(
           { error: "Too many requests from this network. Please wait a moment." },
@@ -890,7 +901,7 @@ export async function POST(req: NextRequest) {
       }
 
       /* Per-user per-minute: 6 requests/min — normal use is fine, scripting is blocked */
-      const minuteCheck = userPerMinute.check(session.user.id);
+      const minuteCheck = await userPerMinute.check(session.user.id);
       if (!minuteCheck.allowed) {
         return NextResponse.json(
           { error: "Slow down! You can make 6 AI requests per minute." },
@@ -899,7 +910,7 @@ export async function POST(req: NextRequest) {
       }
 
       /* Per-user per-hour: 40 requests/hour — prevents sustained abuse */
-      const hourCheck = userPerHour.check(session.user.id);
+      const hourCheck = await userPerHour.check(session.user.id);
       if (!hourCheck.allowed) {
         return NextResponse.json(
           { error: "You've hit the hourly limit (40 requests). Take a break and come back shortly." },
@@ -932,6 +943,7 @@ export async function POST(req: NextRequest) {
         })
       );
       user.aiUsageCount = 0;
+      await cacheDel(`plan:${session.user.id}`);
     }
 
     /* Enforce limits for non-admin users */
@@ -957,13 +969,14 @@ export async function POST(req: NextRequest) {
       ? await callGeminiMultimodal(prompt, payload.images)
       : await callGemini(prompt);
 
-    /* Increment usage counter (with retry) */
+    /* Increment usage counter (with retry) and invalidate plan cache */
     await dbRetry(() =>
       prisma.user.update({
         where: { id: session.user.id },
         data: { aiUsageCount: { increment: 1 } },
       })
     );
+    await cacheDel(`plan:${session.user.id}`);
 
     /* Calculate remaining calls */
     const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;

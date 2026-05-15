@@ -49,6 +49,9 @@ export async function GET() {
       startedAt,
       timestamp: new Date().toISOString(),
     },
-    { status: dbOk ? 200 : 503 }
+    {
+      status: dbOk ? 200 : 503,
+      headers: { "Cache-Control": "no-store, max-age=0" },
+    }
   );
 }

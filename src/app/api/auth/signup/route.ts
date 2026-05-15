@@ -17,14 +17,14 @@ export async function POST(req: NextRequest) {
   try {
     /* ---- Rate limiting by IP — blocks brute-force signup attempts ---- */
     const ip = getClientIp(req.headers);
-    const minuteCheck = authPerMinute.check(`signup:${ip}`);
+    const minuteCheck = await authPerMinute.check(`signup:${ip}`);
     if (!minuteCheck.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Please wait a minute and try again." },
         { status: 429, headers: { "Retry-After": String(Math.ceil(minuteCheck.resetIn / 1000)) } }
       );
     }
-    const hourCheck = authPerHour.check(`signup:${ip}`);
+    const hourCheck = await authPerHour.check(`signup:${ip}`);
     if (!hourCheck.allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Please try again later." },

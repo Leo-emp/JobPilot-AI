@@ -11,10 +11,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-/* Mock rate limiter to allow all requests by default */
+/* Mock rate limiter to allow all requests by default (async) */
 vi.mock("@/lib/rate-limit", () => ({
-  authPerMinute: { check: vi.fn(() => ({ allowed: true, remaining: 4, resetIn: 60000 })) },
-  authPerHour: { check: vi.fn(() => ({ allowed: true, remaining: 14, resetIn: 3600000 })) },
+  authPerMinute: { check: vi.fn(async () => ({ allowed: true, remaining: 4, resetIn: 60000 })) },
+  authPerHour: { check: vi.fn(async () => ({ allowed: true, remaining: 14, resetIn: 3600000 })) },
 }));
 
 import { POST } from "@/app/api/auth/signup/route";
@@ -31,8 +31,8 @@ function makeRequest(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(authPerMinute.check).mockReturnValue({ allowed: true, remaining: 4, resetIn: 60000 });
-  vi.mocked(authPerHour.check).mockReturnValue({ allowed: true, remaining: 14, resetIn: 3600000 });
+  vi.mocked(authPerMinute.check).mockResolvedValue({ allowed: true, remaining: 4, resetIn: 60000 });
+  vi.mocked(authPerHour.check).mockResolvedValue({ allowed: true, remaining: 14, resetIn: 3600000 });
 });
 
 describe("POST /api/auth/signup", () => {
@@ -100,7 +100,7 @@ describe("POST /api/auth/signup", () => {
   });
 
   it("returns 429 when per-minute rate limit exceeded", async () => {
-    vi.mocked(authPerMinute.check).mockReturnValue({
+    vi.mocked(authPerMinute.check).mockResolvedValue({
       allowed: false, remaining: 0, resetIn: 45000,
     });
 
@@ -115,7 +115,7 @@ describe("POST /api/auth/signup", () => {
   });
 
   it("returns 429 when per-hour rate limit exceeded", async () => {
-    vi.mocked(authPerHour.check).mockReturnValue({
+    vi.mocked(authPerHour.check).mockResolvedValue({
       allowed: false, remaining: 0, resetIn: 1800000,
     });
 
