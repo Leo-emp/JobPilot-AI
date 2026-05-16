@@ -21,6 +21,7 @@
 import { useState, useRef, useCallback } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
+import { usePlan } from "@/hooks/usePlan";
 
 /* ---- Action tab configuration ---- */
 const actionTabs = [
@@ -31,38 +32,9 @@ const actionTabs = [
 /* ---- Maximum file sizes ---- */
 const MAX_PDF_SIZE_MB = 10;
 const MAX_IMAGE_SIZE_MB = 5;
+import { extractTextFromPdf } from "@/lib/pdf-extract";
+
 const MAX_POST_SCREENSHOTS = 5;
-
-/* ---- Extract text from a PDF file client-side using pdfjs-dist ---- */
-async function extractTextFromPdf(file: File): Promise<string> {
-  /* Read the file into an ArrayBuffer */
-  const arrayBuffer = await file.arrayBuffer();
-
-  /* Dynamically import pdfjs-dist (only loaded when needed) */
-  const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
-
-  /* Set up the PDF worker for background processing */
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url
-  ).toString();
-
-  /* Load the PDF document */
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-
-  /* Extract text from every page */
-  const pages: string[] = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const content = await page.getTextContent();
-    /* Join all text items on the page with spaces */
-    const text = content.items.map((item: { str?: string }) => item.str || "").join(" ");
-    pages.push(text);
-  }
-
-  /* Combine all pages with double newlines */
-  return pages.join("\n\n");
-}
 
 /* ---- Convert an image file to a base64 data URL ---- */
 async function fileToBase64(file: File): Promise<string> {
@@ -101,7 +73,7 @@ export default function LinkedInPage() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [remaining, setRemaining] = useState<number | string | null>(null);
+  const { plan, remaining, updateRemaining } = usePlan();
 
   /* ---- Get profile text from whichever input mode is active ---- */
   const getFullProfileText = () => {
@@ -247,7 +219,7 @@ export default function LinkedInPage() {
       }
 
       setResult(data.result);
-      if (data.remaining !== undefined) setRemaining(data.remaining);
+      if (data.remaining !== undefined) updateRemaining(data.remaining);
     } catch {
       setError("Failed to connect to AI. Please try again.");
     } finally {
@@ -272,7 +244,7 @@ export default function LinkedInPage() {
 
       {/* ---- AI Usage Indicator ---- */}
       {remaining !== null && (
-        <UpgradePrompt remaining={remaining as number | "unlimited"} plan="free" />
+        <UpgradePrompt remaining={remaining as number | "unlimited"} plan={plan} />
       )}
       {remaining !== null && remaining !== "unlimited" && Number(remaining) > 5 && (
         <div className="mb-6 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-sm">

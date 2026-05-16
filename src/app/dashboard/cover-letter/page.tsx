@@ -13,6 +13,7 @@
 import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
+import { usePlan } from "@/hooks/usePlan";
 
 /* ---- Type for saved cover letters ---- */
 interface SavedLetter {
@@ -46,8 +47,8 @@ export default function CoverLetterPage() {
   const [editing, setEditing] = useState(false);
   /* Saved cover letters history */
   const [savedLetters, setSavedLetters] = useState<SavedLetter[]>([]);
-  /* Track remaining AI calls */
-  const [remaining, setRemaining] = useState<number | string | null>(null);
+  /* Plan + remaining AI calls (shared hook) */
+  const { plan, remaining, updateRemaining } = usePlan();
 
   /* ---- Load previously saved cover letters ---- */
   useEffect(() => {
@@ -143,9 +144,8 @@ export default function CoverLetterPage() {
       }
       setResult(data.result);
 
-      /* Update remaining AI calls counter */
       if (data.remaining !== undefined) {
-        setRemaining(data.remaining);
+        updateRemaining(data.remaining);
       }
 
       /* Save the generated cover letter to the database */
@@ -195,7 +195,7 @@ export default function CoverLetterPage() {
 
       {/* ---- AI Usage Indicator ---- */}
       {remaining !== null && (
-        <UpgradePrompt remaining={remaining as number | "unlimited"} plan="free" />
+        <UpgradePrompt remaining={remaining as number | "unlimited"} plan={plan} />
       )}
       {remaining !== null && remaining !== "unlimited" && Number(remaining) > 5 && (
         <div className="mb-6 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-sm">

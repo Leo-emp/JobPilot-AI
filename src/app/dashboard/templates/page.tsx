@@ -19,6 +19,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -62,67 +63,6 @@ const SAMPLE: ResumeData = {
   languages: "English - Native\nSpanish - Conversational\nFrench - Basic",
 };
 
-/* ============================================================
-   PDF TEXT EXTRACTION — Client-side using PDF.js from CDN
-   ============================================================ */
-let pdfjsLoadPromise: Promise<unknown> | null = null;
-
-function loadPDFJS(): Promise<unknown> {
-  if (pdfjsLoadPromise) return pdfjsLoadPromise;
-  pdfjsLoadPromise = new Promise((resolve, reject) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).pdfjsLib) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      resolve((window as any).pdfjsLib);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
-    script.onload = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lib = (window as any).pdfjsLib;
-      lib.GlobalWorkerOptions.workerSrc =
-        "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-      resolve(lib);
-    };
-    script.onerror = () => {
-      pdfjsLoadPromise = null;
-      reject(new Error("Failed to load PDF parser"));
-    };
-    document.head.appendChild(script);
-  });
-  return pdfjsLoadPromise;
-}
-
-async function extractTextFromPDF(file: File): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pdfjsLib = (await loadPDFJS()) as any;
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-  const pages: string[] = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    let lastY: number | null = null;
-    let lineText = "";
-    const lines: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const item of content.items as any[]) {
-      if (!("str" in item) || !item.str) continue;
-      const y = item.transform[5];
-      if (lastY !== null && Math.abs(y - lastY) > 3) {
-        if (lineText.trim()) lines.push(lineText.trim());
-        lineText = item.str;
-      } else {
-        lineText += (lineText && !lineText.endsWith(" ") ? " " : "") + item.str;
-      }
-      lastY = y;
-    }
-    if (lineText.trim()) lines.push(lineText.trim());
-    pages.push(lines.join("\n"));
-  }
-  return pages.join("\n\n");
-}
 
 /* ============================================================
    TEMPLATE DEFINITIONS — 20 Distinct Templates
@@ -718,7 +658,7 @@ export default function TemplatesPage() {
 
     try {
       /* Step 1: Extract text from PDF on the client */
-      const text = await extractTextFromPDF(file);
+      const text = await extractTextFromPdf(file);
       if (!text.trim()) {
         setUploadError("Couldn't read text from this PDF. It may be a scanned image — please fill in your details manually below.");
         setUploadStatus("error");

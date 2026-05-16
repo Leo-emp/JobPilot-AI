@@ -16,6 +16,8 @@
 import { useState } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { usePlan } from "@/hooks/usePlan";
 
 /* ---- Tab names for the feature sub-sections ---- */
 const tabs = [
@@ -24,94 +26,6 @@ const tabs = [
   { id: "rebuild", label: "Full Rebuild" },
   { id: "pivot", label: "Career Pivot" },
 ];
-
-/* ============================================================
-   PDF TEXT EXTRACTION - Client-side using PDF.js from CDN
-   ============================================================
-   Loads pdf.js dynamically from CDN (no server-side dependencies).
-   Extracts text from all pages, preserving line breaks using
-   Y-position tracking for accurate text layout.
-   ============================================================ */
-
-/* Cache the loaded library so we only load the script once */
-let pdfjsLoadPromise: Promise<unknown> | null = null;
-
-/* Load PDF.js library from CDN — only runs in the browser */
-function loadPDFJS(): Promise<unknown> {
-  if (pdfjsLoadPromise) return pdfjsLoadPromise;
-
-  pdfjsLoadPromise = new Promise((resolve, reject) => {
-    /* Check if already loaded from a previous call */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).pdfjsLib) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      resolve((window as any).pdfjsLib);
-      return;
-    }
-
-    /* Dynamically inject the pdf.js script from CDN */
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
-    script.onload = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lib = (window as any).pdfjsLib;
-      /* Set the worker source — required for pdf.js to parse PDFs */
-      lib.GlobalWorkerOptions.workerSrc =
-        "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-      resolve(lib);
-    };
-    script.onerror = () => {
-      pdfjsLoadPromise = null;
-      reject(new Error("Failed to load PDF parser"));
-    };
-    document.head.appendChild(script);
-  });
-
-  return pdfjsLoadPromise;
-}
-
-/* Extract all text content from a PDF file */
-async function extractTextFromPDF(file: File): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pdfjsLib = (await loadPDFJS()) as any;
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-
-  const pages: string[] = [];
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-
-    /* Track Y-position to detect line breaks in the PDF layout */
-    let lastY: number | null = null;
-    let lineText = "";
-    const lines: string[] = [];
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const item of content.items as any[]) {
-      if (!("str" in item) || !item.str) continue;
-      /* transform[5] is the Y position on the page */
-      const y = item.transform[5];
-
-      if (lastY !== null && Math.abs(y - lastY) > 3) {
-        /* Y position changed — this is a new line */
-        if (lineText.trim()) lines.push(lineText.trim());
-        lineText = item.str;
-      } else {
-        /* Same line — append text with a space separator */
-        lineText += (lineText && !lineText.endsWith(" ") ? " " : "") + item.str;
-      }
-      lastY = y;
-    }
-    /* Push the last line */
-    if (lineText.trim()) lines.push(lineText.trim());
-
-    pages.push(lines.join("\n"));
-  }
-
-  return pages.join("\n\n");
-}
 
 export default function ResumePage() {
   /* Track which tab is active */
@@ -126,8 +40,8 @@ export default function ResumePage() {
   const [loading, setLoading] = useState(false);
   /* Error messages */
   const [error, setError] = useState("");
-  /* Track remaining AI calls */
-  const [remaining, setRemaining] = useState<number | string | null>(null);
+  /* Plan + remaining AI calls (shared hook) */
+  const { plan, remaining, updateRemaining } = usePlan();
   /* Track file upload/parsing progress */
   const [uploading, setUploading] = useState(false);
 
@@ -156,7 +70,7 @@ export default function ResumePage() {
     if (file.name.toLowerCase().endsWith(".pdf")) {
       setUploading(true);
       try {
-        const text = await extractTextFromPDF(file);
+        const text = await extractTextFromPdf(file);
         if (text.trim().length < 50) {
           setError("Could not extract enough text from this PDF. Try pasting your resume text instead.");
           setResumeText("");
@@ -223,7 +137,7 @@ export default function ResumePage() {
       setResult(data.result);
 
       if (data.remaining !== undefined) {
-        setRemaining(data.remaining);
+        updateRemaining(data.remaining);
       }
 
       if (action === "analyze_resume") {
@@ -248,7 +162,7 @@ export default function ResumePage() {
 
       {/* ---- AI Usage / Upgrade Prompt ---- */}
       {remaining !== null && (
-        <UpgradePrompt remaining={remaining as number | "unlimited"} plan="free" />
+        <UpgradePrompt remaining={remaining as number | "unlimited"} plan={plan} />
       )}
       {remaining !== null && remaining !== "unlimited" && Number(remaining) > 5 && (
         <div className="mb-6 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-sm">

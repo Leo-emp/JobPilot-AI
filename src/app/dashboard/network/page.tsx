@@ -19,28 +19,12 @@
 
 import { useState, useRef, useCallback } from "react";
 import UpgradePrompt from "@/components/UpgradePrompt";
+import { usePlan } from "@/hooks/usePlan";
 
 /* ---- Max resume PDF size ---- */
-const MAX_PDF_SIZE_MB = 10;
+import { extractTextFromPdf } from "@/lib/pdf-extract";
 
-/* ---- Extract text from a PDF file client-side using pdfjs-dist ---- */
-async function extractTextFromPdf(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url
-  ).toString();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-  const pages: string[] = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const content = await page.getTextContent();
-    const text = content.items.map((item: { str?: string }) => item.str || "").join(" ");
-    pages.push(text);
-  }
-  return pages.join("\n\n");
-}
+const MAX_PDF_SIZE_MB = 10;
 
 /* ---- Message type options ---- */
 const MESSAGE_TYPES = [
@@ -149,7 +133,7 @@ export default function OutreachHubPage() {
   const [editedText, setEditedText] = useState(""); /* user-editable text of the selected version */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [remaining, setRemaining] = useState<number | string | null>(null);
+  const { plan, remaining, updateRemaining } = usePlan();
   const [copied, setCopied] = useState(false);
 
   /* ---- Message history (session only) ---- */
@@ -279,7 +263,7 @@ export default function OutreachHubPage() {
       }
 
       setGeneratedMessage(data.result);
-      if (data.remaining !== undefined) setRemaining(data.remaining);
+      if (data.remaining !== undefined) updateRemaining(data.remaining);
 
       /* Parse the 3 versions from the AI response */
       const versions = parseVersions(data.result);
@@ -331,7 +315,7 @@ export default function OutreachHubPage() {
 
       {/* ---- AI Usage Indicator ---- */}
       {remaining !== null && (
-        <UpgradePrompt remaining={remaining as number | "unlimited"} plan="free" />
+        <UpgradePrompt remaining={remaining as number | "unlimited"} plan={plan} />
       )}
       {remaining !== null && remaining !== "unlimited" && Number(remaining) > 5 && (
         <div className="mb-6 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-sm">

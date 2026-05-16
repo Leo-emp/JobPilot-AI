@@ -16,6 +16,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
 
 /* ---- Types ---- */
 /* Each message in the conversation (AI or user) */
@@ -324,17 +325,7 @@ export default function MockInterviewPage() {
       setResumeUploading(true);
       setError("");
       try {
-        const pdfjsLib = await import("pdfjs-dist/build/pdf.mjs");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
-        const arrayBuffer = await file.arrayBuffer();
-        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-        let text = "";
-        for (let i = 1; i <= doc.numPages; i++) {
-          const page = await doc.getPage(i);
-          const content = await page.getTextContent();
-          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-          text += content.items.filter((item: any) => item.str !== undefined).map((item: any) => item.str).join(" ") + "\n";
-        }
+        const text = await extractTextFromPdf(file);
         if (!text.trim()) throw new Error("Could not extract text from PDF");
         setResume(text.trim());
         setResumeFileName(file.name);
