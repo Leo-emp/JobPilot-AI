@@ -32,10 +32,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { plan } = parsed.data;
+    const { plan, interval } = parsed.data;
 
-    /* Validate the requested plan */
-    const priceId = plan === "pro" ? PRICE_IDS.pro : "";
+    /* Validate the requested plan — pick monthly or annual price */
+    const priceId = plan === "pro"
+      ? (interval === "year" ? PRICE_IDS.proAnnual : PRICE_IDS.pro)
+      : "";
     if (!priceId) {
       return NextResponse.json(
         { error: "Invalid plan or Stripe not configured." },

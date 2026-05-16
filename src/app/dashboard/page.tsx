@@ -8,6 +8,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Onboarding from "@/components/Onboarding";
 
 export default async function DashboardPage() {
   /* Get the current user's session */
@@ -59,8 +60,13 @@ export default async function DashboardPage() {
     },
   ];
 
+  const hasActivity = resumeCount + jobCount + applicationCount + coverLetterCount > 0;
+
   return (
     <div>
+      {/* ---- Onboarding for new users ---- */}
+      <Onboarding hasActivity={hasActivity} />
+
       {/* ---- Welcome Header ---- */}
       <div className="mb-10">
         <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl sm:text-4xl font-bold mb-2">

@@ -40,6 +40,7 @@ model User {
   coverLetters CoverLetter[]
   contacts     Contact[]
   companies    Company[]
+  aiResults    AiResult[]
 }
 
 // ---- Password Reset Token ----
@@ -177,6 +178,22 @@ model Company {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ---- AI Result History ----
+// Stores all AI-generated outputs so users can revisit past results
+model AiResult {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String                           // Action type: analyze_resume, optimize_resume, etc.
+  title     String                           // Human-readable label (e.g. "Resume for Google SWE")
+  result    String                           // The AI output (markdown)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, action])
+  @@index([userId, createdAt])
 }
 
 // ---- Generated Cover Letter ----

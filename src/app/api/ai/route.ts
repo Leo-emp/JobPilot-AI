@@ -36,6 +36,18 @@ const PLAN_LIMITS: Record<string, number> = {
 const MAX_PAYLOAD_SIZE = 50_000;
 const MAX_MULTIMODAL_PAYLOAD_SIZE = 20_000_000;
 
+/* ---- Build a human-readable title for AI history ---- */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+function buildHistoryTitle(action: string, payload: Record<string, any>): string {
+  const job = payload.jobTitle || payload.role || "";
+  const company = payload.company || payload.recipientCompany || "";
+  const label = action.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  if (job && company) return `${label} — ${job} at ${company}`;
+  if (job) return `${label} — ${job}`;
+  if (company) return `${label} — ${company}`;
+  return label;
+}
+
 /* ---- Main POST Handler ---- */
 export async function POST(req: NextRequest) {
   try {
@@ -159,6 +171,12 @@ export async function POST(req: NextRequest) {
       })
     );
     await cacheDel(`plan:${session.user.id}`);
+
+    /* Save to AI history (non-blocking — failure shouldn't break the response) */
+    const title = buildHistoryTitle(action, payload);
+    prisma.aiResult.create({
+      data: { userId: session.user.id, action, title, result },
+    }).catch(() => {});
 
     /* Calculate remaining calls */
     const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;

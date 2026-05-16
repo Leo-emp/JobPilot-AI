@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   const [message, setMessage] = useState("");
 
   /* Account deletion state */
@@ -68,13 +69,13 @@ export default function SettingsPage() {
 
   /* ---- Handle Plan Upgrade ---- */
   /* Creates a Stripe Checkout session and redirects to payment */
-  const handleUpgrade = async (plan: string) => {
+  const handleUpgrade = async (plan: string, interval: "month" | "year") => {
     setUpgradeLoading(true);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, interval }),
       });
       const data = await res.json();
 
@@ -204,13 +205,34 @@ export default function SettingsPage() {
               </p>
             </div>
             {userPlan?.plan === "free" && (
-              <button
-                onClick={() => handleUpgrade("pro")}
-                disabled={upgradeLoading}
-                className="btn-primary text-sm disabled:opacity-50"
-              >
-                {upgradeLoading ? "Loading..." : "Upgrade to Pro"}
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                {/* Monthly / Annual toggle */}
+                <div className="flex rounded-lg bg-space-700 p-0.5 text-xs">
+                  <button
+                    onClick={() => setBillingInterval("month")}
+                    className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                      billingInterval === "month" ? "bg-brand-indigo text-white" : "text-text-muted hover:text-white"
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBillingInterval("year")}
+                    className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                      billingInterval === "year" ? "bg-brand-indigo text-white" : "text-text-muted hover:text-white"
+                    }`}
+                  >
+                    Annual <span className="text-green-400">-20%</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => handleUpgrade("pro", billingInterval)}
+                  disabled={upgradeLoading}
+                  className="btn-primary text-sm disabled:opacity-50"
+                >
+                  {upgradeLoading ? "Loading..." : billingInterval === "year" ? "Upgrade — £8/mo billed yearly" : "Upgrade — £10/mo"}
+                </button>
+              </div>
             )}
             {(userPlan?.plan === "pro" || userPlan?.plan === "enterprise") && (
               <button

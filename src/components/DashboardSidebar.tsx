@@ -26,6 +26,7 @@ const navItems = [
   { href: "/dashboard/interview", icon: "🎤", label: "Interview Prep" },
   { href: "/dashboard/linkedin", icon: "💼", label: "LinkedIn Optimizer" },
   { href: "/dashboard/network", icon: "✉️", label: "AI Outreach Hub" },
+  { href: "/dashboard/history", icon: "📁", label: "AI History" },
   { href: "/dashboard/settings", icon: "⚙️", label: "Settings" },
 ];
 
