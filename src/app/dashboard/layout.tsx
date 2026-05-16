@@ -8,11 +8,13 @@
    ============================================================ */
 
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
 import { auth } from "@/lib/auth";
-import StarField from "@/components/StarField";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { SessionProvider } from "next-auth/react";
 import PostHogProvider from "@/components/PostHogProvider";
+
+const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
 
 export default async function DashboardLayout({
   children,

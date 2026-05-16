@@ -14,6 +14,9 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    aiResult: {
+      create: vi.fn(() => Promise.resolve({})),
+    },
   },
 }));
 
@@ -39,9 +42,22 @@ vi.mock("@/lib/redis", () => ({
   isRedisConfigured: vi.fn(() => false),
 }));
 
-/* Mock fetch for Gemini API */
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+/* Mock Gemini AI client */
+const mockCallGemini = vi.fn();
+vi.mock("@/lib/gemini", () => ({
+  callGemini: (...args: unknown[]) => mockCallGemini(...args),
+  callGeminiMultimodal: vi.fn(async () => "multimodal response"),
+}));
+
+/* Mock prompts — passthrough */
+vi.mock("@/lib/prompts", () => ({
+  buildPrompt: vi.fn(() => "mocked prompt"),
+}));
+
+/* Mock audit */
+vi.mock("@/lib/audit", () => ({
+  audit: vi.fn(),
+}));
 
 import { POST } from "@/app/api/ai/route";
 import { prisma } from "@/lib/prisma";
@@ -146,13 +162,7 @@ describe("POST /api/ai", () => {
     } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        candidates: [{ content: { parts: [{ text: "AI generated response" }] } }],
-      }),
-    });
+    mockCallGemini.mockResolvedValueOnce("AI generated response");
 
     const res = await POST(makeRequest({
       action: "analyze_resume",
@@ -175,13 +185,7 @@ describe("POST /api/ai", () => {
     } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        candidates: [{ content: { parts: [{ text: "Admin response" }] } }],
-      }),
-    });
+    mockCallGemini.mockResolvedValueOnce("Admin response");
 
     const res = await POST(makeRequest({
       action: "analyze_resume",
@@ -215,13 +219,7 @@ describe("POST /api/ai", () => {
     } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        candidates: [{ content: { parts: [{ text: "Response after reset" }] } }],
-      }),
-    });
+    mockCallGemini.mockResolvedValueOnce("Response after reset");
 
     const res = await POST(makeRequest({
       action: "analyze_resume",

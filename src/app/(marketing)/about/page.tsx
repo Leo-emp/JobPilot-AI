@@ -5,6 +5,8 @@
    theme with glassmorphism cards and glow text.
    ============================================================ */
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "About — JobPilot AI",
   description: "Learn about JobPilot AI — our mission to make job hunting smarter with AI-powered career tools.",

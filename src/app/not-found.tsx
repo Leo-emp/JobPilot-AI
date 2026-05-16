@@ -6,9 +6,11 @@
    message and links back to safety.
    ============================================================ */
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import StarField from "@/components/StarField";
 import RocketIcon from "@/components/RocketIcon";
+
+const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
 
 export default function NotFound() {
   return (

@@ -11,6 +11,8 @@
    Designed to minimize legal liability while being transparent.
    ============================================================ */
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Privacy Policy — JobPilot AI",
 };

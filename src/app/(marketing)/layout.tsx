@@ -5,9 +5,11 @@
    navbar, and footer for consistent branding.
    ============================================================ */
 
-import StarField from "@/components/StarField";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+
+const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
 
 export default function MarketingLayout({
   children,

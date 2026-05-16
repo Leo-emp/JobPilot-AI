@@ -8,6 +8,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 /* ---- Types ---- */
@@ -223,7 +224,7 @@ export default function AdminDashboardPage() {
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       {user.image ? (
-                        <img src={user.image} alt="" className="w-8 h-8 rounded-full" />
+                        <Image src={user.image} alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
                           {user.name?.charAt(0).toUpperCase() || "?"}

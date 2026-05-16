@@ -8,9 +8,11 @@
    add /auth to the URL. So /login and /signup just work directly.
    ============================================================ */
 
-import StarField from "@/components/StarField";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import RocketIcon from "@/components/RocketIcon";
+
+const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
 
 export default function AuthLayout({
   children,

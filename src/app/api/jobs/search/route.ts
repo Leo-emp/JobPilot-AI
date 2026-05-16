@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 /* ---- Standardized job format returned to the frontend ---- */
 interface Job {
@@ -245,7 +246,16 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const country = searchParams.get("country") || "us";
 
+  /* Cache key based on normalized search params (15 min TTL) */
+  const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}`;
+
   try {
+    /* Check cache first — avoids hitting external APIs for repeated searches */
+    const cached = await cacheGet<{ jobs: Job[]; total: number; page: number; source: string }>(cacheKey);
+    if (cached) {
+      return NextResponse.json({ ...cached, cached: true });
+    }
+
     /* Fetch all sources in parallel — each one fails gracefully */
     const [adzunaJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
       fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
@@ -270,12 +280,19 @@ export async function GET(req: NextRequest) {
       wwrJobs.length > 0 && "WeWorkRemotely",
     ].filter(Boolean);
 
-    return NextResponse.json({
+    const response = {
       jobs: allJobs,
       total: allJobs.length,
       page,
       source: sources.join(", ") || "none",
-    });
+    };
+
+    /* Cache for 15 minutes — reduces external API calls for identical searches */
+    if (allJobs.length > 0) {
+      await cacheSet(cacheKey, response, 900);
+    }
+
+    return NextResponse.json(response);
   } catch {
     return NextResponse.json(
       { error: "Job search failed", jobs: [], source: "none" },

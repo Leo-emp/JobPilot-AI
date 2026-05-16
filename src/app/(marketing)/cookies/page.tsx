@@ -6,6 +6,8 @@
    no analytics, no ads), this is straightforward and short.
    ============================================================ */
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Cookie Policy — JobPilot AI",
 };

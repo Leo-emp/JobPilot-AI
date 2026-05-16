@@ -14,18 +14,20 @@
    9. Footer (links + legal)
    ============================================================ */
 
-import StarField from "@/components/StarField";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import Features from "@/components/Features";
-import FeatureShowcase from "@/components/FeatureShowcase";
-import HowItWorks from "@/components/HowItWorks";
-import Testimonials from "@/components/Testimonials";
-import Pricing from "@/components/Pricing";
-import EcosystemShowcase from "@/components/EcosystemShowcase";
-import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
+
+const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
+const FeatureShowcase = dynamic(() => import("@/components/FeatureShowcase"));
+const EcosystemShowcase = dynamic(() => import("@/components/EcosystemShowcase"));
+const HowItWorks = dynamic(() => import("@/components/HowItWorks"));
+const Testimonials = dynamic(() => import("@/components/Testimonials"));
+const Pricing = dynamic(() => import("@/components/Pricing"));
+const CTA = dynamic(() => import("@/components/CTA"));
 
 export default function Home() {
   return (

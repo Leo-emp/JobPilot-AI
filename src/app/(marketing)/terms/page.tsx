@@ -12,6 +12,8 @@
    Designed to maximize liability protection for the business.
    ============================================================ */
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Terms of Service — JobPilot AI",
 };

@@ -8,6 +8,8 @@
 
 import Link from "next/link";
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Blog — JobPilot AI",
   description: "Career tips, resume advice, and job search strategies from the JobPilot AI team.",

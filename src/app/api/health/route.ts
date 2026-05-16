@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server";
 import { dbRetry } from "@/lib/db-retry";
 import { prisma } from "@/lib/prisma";
+import { getRedis, isRedisConfigured } from "@/lib/redis";
 
 /* # Track when the server started (persists across requests in the same instance) */
 const startedAt = new Date().toISOString();
@@ -27,6 +28,23 @@ export async function GET() {
   }
 
   const dbLatencyMs = Date.now() - start;
+
+  /* Check Redis connectivity */
+  let redisOk = false;
+  let redisLatencyMs = 0;
+  const redisConfigured = isRedisConfigured();
+  if (redisConfigured) {
+    const redisStart = Date.now();
+    try {
+      const r = getRedis();
+      await r!.ping();
+      redisOk = true;
+    } catch {
+      /* Redis down is non-fatal */
+    }
+    redisLatencyMs = Date.now() - redisStart;
+  }
+
   const status = dbOk ? "healthy" : "degraded";
 
   /* # Memory usage for monitoring (Node.js process) */
@@ -40,6 +58,11 @@ export async function GET() {
         connected: dbOk,
         latencyMs: dbLatencyMs,
         ...(dbError && { error: dbError }),
+      },
+      redis: {
+        configured: redisConfigured,
+        connected: redisOk,
+        ...(redisConfigured && { latencyMs: redisLatencyMs }),
       },
       memory: {
         heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
