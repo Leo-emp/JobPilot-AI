@@ -57,8 +57,9 @@ export async function POST(req: NextRequest) {
           const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
           const priceId = subscription.items.data[0]?.price.id;
 
-          /* Determine plan name from the price ID */
-          const plan = priceId === process.env.STRIPE_PRO_PRICE_ID ? "pro" : "enterprise";
+          /* Determine plan name from the price ID (monthly or annual) */
+          const proIds = [process.env.STRIPE_PRO_PRICE_ID, process.env.STRIPE_PRO_ANNUAL_PRICE_ID];
+          const plan = proIds.includes(priceId) ? "pro" : "enterprise";
 
           /* Update the user's plan in our database (with retry — payment is critical) */
           await dbRetry(() =>
@@ -112,7 +113,8 @@ export async function POST(req: NextRequest) {
         );
 
         if (user && priceId) {
-          const plan = priceId === process.env.STRIPE_PRO_PRICE_ID ? "pro" : "enterprise";
+          const proIds = [process.env.STRIPE_PRO_PRICE_ID, process.env.STRIPE_PRO_ANNUAL_PRICE_ID];
+          const plan = proIds.includes(priceId) ? "pro" : "enterprise";
           await dbRetry(() =>
             prisma.user.update({ where: { id: user.id }, data: { plan } })
           );
