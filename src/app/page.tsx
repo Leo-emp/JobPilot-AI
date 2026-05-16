@@ -21,7 +21,7 @@ import TrustBar from "@/components/TrustBar";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 
-const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
+const StarField = dynamic(() => import("@/components/StarField"));
 const FeatureShowcase = dynamic(() => import("@/components/FeatureShowcase"));
 const EcosystemShowcase = dynamic(() => import("@/components/EcosystemShowcase"));
 const HowItWorks = dynamic(() => import("@/components/HowItWorks"));

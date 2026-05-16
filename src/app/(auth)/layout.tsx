@@ -12,7 +12,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import RocketIcon from "@/components/RocketIcon";
 
-const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
+const StarField = dynamic(() => import("@/components/StarField"));
 
 export default function AuthLayout({
   children,

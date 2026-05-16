@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
+const StarField = dynamic(() => import("@/components/StarField"));
 
 export default function MarketingLayout({
   children,

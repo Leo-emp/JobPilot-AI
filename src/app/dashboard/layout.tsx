@@ -14,7 +14,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { SessionProvider } from "next-auth/react";
 import PostHogProvider from "@/components/PostHogProvider";
 
-const StarField = dynamic(() => import("@/components/StarField"), { ssr: false });
+const StarField = dynamic(() => import("@/components/StarField"));
 
 export default async function DashboardLayout({
   children,
