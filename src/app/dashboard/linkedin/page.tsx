@@ -21,7 +21,7 @@
 import { useState, useRef, useCallback } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
-import { usePlan } from "@/hooks/usePlan";
+import { useAIStream } from "@/hooks/useAIStream";
 
 /* ---- Action tab configuration ---- */
 const actionTabs = [
@@ -69,11 +69,8 @@ export default function LinkedInPage() {
   const [activeTab, setActiveTab] = useState("audit");
   const [targetRole, setTargetRole] = useState("");
 
-  /* ---- AI result state ---- */
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { plan, remaining, updateRemaining } = usePlan();
+  /* ---- AI streaming hook ---- */
+  const { result, loading, streaming, error, plan, remaining, callAI: streamAI, reset: resetAI } = useAIStream();
 
   /* ---- Get profile text from whichever input mode is active ---- */
   const getFullProfileText = () => {
@@ -179,52 +176,24 @@ export default function LinkedInPage() {
      ============================================================ */
   const callAI = async (action: string) => {
     const fullText = getFullProfileText();
-    if (!fullText.trim()) {
-      setError("Please provide your LinkedIn profile data first.");
-      return;
+    if (!fullText.trim()) return;
+
+    /* Build payload — include images for audit if screenshots exist */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const payload: any = { linkedinText: fullText, targetRole };
+
+    if (action === "linkedin_audit" && postScreenshots.length > 0) {
+      const images = await Promise.all(
+        postScreenshots.map(async (s) => {
+          const base64 = await fileToBase64(s.file);
+          return { data: base64, mimeType: s.file.type };
+        })
+      );
+      payload.images = images;
+      if (postContext.trim()) payload.postContext = postContext.trim();
     }
 
-    setLoading(true);
-    setError("");
-    setResult("");
-
-    try {
-      /* Build the payload — include images for audit if screenshots exist */
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      const payload: any = { linkedinText: fullText, targetRole };
-
-      /* For audit action: attach post screenshots as base64 images */
-      if (action === "linkedin_audit" && postScreenshots.length > 0) {
-        const images = await Promise.all(
-          postScreenshots.map(async (s) => {
-            const base64 = await fileToBase64(s.file);
-            return { data: base64, mimeType: s.file.type };
-          })
-        );
-        payload.images = images;
-        if (postContext.trim()) payload.postContext = postContext.trim();
-      }
-
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, payload }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "AI request failed.");
-        return;
-      }
-
-      setResult(data.result);
-      if (data.remaining !== undefined) updateRemaining(data.remaining);
-    } catch {
-      setError("Failed to connect to AI. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    await streamAI(action, payload);
   };
 
   /* ---- Check if we have enough profile data to run AI ---- */
@@ -265,7 +234,7 @@ export default function LinkedInPage() {
         {/* ---- Profile input mode toggle (PDF vs Text) ---- */}
         <div className="flex gap-2 mb-5">
           <button
-            onClick={() => { setProfileMode("pdf"); setError(""); }}
+            onClick={() => { setProfileMode("pdf"); resetAI(); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               profileMode === "pdf"
                 ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
@@ -278,7 +247,7 @@ export default function LinkedInPage() {
             Import PDF
           </button>
           <button
-            onClick={() => { setProfileMode("manual"); setError(""); }}
+            onClick={() => { setProfileMode("manual"); resetAI(); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               profileMode === "manual"
                 ? "bg-brand-indigo/20 border border-brand-indigo/40 text-white"
@@ -371,7 +340,7 @@ export default function LinkedInPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => { setPdfFile(null); setPdfText(""); setPdfError(""); setResult(""); }}
+                    onClick={() => { setPdfFile(null); setPdfText(""); setPdfError(""); resetAI(); }}
                     className="text-text-muted hover:text-red-400 transition-colors p-1"
                     title="Remove file"
                   >
@@ -426,7 +395,7 @@ export default function LinkedInPage() {
                   Profile loaded ({linkedinText.length.toLocaleString()} characters)
                 </p>
                 <button
-                  onClick={() => { setLinkedinText(""); setResult(""); }}
+                  onClick={() => { setLinkedinText(""); resetAI(); }}
                   className="text-sm text-text-muted hover:text-red-400 transition-colors"
                 >
                   Clear
@@ -567,7 +536,7 @@ export default function LinkedInPage() {
         {actionTabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => { setActiveTab(tab.id); setResult(""); setError(""); }}
+            onClick={() => { setActiveTab(tab.id); resetAI(); }}
             className={`p-4 rounded-xl text-left transition-all ${
               activeTab === tab.id
                 ? "bg-brand-indigo/15 border border-brand-indigo/30 shadow-lg shadow-brand-indigo/5"
@@ -677,19 +646,24 @@ export default function LinkedInPage() {
           </div>
         )}
 
-        {/* ---- AI Result ---- */}
-        {result && <MarkdownResult result={result} showDownload={false} />}
-
-        {/* ---- Loading State ---- */}
-        {loading && (
+        {/* ---- Loading (before stream starts) ---- */}
+        {loading && !streaming && !result && (
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">
-              {postScreenshots.length > 0 && activeTab === "audit"
-                ? "AI is analyzing your LinkedIn profile and posts..."
-                : "AI is analyzing your LinkedIn profile..."
-              }
-            </span>
+            <span className="text-sm">Connecting to AI...</span>
+          </div>
+        )}
+
+        {/* ---- AI Result (streams in real-time) ---- */}
+        {result && (
+          <div>
+            <MarkdownResult result={result} showDownload={!streaming} />
+            {streaming && (
+              <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
+                <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                <span>Generating...</span>
+              </div>
+            )}
           </div>
         )}
       </div>

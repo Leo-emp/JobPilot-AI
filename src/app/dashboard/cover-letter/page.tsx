@@ -13,7 +13,7 @@
 import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
-import { usePlan } from "@/hooks/usePlan";
+import { useAIStream } from "@/hooks/useAIStream";
 
 /* ---- Type for saved cover letters ---- */
 interface SavedLetter {
@@ -37,18 +37,19 @@ export default function CoverLetterPage() {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  /* AI response */
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  /* AI streaming hook */
+  const { result: aiResult, loading, streaming, error, plan, remaining, callAI: streamAI } = useAIStream();
+  /* Viewed saved letter (when clicking from history) */
+  const [viewedLetter, setViewedLetter] = useState("");
+  /* Combined display: AI streaming result takes priority, then viewed letter */
+  const result = aiResult || viewedLetter;
   /* Copy button feedback */
   const [copied, setCopied] = useState(false);
   /* Edit mode for AI result */
   const [editing, setEditing] = useState(false);
+  const [editedResult, setEditedResult] = useState("");
   /* Saved cover letters history */
   const [savedLetters, setSavedLetters] = useState<SavedLetter[]>([]);
-  /* Plan + remaining AI calls (shared hook) */
-  const { plan, remaining, updateRemaining } = usePlan();
 
   /* ---- Load previously saved cover letters ---- */
   useEffect(() => {
@@ -115,67 +116,38 @@ export default function CoverLetterPage() {
     }
   };
 
-  /* ---- Generate Cover Letter ---- */
+  /* ---- Generate Cover Letter (streaming) ---- */
   const handleGenerate = async () => {
-    setLoading(true);
-    setError("");
-    setResult("");
     setEditing(false);
+    setViewedLetter("");
+    setEditedResult("");
 
-    try {
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "cover_letter",
-          payload: {
-            resume: resumeText,
-            jobTitle,
-            company,
-            jobDescription,
-          },
-        }),
-      });
+    const fullResult = await streamAI("cover_letter", {
+      resume: resumeText,
+      jobTitle,
+      company,
+      jobDescription,
+    });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed to generate cover letter.");
-        return;
-      }
-      setResult(data.result);
-
-      if (data.remaining !== undefined) {
-        updateRemaining(data.remaining);
-      }
-
-      /* Save the generated cover letter to the database */
+    /* Save the generated cover letter to the database */
+    if (fullResult) {
       try {
         const saveRes = await fetch("/api/cover-letters", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jobTitle,
-            company,
-            content: data.result,
-          }),
+          body: JSON.stringify({ jobTitle, company, content: fullResult }),
         });
         if (saveRes.ok) {
           const saved = await saveRes.json();
           setSavedLetters((prev) => [saved, ...prev]);
         }
-      } catch {
-        /* Save failure shouldn't block the user */
-      }
-    } catch {
-      setError("Failed to connect to AI. Please try again.");
-    } finally {
-      setLoading(false);
+      } catch {}
     }
   };
 
   /* ---- Copy to Clipboard ---- */
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(result);
+    await navigator.clipboard.writeText(editedResult || result);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -387,11 +359,11 @@ export default function CoverLetterPage() {
             </div>
           )}
 
-          {/* Loading spinner */}
-          {loading && (
+          {/* Loading (before stream starts) */}
+          {loading && !streaming && !result && (
             <div className="flex items-center gap-3 text-text-secondary py-8">
               <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm">Crafting your cover letter...</span>
+              <span className="text-sm">Connecting to AI...</span>
             </div>
           )}
 
@@ -399,13 +371,21 @@ export default function CoverLetterPage() {
           {result ? (
             editing ? (
               <textarea
-                value={result}
-                onChange={(e) => setResult(e.target.value)}
+                value={editedResult || result}
+                onChange={(e) => setEditedResult(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-space-700 border border-brand-indigo/30 text-white focus:outline-none focus:border-brand-indigo resize-none text-sm leading-relaxed"
                 style={{ minHeight: "500px" }}
               />
             ) : (
-              <MarkdownResult result={result} showDownload={true} />
+              <div>
+                <MarkdownResult result={editedResult || result} showDownload={!streaming} />
+                {streaming && (
+                  <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
+                    <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                    <span>Generating...</span>
+                  </div>
+                )}
+              </div>
             )
           ) : (
             !loading && (
@@ -445,7 +425,7 @@ export default function CoverLetterPage() {
                 </p>
                 <button
                   onClick={() => {
-                    setResult(letter.content);
+                    setViewedLetter(letter.content);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className="mt-3 text-sm text-brand-light hover:text-white transition-colors"

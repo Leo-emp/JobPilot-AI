@@ -11,6 +11,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
+import { useAIStream } from "@/hooks/useAIStream";
 
 export default function InterviewPage() {
   /* Tab state */
@@ -28,54 +29,29 @@ export default function InterviewPage() {
   const [practiceDesc, setPracticeDesc] = useState("");
   const [answer, setAnswer] = useState("");
 
-  /* Shared state */
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  /* ---- Call AI ---- */
-  const callAI = async (action: string, payload: Record<string, string>) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, payload }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "AI request failed.");
-        return "";
-      }
-      return data.result;
-    } catch {
-      setError("Failed to connect to AI.");
-      return "";
-    } finally {
-      setLoading(false);
-    }
-  };
+  /* AI streaming hook */
+  const { result: streamResult, loading, streaming, error, callAI: streamAI, reset: resetAI } = useAIStream();
 
   /* Generate interview questions */
   const handlePredict = async () => {
-    const result = await callAI("interview_questions", {
+    setQuestions("");
+    const fullResult = await streamAI("interview_questions", {
       jobTitle,
       company,
       jobDescription,
     });
-    if (result) setQuestions(result);
+    if (fullResult) setQuestions(fullResult);
   };
 
   /* Generate answer to a practice question */
   const handlePractice = async () => {
-    const result = await callAI("interview_answer", {
+    setAnswer("");
+    const fullResult = await streamAI("interview_answer", {
       question: practiceQuestion,
       resume: resumeText,
       jobDescription: practiceDesc,
     });
-    if (result) setAnswer(result);
+    if (fullResult) setAnswer(fullResult);
   };
 
   return (
@@ -112,7 +88,7 @@ export default function InterviewPage() {
       {/* ---- Tab Switcher ---- */}
       <div className="flex gap-2 mb-8">
         <button
-          onClick={() => { setActiveTab("predict"); setError(""); }}
+          onClick={() => { setActiveTab("predict"); resetAI(); }}
           className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === "predict"
               ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
@@ -122,7 +98,7 @@ export default function InterviewPage() {
           🎯 Predict Questions
         </button>
         <button
-          onClick={() => { setActiveTab("practice"); setError(""); }}
+          onClick={() => { setActiveTab("practice"); resetAI(); }}
           className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === "practice"
               ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
@@ -169,7 +145,17 @@ export default function InterviewPage() {
               {loading ? "Predicting..." : "🎯 Generate Questions"}
             </button>
 
-            {questions && <MarkdownResult result={questions} showDownload={false} />}
+            {(streaming && activeTab === "predict" ? streamResult : questions) && (
+              <div>
+                <MarkdownResult result={streaming && activeTab === "predict" ? streamResult : questions} showDownload={false} />
+                {streaming && activeTab === "predict" && (
+                  <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
+                    <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                    <span>Generating...</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -208,15 +194,25 @@ export default function InterviewPage() {
               {loading ? "Generating..." : "💬 Generate Answer"}
             </button>
 
-            {answer && <MarkdownResult result={answer} showDownload={false} />}
+            {(streaming && activeTab === "practice" ? streamResult : answer) && (
+              <div>
+                <MarkdownResult result={streaming && activeTab === "practice" ? streamResult : answer} showDownload={false} />
+                {streaming && activeTab === "practice" && (
+                  <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
+                    <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                    <span>Generating...</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Loading */}
-        {loading && (
+        {/* Loading (before stream starts) */}
+        {loading && !streaming && !streamResult && (
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">AI is preparing your interview prep...</span>
+            <span className="text-sm">Connecting to AI...</span>
           </div>
         )}
 

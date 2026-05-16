@@ -17,7 +17,7 @@ import { useState } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
-import { usePlan } from "@/hooks/usePlan";
+import { useAIStream } from "@/hooks/useAIStream";
 
 /* ---- Tab names for the feature sub-sections ---- */
 const tabs = [
@@ -34,16 +34,12 @@ export default function ResumePage() {
   const [resumeText, setResumeText] = useState("");
   /* Original file name for database storage */
   const [fileName, setFileName] = useState("");
-  /* AI response for display */
-  const [result, setResult] = useState("");
-  /* Loading state while AI is processing */
-  const [loading, setLoading] = useState(false);
-  /* Error messages */
-  const [error, setError] = useState("");
-  /* Plan + remaining AI calls (shared hook) */
-  const { plan, remaining, updateRemaining } = usePlan();
+  /* AI streaming hook — result appears token-by-token */
+  const { result, loading, streaming, error, plan, remaining, callAI: streamAI, reset: resetAI } = useAIStream();
   /* Track file upload/parsing progress */
   const [uploading, setUploading] = useState(false);
+  /* File upload error (separate from AI error) */
+  const [uploadError, setUploadError] = useState("");
 
   /* Job-specific fields for optimize/rebuild/pivot */
   const [jobTitle, setJobTitle] = useState("");
@@ -57,7 +53,7 @@ export default function ResumePage() {
     if (!file) return;
 
     setFileName(file.name);
-    setError("");
+    setUploadError("");
 
     /* For .txt files, read directly in browser */
     if (file.name.toLowerCase().endsWith(".txt")) {
@@ -72,13 +68,13 @@ export default function ResumePage() {
       try {
         const text = await extractTextFromPdf(file);
         if (text.trim().length < 50) {
-          setError("Could not extract enough text from this PDF. Try pasting your resume text instead.");
+          setUploadError("Could not extract enough text from this PDF. Try pasting your resume text instead.");
           setResumeText("");
         } else {
           setResumeText(text);
         }
       } catch {
-        setError("Failed to parse PDF. Please paste your resume text instead.");
+        setUploadError("Failed to parse PDF. Please paste your resume text instead.");
         setResumeText("");
       } finally {
         setUploading(false);
@@ -86,7 +82,7 @@ export default function ResumePage() {
       return;
     }
 
-    setError("Please upload a PDF or TXT file.");
+    setUploadError("Please upload a PDF or TXT file.");
   };
 
   /* ---- Save Resume to Database ---- */
@@ -106,47 +102,20 @@ export default function ResumePage() {
     }
   };
 
-  /* ---- Call AI API ---- */
+  /* ---- Call AI API (streaming) ---- */
   const callAI = async (action: string) => {
-    setLoading(true);
-    setError("");
-    setResult("");
+    const payload: Record<string, string> = { resume: resumeText };
 
-    try {
-      const payload: Record<string, string> = { resume: resumeText };
+    if (action !== "analyze_resume") {
+      payload.jobTitle = jobTitle;
+      payload.company = company;
+      payload.jobDescription = jobDescription;
+    }
 
-      if (action !== "analyze_resume") {
-        payload.jobTitle = jobTitle;
-        payload.company = company;
-        payload.jobDescription = jobDescription;
-      }
+    const fullResult = await streamAI(action, payload);
 
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, payload }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "AI request failed.");
-        return;
-      }
-
-      setResult(data.result);
-
-      if (data.remaining !== undefined) {
-        updateRemaining(data.remaining);
-      }
-
-      if (action === "analyze_resume") {
-        await saveResume(data.result);
-      }
-    } catch {
-      setError("Failed to connect to AI. Please try again.");
-    } finally {
-      setLoading(false);
+    if (fullResult && action === "analyze_resume") {
+      await saveResume(fullResult);
     }
   };
 
@@ -215,7 +184,7 @@ export default function ResumePage() {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => { setActiveTab(tab.id); setResult(""); setError(""); }}
+            onClick={() => { setActiveTab(tab.id); resetAI(); setUploadError(""); }}
             className={`px-5 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
@@ -352,20 +321,30 @@ export default function ResumePage() {
         )}
 
         {/* ---- Error Display ---- */}
-        {error && (
+        {(error || uploadError) && (
           <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-            {error}
+            {error || uploadError}
           </div>
         )}
 
-        {/* ---- AI Result Display ---- */}
-        {result && <MarkdownResult result={result} />}
-
-        {/* ---- Loading State ---- */}
-        {loading && (
+        {/* ---- Loading State (before stream starts) ---- */}
+        {loading && !streaming && !result && (
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">AI is working on your resume...</span>
+            <span className="text-sm">Connecting to AI...</span>
+          </div>
+        )}
+
+        {/* ---- AI Result Display (shows while streaming + after complete) ---- */}
+        {result && (
+          <div className="relative">
+            <MarkdownResult result={result} showDownload={!streaming} />
+            {streaming && (
+              <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
+                <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                <span>Generating...</span>
+              </div>
+            )}
           </div>
         )}
       </div>
