@@ -160,297 +160,326 @@ const TEMPLATES: Template[] = [
     previewBg: "#fff", previewAccent: "#111", previewLight: false,
     css: SINGLE_BASE + `
       body { font-family: Georgia, 'Times New Roman', serif; }
-      .name { font-size: 26px; font-weight: 700; color: #111; }
-      .job-title { font-size: 14px; color: #444; font-style: italic; }
-      .contact { border-bottom: 2px solid #111; padding-bottom: 10px; }
-      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #111; border-bottom: 1px solid #999; padding-bottom: 3px; }
+      .name { font-size: 28px; font-weight: 700; color: #111; letter-spacing: -0.5px; }
+      .job-title { font-size: 15px; color: #444; font-style: italic; }
+      .contact { border-bottom: 2.5px solid #111; padding-bottom: 12px; font-style: italic; }
+      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #111; border-bottom: 1.5px solid #666; padding-bottom: 4px; }
+      .entry-title { font-family: Georgia, serif; }
     `,
   },
   {
-    id: "modern", name: "Modern", desc: "Clean sans-serif with indigo accent",
+    id: "modern", name: "Modern", desc: "Geometric accent bar with bold indigo headers",
     category: "Single Column", layout: "single",
     previewBg: "#fff", previewAccent: "#4f46e5", previewLight: false,
     css: SINGLE_BASE + `
       body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
-      .header { border-left: 4px solid #4f46e5; padding-left: 16px; }
-      .name { font-size: 28px; font-weight: 700; color: #1e1b4b; }
-      .job-title { font-size: 14px; color: #4f46e5; }
-      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4f46e5; border-bottom: 2px solid #e0e0ff; padding-bottom: 3px; }
+      .header { border-left: 5px solid #4f46e5; padding-left: 18px; margin-bottom: 18px; }
+      .name { font-size: 30px; font-weight: 800; color: #1e1b4b; letter-spacing: -1px; }
+      .job-title { font-size: 15px; color: #4f46e5; font-weight: 600; }
+      .contact { color: #666; border: none; padding: 0; }
+      .section-title { font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #4f46e5; border-bottom: 3px solid #e0e7ff; padding-bottom: 4px; font-size: 12px; }
+      .entry-title { color: #1e1b4b; }
     `,
   },
   {
-    id: "minimal", name: "Minimal", desc: "Ultra-clean with maximum whitespace",
+    id: "minimal", name: "Minimal", desc: "Ultra-lightweight with generous whitespace",
     category: "Single Column", layout: "single",
     previewBg: "#fff", previewAccent: "#999", previewLight: false,
     css: SINGLE_BASE + `
-      body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-      .name { font-size: 24px; font-weight: 300; color: #111; letter-spacing: 1px; }
-      .job-title { font-size: 13px; color: #888; letter-spacing: 2px; text-transform: uppercase; }
-      .contact { font-size: 12px; color: #999; }
-      .section { margin-bottom: 18px; }
-      .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: #aaa; border-bottom: 1px solid #e5e5e5; padding-bottom: 3px; }
+      body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 48px 50px; }
+      .header { text-align: center; margin-bottom: 24px; }
+      .name { font-size: 22px; font-weight: 300; color: #222; letter-spacing: 4px; text-transform: uppercase; }
+      .job-title { font-size: 11px; color: #999; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+      .contact { font-size: 11px; color: #aaa; letter-spacing: 1px; text-align: center; border: none; padding: 0; margin-top: 8px; }
+      .section { margin-bottom: 20px; }
+      .section-title { font-size: 10px; font-weight: 400; text-transform: uppercase; letter-spacing: 4px; color: #bbb; border: none; padding-bottom: 0; margin-bottom: 8px; }
+      .entry-title { font-weight: 500; font-size: 13px; }
+      li { color: #555; }
     `,
   },
   {
-    id: "executive", name: "Executive", desc: "Bold dark header for senior-level roles",
+    id: "executive", name: "Executive", desc: "Full-width dark header for C-suite professionals",
     category: "Single Column", layout: "single",
     previewBg: "#1a1a1a", previewAccent: "#fff", previewLight: true,
     css: SINGLE_BASE + `
       body { font-family: Calibri, Arial, sans-serif; padding-top: 0; }
-      .header { background: #1a1a1a; color: #fff; padding: 24px 30px; margin: -36px -40px 20px -40px; }
-      .name { font-size: 28px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
-      .job-title { font-size: 13px; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
-      .contact { color: #bbb; border: none; padding: 0; }
-      .section-title { font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; background: #f0f0f0; padding: 5px 10px; color: #111; font-size: 12px; }
+      .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: #fff; padding: 30px 36px; margin: -36px -40px 24px -40px; }
+      .name { font-size: 32px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 3px; }
+      .job-title { font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+      .contact { color: #888; border: none; padding: 0; margin-top: 10px; font-size: 11.5px; }
+      .section-title { font-weight: 800; text-transform: uppercase; letter-spacing: 2px; background: #f5f5f5; padding: 6px 12px; color: #111; font-size: 11px; border: none; }
+      .entry-title { font-weight: 800; }
     `,
   },
   {
-    id: "elegant", name: "Elegant", desc: "Centered serif with refined double borders",
+    id: "elegant", name: "Elegant", desc: "Centered layout with ornamental copper accents",
     category: "Single Column", layout: "single",
     previewBg: "#fff", previewAccent: "#8b5e3c", previewLight: false,
     css: SINGLE_BASE + `
-      body { font-family: Georgia, serif; }
-      .header { text-align: center; border-top: 2px solid #8b5e3c; border-bottom: 2px solid #8b5e3c; padding: 14px 0; margin-bottom: 16px; }
-      .name { font-size: 26px; font-weight: 700; color: #8b5e3c; }
-      .job-title { font-size: 13px; color: #666; font-style: italic; }
-      .contact { color: #666; }
-      .section-title { font-weight: 700; font-variant: small-caps; letter-spacing: 1px; color: #8b5e3c; border-bottom: 1px solid #d4b896; padding-bottom: 3px; font-size: 14px; }
+      body { font-family: Georgia, 'Palatino Linotype', serif; padding: 40px 44px; }
+      .header { text-align: center; padding: 16px 0 18px; margin-bottom: 18px; border-top: 1px solid #8b5e3c; border-bottom: 1px solid #8b5e3c; position: relative; }
+      .header::before { content: ''; position: absolute; top: -4px; left: 30%; right: 30%; height: 1px; background: #8b5e3c; }
+      .header::after { content: ''; position: absolute; bottom: -4px; left: 30%; right: 30%; height: 1px; background: #8b5e3c; }
+      .name { font-size: 28px; font-weight: 400; color: #8b5e3c; letter-spacing: 2px; }
+      .job-title { font-size: 13px; color: #777; font-style: italic; margin-top: 4px; }
+      .contact { color: #777; text-align: center; border: none; font-style: italic; font-size: 12px; }
+      .section-title { font-weight: 400; font-variant: small-caps; letter-spacing: 2px; color: #8b5e3c; border-bottom: 1px solid #d4b896; padding-bottom: 4px; font-size: 15px; }
+      .entry-title { color: #4a3728; }
     `,
   },
   {
-    id: "clean", name: "Clean", desc: "Teal accents with clean dividers",
+    id: "clean", name: "Clean", desc: "Two-tone teal with rounded section headers",
     category: "Single Column", layout: "single",
     previewBg: "#fff", previewAccent: "#0d9488", previewLight: false,
     css: SINGLE_BASE + `
       body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; }
-      .name { font-size: 26px; font-weight: 700; color: #0d9488; }
-      .job-title { font-size: 13px; color: #555; }
-      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #0d9488; border-bottom: 2px solid #ccfbf1; padding-bottom: 3px; }
+      .header { background: #f0fdfa; padding: 20px 24px; margin: -36px -40px 20px -40px; border-bottom: 3px solid #0d9488; }
+      .name { font-size: 28px; font-weight: 700; color: #0d9488; }
+      .job-title { font-size: 14px; color: #0f766e; font-weight: 500; }
+      .contact { color: #555; border: none; padding: 0; margin-top: 6px; }
+      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; background: #0d9488; padding: 4px 12px; border-radius: 4px; font-size: 11px; border: none; display: inline-block; margin-bottom: 10px; }
       .entry-title { color: #0f766e; }
     `,
   },
 
   /* ======== SIDEBAR LEFT ======== */
   {
-    id: "corporate", name: "Corporate", desc: "Navy sidebar, professional corporate feel",
+    id: "corporate", name: "Corporate", desc: "Navy sidebar with structured corporate hierarchy",
     category: "Sidebar", layout: "sidebar-left",
     previewBg: "#1e293b", previewAccent: "#60a5fa", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
       .sidebar { background: #1e293b; color: #e2e8f0; }
       .name { font-size: 22px; font-weight: 700; color: #fff; }
-      .job-title { color: #93c5fd; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-      .contact-item { color: #cbd5e1; }
-      .sidebar .section-title { color: #93c5fd; font-weight: 700; border-bottom: 1px solid #334155; padding-bottom: 3px; }
+      .job-title { color: #93c5fd; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; }
+      .contact-item { color: #94a3b8; font-size: 11px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+      .sidebar .section-title { color: #60a5fa; font-weight: 700; border-bottom: 1px solid #334155; padding-bottom: 4px; }
       .sidebar li { color: #cbd5e1; }
       .sidebar p { color: #cbd5e1; }
-      .main .section-title { font-weight: 700; color: #1e293b; border-bottom: 2px solid #1e293b; padding-bottom: 3px; }
+      .main .section-title { font-weight: 700; color: #1e293b; border-bottom: 2px solid #1e293b; padding-bottom: 4px; }
     `,
   },
   {
-    id: "professional", name: "Professional", desc: "Deep blue sidebar, clean and trusted",
+    id: "professional", name: "Professional", desc: "Gradient blue sidebar with icon-style contact",
     category: "Sidebar", layout: "sidebar-left",
     previewBg: "#1e3a5f", previewAccent: "#7dd3fc", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: Calibri, Arial, sans-serif; }
-      .sidebar { background: #1e3a5f; color: #e0f2fe; }
-      .name { font-size: 22px; font-weight: 700; color: #fff; }
-      .job-title { color: #7dd3fc; font-size: 12px; }
-      .contact-item { color: #bae6fd; }
-      .sidebar .section-title { color: #7dd3fc; font-weight: 700; border-bottom: 1px solid #2d5a8e; padding-bottom: 3px; }
+      .sidebar { background: linear-gradient(180deg, #1e3a5f 0%, #0f2744 100%); color: #e0f2fe; padding-top: 36px; }
+      .name { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+      .job-title { color: #7dd3fc; font-size: 12px; border-bottom: 2px solid #7dd3fc; padding-bottom: 10px; margin-bottom: 14px; display: inline-block; }
+      .contact-item { color: #bae6fd; padding-left: 10px; border-left: 2px solid #2563eb; margin-bottom: 8px; }
+      .sidebar .section-title { color: #7dd3fc; font-weight: 800; border: none; padding: 4px 0; border-top: 1px solid #2d5a8e; margin-top: 6px; }
       .sidebar li { color: #bae6fd; }
       .sidebar p { color: #bae6fd; }
-      .main .section-title { font-weight: 700; color: #1e3a5f; border-bottom: 2px solid #1e3a5f; padding-bottom: 3px; }
+      .main .section-title { font-weight: 800; color: #1e3a5f; border-left: 4px solid #1e3a5f; border-bottom: none; padding-left: 10px; padding-bottom: 0; }
     `,
   },
   {
-    id: "creative", name: "Creative", desc: "Bold red sidebar for standout applications",
+    id: "creative", name: "Creative", desc: "Vivid coral with playful rounded elements",
     category: "Sidebar", layout: "sidebar-left",
     previewBg: "#dc2626", previewAccent: "#fca5a5", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; }
-      .sidebar { background: #dc2626; color: #fee2e2; }
-      .name { font-size: 22px; font-weight: 700; color: #fff; }
-      .job-title { color: #fecaca; font-size: 12px; text-transform: uppercase; }
-      .contact-item { color: #fecaca; }
-      .sidebar .section-title { color: #fff; font-weight: 700; border-bottom: 1px solid #ef4444; padding-bottom: 3px; }
+      .sidebar { background: linear-gradient(160deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%); color: #fee2e2; padding: 32px 20px; }
+      .name { font-size: 24px; font-weight: 800; color: #fff; line-height: 1.1; }
+      .job-title { color: #fecaca; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 6px; }
+      .contact-item { color: #fecaca; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 11px; }
+      .sidebar .section-title { color: #fff; font-weight: 800; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px; border: none; margin-bottom: 8px; }
       .sidebar li { color: #fee2e2; }
       .sidebar p { color: #fee2e2; }
-      .main .section-title { font-weight: 700; color: #dc2626; border-bottom: 2px solid #fecaca; padding-bottom: 3px; }
+      .main .section-title { font-weight: 800; color: #dc2626; border: none; padding: 5px 0; border-left: 4px solid #dc2626; padding-left: 10px; }
     `,
   },
   {
-    id: "tech", name: "Tech", desc: "Dark charcoal with cyan accents for tech roles",
+    id: "tech", name: "Tech", desc: "Terminal-inspired dark theme with monospace headers",
     category: "Sidebar", layout: "sidebar-left",
-    previewBg: "#1a1a2e", previewAccent: "#22d3ee", previewLight: true,
+    previewBg: "#0f0f23", previewAccent: "#22d3ee", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
-      .sidebar { background: #1a1a2e; color: #d1d5db; }
-      .name { font-size: 22px; font-weight: 700; color: #22d3ee; }
-      .job-title { color: #67e8f9; font-size: 12px; }
-      .contact-item { color: #9ca3af; }
-      .sidebar .section-title { color: #22d3ee; font-weight: 700; border-bottom: 1px solid #2d2d4e; padding-bottom: 3px; }
-      .sidebar li { color: #d1d5db; }
+      .sidebar { background: #0f0f23; color: #d1d5db; border-right: 1px solid #22d3ee; }
+      .name { font-size: 20px; font-weight: 700; color: #22d3ee; font-family: 'Courier New', monospace; }
+      .job-title { color: #67e8f9; font-size: 11px; font-family: 'Courier New', monospace; }
+      .contact-item { color: #6b7280; font-family: 'Courier New', monospace; font-size: 10.5px; }
+      .sidebar .section-title { color: #22d3ee; font-weight: 700; border: none; font-family: 'Courier New', monospace; font-size: 11px; }
+      .sidebar .section-title::before { content: '> '; color: #06b6d4; }
+      .sidebar li { color: #d1d5db; font-size: 11.5px; }
       .sidebar p { color: #d1d5db; }
-      .main .section-title { font-weight: 700; color: #1a1a2e; border-bottom: 2px solid #22d3ee; padding-bottom: 3px; }
+      .main { background: #fafafa; }
+      .main .section-title { font-weight: 700; color: #0f0f23; background: #e0f2fe; padding: 5px 12px; border: 1px solid #22d3ee; border-radius: 3px; font-size: 11px; }
+      .main .entry-title { color: #0e7490; }
     `,
   },
   {
-    id: "consultant", name: "Consultant", desc: "Teal sidebar with a professional consulting feel",
+    id: "consultant", name: "Consultant", desc: "Emerald with data-driven metric callouts",
     category: "Sidebar", layout: "sidebar-left",
-    previewBg: "#0f766e", previewAccent: "#5eead4", previewLight: true,
+    previewBg: "#064e3b", previewAccent: "#34d399", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: Calibri, Arial, sans-serif; }
-      .sidebar { background: #0f766e; color: #ccfbf1; }
+      .sidebar { background: #064e3b; color: #d1fae5; }
       .name { font-size: 22px; font-weight: 700; color: #fff; }
-      .job-title { color: #99f6e4; font-size: 12px; }
-      .contact-item { color: #99f6e4; }
-      .sidebar .section-title { color: #fff; font-weight: 700; border-bottom: 1px solid #14b8a6; padding-bottom: 3px; }
-      .sidebar li { color: #ccfbf1; }
-      .sidebar p { color: #ccfbf1; }
-      .main .section-title { font-weight: 700; color: #0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 3px; }
+      .job-title { color: #6ee7b7; font-size: 12px; font-weight: 600; }
+      .contact-item { color: #a7f3d0; font-size: 11px; }
+      .sidebar .section-title { color: #34d399; font-weight: 700; border-bottom: 2px solid #34d399; padding-bottom: 4px; letter-spacing: 1px; }
+      .sidebar li { color: #d1fae5; position: relative; padding-left: 10px; }
+      .sidebar li::before { content: '—'; position: absolute; left: 0; color: #34d399; }
+      .sidebar p { color: #d1fae5; }
+      .main .section-title { font-weight: 700; color: #064e3b; border-bottom: 2px solid #064e3b; padding-bottom: 4px; }
+      .main .entry-title { color: #065f46; }
     `,
   },
   {
-    id: "premium", name: "Premium", desc: "Near-black sidebar with gold accents",
+    id: "premium", name: "Premium", desc: "Luxury black with gold foil-style accents",
     category: "Sidebar", layout: "sidebar-left",
-    previewBg: "#111827", previewAccent: "#d4a843", previewLight: true,
+    previewBg: "#0a0a0a", previewAccent: "#d4a843", previewLight: true,
     css: SIDEBAR_BASE + `
-      body { font-family: Georgia, serif; }
-      .sidebar { background: #111827; color: #d1d5db; }
-      .name { font-size: 22px; font-weight: 700; color: #d4a843; }
-      .job-title { color: #fbbf24; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
-      .contact-item { color: #9ca3af; }
-      .sidebar .section-title { color: #d4a843; font-weight: 700; border-bottom: 1px solid #374151; padding-bottom: 3px; font-family: Calibri, sans-serif; }
-      .sidebar li { color: #d1d5db; }
-      .sidebar p { color: #d1d5db; }
-      .main .section-title { font-weight: 700; color: #111827; border-bottom: 2px solid #d4a843; padding-bottom: 3px; font-family: Calibri, sans-serif; }
+      body { font-family: Georgia, 'Palatino Linotype', serif; }
+      .sidebar { background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%); color: #d1d5db; border-right: 2px solid #d4a843; }
+      .name { font-size: 22px; font-weight: 400; color: #d4a843; letter-spacing: 1px; }
+      .job-title { color: #b8860b; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-family: Calibri, sans-serif; }
+      .contact-item { color: #8b8b8b; font-family: Calibri, sans-serif; font-size: 11px; }
+      .sidebar .section-title { color: #d4a843; font-weight: 400; font-variant: small-caps; letter-spacing: 1.5px; border-bottom: 1px solid #333; padding-bottom: 4px; font-size: 13px; }
+      .sidebar li { color: #ccc; font-family: Calibri, sans-serif; }
+      .sidebar p { color: #ccc; font-family: Calibri, sans-serif; }
+      .main .section-title { font-weight: 400; color: #0a0a0a; font-variant: small-caps; letter-spacing: 2px; border-bottom: 1px solid #d4a843; padding-bottom: 4px; font-size: 14px; }
+      .main .entry-title { font-family: Calibri, sans-serif; color: #333; }
     `,
   },
   {
-    id: "bold", name: "Bold", desc: "Black sidebar with amber highlights",
+    id: "bold", name: "Bold", desc: "High-contrast black with neon amber highlights",
     category: "Sidebar", layout: "sidebar-left",
     previewBg: "#000", previewAccent: "#f59e0b", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
       .sidebar { background: #000; color: #e5e7eb; }
-      .name { font-size: 22px; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 1px; }
-      .job-title { color: #fbbf24; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; }
-      .contact-item { color: #9ca3af; }
-      .sidebar .section-title { color: #f59e0b; font-weight: 800; border-bottom: 1px solid #333; padding-bottom: 3px; }
+      .name { font-size: 24px; font-weight: 900; color: #f59e0b; text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; }
+      .job-title { color: #fbbf24; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; border-top: 2px solid #f59e0b; margin-top: 8px; padding-top: 8px; }
+      .contact-item { color: #777; font-size: 11px; }
+      .sidebar .section-title { color: #000; background: #f59e0b; font-weight: 900; padding: 4px 10px; margin-bottom: 8px; border: none; font-size: 10px; letter-spacing: 2px; }
       .sidebar li { color: #d1d5db; }
       .sidebar p { color: #d1d5db; }
-      .main .section-title { font-weight: 800; color: #000; border-bottom: 3px solid #f59e0b; padding-bottom: 3px; }
+      .main .section-title { font-weight: 900; color: #000; border: none; border-left: 4px solid #f59e0b; padding-left: 12px; letter-spacing: 1px; }
+      .main .entry-title { font-weight: 800; }
     `,
   },
   {
-    id: "fresh", name: "Fresh", desc: "Light sage sidebar with green accents",
+    id: "fresh", name: "Fresh", desc: "Light pastel sidebar with organic green feel",
     category: "Sidebar", layout: "sidebar-left",
-    previewBg: "#f0fdf4", previewAccent: "#16a34a", previewLight: false,
+    previewBg: "#ecfdf5", previewAccent: "#16a34a", previewLight: false,
     css: SIDEBAR_BASE + `
       body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; }
-      .sidebar { background: #f0fdf4; color: #1a1a1a; border-right: 2px solid #bbf7d0; }
-      .name { font-size: 22px; font-weight: 700; color: #15803d; }
-      .job-title { color: #16a34a; font-size: 12px; }
-      .contact-item { color: #555; }
-      .sidebar .section-title { color: #15803d; font-weight: 700; border-bottom: 1px solid #bbf7d0; padding-bottom: 3px; }
+      .sidebar { background: #ecfdf5; color: #1a1a1a; border-right: none; }
+      .name { font-size: 24px; font-weight: 700; color: #15803d; }
+      .job-title { color: #16a34a; font-size: 12px; font-weight: 600; }
+      .contact-item { color: #374151; font-size: 11.5px; padding: 4px 8px; background: #d1fae5; border-radius: 4px; margin-bottom: 4px; }
+      .sidebar .section-title { color: #15803d; font-weight: 700; background: #d1fae5; padding: 4px 8px; border-radius: 4px; border: none; font-size: 11px; }
       .sidebar li { color: #374151; }
       .sidebar p { color: #374151; }
-      .main .section-title { font-weight: 700; color: #15803d; border-bottom: 2px solid #bbf7d0; padding-bottom: 3px; }
+      .main { border-left: 3px solid #bbf7d0; }
+      .main .section-title { font-weight: 700; color: #15803d; border-bottom: 2px solid #bbf7d0; padding-bottom: 4px; }
     `,
   },
 
   /* ======== SIDEBAR RIGHT ======== */
   {
-    id: "sleek", name: "Sleek", desc: "Right sidebar with slate blue styling",
+    id: "sleek", name: "Sleek", desc: "Right sidebar with split-tone grey architecture",
     category: "Sidebar", layout: "sidebar-right",
-    previewBg: "#334155", previewAccent: "#94a3b8", previewLight: true,
+    previewBg: "#1f2937", previewAccent: "#94a3b8", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: Calibri, Arial, sans-serif; }
-      .sidebar { background: #334155; color: #e2e8f0; }
-      .sidebar .section-title { color: #94a3b8; font-weight: 700; border-bottom: 1px solid #475569; padding-bottom: 3px; }
-      .sidebar li { color: #cbd5e1; }
-      .sidebar p { color: #cbd5e1; }
-      .contact-item { color: #cbd5e1; }
-      .main .name { font-size: 26px; font-weight: 700; color: #1e293b; }
-      .main .job-title { font-size: 14px; color: #64748b; margin-bottom: 10px; }
-      .main .section-title { font-weight: 700; color: #334155; border-bottom: 2px solid #334155; padding-bottom: 3px; }
+      .sidebar { background: #1f2937; color: #e2e8f0; }
+      .sidebar .section-title { color: #fff; font-weight: 700; background: #374151; padding: 4px 10px; border-radius: 4px; border: none; font-size: 10.5px; letter-spacing: 1px; }
+      .sidebar li { color: #d1d5db; }
+      .sidebar p { color: #d1d5db; }
+      .contact-item { color: #9ca3af; border-bottom: 1px solid #374151; padding-bottom: 5px; margin-bottom: 5px; font-size: 11px; }
+      .main .name { font-size: 28px; font-weight: 800; color: #111827; letter-spacing: -1px; }
+      .main .job-title { font-size: 13px; color: #6b7280; margin-bottom: 14px; font-weight: 500; }
+      .main .section-title { font-weight: 700; color: #111827; border: none; border-left: 3px solid #6b7280; padding-left: 10px; }
     `,
   },
   {
-    id: "designer", name: "Designer", desc: "Right sidebar with rose/magenta accents",
+    id: "designer", name: "Designer", desc: "Right sidebar with vibrant magenta personality",
     category: "Sidebar", layout: "sidebar-right",
     previewBg: "#9f1239", previewAccent: "#fda4af", previewLight: true,
     css: SIDEBAR_BASE + `
       body { font-family: 'Segoe UI', Calibri, sans-serif; }
-      .sidebar { background: #9f1239; color: #ffe4e6; }
-      .sidebar .section-title { color: #fecdd3; font-weight: 700; border-bottom: 1px solid #be123c; padding-bottom: 3px; }
-      .sidebar li { color: #ffe4e6; }
-      .sidebar p { color: #ffe4e6; }
-      .contact-item { color: #fecdd3; }
-      .main .name { font-size: 26px; font-weight: 700; color: #9f1239; }
-      .main .job-title { font-size: 14px; color: #be123c; margin-bottom: 10px; }
-      .main .section-title { font-weight: 700; color: #9f1239; border-bottom: 2px solid #fecdd3; padding-bottom: 3px; }
+      .sidebar { background: linear-gradient(180deg, #9f1239 0%, #881337 100%); color: #ffe4e6; padding: 32px 18px; }
+      .sidebar .section-title { color: #fff; font-weight: 700; border: none; background: rgba(255,255,255,0.15); padding: 5px 10px; border-radius: 20px; text-align: center; font-size: 10.5px; letter-spacing: 1px; }
+      .sidebar li { color: #fecdd3; }
+      .sidebar p { color: #fecdd3; }
+      .contact-item { color: #fda4af; text-align: center; font-size: 11px; }
+      .main .name { font-size: 28px; font-weight: 800; color: #9f1239; }
+      .main .job-title { font-size: 14px; color: #be123c; margin-bottom: 12px; font-weight: 500; }
+      .main .section-title { font-weight: 800; color: #9f1239; border-bottom: 3px solid #fda4af; padding-bottom: 4px; }
     `,
   },
 
   /* ======== BANNER HEADER ======== */
   {
-    id: "banner", name: "Banner", desc: "Full-width navy header with white text",
+    id: "banner", name: "Banner", desc: "Full-width gradient header with prominent name",
     category: "Banner", layout: "banner",
     previewBg: "#1e293b", previewAccent: "#fff", previewLight: true,
     css: BANNER_BASE + `
       body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
-      .banner { background: #1e293b; }
-      .name { font-size: 28px; font-weight: 700; }
-      .job-title { font-size: 14px; }
-      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1e293b; border-bottom: 2px solid #1e293b; padding-bottom: 3px; }
+      .banner { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 32px 44px; }
+      .name { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+      .job-title { font-size: 13px; letter-spacing: 1px; }
+      .contact { font-size: 12px; margin-top: 8px; }
+      .section-title { font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1e293b; border-left: 4px solid #1e293b; padding-left: 10px; border-bottom: none; padding-bottom: 0; font-size: 12px; }
     `,
   },
   {
-    id: "noir", name: "Noir", desc: "Dark header with minimal monochrome body",
+    id: "noir", name: "Noir", desc: "Cinematic dark with thin ultra-light typography",
     category: "Banner", layout: "banner",
     previewBg: "#111", previewAccent: "#888", previewLight: true,
     css: BANNER_BASE + `
       body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-      .banner { background: #111; }
-      .name { font-size: 26px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
-      .job-title { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #888; }
-      .contact { color: #888; }
-      .section-title { font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: #555; border-bottom: 1px solid #ddd; padding-bottom: 3px; font-size: 12px; }
-      .entry-title { font-weight: 600; }
+      .banner { background: #111; padding: 36px 44px; }
+      .name { font-size: 30px; font-weight: 200; letter-spacing: 6px; text-transform: uppercase; }
+      .job-title { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #666; font-weight: 300; }
+      .contact { color: #555; letter-spacing: 1px; font-size: 11px; margin-top: 10px; }
+      .body { padding: 28px 44px; }
+      .section-title { font-weight: 300; text-transform: uppercase; letter-spacing: 3px; color: #888; border: none; padding-bottom: 0; font-size: 11px; margin-bottom: 10px; }
+      .entry-title { font-weight: 500; letter-spacing: 0.3px; }
+      li { color: #444; }
+      .summary { color: #444; }
     `,
   },
 
   /* ======== SPECIAL ======== */
   {
-    id: "timeline", name: "Timeline", desc: "Left timeline dots for work experience",
+    id: "timeline", name: "Timeline", desc: "Visual timeline with connected dots and indigo accents",
     category: "Special", layout: "single",
     previewBg: "#fff", previewAccent: "#6366f1", previewLight: false,
     css: SINGLE_BASE + `
       body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; }
-      .name { font-size: 26px; font-weight: 700; color: #312e81; }
-      .job-title { font-size: 13px; color: #6366f1; }
-      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #4f46e5; border-bottom: 2px solid #e0e7ff; padding-bottom: 3px; }
-      .entry { border-left: 2px solid #c7d2fe; padding-left: 14px; margin-left: 6px; position: relative; }
-      .entry::before { content: ''; position: absolute; left: -5px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: #6366f1; }
+      .header { border-bottom: 3px solid #6366f1; padding-bottom: 14px; margin-bottom: 18px; }
+      .name { font-size: 28px; font-weight: 800; color: #312e81; }
+      .job-title { font-size: 14px; color: #6366f1; font-weight: 600; }
+      .contact { border: none; color: #666; }
+      .section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4f46e5; border: none; padding: 0; margin-bottom: 10px; }
+      .entry { border-left: 3px solid #c7d2fe; padding-left: 16px; margin-left: 8px; position: relative; margin-bottom: 14px; }
+      .entry::before { content: ''; position: absolute; left: -7px; top: 5px; width: 11px; height: 11px; border-radius: 50%; background: #6366f1; border: 2px solid #e0e7ff; }
+      .entry-title { color: #312e81; }
     `,
   },
   {
-    id: "compact", name: "Compact", desc: "Dense layout maximizing content per page",
+    id: "compact", name: "Compact", desc: "Maximum content density — fits everything on one page",
     category: "Special", layout: "single",
     previewBg: "#fff", previewAccent: "#374151", previewLight: false,
     css: SINGLE_BASE + `
-      body { font-family: Calibri, Arial, sans-serif; font-size: 12.5px; padding: 28px 32px; line-height: 1.4; }
-      .name { font-size: 22px; font-weight: 700; color: #111; }
-      .job-title { font-size: 12px; color: #555; }
-      .contact { font-size: 11.5px; }
-      .section { margin-bottom: 10px; }
-      .section-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #374151; border-bottom: 1.5px solid #374151; padding-bottom: 2px; margin-bottom: 4px; }
-      .entry { margin-bottom: 7px; }
-      .entry-title { font-size: 12px; }
-      li { font-size: 11.5px; line-height: 1.35; margin-bottom: 1px; }
-      .summary { font-size: 12px; line-height: 1.4; }
+      body { font-family: Calibri, Arial, sans-serif; font-size: 12px; padding: 24px 28px; line-height: 1.35; }
+      .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 12px; }
+      .name { font-size: 20px; font-weight: 800; color: #111; }
+      .job-title { font-size: 11px; color: #555; }
+      .contact { font-size: 10.5px; text-align: right; border: none; padding: 0; margin: 0; }
+      .section { margin-bottom: 8px; }
+      .section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #fff; background: #374151; padding: 2px 8px; margin-bottom: 5px; border: none; display: inline-block; }
+      .entry { margin-bottom: 6px; }
+      .entry-title { font-size: 11.5px; font-weight: 700; }
+      .entry-sub { font-size: 10.5px; }
+      li { font-size: 11px; line-height: 1.3; margin-bottom: 1px; }
+      .summary { font-size: 11.5px; line-height: 1.35; }
     `,
   },
 ];
@@ -605,7 +634,7 @@ function MiniPreview({ template, data }: { template: Template; data: ResumeData 
       <iframe
         srcDoc={html}
         className="absolute top-0 left-0 border-0 pointer-events-none"
-        style={{ width: "800px", height: "1040px", transform: "scale(0.25)", transformOrigin: "top left" }}
+        style={{ width: "800px", height: "1130px", transform: "scale(0.33)", transformOrigin: "top left" }}
         title={template.name}
         loading="lazy"
       />
@@ -845,7 +874,7 @@ export default function TemplatesPage() {
           </div>
 
           {/* ---- Template Grid — LiveCareer-style cards ---- */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {filtered.map(t => {
               const isSelected = selectedId === t.id;
               return (
