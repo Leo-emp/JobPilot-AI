@@ -1,74 +1,140 @@
 /* ============================================================
-   SETTINGS PAGE
+   SETTINGS PAGE - Account, Billing & Usage
    ============================================================
-   User account settings, plan management, billing, and
-   account deletion (GDPR compliance).
-   Shows current plan, profile info, usage stats, and
-   connects to payment provider for plan upgrades.
-   Includes a working "Delete Account" flow that requires
-   email confirmation before permanently removing all data.
+   Three-tab layout:
+   1. Account — Edit name, upload profile picture
+   2. Billing — Current plan, upgrade, manage subscription/card
+   3. Usage — Real-time AI usage stats with visual bar
    ============================================================ */
 
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 
-/* ---- User plan data from the API ---- */
+/* ---- Types ---- */
 interface UserPlan {
   plan: string;
   aiUsageCount: number;
   usageResetDate: string;
 }
 
+/* ---- Tab configuration ---- */
+const tabs = [
+  { id: "account", label: "Account", icon: "👤" },
+  { id: "billing", label: "Billing", icon: "💳" },
+  { id: "usage", label: "Usage", icon: "📊" },
+];
+
 export default function SettingsPage() {
-  /* Get the current user session */
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const searchParams = useSearchParams();
 
-  /* Plan and billing state */
+  /* Active tab */
+  const [activeTab, setActiveTab] = useState("account");
+
+  /* Plan data */
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
+
+  /* Profile editing */
+  const [name, setName] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /* Billing state */
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   const [message, setMessage] = useState("");
 
-  /* Account deletion state */
+  /* Account deletion */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  /* Initialize name from session */
+  useEffect(() => {
+    if (session?.user?.name) setName(session.user.name);
+    if (session?.user?.image) setProfileImage(session.user.image);
+  }, [session]);
+
   /* Check for Stripe redirect messages */
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
       setMessage("Your plan has been upgraded successfully!");
+      setActiveTab("billing");
     } else if (searchParams.get("cancelled") === "true") {
       setMessage("Checkout was cancelled. No changes were made.");
+      setActiveTab("billing");
     }
   }, [searchParams]);
 
-  /* ---- Fetch User Plan Info ---- */
+  /* Fetch plan data */
   const fetchPlan = useCallback(async () => {
     try {
       const res = await fetch("/api/user/plan");
-      if (res.ok) {
-        const data = await res.json();
-        setUserPlan(data);
-      }
-    } catch {
-      /* Silent fail */
-    }
+      if (res.ok) setUserPlan(await res.json());
+    } catch {}
   }, []);
 
-  useEffect(() => {
-    fetchPlan();
-  }, [fetchPlan]);
+  useEffect(() => { fetchPlan(); }, [fetchPlan]);
 
-  /* ---- Handle Plan Upgrade ---- */
-  /* Creates a Stripe Checkout session and redirects to payment */
+  /* ---- Profile Image Upload ---- */
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setProfileMessage("Image must be under 2MB.");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setProfileMessage("Please upload an image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfileImage(reader.result as string);
+      setProfileMessage("");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  /* ---- Save Profile ---- */
+  const handleSaveProfile = async () => {
+    setProfileSaving(true);
+    setProfileMessage("");
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), image: profileImage }),
+      });
+
+      if (res.ok) {
+        setProfileMessage("Profile updated successfully!");
+        await updateSession({ name: name.trim() });
+      } else {
+        const data = await res.json();
+        setProfileMessage(data.error || "Failed to save.");
+      }
+    } catch {
+      setProfileMessage("Failed to save profile.");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  /* ---- Upgrade Plan ---- */
   const handleUpgrade = async (plan: string, interval: "month" | "year") => {
     setUpgradeLoading(true);
     try {
@@ -78,13 +144,8 @@ export default function SettingsPage() {
         body: JSON.stringify({ plan, interval }),
       });
       const data = await res.json();
-
-      if (data.url) {
-        /* Redirect to Stripe Checkout page */
-        window.location.href = data.url;
-      } else {
-        setMessage(data.error || "Failed to start checkout.");
-      }
+      if (data.url) window.location.href = data.url;
+      else setMessage(data.error || "Failed to start checkout.");
     } catch {
       setMessage("Failed to connect to payment system.");
     } finally {
@@ -92,19 +153,14 @@ export default function SettingsPage() {
     }
   };
 
-  /* ---- Open Billing Portal ---- */
-  /* Redirects to Stripe's self-service billing portal */
+  /* ---- Billing Portal ---- */
   const handleBillingPortal = async () => {
     setPortalLoading(true);
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setMessage(data.error || "Failed to open billing portal.");
-      }
+      if (data.url) window.location.href = data.url;
+      else setMessage(data.error || "Failed to open billing portal.");
     } catch {
       setMessage("Failed to connect to billing system.");
     } finally {
@@ -112,38 +168,32 @@ export default function SettingsPage() {
     }
   };
 
-  /* ---- Handle Account Deletion ---- */
-  /* Permanently deletes the user's account after email confirmation */
+  /* ---- Delete Account ---- */
   const handleDeleteAccount = async () => {
     setDeleteError("");
     setDeleteLoading(true);
-
     try {
       const res = await fetch("/api/user/delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirmEmail: deleteConfirmEmail }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        setDeleteError(data.error || "Failed to delete account.");
-        return;
-      }
-
-      /* Account deleted — sign out and redirect to homepage */
+      if (!res.ok) { setDeleteError(data.error || "Failed to delete."); return; }
       await signOut({ callbackUrl: "/" });
     } catch {
-      setDeleteError("Failed to connect to server. Please try again.");
+      setDeleteError("Failed to connect to server.");
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  /* Calculate usage percentage — must match PLAN_LIMITS in api/ai/route.ts */
+  /* Usage calculation */
   const usageLimit = userPlan?.plan === "pro" ? 1000 : 20;
   const usagePercent = Math.min((userPlan?.aiUsageCount || 0) / usageLimit * 100, 100);
+  const daysUntilReset = userPlan?.usageResetDate
+    ? Math.max(0, Math.ceil((new Date(userPlan.usageResetDate).getTime() - Date.now()) / 86400000))
+    : 0;
 
   return (
     <div>
@@ -152,217 +202,398 @@ export default function SettingsPage() {
         Settings
       </h1>
       <p className="text-text-secondary mb-8">
-        Manage your account, plan, and billing.
+        Manage your account, subscription, and usage.
       </p>
+
+      {/* ---- Tab Navigation ---- */}
+      <div className="flex gap-1 mb-8 p-1 rounded-xl bg-space-800 border border-card-border w-fit">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === tab.id
+                ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+                : "text-text-secondary hover:text-white hover:bg-space-600 border border-transparent"
+            }`}
+          >
+            <span className="mr-2">{tab.icon}</span>
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {/* ---- Status Message ---- */}
       {message && (
         <div className="mb-6 p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 text-brand-light text-sm">
           {message}
-          <button
-            onClick={() => setMessage("")}
-            className="ml-3 text-text-muted hover:text-white"
-          >
-            ✕
-          </button>
+          <button onClick={() => setMessage("")} className="ml-3 text-text-muted hover:text-white">✕</button>
         </div>
       )}
 
-      <div className="space-y-6 max-w-2xl">
-        {/* ---- Profile Card ---- */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold mb-4">Profile</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-text-muted mb-1">Name</label>
-              <p className="text-white">{session?.user?.name || "—"}</p>
+      <div className="max-w-2xl">
+        {/* ============================================================
+           ACCOUNT TAB
+           ============================================================ */}
+        {activeTab === "account" && (
+          <div className="space-y-6">
+            {/* Profile Card */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-6">Profile Information</h2>
+
+              {/* Avatar */}
+              <div className="flex items-center gap-6 mb-6">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-space-600 border-2 border-card-border flex items-center justify-center">
+                    {profileImage ? (
+                      <Image
+                        src={profileImage}
+                        alt="Profile"
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl text-text-muted">
+                        {(session?.user?.name || "U").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand-indigo border-2 border-space-800 flex items-center justify-center text-white text-xs hover:bg-brand-indigo/80 transition-colors"
+                  >
+                    ✎
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-text-secondary">Profile picture</p>
+                  <p className="text-xs text-text-muted mt-1">JPG, PNG under 2MB</p>
+                  {profileImage && (
+                    <button
+                      onClick={() => { setProfileImage(null); setProfileMessage(""); }}
+                      className="text-xs text-red-400 hover:text-red-300 mt-1"
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Name */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-text-muted mb-2">Display Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+                    placeholder="Your name"
+                  />
+                </div>
+
+                {/* Email (read-only) */}
+                <div>
+                  <label className="block text-sm text-text-muted mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={session?.user?.email || ""}
+                    disabled
+                    className="w-full px-4 py-3 rounded-xl bg-space-800 border border-card-border text-text-secondary text-sm cursor-not-allowed"
+                  />
+                  <p className="text-xs text-text-muted mt-1">Email cannot be changed.</p>
+                </div>
+              </div>
+
+              {/* Save + Message */}
+              {profileMessage && (
+                <p className={`text-sm mt-4 ${profileMessage.includes("success") ? "text-green-400" : "text-red-400"}`}>
+                  {profileMessage}
+                </p>
+              )}
+              <button
+                onClick={handleSaveProfile}
+                disabled={profileSaving || !name.trim()}
+                className="btn-primary mt-6 disabled:opacity-50"
+              >
+                {profileSaving ? "Saving..." : "Save Changes"}
+              </button>
             </div>
-            <div>
-              <label className="block text-sm text-text-muted mb-1">Email</label>
-              <p className="text-white">{session?.user?.email || "—"}</p>
+
+            {/* Data & Privacy */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-4">Data & Privacy</h2>
+              <p className="text-text-secondary text-sm mb-4">
+                Your resume and LinkedIn text are processed ephemerally — they are NOT stored after the AI request completes.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/privacy" className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors">
+                  Terms of Service
+                </Link>
+              </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="glass-card p-6 border-red-500/20">
+              <h2 className="text-lg font-bold mb-4 text-red-400">Danger Zone</h2>
+              <p className="text-text-secondary text-sm mb-4">
+                Deactivate your account and schedule data for deletion. Data preserved 30 days for recovery.
+              </p>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/10 transition-colors"
+              >
+                Delete My Account
+              </button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* ---- Plan & Usage Card ---- */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold mb-4">Current Plan</h2>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <span className={`px-3 py-1 text-sm font-bold uppercase tracking-wider rounded-full border ${
-                userPlan?.plan === "pro"
-                  ? "bg-brand-indigo/20 text-brand-light border-brand-indigo/30"
-                  : userPlan?.plan === "enterprise"
-                  ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                  : "bg-brand-indigo/20 text-brand-light border-brand-indigo/30"
-              }`}>
-                {userPlan?.plan || "Free"}
-              </span>
-              <p className="text-text-secondary text-sm mt-3">
-                {userPlan?.plan === "pro"
-                  ? "1,000 AI calls per month, all 10 tools unlocked."
-                  : "20 AI calls per month, all 10 tools included."}
-              </p>
-            </div>
-            {userPlan?.plan === "free" && (
-              <div className="flex flex-col items-end gap-2">
-                {/* Monthly / Annual toggle */}
-                <div className="flex rounded-lg bg-space-700 p-0.5 text-xs">
-                  <button
-                    onClick={() => setBillingInterval("month")}
-                    className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                      billingInterval === "month" ? "bg-brand-indigo text-white" : "text-text-muted hover:text-white"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setBillingInterval("year")}
-                    className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                      billingInterval === "year" ? "bg-brand-indigo text-white" : "text-text-muted hover:text-white"
-                    }`}
-                  >
-                    Annual <span className="text-green-400">-20%</span>
-                  </button>
+        {/* ============================================================
+           BILLING TAB
+           ============================================================ */}
+        {activeTab === "billing" && (
+          <div className="space-y-6">
+            {/* Current Plan */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-6">Current Plan</h2>
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className={`px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full border ${
+                    userPlan?.plan === "pro"
+                      ? "bg-brand-indigo/20 text-brand-light border-brand-indigo/30"
+                      : "bg-space-600 text-text-secondary border-card-border"
+                  }`}>
+                    {userPlan?.plan || "Free"}
+                  </span>
+                  <p className="text-text-secondary text-sm mt-4">
+                    {userPlan?.plan === "pro"
+                      ? "Pro plan — 1,000 AI calls/month, priority support."
+                      : "Free plan — 20 AI calls/month, all tools included."}
+                  </p>
                 </div>
+              </div>
+
+              {/* Upgrade section (for free users) */}
+              {userPlan?.plan === "free" && (
+                <div className="mt-6 p-5 rounded-xl bg-brand-indigo/5 border border-brand-indigo/20">
+                  <h3 className="font-semibold text-white mb-3">Upgrade to Pro</h3>
+                  <ul className="text-sm text-text-secondary space-y-1.5 mb-4">
+                    <li>✓ 1,000 AI calls per month</li>
+                    <li>✓ Priority AI processing</li>
+                    <li>✓ Full AI history access</li>
+                  </ul>
+                  <div className="flex items-center gap-4">
+                    <div className="flex rounded-lg bg-space-700 p-0.5 text-xs">
+                      <button
+                        onClick={() => setBillingInterval("month")}
+                        className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                          billingInterval === "month" ? "bg-brand-indigo text-white" : "text-text-muted hover:text-white"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => setBillingInterval("year")}
+                        className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
+                          billingInterval === "year" ? "bg-brand-indigo text-white" : "text-text-muted hover:text-white"
+                        }`}
+                      >
+                        Annual <span className="text-green-400">-20%</span>
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleUpgrade("pro", billingInterval)}
+                      disabled={upgradeLoading}
+                      className="btn-primary text-sm disabled:opacity-50"
+                    >
+                      {upgradeLoading ? "Loading..." : billingInterval === "year" ? "Upgrade — £8/mo" : "Upgrade — £10/mo"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Manage Subscription (for paying users) */}
+            {(userPlan?.plan === "pro" || userPlan?.plan === "enterprise") && (
+              <div className="glass-card p-6">
+                <h2 className="text-lg font-bold mb-4">Manage Subscription</h2>
+                <p className="text-text-secondary text-sm mb-4">
+                  View receipts, update your card, or cancel your subscription through the Stripe billing portal.
+                </p>
                 <button
-                  onClick={() => handleUpgrade("pro", billingInterval)}
-                  disabled={upgradeLoading}
-                  className="btn-primary text-sm disabled:opacity-50"
+                  onClick={handleBillingPortal}
+                  disabled={portalLoading}
+                  className="btn-primary disabled:opacity-50"
                 >
-                  {upgradeLoading ? "Loading..." : billingInterval === "year" ? "Upgrade — £8/mo billed yearly" : "Upgrade — £10/mo"}
+                  {portalLoading ? "Opening..." : "Open Billing Portal"}
                 </button>
+                <p className="text-xs text-text-muted mt-3">
+                  Opens Stripe's secure portal where you can update payment methods, view invoices, and manage your subscription.
+                </p>
               </div>
             )}
-            {(userPlan?.plan === "pro" || userPlan?.plan === "enterprise") && (
-              <button
-                onClick={handleBillingPortal}
-                disabled={portalLoading}
-                className="btn-secondary text-sm disabled:opacity-50"
-              >
-                {portalLoading ? "Loading..." : "Manage Billing"}
-              </button>
-            )}
-          </div>
 
-          {/* ---- AI Usage Bar ---- */}
-          {/* Visual progress bar showing AI calls used this month */}
-          <div>
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-text-secondary">AI Usage This Month</span>
-              <span className="text-text-muted">
-                {userPlan?.aiUsageCount || 0} / {usageLimit}
-              </span>
+            {/* Payment Info */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-4">Payment Information</h2>
+              {(userPlan?.plan === "pro" || userPlan?.plan === "enterprise") ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-card-border">
+                    <span className="text-sm text-text-secondary">Payment method</span>
+                    <button
+                      onClick={handleBillingPortal}
+                      className="text-sm text-brand-light hover:text-white transition-colors"
+                    >
+                      Update card →
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-card-border">
+                    <span className="text-sm text-text-secondary">Invoice history</span>
+                    <button
+                      onClick={handleBillingPortal}
+                      className="text-sm text-brand-light hover:text-white transition-colors"
+                    >
+                      View receipts →
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-text-secondary">Cancel subscription</span>
+                    <button
+                      onClick={handleBillingPortal}
+                      className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Cancel →
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-text-muted">
+                  No payment method on file. Upgrade to Pro to add a card.
+                </p>
+              )}
             </div>
-            <div className="w-full h-2 rounded-full bg-space-700 overflow-hidden">
+          </div>
+        )}
+
+        {/* ============================================================
+           USAGE TAB
+           ============================================================ */}
+        {activeTab === "usage" && (
+          <div className="space-y-6">
+            {/* Usage Overview */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-6">AI Usage This Month</h2>
+
+              {/* Big number display */}
+              <div className="flex items-end gap-3 mb-6">
+                <span className="text-5xl font-bold text-white font-[family-name:var(--font-space-grotesk)]">
+                  {userPlan?.aiUsageCount || 0}
+                </span>
+                <span className="text-2xl text-text-muted mb-1">/ {usageLimit}</span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-3 rounded-full bg-space-700 overflow-hidden mb-4">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    usagePercent >= 100
-                      ? "bg-red-500"
-                      : usagePercent >= 66
-                      ? "bg-yellow-500"
-                      : "bg-brand-indigo"
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    usagePercent >= 100 ? "bg-red-500"
+                    : usagePercent >= 80 ? "bg-yellow-500"
+                    : "bg-brand-indigo"
                   }`}
                   style={{ width: `${usagePercent}%` }}
                 />
               </div>
-            {userPlan?.usageResetDate && (
-              <p className="text-xs text-text-muted mt-2">
-                Resets on {new Date(userPlan.usageResetDate).toLocaleDateString()}
-              </p>
-            )}
-          </div>
-        </div>
 
-        {/* ---- System Status Card ---- */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold mb-4">System Status</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2">
-              <span className="text-text-secondary text-sm">AI Engine (Gemini)</span>
-              <span className="px-3 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
-                Connected
-              </span>
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-3 rounded-lg bg-space-700/50">
+                  <p className="text-2xl font-bold text-white">{userPlan?.aiUsageCount || 0}</p>
+                  <p className="text-xs text-text-muted mt-1">Calls Used</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-space-700/50">
+                  <p className="text-2xl font-bold text-white">{usageLimit - (userPlan?.aiUsageCount || 0)}</p>
+                  <p className="text-xs text-text-muted mt-1">Remaining</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-space-700/50">
+                  <p className="text-2xl font-bold text-white">{daysUntilReset}</p>
+                  <p className="text-xs text-text-muted mt-1">Days to Reset</p>
+                </div>
+              </div>
+
+              {userPlan?.usageResetDate && (
+                <p className="text-xs text-text-muted mt-4">
+                  Usage resets on {new Date(userPlan.usageResetDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                </p>
+              )}
             </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-text-secondary text-sm">Database</span>
-              <span className="px-3 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
-                Connected
-              </span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-text-secondary text-sm">Payments (Stripe)</span>
-              <span className={`px-3 py-1 text-xs font-medium rounded-full border ${
-                process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
-                  ? "bg-green-500/20 text-green-400 border-green-500/30"
-                  : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-              }`}>
-                {process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true" ? "Connected" : "Not Configured"}
-              </span>
+
+            {/* Plan Details */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-4">Plan Limits</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-card-border">
+                  <span className="text-sm text-text-secondary">Monthly AI calls</span>
+                  <span className="text-sm text-white font-medium">{usageLimit}</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-card-border">
+                  <span className="text-sm text-text-secondary">Rate limit (per minute)</span>
+                  <span className="text-sm text-white font-medium">6 calls</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-card-border">
+                  <span className="text-sm text-text-secondary">Rate limit (per hour)</span>
+                  <span className="text-sm text-white font-medium">40 calls</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-text-secondary">AI tools available</span>
+                  <span className="text-sm text-white font-medium">All 10</span>
+                </div>
+              </div>
+
+              {userPlan?.plan === "free" && (
+                <div className="mt-5 p-4 rounded-xl bg-brand-indigo/5 border border-brand-indigo/20">
+                  <p className="text-sm text-text-secondary mb-3">
+                    Need more calls? Upgrade to Pro for 1,000 calls/month.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("billing")}
+                    className="text-sm text-brand-light hover:text-white font-medium transition-colors"
+                  >
+                    View upgrade options →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* ---- Data & Privacy Card ---- */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold mb-4">Data & Privacy</h2>
-          <p className="text-text-secondary text-sm mb-4">
-            Your resume and LinkedIn text are processed ephemerally — they are NOT stored on our servers
-            after the AI request completes. Only your account info (name, email) and usage counts are persisted.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/privacy"
-              className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/terms"
-              className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors"
-            >
-              Terms of Service
-            </Link>
-          </div>
-        </div>
-
-        {/* ---- Danger Zone — Account Deletion ---- */}
-        <div className="glass-card p-6 border-red-500/20">
-          <h2 className="text-lg font-bold mb-4 text-red-400">Danger Zone</h2>
-          <p className="text-text-secondary text-sm mb-4">
-            Deactivate your account and schedule all data for deletion. Your data will be preserved
-            for 30 days in case you change your mind, then permanently removed.
-          </p>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/10 transition-colors"
-          >
-            Delete My Account
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* ---- Delete Account Confirmation Modal ---- */}
-      {/* Requires user to type their email to confirm — prevents accidental deletion */}
+      {/* ---- Delete Account Modal ---- */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Dark backdrop */}
           <div
             className="absolute inset-0 bg-black/70"
             onClick={() => { setShowDeleteModal(false); setDeleteError(""); setDeleteConfirmEmail(""); }}
           />
-          {/* Modal content */}
           <div className="relative w-full max-w-md bg-space-800 border border-red-500/20 rounded-2xl p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-red-400 mb-2">Delete Account</h3>
             <p className="text-text-secondary text-sm mb-4">
-              This will deactivate your account immediately. Your data will be preserved for 30 days,
-              then permanently deleted. You can contact support within 30 days to recover your account.
+              This will deactivate your account. Data preserved for 30 days, then permanently deleted.
             </p>
             <p className="text-text-secondary text-sm mb-4">
-              To confirm, type your email address: <strong className="text-white">{session?.user?.email}</strong>
+              Type your email to confirm: <strong className="text-white">{session?.user?.email}</strong>
             </p>
-
-            {/* Email confirmation input */}
             <input
               type="email"
               value={deleteConfirmEmail}
@@ -370,13 +601,7 @@ export default function SettingsPage() {
               placeholder="Type your email to confirm..."
               className="w-full px-4 py-3 rounded-xl bg-space-700 border border-red-500/30 text-white placeholder-text-muted focus:outline-none focus:border-red-500 text-sm mb-4"
             />
-
-            {/* Delete error message */}
-            {deleteError && (
-              <p className="text-red-400 text-sm mb-4">{deleteError}</p>
-            )}
-
-            {/* Action buttons */}
+            {deleteError && <p className="text-red-400 text-sm mb-4">{deleteError}</p>}
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowDeleteModal(false); setDeleteError(""); setDeleteConfirmEmail(""); }}
