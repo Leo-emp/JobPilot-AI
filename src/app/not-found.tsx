@@ -8,7 +8,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import RocketIcon from "@/components/RocketIcon";
+import Logo from "@/components/Logo";
 
 const StarField = dynamic(() => import("@/components/StarField"));
 
@@ -21,7 +21,7 @@ export default function NotFound() {
       {/* Top bar with logo */}
       <div className="relative z-10 p-6">
         <Link href="/" className="inline-flex items-center gap-1">
-          <RocketIcon size={28} />
+          <Logo size={28} />
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
             JobPilot AI
           </span>

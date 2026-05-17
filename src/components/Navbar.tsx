@@ -10,7 +10,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import RocketIcon from "./RocketIcon";
+import Logo from "./Logo";
 
 export default function Navbar() {
   /* Track whether the mobile hamburger menu is open */
@@ -26,7 +26,7 @@ export default function Navbar() {
           {/* ---- Brand Logo + Name ---- */}
           <Link href="/" className="flex items-center gap-1 group">
             {/* Custom SVG rocket in brand colors (replaces emoji) */}
-            <RocketIcon size={28} />
+            <Logo size={28} />
             {/* Brand name in Space Grotesk — premium geometric font */}
             <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
               JobPilot AI

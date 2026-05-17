@@ -3,7 +3,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import RocketIcon from "./RocketIcon";
+import Logo from "./Logo";
 
 export default function Hero() {
   return (
@@ -35,7 +35,7 @@ export default function Hero() {
           style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.06) 40%, transparent 70%)" }}
         />
         <div className="relative">
-          <RocketIcon size={120} />
+          <Logo size={120} />
         </div>
       </div>
 
