@@ -1,10 +1,24 @@
 <svg viewBox="0 0 64 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Top-left facet (lightest silver) -->
-  <polygon points="32,0 4,56 32,50" fill="#B5C4D2"/>
-  <!-- Top-right facet (medium blue) -->
-  <polygon points="32,0 60,56 32,50" fill="#3C6485"/>
-  <!-- Bottom-left facet (gray-blue) -->
-  <polygon points="4,56 32,50 32,74 20,98" fill="#6C8A9E"/>
-  <!-- Bottom-right facet (dark navy) -->
-  <polygon points="60,56 32,50 32,74 44,98" fill="#1D3855"/>
+  <defs>
+    <linearGradient id="tl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C8D4DE"/>
+      <stop offset="100%" stop-color="#A8B8C8"/>
+    </linearGradient>
+    <linearGradient id="tr" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4A7298"/>
+      <stop offset="100%" stop-color="#305878"/>
+    </linearGradient>
+    <linearGradient id="bl" x1="0%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#7A9AB0"/>
+      <stop offset="100%" stop-color="#5C7E96"/>
+    </linearGradient>
+    <linearGradient id="br" x1="100%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#264A68"/>
+      <stop offset="100%" stop-color="#152E45"/>
+    </linearGradient>
+  </defs>
+  <polygon points="32,0 4,56 32,50" fill="url(#tl)"/>
+  <polygon points="32,0 60,56 32,50" fill="url(#tr)"/>
+  <polygon points="4,56 32,50 32,74 20,98" fill="url(#bl)"/>
+  <polygon points="60,56 32,50 32,74 44,98" fill="url(#br)"/>
 </svg>

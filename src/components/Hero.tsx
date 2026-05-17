@@ -28,14 +28,14 @@ export default function Hero() {
         <span className="text-text-muted">→</span>
       </div>
 
-      {/* ---- Rocket Icon ---- */}
+      {/* ---- Logo ---- */}
       <div className="relative mb-8">
         <div
-          className="absolute -inset-16 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.06) 40%, transparent 70%)" }}
+          className="absolute -inset-10 rounded-full blur-2xl"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0.04) 50%, transparent 75%)" }}
         />
-        <div className="relative">
-          <Logo size={120} />
+        <div className="relative drop-shadow-[0_0_20px_rgba(56,189,248,0.2)]">
+          <Logo size={72} />
         </div>
       </div>
 
