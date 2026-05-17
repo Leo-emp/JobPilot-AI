@@ -2,8 +2,10 @@
    AUTH PROXY - Route Protection & Security Headers
    ============================================================
    Runs on every matched request BEFORE the route handler.
+   - Maintenance mode toggle (env var MAINTENANCE_MODE)
    - Redirects unauthenticated users away from /dashboard
    - Blocks unauthenticated API requests with 401
+   - IP-based rate limiting for unauthenticated routes
    - Adds security headers (CSP, CORS, HSTS) to all responses
    - Enforces body size limits and CSRF origin verification
    ============================================================ */
@@ -12,8 +14,87 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { audit } from "@/lib/audit";
 
+/* ---- Maintenance mode check ---- */
+/* # Set MAINTENANCE_MODE=true in env vars to block all traffic except /api/health */
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true";
+
+/* ---- In-memory IP rate limiter for unauthenticated API routes ---- */
+/* # Edge-compatible burst protection — Redis handles sustained limits in route handlers */
+const ipStore = new Map<string, { count: number; resetAt: number }>();
+const IP_MAX_REQUESTS = 30;
+const IP_WINDOW_MS = 60_000;
+
+function checkIpLimit(ip: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const entry = ipStore.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    ipStore.set(ip, { count: 1, resetAt: now + IP_WINDOW_MS });
+    return { allowed: true, remaining: IP_MAX_REQUESTS - 1 };
+  }
+
+  if (entry.count >= IP_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  entry.count++;
+  return { allowed: true, remaining: IP_MAX_REQUESTS - entry.count };
+}
+
+/* # Clean up expired entries every 2 minutes */
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of ipStore.entries()) {
+    if (now > entry.resetAt) ipStore.delete(key);
+  }
+}, 120_000);
+
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  /* ---- Maintenance mode — block everything except health check ---- */
+  if (MAINTENANCE_MODE && pathname !== "/api/health") {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Service temporarily unavailable. We're performing scheduled maintenance." },
+        { status: 503, headers: { "Retry-After": "300" } }
+      );
+    }
+    return new NextResponse(
+      `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Maintenance</title><style>body{font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0a0a1a;color:#e2e8f0;text-align:center;padding:2rem}.box{max-width:480px}h1{font-size:2rem;margin-bottom:1rem}p{color:#94a3b8;line-height:1.6}</style></head><body><div class="box"><h1>We'll be right back</h1><p>JobPilot AI is undergoing scheduled maintenance. This usually takes less than 5 minutes. Please check back shortly.</p></div></body></html>`,
+      { status: 503, headers: { "Content-Type": "text/html", "Retry-After": "300" } }
+    );
+  }
+
+  /* ---- IP rate limiting for unauthenticated API routes ---- */
+  /* # Burst protection at the edge — prevents brute-force attacks on auth routes */
+  const isPublicApi = (
+    pathname.startsWith("/api/auth/") ||
+    pathname === "/api/health" ||
+    pathname.startsWith("/api/extension/")
+  );
+
+  if (isPublicApi) {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+               req.headers.get("x-real-ip") ||
+               "unknown";
+
+    const { allowed, remaining } = checkIpLimit(ip);
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": "60",
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      );
+    }
+
+  }
 
   /* Check for session token in cookies */
   const token =
@@ -153,7 +234,9 @@ export function proxy(req: NextRequest) {
   return response;
 }
 
-/* Only run proxy on dashboard and API routes */
+/* # Run on all routes except static assets (for maintenance mode coverage) */
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };

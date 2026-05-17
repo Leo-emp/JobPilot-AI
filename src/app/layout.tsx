@@ -9,7 +9,11 @@
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
+
+/* Lazy-load the cookie consent banner — only renders on first visit */
+const CookieConsent = dynamic(() => import("@/components/CookieConsent"));
 
 /* ---- Font Setup ---- */
 /* Geist is a clean, modern sans-serif font by Vercel — used for body text */
@@ -65,7 +69,10 @@ export default function RootLayout({
       /* All three font CSS variables are made available globally */
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

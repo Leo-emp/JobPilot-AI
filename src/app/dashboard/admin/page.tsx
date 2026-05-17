@@ -30,6 +30,11 @@ interface UserRow {
   };
 }
 
+interface WeeklyGrowth {
+  week: string;
+  signups: number;
+}
+
 interface AdminStats {
   overview: {
     totalUsers: number;
@@ -39,6 +44,14 @@ interface AdminStats {
     monthlySignups: number;
     totalAICalls: number;
   };
+  revenue: {
+    estimatedMRR: number;
+    conversionRate: string;
+    avgAICallsPerUser: number;
+    monthlyPrice: number;
+    annualMonthlyPrice: number;
+  };
+  growth: WeeklyGrowth[];
   content: {
     totalResumes: number;
     totalJobs: number;
@@ -118,7 +131,7 @@ export default function AdminDashboardPage() {
 
   if (!stats) return null;
 
-  const { overview, content } = stats;
+  const { overview, revenue, growth, content } = stats;
 
   return (
     <div>
@@ -171,6 +184,49 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ---- Revenue & Business Metrics ---- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {/* MRR + Conversion */}
+        <div className="p-5 rounded-2xl bg-space-700/80 border border-card-border">
+          <h3 className="font-semibold text-white mb-4">Revenue Metrics</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <div className="text-2xl font-bold text-green-400">£{revenue.estimatedMRR}</div>
+              <div className="text-xs text-text-muted mt-1">Estimated MRR</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-400">{revenue.conversionRate}%</div>
+              <div className="text-xs text-text-muted mt-1">Conversion Rate</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-amber-400">{revenue.avgAICallsPerUser}</div>
+              <div className="text-xs text-text-muted mt-1">Avg AI Calls/User</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Weekly Growth Chart */}
+        <div className="p-5 rounded-2xl bg-space-700/80 border border-card-border">
+          <h3 className="font-semibold text-white mb-4">Weekly Signups (8 weeks)</h3>
+          <div className="flex items-end gap-1.5 h-20">
+            {growth.map((w, i) => {
+              const max = Math.max(...growth.map(g => g.signups), 1);
+              const height = (w.signups / max) * 100;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <span className="text-[10px] text-text-muted">{w.signups || ""}</span>
+                  <div
+                    className="w-full rounded-t bg-brand-indigo/60 transition-all"
+                    style={{ height: `${Math.max(height, 4)}%` }}
+                  />
+                  <span className="text-[9px] text-text-muted truncate w-full text-center">{w.week}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       {/* ---- Platform Content Stats ---- */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">

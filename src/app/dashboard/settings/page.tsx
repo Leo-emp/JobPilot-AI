@@ -52,6 +52,10 @@ export default function SettingsPage() {
   const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   const [message, setMessage] = useState("");
 
+  /* Data export */
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportMessage, setExportMessage] = useState("");
+
   /* Account deletion */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
@@ -165,6 +169,35 @@ export default function SettingsPage() {
       setMessage("Failed to connect to billing system.");
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  /* ---- Export User Data ---- */
+  /* Downloads all user data as a JSON file (GDPR data portability) */
+  const handleExportData = async () => {
+    setExportLoading(true);
+    setExportMessage("");
+    try {
+      const res = await fetch("/api/user/export");
+      if (!res.ok) {
+        setExportMessage("Failed to export data. Please try again.");
+        return;
+      }
+      /* # Create a download link from the response blob */
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `jobpilot-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setExportMessage("Data exported successfully!");
+    } catch {
+      setExportMessage("Failed to export data.");
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -341,6 +374,26 @@ export default function SettingsPage() {
                 <Link href="/terms" className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors">
                   Terms of Service
                 </Link>
+              </div>
+
+              {/* Data Export — GDPR right to data portability */}
+              <div className="mt-5 pt-5 border-t border-card-border">
+                <h3 className="text-sm font-semibold text-white mb-2">Export Your Data</h3>
+                <p className="text-text-muted text-xs mb-3">
+                  Download all your data (profile, resumes, applications, contacts, cover letters, AI history) as a JSON file.
+                </p>
+                <button
+                  onClick={handleExportData}
+                  disabled={exportLoading}
+                  className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors disabled:opacity-50"
+                >
+                  {exportLoading ? "Exporting..." : "Download My Data"}
+                </button>
+                {exportMessage && (
+                  <p className={`text-xs mt-2 ${exportMessage.includes("success") ? "text-green-400" : "text-red-400"}`}>
+                    {exportMessage}
+                  </p>
+                )}
               </div>
             </div>
 

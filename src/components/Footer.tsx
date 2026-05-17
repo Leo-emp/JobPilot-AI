@@ -90,12 +90,17 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Legal links */}
+          {/* Column 4: Legal & Support links */}
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-4">
-              Legal
+              Support
             </h4>
             <ul className="space-y-3">
+              <li>
+                <Link href="/help" className="text-sm text-text-secondary hover:text-white transition-colors">
+                  Help Center
+                </Link>
+              </li>
               <li>
                 <Link href="/privacy" className="text-sm text-text-secondary hover:text-white transition-colors">
                   Privacy Policy

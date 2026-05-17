@@ -15,6 +15,7 @@ import { SessionProvider } from "next-auth/react";
 import PostHogProvider from "@/components/PostHogProvider";
 
 const StarField = dynamic(() => import("@/components/StarField"));
+const FeedbackWidget = dynamic(() => import("@/components/FeedbackWidget"));
 
 export default async function DashboardLayout({
   children,
@@ -51,6 +52,9 @@ export default async function DashboardLayout({
             {children}
           </div>
         </main>
+
+        {/* Floating feedback button — bottom-right corner */}
+        <FeedbackWidget />
       </div>
       </PostHogProvider>
     </SessionProvider>

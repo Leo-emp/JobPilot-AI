@@ -81,6 +81,28 @@ export async function GET() {
   const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const monthlySignups = allUsers.filter(u => new Date(u.createdAt) >= monthAgo).length;
 
+  /* ---- Revenue Metrics (estimated from plan data) ---- */
+  const monthlyPrice = 10;
+  const annualMonthlyPrice = 8;
+  const estimatedMRR = proUsers * monthlyPrice;
+  const conversionRate = totalUsers > 0 ? ((proUsers / totalUsers) * 100).toFixed(1) : "0.0";
+  const avgAICallsPerUser = totalUsers > 0 ? Math.round(totalAICalls / totalUsers) : 0;
+
+  /* ---- Growth: signups per week for last 8 weeks ---- */
+  const weeklyGrowth: { week: string; signups: number }[] = [];
+  for (let i = 7; i >= 0; i--) {
+    const start = new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
+    const end = new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000);
+    const count = allUsers.filter(u => {
+      const d = new Date(u.createdAt);
+      return d >= start && d < end;
+    }).length;
+    weeklyGrowth.push({
+      week: start.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+      signups: count,
+    });
+  }
+
   return NextResponse.json({
     overview: {
       totalUsers,
@@ -90,6 +112,14 @@ export async function GET() {
       monthlySignups,
       totalAICalls,
     },
+    revenue: {
+      estimatedMRR,
+      conversionRate,
+      avgAICallsPerUser,
+      monthlyPrice,
+      annualMonthlyPrice,
+    },
+    growth: weeklyGrowth,
     content: {
       totalResumes,
       totalJobs,

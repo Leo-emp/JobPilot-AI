@@ -11,6 +11,7 @@
 
 import { useState } from "react";
 import type { jsPDF } from "jspdf";
+import AiDisclosure from "./AiDisclosure";
 
 /* ---- Escape HTML to prevent XSS ---- */
 /* Strips any raw HTML tags from AI output before we add our own safe markup */
@@ -604,6 +605,9 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           Use the buttons above to download your result as a Word document or PDF.
         </p>
       )}
+
+      {/* AI-generated content disclosure */}
+      <AiDisclosure />
     </div>
   );
 }

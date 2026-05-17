@@ -36,6 +36,7 @@ export type AuditEvent =
   | "ai.limit.reached"
   | "ai.error"
   | "admin.action"
+  | "feedback.submitted"
   | "security.rate_limit.hit"
   | "security.csrf.blocked"
   | "security.body_size.blocked";
