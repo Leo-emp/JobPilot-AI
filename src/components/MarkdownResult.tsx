@@ -32,7 +32,7 @@ function processInline(text: string): string {
     /* Bold: **text** */
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
     /* Italic: *text* (but not inside bold) */
-    .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em class="text-gray-400">$1</em>')
+    .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em class="text-gray-300">$1</em>')
     /* Inline code: `code` */
     .replace(/`([^`]+)`/g, '<code class="bg-space-600 px-1.5 py-0.5 rounded text-brand-light text-[13px]">$1</code>');
 }
@@ -60,7 +60,7 @@ function parseMarkdown(md: string): string {
     /* Horizontal rule: --- or ___ or *** */
     if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
       if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
-      htmlParts.push('<hr class="border-card-border my-5" />');
+      htmlParts.push('<hr class="border-card-border my-6" />');
       continue;
     }
 
@@ -72,7 +72,7 @@ function parseMarkdown(md: string): string {
     }
     if (trimmed.startsWith("## ")) {
       if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
-      htmlParts.push(`<h2 class="text-lg font-bold text-white mt-7 mb-3 pb-2 border-b border-card-border uppercase tracking-wide">${processInline(trimmed.slice(3))}</h2>`);
+      htmlParts.push(`<h2 class="text-xl font-bold text-white mt-8 mb-4 pb-2 border-b border-card-border uppercase tracking-wide">${processInline(trimmed.slice(3))}</h2>`);
       continue;
     }
     if (trimmed.startsWith("### ")) {
@@ -80,9 +80,9 @@ function parseMarkdown(md: string): string {
       const h3Text = trimmed.slice(4);
       const qMatch = h3Text.match(/^Question\s+(\d+)/i);
       if (qMatch) {
-        htmlParts.push(`<h3 class="text-base font-bold text-white mt-6 mb-2 flex items-center gap-3"><span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light text-sm font-bold shrink-0">${qMatch[1]}</span>${processInline(h3Text)}</h3>`);
+        htmlParts.push(`<h3 class="text-lg font-bold text-white mt-7 mb-3 flex items-center gap-3"><span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light text-sm font-bold shrink-0">${qMatch[1]}</span>${processInline(h3Text)}</h3>`);
       } else {
-        htmlParts.push(`<h3 class="text-base font-bold text-white mt-5 mb-2">${processInline(h3Text)}</h3>`);
+        htmlParts.push(`<h3 class="text-lg font-bold text-white mt-6 mb-3">${processInline(h3Text)}</h3>`);
       }
       continue;
     }
@@ -95,7 +95,7 @@ function parseMarkdown(md: string): string {
         inList = true;
         listType = "ul";
       }
-      htmlParts.push(`<li class="text-[15px] text-gray-300 leading-relaxed">${processInline(trimmed.replace(/^[-*•] /, ""))}</li>`);
+      htmlParts.push(`<li class="text-base text-gray-200 leading-relaxed">${processInline(trimmed.replace(/^[-*•] /, ""))}</li>`);
       continue;
     }
 
@@ -107,7 +107,7 @@ function parseMarkdown(md: string): string {
         inList = true;
         listType = "ol";
       }
-      htmlParts.push(`<li class="text-[15px] text-gray-300 leading-relaxed">${processInline(trimmed.replace(/^\d+\. /, ""))}</li>`);
+      htmlParts.push(`<li class="text-base text-gray-200 leading-relaxed">${processInline(trimmed.replace(/^\d+\. /, ""))}</li>`);
       continue;
     }
 
@@ -115,15 +115,15 @@ function parseMarkdown(md: string): string {
     if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
 
     if (trimmed.startsWith("**What they're looking for:**") || trimmed.startsWith("**What they’re looking for:**")) {
-      htmlParts.push(`<div class="mt-3 mb-1 pl-4 py-2.5 border-l-2 border-brand-indigo/40 bg-brand-indigo/5 rounded-r-lg"><p class="text-[14px] text-gray-300 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
+      htmlParts.push(`<div class="mt-3 mb-1 pl-5 py-3 border-l-2 border-brand-indigo/40 bg-brand-indigo/5 rounded-r-lg"><p class="text-[15px] text-gray-200 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
       continue;
     }
     if (trimmed.startsWith("**How to prepare:**")) {
-      htmlParts.push(`<div class="mb-3 pl-4 py-2.5 border-l-2 border-emerald-500/40 bg-emerald-500/5 rounded-r-lg"><p class="text-[14px] text-gray-300 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
+      htmlParts.push(`<div class="mb-3 pl-5 py-3 border-l-2 border-emerald-500/40 bg-emerald-500/5 rounded-r-lg"><p class="text-[15px] text-gray-200 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
       continue;
     }
 
-    htmlParts.push(`<p class="text-[15px] text-gray-300 leading-relaxed mb-3">${processInline(trimmed)}</p>`);
+    htmlParts.push(`<p class="text-base text-gray-200 leading-relaxed mb-3">${processInline(trimmed)}</p>`);
   }
 
   /* Close any open list at the end */
