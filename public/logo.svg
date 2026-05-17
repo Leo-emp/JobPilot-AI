@@ -1,11 +1,10 @@
-<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
-  <!-- Geometric arrow/rocket — 4 faceted panels, light-to-dark left-to-right -->
-  <!-- Top-left facet (lightest silver-blue) -->
-  <polygon points="30,0 8,50 30,40" fill="#9BB0C4"/>
-  <!-- Top-right facet (medium-dark blue) -->
-  <polygon points="30,0 52,50 30,40" fill="#2B4E72"/>
-  <!-- Bottom-left facet (medium steel blue) -->
-  <polygon points="8,50 30,40 22,78" fill="#507A98"/>
-  <!-- Bottom-right facet (darkest navy) -->
-  <polygon points="52,50 30,40 38,78" fill="#1A3553"/>
+<svg viewBox="0 0 64 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top-left facet (lightest silver) -->
+  <polygon points="32,0 4,56 32,50" fill="#B5C4D2"/>
+  <!-- Top-right facet (medium blue) -->
+  <polygon points="32,0 60,56 32,50" fill="#3C6485"/>
+  <!-- Bottom-left facet (gray-blue) -->
+  <polygon points="4,56 32,50 32,74 20,98" fill="#6C8A9E"/>
+  <!-- Bottom-right facet (dark navy) -->
+  <polygon points="60,56 32,50 32,74 44,98" fill="#1D3855"/>
 </svg>
