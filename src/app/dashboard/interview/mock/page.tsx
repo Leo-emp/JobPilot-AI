@@ -864,7 +864,7 @@ export default function MockInterviewPage() {
             </div>
 
             {/* Name badge (bottom-left, Meet style) */}
-            <div className="absolute bottom-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
+            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
               <p className="text-xs text-white font-medium">Sarah Mitchell</p>
               {/* Status dot */}
               {isAISpeaking && <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />}
@@ -873,7 +873,7 @@ export default function MockInterviewPage() {
 
             {/* Speaking/Thinking indicator (top-right) */}
             {(isAISpeaking || isAIThinking) && (
-              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 sm:px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
                 <span className="text-xs text-text-secondary">
                   {isAIThinking ? "Thinking..." : "Speaking..."}
                 </span>
@@ -888,16 +888,16 @@ export default function MockInterviewPage() {
             {/* Fallback if no webcam */}
             {!webcamReady && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full bg-space-600 flex items-center justify-center text-3xl text-text-muted">👤</div>
+                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-space-600 flex items-center justify-center text-2xl sm:text-3xl text-text-muted">👤</div>
               </div>
             )}
             {/* Name badge */}
-            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
+            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-black/60 backdrop-blur-sm">
               <p className="text-xs text-white font-medium">You{role ? ` • ${role}` : ""}</p>
             </div>
             {/* Recording indicator */}
             {isListening && (
-              <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/80 backdrop-blur-sm">
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-red-500/80 backdrop-blur-sm">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 <span className="text-xs text-white font-medium">REC</span>
               </div>

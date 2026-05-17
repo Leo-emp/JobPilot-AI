@@ -15,7 +15,7 @@ export default function CTA() {
 
         {/* Decorative gradient background glow behind the CTA */}
         <div
-          className="absolute inset-0 mx-auto w-[800px] h-[500px] -z-10"
+          className="absolute inset-0 mx-auto w-full sm:w-[800px] h-[300px] sm:h-[500px] -z-10"
           style={{
             background:
               "radial-gradient(ellipse, rgba(56,189,248,0.1) 0%, rgba(56,189,248,0.03) 40%, transparent 65%)",

@@ -341,7 +341,7 @@ export default function InterviewPage() {
                       {parsedQuestions.length} questions for <span className="text-white">{jobTitle}</span> at <span className="text-white">{company}</span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                  <div className="hidden sm:flex items-center gap-2 text-xs text-text-muted">
                     <span className="px-2 py-1 rounded bg-space-600 border border-card-border">Type</span>
                     <span>or</span>
                     <span className="px-2 py-1 rounded bg-space-600 border border-card-border flex items-center gap-1"><MicIcon /> Speak</span>
@@ -456,7 +456,7 @@ export default function InterviewPage() {
                         {/* Expanded content */}
                         {isExpanded && (
                           <div className="px-4 pb-5 pt-0">
-                            <div className="ml-10">
+                            <div className="ml-0 sm:ml-10">
                               {/* Hints toggle */}
                               {(q.lookingFor || q.howToPrepare) && (
                                 <div className="mb-4">
@@ -500,7 +500,7 @@ export default function InterviewPage() {
                                 {/* Mic button inside textarea */}
                                 <button
                                   onClick={() => toggleMic(q.id)}
-                                  className={`absolute right-3 top-3 p-2 rounded-lg transition-all ${
+                                  className={`absolute right-2 sm:right-3 top-2 sm:top-3 p-2 rounded-lg transition-all ${
                                     isListening
                                       ? "bg-red-500/20 border border-red-400/30 text-red-400 animate-pulse"
                                       : "bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"
@@ -510,9 +510,10 @@ export default function InterviewPage() {
                                   <MicIcon active={isListening} />
                                 </button>
                                 {isListening && (
-                                  <div className="absolute right-16 top-4 flex items-center gap-2 text-red-400 text-xs">
-                                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-                                    Recording...
+                                  <div className="absolute right-14 sm:right-16 top-3 sm:top-4 flex items-center gap-1.5 text-red-400 text-xs">
+                                    <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" />
+                                    <span className="hidden sm:inline">Recording...</span>
+                                    <span className="sm:hidden">Rec</span>
                                   </div>
                                 )}
                               </div>

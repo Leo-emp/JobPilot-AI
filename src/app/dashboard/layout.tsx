@@ -48,7 +48,7 @@ export default async function DashboardLayout({
         {/* lg:ml-64 pushes content right to make room for the desktop sidebar */}
         {/* pt-16 on mobile accounts for the fixed top header bar */}
         <main className="relative z-10 lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-          <div className="p-6 sm:p-8 lg:p-10 max-w-6xl">
+          <div className="p-4 sm:p-8 lg:p-10 max-w-6xl">
             {children}
           </div>
         </main>

@@ -239,7 +239,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       {/* ---- Mobile Drawer ---- */}
       {/* Slides in from the left on mobile */}
       <aside
-        className={`lg:hidden fixed left-0 top-0 bottom-0 w-72 bg-space-800 border-r border-card-border z-50 transform transition-transform duration-300 ${
+        className={`lg:hidden fixed left-0 top-0 bottom-0 w-[85vw] max-w-72 bg-space-800 border-r border-card-border z-50 transform transition-transform duration-300 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

@@ -11,7 +11,7 @@ export default function Hero() {
 
       {/* ---- Ambient cyan light wash behind entire hero ---- */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[900px] pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full sm:w-[1200px] h-[500px] sm:h-[900px] pointer-events-none"
         style={{
           background: "radial-gradient(ellipse, rgba(56,189,248,0.08) 0%, rgba(56,189,248,0.03) 30%, transparent 60%)",
         }}
