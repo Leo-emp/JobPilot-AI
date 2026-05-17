@@ -74,6 +74,7 @@ const aiActions = [
   "cover_letter",
   "interview_questions",
   "interview_answer",
+  "interview_feedback",
   "career_pivot",
   "linkedin_audit",
   "linkedin_rewrite",

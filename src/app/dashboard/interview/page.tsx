@@ -1,58 +1,180 @@
-﻿/* ============================================================
+/* ============================================================
    INTERVIEW PREP PAGE
    ============================================================
    Two-tab interface:
    Tab 1: Generate predicted interview questions for a role
-   Tab 2: Practice answering questions with AI coaching
+   Tab 2: Practice answering questions with text or voice,
+          then get AI coaching feedback on each answer
    ============================================================ */
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
 
+/* ---- Types for parsed questions ---- */
+interface ParsedQuestion {
+  id: number;
+  category: string;
+  question: string;
+  lookingFor: string;
+  howToPrepare: string;
+}
+
+/* ---- Parse markdown output into structured question objects ---- */
+function parseQuestionsFromMarkdown(md: string): ParsedQuestion[] {
+  const questions: ParsedQuestion[] = [];
+  const lines = md.split("\n");
+  let currentCategory = "";
+  let current: Partial<ParsedQuestion> | null = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("## ") && !trimmed.startsWith("### ")) {
+      currentCategory = trimmed.slice(3).trim();
+      continue;
+    }
+
+    const qMatch = trimmed.match(/^###\s*Question\s+(\d+)/i);
+    if (qMatch) {
+      if (current && current.question) questions.push(current as ParsedQuestion);
+      current = { id: parseInt(qMatch[1]), category: currentCategory, question: "", lookingFor: "", howToPrepare: "" };
+      continue;
+    }
+
+    if (!current) continue;
+
+    if (trimmed.startsWith("**What they’re looking for:**") || trimmed.startsWith("**What they're looking for:**")) {
+      current.lookingFor = trimmed.replace(/^\*\*What they['’]re looking for:\*\*\s*/, "");
+      continue;
+    }
+    if (trimmed.startsWith("**How to prepare:**")) {
+      current.howToPrepare = trimmed.replace(/^\*\*How to prepare:\*\*\s*/, "");
+      continue;
+    }
+
+    if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) continue;
+    if (!trimmed) continue;
+
+    if (!current.question) current.question = trimmed;
+  }
+
+  if (current && current.question) questions.push(current as ParsedQuestion);
+  return questions;
+}
+
+/* ---- Microphone SVG icon ---- */
+const MicIcon: React.FC<{ active?: boolean }> = ({ active }) => (
+  <svg className={`w-5 h-5 ${active ? "text-red-400" : "text-current"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-14 0m7 7v4m-4 0h8m-4-12a3 3 0 00-3 3v4a3 3 0 006 0v-4a3 3 0 00-3-3z" />
+  </svg>
+);
+
 export default function InterviewPage() {
-  /* Tab state */
+  /* ---- Tab state ---- */
   const [activeTab, setActiveTab] = useState<"predict" | "practice">("predict");
 
-  /* Predict tab fields */
+  /* ---- Predict tab fields ---- */
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [questions, setQuestions] = useState("");
 
-  /* Practice tab fields */
+  /* ---- Practice tab fields ---- */
+  const [parsedQuestions, setParsedQuestions] = useState<ParsedQuestion[]>([]);
   const [resumeText, setResumeText] = useState("");
-  const [practiceQuestion, setPracticeQuestion] = useState("");
-  const [practiceDesc, setPracticeDesc] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
+  const [feedbackMap, setFeedbackMap] = useState<Record<number, string>>({});
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [feedbackQId, setFeedbackQId] = useState<number | null>(null);
+  const [showHints, setShowHints] = useState<Record<number, boolean>>({});
 
-  /* AI streaming hook */
+  /* ---- Speech recognition ---- */
+  const [listeningId, setListeningId] = useState<number | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  /* ---- AI streaming hook ---- */
   const { result: streamResult, loading, streaming, error, callAI: streamAI, reset: resetAI } = useAIStream();
 
-  /* Generate interview questions */
+  /* ---- Generate interview questions ---- */
   const handlePredict = async () => {
     setQuestions("");
-    const fullResult = await streamAI("interview_questions", {
-      jobTitle,
-      company,
-      jobDescription,
-    });
-    if (fullResult) setQuestions(fullResult);
+    setParsedQuestions([]);
+    const fullResult = await streamAI("interview_questions", { jobTitle, company, jobDescription });
+    if (fullResult) {
+      setQuestions(fullResult);
+      setParsedQuestions(parseQuestionsFromMarkdown(fullResult));
+    }
   };
 
-  /* Generate answer to a practice question */
-  const handlePractice = async () => {
-    setAnswer("");
-    const fullResult = await streamAI("interview_answer", {
-      question: practiceQuestion,
+  /* ---- Get AI feedback on a specific question ---- */
+  const handleGetFeedback = useCallback(async (q: ParsedQuestion) => {
+    const userAnswer = userAnswers[q.id];
+    setFeedbackQId(q.id);
+
+    const action = userAnswer?.trim() ? "interview_feedback" : "interview_answer";
+    const payload: Record<string, unknown> = {
+      question: q.question,
       resume: resumeText,
-      jobDescription: practiceDesc,
-    });
-    if (fullResult) setAnswer(fullResult);
-  };
+      jobDescription,
+      ...(userAnswer?.trim() ? { userAnswer } : {}),
+    };
+
+    const fullResult = await streamAI(action, payload);
+    if (fullResult) {
+      setFeedbackMap(prev => ({ ...prev, [q.id]: fullResult }));
+    }
+    setFeedbackQId(null);
+  }, [userAnswers, resumeText, jobDescription, streamAI]);
+
+  /* ---- Speech recognition toggle ---- */
+  const toggleMic = useCallback((questionId: number) => {
+    if (listeningId === questionId) {
+      recognitionRef.current?.stop();
+      setListeningId(null);
+      return;
+    }
+
+    if (listeningId !== null) {
+      recognitionRef.current?.stop();
+    }
+
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      alert("Speech recognition is not supported in your browser. Try Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    let finalTranscript = userAnswers[questionId] || "";
+    const baseLength = finalTranscript.length;
+
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + " ";
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+      setUserAnswers(prev => ({ ...prev, [questionId]: finalTranscript + interim }));
+    };
+
+    recognition.onerror = () => setListeningId(null);
+    recognition.onend = () => setListeningId(null);
+
+    recognition.start();
+    setListeningId(questionId);
+    recognitionRef.current = recognition;
+  }, [listeningId, userAnswers]);
 
   return (
     <div>
@@ -106,6 +228,11 @@ export default function InterviewPage() {
           }`}
         >
           💬 Practice Answers
+          {parsedQuestions.length > 0 && (
+            <span className="ml-2 px-2 py-0.5 rounded-full bg-brand-indigo/30 text-brand-light text-xs">
+              {parsedQuestions.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -154,6 +281,19 @@ export default function InterviewPage() {
                     <span>Generating...</span>
                   </div>
                 )}
+                {!streaming && parsedQuestions.length > 0 && (
+                  <div className="mt-6 p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 flex items-center justify-between">
+                    <p className="text-sm text-gray-300">
+                      <span className="text-white font-semibold">{parsedQuestions.length} questions</span> ready to practice
+                    </p>
+                    <button
+                      onClick={() => { setActiveTab("practice"); resetAI(); }}
+                      className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:bg-brand-indigo/30 transition-colors"
+                    >
+                      Start Practicing →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -162,53 +302,223 @@ export default function InterviewPage() {
         {/* ---- Practice Answers Tab ---- */}
         {activeTab === "practice" && (
           <div>
-            <h2 className="text-xl font-bold mb-4">Practice Your Answers</h2>
-            <div className="space-y-4 mb-4">
-              <textarea
-                value={resumeText}
-                onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Paste your resume text for personalized answers..."
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
-              />
-              <input
-                type="text"
-                value={practiceQuestion}
-                onChange={(e) => setPracticeQuestion(e.target.value)}
-                placeholder="Enter an interview question..."
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
-              />
-              <textarea
-                value={practiceDesc}
-                onChange={(e) => setPracticeDesc(e.target.value)}
-                placeholder="Job description (optional, for context)..."
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
-              />
-            </div>
-            <button
-              onClick={handlePractice}
-              disabled={!practiceQuestion || !resumeText || loading}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Generating..." : "💬 Generate Answer"}
-            </button>
-
-            {(streaming && activeTab === "practice" ? streamResult : answer) && (
+            {parsedQuestions.length === 0 ? (
+              /* No questions generated yet */
+              <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl bg-space-600 border border-card-border flex items-center justify-center text-3xl mx-auto mb-4">
+                  🎯
+                </div>
+                <h2 className="text-xl font-bold mb-2">No Questions Yet</h2>
+                <p className="text-text-secondary mb-6 max-w-md mx-auto">
+                  Generate predicted interview questions first, then come back here to practice answering each one.
+                </p>
+                <button
+                  onClick={() => setActiveTab("predict")}
+                  className="btn-primary"
+                >
+                  Go to Predict Questions
+                </button>
+              </div>
+            ) : (
               <div>
-                <MarkdownResult result={streaming && activeTab === "practice" ? streamResult : answer} showDownload={false} />
-                {streaming && activeTab === "practice" && (
-                  <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
-                    <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
-                    <span>Generating...</span>
+                {/* Practice tab header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold">Practice Your Answers</h2>
+                    <p className="text-sm text-text-secondary mt-1">
+                      {parsedQuestions.length} questions for <span className="text-white">{jobTitle}</span> at <span className="text-white">{company}</span>
+                    </p>
                   </div>
-                )}
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
+                    <span className="px-2 py-1 rounded bg-space-600 border border-card-border">Type</span>
+                    <span>or</span>
+                    <span className="px-2 py-1 rounded bg-space-600 border border-card-border flex items-center gap-1"><MicIcon /> Speak</span>
+                    <span>your answer</span>
+                  </div>
+                </div>
+
+                {/* Resume input for personalized feedback */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Your Resume <span className="text-text-muted">(for personalized AI feedback)</span>
+                  </label>
+                  <textarea
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    placeholder="Paste your resume text here so AI can reference your real experience when coaching..."
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+                  />
+                </div>
+
+                {/* Questions list */}
+                <div className="space-y-3">
+                  {parsedQuestions.map((q) => {
+                    const isExpanded = expandedId === q.id;
+                    const hasFeedback = !!feedbackMap[q.id];
+                    const isStreamingThis = feedbackQId === q.id && streaming;
+                    const hasAnswer = !!userAnswers[q.id]?.trim();
+                    const isListening = listeningId === q.id;
+
+                    return (
+                      <div
+                        key={q.id}
+                        className={`rounded-xl border transition-all ${
+                          isExpanded
+                            ? "bg-space-700/60 border-brand-indigo/30"
+                            : "bg-space-700/30 border-card-border hover:border-card-border-hover"
+                        }`}
+                      >
+                        {/* Question header — click to expand */}
+                        <button
+                          onClick={() => setExpandedId(isExpanded ? null : q.id)}
+                          className="w-full flex items-start gap-3 p-4 text-left"
+                        >
+                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light text-sm font-bold shrink-0 mt-0.5">
+                            {q.id}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium text-[15px] leading-snug">{q.question}</p>
+                            <p className="text-xs text-text-muted mt-1">{q.category}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {hasAnswer && (
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 text-xs">
+                                Answered
+                              </span>
+                            )}
+                            {hasFeedback && (
+                              <span className="px-2 py-0.5 rounded-full bg-brand-indigo/15 border border-brand-indigo/20 text-brand-light text-xs">
+                                Reviewed
+                              </span>
+                            )}
+                            <svg
+                              className={`w-4 h-4 text-text-muted transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </button>
+
+                        {/* Expanded content */}
+                        {isExpanded && (
+                          <div className="px-4 pb-5 pt-0">
+                            <div className="ml-10">
+                              {/* Hints toggle */}
+                              {(q.lookingFor || q.howToPrepare) && (
+                                <div className="mb-4">
+                                  <button
+                                    onClick={() => setShowHints(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                                    className="text-xs text-brand-light hover:text-white transition-colors flex items-center gap-1"
+                                  >
+                                    <svg className={`w-3 h-3 transition-transform ${showHints[q.id] ? "rotate-90" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                    {showHints[q.id] ? "Hide Hints" : "Show Hints"}
+                                  </button>
+                                  {showHints[q.id] && (
+                                    <div className="mt-2 space-y-2">
+                                      {q.lookingFor && (
+                                        <div className="pl-4 py-2 border-l-2 border-brand-indigo/40 bg-brand-indigo/5 rounded-r-lg">
+                                          <p className="text-[13px] text-gray-400"><span className="text-gray-300 font-medium">What they're looking for:</span> {q.lookingFor}</p>
+                                        </div>
+                                      )}
+                                      {q.howToPrepare && (
+                                        <div className="pl-4 py-2 border-l-2 border-emerald-500/40 bg-emerald-500/5 rounded-r-lg">
+                                          <p className="text-[13px] text-gray-400"><span className="text-gray-300 font-medium">How to prepare:</span> {q.howToPrepare}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Answer text area */}
+                              <div className="relative mb-3">
+                                <textarea
+                                  value={userAnswers[q.id] || ""}
+                                  onChange={(e) => setUserAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                                  placeholder="Type your answer here, or click the mic to speak..."
+                                  rows={4}
+                                  className={`w-full px-4 py-3 pr-12 rounded-xl bg-space-800 border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-y text-sm leading-relaxed ${
+                                    isListening ? "border-red-400/50 bg-red-500/5" : "border-card-border"
+                                  }`}
+                                />
+                                {/* Mic button inside textarea */}
+                                <button
+                                  onClick={() => toggleMic(q.id)}
+                                  className={`absolute right-3 top-3 p-2 rounded-lg transition-all ${
+                                    isListening
+                                      ? "bg-red-500/20 border border-red-400/30 text-red-400 animate-pulse"
+                                      : "bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"
+                                  }`}
+                                  title={isListening ? "Stop recording" : "Start voice recording"}
+                                >
+                                  <MicIcon active={isListening} />
+                                </button>
+                                {isListening && (
+                                  <div className="absolute right-16 top-4 flex items-center gap-2 text-red-400 text-xs">
+                                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                                    Recording...
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Action buttons */}
+                              <div className="flex flex-wrap gap-2">
+                                {hasAnswer && (
+                                  <button
+                                    onClick={() => handleGetFeedback(q)}
+                                    disabled={loading || !resumeText.trim()}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:bg-brand-indigo/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                  >
+                                    {isStreamingThis ? "Analyzing..." : "✨ Get AI Feedback"}
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setUserAnswers(prev => ({ ...prev, [q.id]: "" }));
+                                    handleGetFeedback(q);
+                                  }}
+                                  disabled={loading || !resumeText.trim()}
+                                  className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                  {isStreamingThis && !hasAnswer ? "Generating..." : "💡 Show Model Answer"}
+                                </button>
+                                {!resumeText.trim() && (
+                                  <p className="text-xs text-text-muted self-center">Paste your resume above for AI feedback</p>
+                                )}
+                              </div>
+
+                              {/* AI feedback / model answer result */}
+                              {(isStreamingThis || hasFeedback) && (
+                                <div className="mt-4">
+                                  <MarkdownResult
+                                    result={isStreamingThis ? streamResult : feedbackMap[q.id]}
+                                    showDownload={false}
+                                  />
+                                  {isStreamingThis && (
+                                    <div className="mt-2 flex items-center gap-2 text-brand-light text-sm">
+                                      <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                                      <span>Generating...</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Loading (before stream starts) */}
+        {/* Loading indicator (before stream starts) */}
         {loading && !streaming && !streamResult && (
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />

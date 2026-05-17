@@ -295,6 +295,40 @@ Job Description:
 ${payload.jobDescription}`;
 }
 
+function interviewFeedback(payload: Record<string, any>): string {
+  return `You are a senior interview coach. The candidate just answered an interview question. Evaluate their answer and provide actionable coaching.
+
+FORMATTING RULES — follow this EXACT structure:
+
+## Score: X/10
+
+## What You Did Well
+- (2-3 specific strengths in their answer)
+
+## What to Improve
+- (2-3 specific weaknesses with concrete suggestions)
+
+## Stronger Answer
+Rewrite their answer as a polished version using the STAR method where applicable. Keep their authentic voice but make it more impactful and structured.
+
+IMPORTANT RULES:
+- Be encouraging but honest — don't sugarcoat weak answers
+- Reference specific parts of their answer when giving feedback
+- If the answer is too short or vague, say so directly
+- Use their resume to suggest concrete examples they could have included
+- Keep the stronger answer natural and conversational, not robotic
+
+Question: ${payload.question}
+
+Candidate's Answer: ${payload.userAnswer}
+
+Candidate's Resume:
+${payload.resume}
+
+Job Description:
+${payload.jobDescription}`;
+}
+
 function careerPivot(payload: Record<string, any>): string {
   return `You are a world-class career transition specialist who has helped hundreds of professionals successfully switch industries. This person wants to change careers.
 
@@ -715,6 +749,7 @@ export function buildPrompt(action: string, payload: Record<string, any>): strin
     case "cover_letter": return coverLetter(payload);
     case "interview_questions": return interviewQuestions(payload);
     case "interview_answer": return interviewAnswer(payload);
+    case "interview_feedback": return interviewFeedback(payload);
     case "career_pivot": return careerPivot(payload);
     case "linkedin_audit": return linkedinAudit(payload);
     case "linkedin_rewrite": return linkedinRewrite(payload);
