@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
@@ -86,6 +86,8 @@ export default function InterviewPage() {
   /* ---- Practice tab fields ---- */
   const [parsedQuestions, setParsedQuestions] = useState<ParsedQuestion[]>([]);
   const [resumeText, setResumeText] = useState("");
+  const [savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; content: string }[]>([]);
+  const [resumesLoading, setResumesLoading] = useState(false);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [feedbackMap, setFeedbackMap] = useState<Record<number, string>>({});
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -98,6 +100,16 @@ export default function InterviewPage() {
 
   /* ---- AI streaming hook ---- */
   const { result: streamResult, loading, streaming, error, callAI: streamAI, reset: resetAI } = useAIStream();
+
+  /* ---- Fetch saved resumes on mount ---- */
+  useEffect(() => {
+    setResumesLoading(true);
+    fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
+      .then(r => r.ok ? r.json() : { data: [] })
+      .then(d => setSavedResumes(d.data || []))
+      .catch(() => {})
+      .finally(() => setResumesLoading(false));
+  }, []);
 
   /* ---- Generate interview questions ---- */
   const handlePredict = async () => {
@@ -337,18 +349,58 @@ export default function InterviewPage() {
                   </div>
                 </div>
 
-                {/* Resume input for personalized feedback */}
+                {/* Resume import for personalized feedback */}
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-text-secondary mb-2">
                     Your Resume <span className="text-text-muted">(for personalized AI feedback)</span>
                   </label>
+
+                  {/* Saved resumes selector */}
+                  {savedResumes.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {savedResumes.map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={() => setResumeText(r.content)}
+                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                            resumeText === r.content
+                              ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+                              : "bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"
+                          }`}
+                        >
+                          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          {r.fileName}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {resumesLoading && (
+                    <p className="text-xs text-text-muted mb-3">Loading saved resumes...</p>
+                  )}
+                  {!resumesLoading && savedResumes.length === 0 && (
+                    <p className="text-xs text-text-muted mb-3">
+                      No saved resumes found. <a href="/dashboard/resume" className="text-brand-light hover:underline">Upload one</a> or paste below.
+                    </p>
+                  )}
+
+                  {/* Text area — shows imported content or allows paste */}
                   <textarea
                     value={resumeText}
                     onChange={(e) => setResumeText(e.target.value)}
-                    placeholder="Paste your resume text here so AI can reference your real experience when coaching..."
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+                    placeholder="Select a resume above or paste your resume text here..."
+                    rows={resumeText ? 4 : 2}
+                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-y text-sm"
                   />
+                  {resumeText && (
+                    <button
+                      onClick={() => setResumeText("")}
+                      className="mt-2 text-xs text-text-muted hover:text-red-400 transition-colors"
+                    >
+                      Clear resume
+                    </button>
+                  )}
                 </div>
 
                 {/* Questions list */}
