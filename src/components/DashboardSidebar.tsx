@@ -12,7 +12,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import Logo from "./Logo";
+import RocketIcon from "./RocketIcon";
 
 /* ---- SVG Icons for Navigation ---- */
 /* Clean line icons that match the premium space theme */
@@ -124,7 +124,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       {/* ---- Brand Logo ---- */}
       <div className="p-6 border-b border-card-border">
         <Link href="/dashboard" className="flex items-center gap-1">
-          <Logo size={28} />
+          <RocketIcon size={28} />
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight text-text-primary">
             JobPilot AI
           </span>
@@ -205,7 +205,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       {/* Replaces the sidebar on small screens with a top bar + hamburger */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 nav-blur px-4 py-3 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-1">
-          <Logo size={24} />
+          <RocketIcon size={24} />
           <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight text-text-primary">
             JobPilot AI
           </span>
