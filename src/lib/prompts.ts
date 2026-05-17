@@ -224,11 +224,22 @@ Job Description: ${payload.jobDescription}`;
 }
 
 function interviewQuestions(payload: Record<string, any>): string {
-  return `You are an interview preparation expert. Based on this job description, predict the 10 most likely interview questions.
+  return `You are an interview preparation expert. Based on this job description, predict ALL the likely interview questions — do NOT limit to a fixed number. Generate as many as needed to thoroughly prepare the candidate.
 
 FORMATTING RULES — follow this EXACT structure:
 
-## Technical & Skill-Based
+## Classic Interview Questions
+
+Start with these universal questions that almost every interviewer asks:
+- Tell me about yourself
+- What are your greatest strengths?
+- What is your biggest weakness?
+- Where do you see yourself in the next 5 years?
+- Why do you want to work at this company?
+- Why are you leaving your current role?
+- What makes you the best candidate for this position?
+
+Use the same format below for each of these classic questions.
 
 ### Question 1
 [Write the full question here]
@@ -244,7 +255,9 @@ FORMATTING RULES — follow this EXACT structure:
 
 (continue this pattern)
 
-After the technical section, use these section headings with the same format:
+After the classic questions, continue with these sections using the same format:
+
+## Technical & Skill-Based
 
 ## Behavioral (STAR Method)
 
@@ -258,7 +271,8 @@ IMPORTANT RULES:
 - Put the actual question as a plain paragraph (no quotes, no bold)
 - Put "What they're looking for:" and "How to prepare:" as bold labels on their own lines
 - Put --- between each question for visual separation
-- Number questions 1-10 sequentially across ALL categories (don't restart numbering)
+- Number questions sequentially across ALL categories (don't restart numbering)
+- Generate as many questions as needed per category — be thorough, not limited
 - Write questions that are specific to THIS role and company, not generic
 
 Job Title: ${payload.jobTitle}
