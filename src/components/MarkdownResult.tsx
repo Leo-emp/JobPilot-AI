@@ -77,7 +77,13 @@ function parseMarkdown(md: string): string {
     }
     if (trimmed.startsWith("### ")) {
       if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
-      htmlParts.push(`<h3 class="text-base font-bold text-white mt-5 mb-2">${processInline(trimmed.slice(4))}</h3>`);
+      const h3Text = trimmed.slice(4);
+      const qMatch = h3Text.match(/^Question\s+(\d+)/i);
+      if (qMatch) {
+        htmlParts.push(`<h3 class="text-base font-bold text-white mt-6 mb-2 flex items-center gap-3"><span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light text-sm font-bold shrink-0">${qMatch[1]}</span>${processInline(h3Text)}</h3>`);
+      } else {
+        htmlParts.push(`<h3 class="text-base font-bold text-white mt-5 mb-2">${processInline(h3Text)}</h3>`);
+      }
       continue;
     }
 
@@ -107,6 +113,16 @@ function parseMarkdown(md: string): string {
 
     /* Regular paragraph */
     if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
+
+    if (trimmed.startsWith("**What they're looking for:**") || trimmed.startsWith("**What they’re looking for:**")) {
+      htmlParts.push(`<div class="mt-3 mb-1 pl-4 py-2.5 border-l-2 border-brand-indigo/40 bg-brand-indigo/5 rounded-r-lg"><p class="text-[14px] text-gray-300 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
+      continue;
+    }
+    if (trimmed.startsWith("**How to prepare:**")) {
+      htmlParts.push(`<div class="mb-3 pl-4 py-2.5 border-l-2 border-emerald-500/40 bg-emerald-500/5 rounded-r-lg"><p class="text-[14px] text-gray-300 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
+      continue;
+    }
+
     htmlParts.push(`<p class="text-[15px] text-gray-300 leading-relaxed mb-3">${processInline(trimmed)}</p>`);
   }
 

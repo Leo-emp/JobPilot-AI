@@ -225,13 +225,41 @@ Job Description: ${payload.jobDescription}`;
 
 function interviewQuestions(payload: Record<string, any>): string {
   return `You are an interview preparation expert. Based on this job description, predict the 10 most likely interview questions.
-Include a mix of:
-- Technical/skill-based questions
-- Behavioral questions (STAR method)
-- Company/role-specific questions
-- Culture fit questions
 
-For each question, provide a brief note on what the interviewer is looking for.
+FORMATTING RULES — follow this EXACT structure:
+
+## Technical & Skill-Based
+
+### Question 1
+[Write the full question here]
+
+**What they're looking for:** [1-2 sentence explanation]
+
+**How to prepare:** [1 sentence actionable tip]
+
+---
+
+### Question 2
+[next question]
+
+(continue this pattern)
+
+After the technical section, use these section headings with the same format:
+
+## Behavioral (STAR Method)
+
+## Company & Role-Specific
+
+## Culture Fit
+
+IMPORTANT RULES:
+- Use ## for each category heading
+- Use ### Question N for each question
+- Put the actual question as a plain paragraph (no quotes, no bold)
+- Put "What they're looking for:" and "How to prepare:" as bold labels on their own lines
+- Put --- between each question for visual separation
+- Number questions 1-10 sequentially across ALL categories (don't restart numbering)
+- Write questions that are specific to THIS role and company, not generic
 
 Job Title: ${payload.jobTitle}
 Company: ${payload.company}
