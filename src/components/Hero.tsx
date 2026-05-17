@@ -3,7 +3,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import Logo from "./Logo";
+import RocketIcon from "./RocketIcon";
 
 export default function Hero() {
   return (
@@ -28,14 +28,14 @@ export default function Hero() {
         <span className="text-text-muted">→</span>
       </div>
 
-      {/* ---- Logo ---- */}
+      {/* ---- Rocket Icon ---- */}
       <div className="relative mb-8">
         <div
-          className="absolute -inset-10 rounded-full blur-2xl"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0.04) 50%, transparent 75%)" }}
+          className="absolute -inset-16 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.06) 40%, transparent 70%)" }}
         />
-        <div className="relative drop-shadow-[0_0_20px_rgba(56,189,248,0.2)]">
-          <Logo size={72} />
+        <div className="relative">
+          <RocketIcon size={120} />
         </div>
       </div>
 
