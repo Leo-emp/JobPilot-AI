@@ -252,7 +252,7 @@ export default function MockInterviewPage() {
       const recognition = new SR();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
+      (recognition as any).maxAlternatives = 1;
       recognition.lang = "en-US";
       let finalTranscript = "";
 
@@ -357,7 +357,7 @@ export default function MockInterviewPage() {
     const recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    (recognition as any).maxAlternatives = 1;
     recognition.lang = "en-US";
     let finalTranscript = "";
     recognition.onresult = (event: SpeechRecognitionEvent) => {
