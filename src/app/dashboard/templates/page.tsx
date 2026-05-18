@@ -1415,7 +1415,7 @@ export default function TemplatesPage() {
           </div>
 
           {/* ---- Template Grid ---- */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {filtered.map(t => {
               const isSelected = selectedId === t.id;
               return (
@@ -1429,9 +1429,9 @@ export default function TemplatesPage() {
                   }`}
                 >
                   {/* Resume preview */}
-                  <div className="relative bg-space-700/30 p-2.5 pb-2">
+                  <div className="relative bg-space-700/30 p-3 pb-2">
                     <div className="rounded-lg overflow-hidden shadow-md ring-1 ring-black/5">
-                      <MiniPreview template={t} data={SAMPLE} scale={0.24} />
+                      <MiniPreview template={t} data={SAMPLE} scale={0.33} />
                     </div>
 
                     {/* Hover overlay */}
