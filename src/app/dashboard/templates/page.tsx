@@ -13,7 +13,7 @@
 
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 
 /* ============================================================
@@ -1156,17 +1156,32 @@ const TEMPLATES: Template[] = [
    iframe ensures complete CSS isolation. The 800x1130 content
    is scaled down to fit the card via CSS transform.
    ============================================================ */
-function MiniPreview({ template, data, scale = 0.25 }: { template: Template; data: ResumeData; scale?: number }) {
+function MiniPreview({ template, data }: { template: Template; data: ResumeData }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [computedScale, setComputedScale] = useState(0);
   const html = template.buildHTML(data);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setComputedScale(el.offsetWidth / 800);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <div className="relative w-full overflow-hidden bg-white" style={{ aspectRatio: "8.5/11" }}>
-      <iframe
-        srcDoc={html}
-        className="absolute top-0 left-0 border-0 pointer-events-none"
-        style={{ width: "800px", height: "1130px", transform: `scale(${scale})`, transformOrigin: "top left" }}
-        title={template.name}
-        loading="lazy"
-      />
+    <div ref={containerRef} className="relative w-full overflow-hidden bg-white" style={{ aspectRatio: "8.5/11" }}>
+      {computedScale > 0 && (
+        <iframe
+          srcDoc={html}
+          className="absolute top-0 left-0 border-0 pointer-events-none"
+          style={{ width: "800px", height: "1131px", transform: `scale(${computedScale})`, transformOrigin: "top left" }}
+          title={template.name}
+          loading="lazy"
+        />
+      )}
     </div>
   );
 }
@@ -1448,7 +1463,7 @@ export default function TemplatesPage() {
                   {/* Resume preview */}
                   <div className="relative bg-space-700/30 p-3 pb-2">
                     <div className="rounded-lg overflow-hidden shadow-md ring-1 ring-black/5">
-                      <MiniPreview template={t} data={SAMPLE} scale={0.33} />
+                      <MiniPreview template={t} data={SAMPLE} />
                     </div>
 
                     {/* Hover overlay */}
@@ -1490,8 +1505,8 @@ export default function TemplatesPage() {
           {/* ---- Selected Template Summary + Continue ---- */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl bg-space-800/60 border border-card-border">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-12 h-16 rounded-lg overflow-hidden ring-1 ring-card-border flex-shrink-0 bg-white">
-                <MiniPreview template={selected} data={SAMPLE} scale={0.015} />
+              <div className="w-12 h-16 rounded-lg ring-1 ring-card-border flex-shrink-0 bg-white flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
