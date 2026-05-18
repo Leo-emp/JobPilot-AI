@@ -109,41 +109,32 @@ function getBestVoice(): SpeechSynthesisVoice | null {
 /* ---- Cached voice reference (avoids re-searching every utterance) ---- */
 let cachedVoice: SpeechSynthesisVoice | null = null;
 
-/* ---- Helper: speak text aloud with a warm, professional female voice ---- */
-/* Queues all sentences at once so the browser handles pacing naturally. */
-/* Varying rate slightly per sentence prevents flat monotone delivery. */
+/* ---- Helper: speak text aloud — single utterance for gapless flow ---- */
+/* One utterance = no inter-sentence pauses. Faster rate + higher pitch = energetic. */
+/* Chrome pauses long utterances after ~15s — a periodic resume() keeps it flowing. */
 function speakText(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (!window.speechSynthesis) { resolve(); return; }
     window.speechSynthesis.cancel();
 
     if (!cachedVoice) cachedVoice = getBestVoice();
+    if (!text.trim()) { resolve(); return; }
 
-    /* Split into sentences for smoother delivery */
-    const sentences = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text])
-      .map(s => s.trim()).filter(Boolean);
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.15;
+    utterance.pitch = 1.25;
+    utterance.volume = 1.0;
+    if (cachedVoice) utterance.voice = cachedVoice;
 
-    if (sentences.length === 0) { resolve(); return; }
+    /* Chrome bug workaround: resume every 5s to prevent stalling on long text */
+    const keepAlive = setInterval(() => {
+      if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
+    }, 5000);
 
-    /* Queue all sentences at once — the browser chains them seamlessly */
-    sentences.forEach((sentence, i) => {
-      const utterance = new SpeechSynthesisUtterance(sentence);
+    utterance.onend = () => { clearInterval(keepAlive); resolve(); };
+    utterance.onerror = () => { clearInterval(keepAlive); resolve(); };
 
-      /* Slight rate variation per sentence for natural rhythm */
-      utterance.rate = 1.02 + (Math.random() - 0.5) * 0.08;
-      utterance.pitch = 1.2;   /* Higher pitch = brighter, clearer, more audible */
-      utterance.volume = 1.0;
-
-      if (cachedVoice) utterance.voice = cachedVoice;
-
-      /* Resolve when the last sentence finishes */
-      if (i === sentences.length - 1) {
-        utterance.onend = () => resolve();
-        utterance.onerror = () => resolve();
-      }
-
-      window.speechSynthesis.speak(utterance);
-    });
+    window.speechSynthesis.speak(utterance);
   });
 }
 
