@@ -1221,7 +1221,7 @@ export default function MockInterviewPage() {
             <button
               onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setQuestionNumber(0); setSkippedQuestions([]); setError(""); setWebcamReady(false); setCompanyCategory(""); setCompanySlug(""); setCompany(""); setCompanyPromptBlock(""); }}
               className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all">
-              Try Again
+              Practice Another Interview
             </button>
             <Link href="/dashboard/interview"
               className="flex-1 py-3 rounded-xl font-semibold text-center bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-all">
