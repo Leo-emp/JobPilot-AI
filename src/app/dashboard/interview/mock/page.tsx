@@ -48,8 +48,8 @@ interface FinalScore {
 type Phase = "setup" | "interview" | "results";
 
 /* ---- Constants ---- */
-/* Total AI exchanges: 0=greeting, 1-10=questions, 11=closing */
-const TOTAL_EXCHANGES = 12;
+/* Max exchanges as a safety limit — AI decides when to wrap up naturally */
+const MAX_EXCHANGES = 30;
 
 /* ---- Helper: call the /api/ai endpoint ---- */
 async function callAI(action: string, payload: Record<string, string>): Promise<string> {
@@ -170,6 +170,8 @@ export default function MockInterviewPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);          /* full conversation log */
   const [currentAIMessage, setCurrentAIMessage] = useState("");         /* currently displayed AI message */
   const [exchangeNumber, setExchangeNumber] = useState(0);              /* tracks which exchange we're on */
+  const [questionNumber, setQuestionNumber] = useState(0);              /* tracks actual question count (not exchanges) */
+  const [skippedQuestions, setSkippedQuestions] = useState<string[]>([]); /* questions user skipped */
   const [userAnswer, setUserAnswer] = useState("");                     /* what the user is typing/saying */
   const [isAISpeaking, setIsAISpeaking] = useState(false);              /* AI voice is playing */
   const [isAIThinking, setIsAIThinking] = useState(false);              /* waiting for AI response */
@@ -255,6 +257,7 @@ export default function MockInterviewPage() {
       const recognition = new SR();
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
       recognition.lang = "en-US";
       let finalTranscript = "";
 
@@ -273,7 +276,6 @@ export default function MockInterviewPage() {
       recognition.onerror = (e: Event) => {
         const err = (e as unknown as { error?: string }).error || "";
         if (err === "no-speech" || err === "aborted") return;
-        /* Silent fail on auto-start — user can click mic manually */
         setIsListening(false);
       };
 
@@ -370,6 +372,7 @@ export default function MockInterviewPage() {
     const recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
     recognition.lang = "en-US";
     let finalTranscript = "";
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -437,12 +440,14 @@ export default function MockInterviewPage() {
       resume,
       history: formatHistory(currentMessages),
       exchangeNumber: String(exchNum),
+      questionNumber: String(questionNumber),
+      skippedQuestions: JSON.stringify(skippedQuestions),
     });
 
     const parsed = parseAIJson<{ message: string; isComplete: boolean }>(result);
     return parsed;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, industry, experience, interviewType, company, jobDescription, resume]);
+  }, [role, industry, experience, interviewType, company, jobDescription, resume, questionNumber, skippedQuestions]);
 
   /* ---- Start the interview: instant greeting, no AI wait ---- */
   /* The greeting is hardcoded so the interview starts in <1 second. */
@@ -491,9 +496,10 @@ export default function MockInterviewPage() {
     setMessages(updatedMessages);
     setUserAnswer("");
 
-    /* Calculate the next exchange number */
+    /* Increment both exchange and question counters */
     const nextExchange = exchangeNumber + 1;
     setExchangeNumber(nextExchange);
+    setQuestionNumber(prev => prev + 1);
 
     /* Get AI's next response */
     setIsAIThinking(true);
@@ -509,8 +515,51 @@ export default function MockInterviewPage() {
       await speakText(response.message);
       setIsAISpeaking(false);
 
-      /* If AI says interview is complete, go to results */
-      if (response.isComplete || nextExchange >= TOTAL_EXCHANGES - 1) {
+      /* If AI says interview is complete or we hit the safety limit */
+      if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
+        await handleFinishInterview([...updatedMessages, aiMsg]);
+      } else {
+        setWaitingForUser(true);
+      }
+    } catch (e) {
+      setIsAIThinking(false);
+      setError(e instanceof Error ? e.message : "AI response failed. Try again.");
+      setWaitingForUser(true);
+    }
+  };
+
+  /* ---- Skip current question and move to the next ---- */
+  const handleSkipQuestion = async () => {
+    if (isAIThinking || isAISpeaking) return;
+    stopListening();
+    setWaitingForUser(false);
+
+    /* Record the skipped question (last AI message) */
+    const lastAI = messagesRef.current.filter(m => m.role === "ai").pop();
+    if (lastAI) setSkippedQuestions(prev => [...prev, lastAI.text]);
+
+    /* Add a skip marker to conversation so AI knows */
+    const skipMsg: ChatMessage = { role: "user", text: "[SKIPPED — moved to next question]" };
+    const updatedMessages = [...messagesRef.current, skipMsg];
+    setMessages(updatedMessages);
+    setUserAnswer("");
+
+    const nextExchange = exchangeNumber + 1;
+    setExchangeNumber(nextExchange);
+
+    setIsAIThinking(true);
+    try {
+      const response = await getAIResponse(updatedMessages, nextExchange);
+      const aiMsg: ChatMessage = { role: "ai", text: response.message };
+      setMessages(prev => [...prev, aiMsg]);
+      setCurrentAIMessage(response.message);
+      setIsAIThinking(false);
+
+      setIsAISpeaking(true);
+      await speakText(response.message);
+      setIsAISpeaking(false);
+
+      if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
         setWaitingForUser(true);
@@ -540,8 +589,11 @@ export default function MockInterviewPage() {
 
       const result = await callAI("mock_interview_summary", {
         role,
+        experience,
         interviewType,
+        jobDescription,
         transcript,
+        skippedCount: String(skippedQuestions.length),
       });
       const score = parseAIJson<FinalScore>(result);
       setFinalScore(score);
@@ -772,10 +824,10 @@ export default function MockInterviewPage() {
             <span className="text-sm font-mono text-text-secondary bg-space-700 px-3 py-1.5 rounded-lg">
               {formatTime(elapsedTime)}
             </span>
-            {/* Exchange indicator — 10 questions (exchanges 1-10), 0=greeting, 11=closing */}
+            {/* Question counter */}
             <span className="text-sm text-text-secondary">
-              {exchangeNumber === 0 ? "Getting started..." : exchangeNumber >= TOTAL_EXCHANGES - 1 ? "Wrapping up..." : (
-                <>Question <span className="text-white font-semibold">{Math.min(exchangeNumber, 10)}</span> of 10</>
+              {exchangeNumber === 0 ? "Getting started..." : (
+                <>Question <span className="text-white font-semibold">{questionNumber + 1}</span>{skippedQuestions.length > 0 && <span className="text-text-muted ml-1">({skippedQuestions.length} skipped)</span>}</>
               )}
             </span>
           </div>
@@ -786,10 +838,9 @@ export default function MockInterviewPage() {
           </button>
         </div>
 
-        {/* ---- Progress bar ---- */}
+        {/* ---- Thin accent bar ---- */}
         <div className="w-full h-1 bg-space-700 rounded-full mb-4">
-          <div className="h-full bg-gradient-to-r from-blue-600 to-blue-500 rounded-full transition-all duration-700"
-            style={{ width: `${(exchangeNumber / (TOTAL_EXCHANGES - 1)) * 100}%` }} />
+          <div className="h-full bg-gradient-to-r from-blue-600 to-blue-500 rounded-full transition-all duration-700" style={{ width: "100%" }} />
         </div>
 
         {/* ---- Video tiles: Google Meet style (side-by-side) ---- */}
@@ -964,6 +1015,16 @@ export default function MockInterviewPage() {
               className="flex-1 px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors resize-none disabled:opacity-40"
             />
 
+            {/* Skip question button */}
+            <button
+              onClick={handleSkipQuestion}
+              disabled={!waitingForUser || exchangeNumber === 0}
+              className="px-3 py-3.5 rounded-xl bg-space-600 border border-card-border text-text-secondary hover:text-amber-400 hover:border-amber-400/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0 text-xs font-medium"
+              title="Skip this question"
+            >
+              Skip
+            </button>
+
             {/* Submit button */}
             <button
               onClick={handleSubmitAnswer}
@@ -1101,7 +1162,7 @@ export default function MockInterviewPage() {
           {/* ---- Action buttons ---- */}
           <div className="flex gap-4">
             <button
-              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setError(""); setWebcamReady(false); }}
+              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setQuestionNumber(0); setSkippedQuestions([]); setError(""); setWebcamReady(false); }}
               className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all">
               Try Again
             </button>
