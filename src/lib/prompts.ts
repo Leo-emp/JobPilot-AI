@@ -502,6 +502,7 @@ INTERVIEW CONTEXT:
 - Experience Level: ${payload.experience}
 - Interview Type: ${payload.interviewType}
 ${payload.company ? `- Target Company: ${payload.company}` : ""}
+${payload.jobDescription ? `\nJOB DESCRIPTION & REQUIREMENTS (tailor your questions to test these specific requirements, skills, and responsibilities):\n${payload.jobDescription}` : ""}
 ${payload.resume ? `\nCANDIDATE RESUME (use to personalise questions):\n${payload.resume}` : ""}
 
 CONVERSATION SO FAR:
@@ -559,6 +560,7 @@ CRITICAL RULES:
 7. Sound like a real person: throw in brief filler words occasionally ("So...", "Alright...", "Okay so...")
 8. On exchange 11, give a warm genuine closing and set isComplete to true
 ${payload.resume ? "9. USE THE RESUME: ask about specific roles, projects, or skills mentioned in their resume" : ""}
+${payload.jobDescription ? "10. USE THE JOB DESCRIPTION: weave in specific skills, tools, responsibilities, and qualifications from the JD into your questions — test whether the candidate can demonstrate they meet the actual requirements" : ""}
 
 Return ONLY valid JSON (no markdown, no code fences):
 {"message": "Your natural response as Sarah", "isComplete": false}

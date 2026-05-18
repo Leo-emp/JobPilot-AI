@@ -160,6 +160,7 @@ export default function MockInterviewPage() {
   const [experience, setExperience] = useState("Mid-level");
   const [interviewType, setInterviewType] = useState("Behavioral");
   const [company, setCompany] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
   const [resume, setResume] = useState("");
   const [resumeFileName, setResumeFileName] = useState("");
   const [resumeUploading, setResumeUploading] = useState(false);
@@ -432,6 +433,7 @@ export default function MockInterviewPage() {
       experience,
       interviewType,
       company,
+      jobDescription,
       resume,
       history: formatHistory(currentMessages),
       exchangeNumber: String(exchNum),
@@ -440,7 +442,7 @@ export default function MockInterviewPage() {
     const parsed = parseAIJson<{ message: string; isComplete: boolean }>(result);
     return parsed;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, industry, experience, interviewType, company, resume]);
+  }, [role, industry, experience, interviewType, company, jobDescription, resume]);
 
   /* ---- Start the interview: instant greeting, no AI wait ---- */
   /* The greeting is hardcoded so the interview starts in <1 second. */
@@ -634,6 +636,15 @@ export default function MockInterviewPage() {
             <input type="text" value={company} onChange={e => setCompany(e.target.value)}
               placeholder="e.g., Google, Amazon, McKinsey, Deloitte"
               className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors" />
+          </div>
+
+          {/* Job Description (optional) */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Job Description <span className="text-text-muted">(optional — tailors questions to specific requirements)</span></label>
+            <textarea value={jobDescription} onChange={e => setJobDescription(e.target.value)}
+              placeholder="Paste the job description and requirements here..."
+              rows={4}
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors resize-y text-sm" />
           </div>
 
           {/* Resume Upload (optional) */}
