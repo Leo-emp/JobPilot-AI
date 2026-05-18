@@ -17,6 +17,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
 
 /* ---- Types ---- */
 /* Each message in the conversation (AI or user) */
@@ -150,7 +151,10 @@ export default function MockInterviewPage() {
   const [industry, setIndustry] = useState("");
   const [experience, setExperience] = useState("Mid-level");
   const [interviewType, setInterviewType] = useState("Behavioral");
+  const [companyCategory, setCompanyCategory] = useState<CompanyCategory | "manual" | "">("");
+  const [companySlug, setCompanySlug] = useState("");
   const [company, setCompany] = useState("");
+  const [companyPromptBlock, setCompanyPromptBlock] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [resume, setResume] = useState("");
   const [resumeFileName, setResumeFileName] = useState("");
@@ -420,6 +424,7 @@ export default function MockInterviewPage() {
       experience,
       interviewType,
       company,
+      companyPromptBlock,
       jobDescription,
       resume,
       history: formatHistory(currentMessages),
@@ -431,7 +436,7 @@ export default function MockInterviewPage() {
     const parsed = parseAIJson<{ message: string; isComplete: boolean }>(result);
     return parsed;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, industry, experience, interviewType, company, jobDescription, resume, questionNumber, skippedQuestions]);
+  }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions]);
 
   /* ---- Start the interview: instant greeting, no AI wait ---- */
   /* The greeting is hardcoded so the interview starts in <1 second. */
@@ -666,12 +671,80 @@ export default function MockInterviewPage() {
             </div>
           </div>
 
-          {/* Company (optional) */}
+          {/* Target Company — two-tier category → company dropdown, or manual input */}
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">Target Company <span className="text-text-muted">(optional — enables company-specific questions)</span></label>
-            <input type="text" value={company} onChange={e => setCompany(e.target.value)}
-              placeholder="e.g., Google, Amazon, McKinsey, Deloitte"
-              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors" />
+            <label className="block text-sm font-medium text-text-secondary mb-2">Target Company <span className="text-text-muted">(optional — enables real company-specific questions & interview style)</span></label>
+
+            {/* Row 1: Category selector */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <select
+                value={companyCategory}
+                onChange={e => {
+                  const val = e.target.value as CompanyCategory | "manual" | "";
+                  setCompanyCategory(val);
+                  setCompanySlug("");
+                  if (val === "manual" || val === "") {
+                    setCompany("");
+                    setCompanyPromptBlock("");
+                  } else {
+                    /* Auto-select first company in category */
+                    const slugs = getCompanySlugsForCategory(val);
+                    if (slugs.length > 0) {
+                      setCompanySlug(slugs[0].slug);
+                      setCompany(slugs[0].name);
+                      setCompanyPromptBlock(buildCompanyPromptBlock(COMPANY_PROFILES[slugs[0].slug]));
+                    }
+                  }
+                }}
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:border-brand-indigo/50 focus:outline-none transition-colors"
+              >
+                <option value="">Select category...</option>
+                {COMPANY_CATEGORIES.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label} — {cat.description}</option>
+                ))}
+                <option value="manual">Type company name manually</option>
+              </select>
+
+              {/* Row 2: Company dropdown (if category selected) or manual input */}
+              {companyCategory && companyCategory !== "manual" ? (
+                <select
+                  value={companySlug}
+                  onChange={e => {
+                    const slug = e.target.value;
+                    setCompanySlug(slug);
+                    if (slug && COMPANY_PROFILES[slug]) {
+                      setCompany(COMPANY_PROFILES[slug].name);
+                      setCompanyPromptBlock(buildCompanyPromptBlock(COMPANY_PROFILES[slug]));
+                    } else {
+                      setCompany("");
+                      setCompanyPromptBlock("");
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:border-brand-indigo/50 focus:outline-none transition-colors"
+                >
+                  {getCompanySlugsForCategory(companyCategory as CompanyCategory).map(c => (
+                    <option key={c.slug} value={c.slug}>{c.name}</option>
+                  ))}
+                </select>
+              ) : companyCategory === "manual" ? (
+                <input
+                  type="text"
+                  value={company}
+                  onChange={e => { setCompany(e.target.value); setCompanyPromptBlock(""); }}
+                  placeholder="e.g., Spotify, Shopify, Goldman Sachs..."
+                  className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:border-brand-indigo/50 focus:outline-none transition-colors"
+                />
+              ) : null}
+            </div>
+
+            {/* Show selected company's interview style as a preview */}
+            {companySlug && COMPANY_PROFILES[companySlug] && (
+              <div className="mt-3 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20">
+                <p className="text-xs text-brand-light font-medium mb-1">{COMPANY_PROFILES[companySlug].name} Interview Style</p>
+                <p className="text-xs text-text-secondary leading-relaxed">{COMPANY_PROFILES[companySlug].interviewStyle}</p>
+                <p className="text-xs text-text-muted mt-2">Rounds: {COMPANY_PROFILES[companySlug].rounds.join(" → ")}</p>
+              </div>
+            )}
           </div>
 
           {/* Job Description (optional) */}
@@ -1146,7 +1219,7 @@ export default function MockInterviewPage() {
           {/* ---- Action buttons ---- */}
           <div className="flex gap-4">
             <button
-              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setQuestionNumber(0); setSkippedQuestions([]); setError(""); setWebcamReady(false); }}
+              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setQuestionNumber(0); setSkippedQuestions([]); setError(""); setWebcamReady(false); setCompanyCategory(""); setCompanySlug(""); setCompany(""); setCompanyPromptBlock(""); }}
               className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all">
               Try Again
             </button>
