@@ -300,6 +300,13 @@ function interviewAnswer(payload: Record<string, any>): string {
 Use the STAR method (Situation, Task, Action, Result) where applicable.
 Base the answer on the candidate's actual experience from their resume.
 Make it natural and conversational, not robotic.
+
+LENGTH & STYLE RULES:
+- Aim for 200-300 words — enough to be substantive but not an essay. Think 90-120 seconds spoken.
+- Be punchy and direct. Every sentence should earn its place — cut filler and over-explanation.
+- For STAR answers: each section (S, T, A, R) should be 2-3 sentences max. Don't over-narrate the situation — get to the action fast.
+- One strong, specific example beats three vague ones.
+- End with a clear result (numbers if possible) and a brief tie-back to the role.
 ${companyBlock ? `\n${companyBlock}\n\nTailor the answer to ${companyName}'s interview style, evaluation criteria, and cultural values described above. If ${companyName} uses specific frameworks (e.g., Amazon's Leadership Principles, Google's Googleyness), frame the answer to align with those.\n` : ""}
 Question: ${payload.question}
 
@@ -327,7 +334,7 @@ FORMATTING RULES — follow this EXACT structure:
 - (2-3 specific weaknesses with concrete suggestions)
 ${companyBlock ? `\n## ${companyName}-Specific Tips\n- (1-2 tips on how to better align the answer with ${companyName}'s evaluation criteria and interview style)\n` : ""}
 ## Stronger Answer
-Rewrite their answer as a polished version using the STAR method where applicable. Keep their authentic voice but make it more impactful and structured.${companyBlock ? ` Frame it to align with ${companyName}'s values and evaluation criteria.` : ""}
+Rewrite their answer as a polished version (200-300 words, punchy and direct). Use the STAR method where applicable — 2-3 sentences per section max. Keep their authentic voice but make it more impactful. End with a clear result and tie-back to the role.${companyBlock ? ` Frame it to align with ${companyName}'s values and evaluation criteria.` : ""}
 
 IMPORTANT RULES:
 - Be encouraging but honest — don't sugarcoat weak answers
