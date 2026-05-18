@@ -13,6 +13,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
+import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
 
 /* ---- Types for parsed questions ---- */
 interface ParsedQuestion {
@@ -79,7 +80,10 @@ export default function InterviewPage() {
 
   /* ---- Predict tab fields ---- */
   const [jobTitle, setJobTitle] = useState("");
+  const [companyCategory, setCompanyCategory] = useState<CompanyCategory | "manual" | "">("");
+  const [companySlug, setCompanySlug] = useState("");
   const [company, setCompany] = useState("");
+  const [companyPromptBlock, setCompanyPromptBlock] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [questions, setQuestions] = useState("");
 
@@ -115,7 +119,7 @@ export default function InterviewPage() {
   const handlePredict = async () => {
     setQuestions("");
     setParsedQuestions([]);
-    const fullResult = await streamAI("interview_questions", { jobTitle, company, jobDescription });
+    const fullResult = await streamAI("interview_questions", { jobTitle, company, companyPromptBlock, jobDescription });
     if (fullResult) {
       setQuestions(fullResult);
       setParsedQuestions(parseQuestionsFromMarkdown(fullResult));
@@ -132,6 +136,8 @@ export default function InterviewPage() {
       question: q.question,
       resume: resumeText,
       jobDescription,
+      company,
+      companyPromptBlock,
       ...(userAnswer?.trim() ? { userAnswer } : {}),
     };
 
@@ -253,21 +259,87 @@ export default function InterviewPage() {
         {activeTab === "predict" && (
           <div>
             <h2 className="text-xl font-bold mb-4">Predict Interview Questions</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            {/* Job title */}
+            <div className="mb-4">
               <input
                 type="text"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="Job Title"
-                className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+                placeholder="Job Title *"
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
               />
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="Company Name"
-                className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
-              />
+            </div>
+
+            {/* Target Company — two-tier category → company dropdown, or manual input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-text-secondary mb-2">Target Company <span className="text-text-muted">(injects real company-specific questions)</span></label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <select
+                  value={companyCategory}
+                  onChange={e => {
+                    const val = e.target.value as CompanyCategory | "manual" | "";
+                    setCompanyCategory(val);
+                    setCompanySlug("");
+                    if (val === "manual" || val === "") {
+                      setCompany("");
+                      setCompanyPromptBlock("");
+                    } else {
+                      const slugs = getCompanySlugsForCategory(val);
+                      if (slugs.length > 0) {
+                        setCompanySlug(slugs[0].slug);
+                        setCompany(slugs[0].name);
+                        setCompanyPromptBlock(buildCompanyPromptBlock(COMPANY_PROFILES[slugs[0].slug]));
+                      }
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:outline-none focus:border-brand-indigo text-sm"
+                >
+                  <option value="">Select category...</option>
+                  {COMPANY_CATEGORIES.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label} — {cat.description}</option>
+                  ))}
+                  <option value="manual">Type company name manually</option>
+                </select>
+
+                {companyCategory && companyCategory !== "manual" ? (
+                  <select
+                    value={companySlug}
+                    onChange={e => {
+                      const slug = e.target.value;
+                      setCompanySlug(slug);
+                      if (slug && COMPANY_PROFILES[slug]) {
+                        setCompany(COMPANY_PROFILES[slug].name);
+                        setCompanyPromptBlock(buildCompanyPromptBlock(COMPANY_PROFILES[slug]));
+                      } else {
+                        setCompany("");
+                        setCompanyPromptBlock("");
+                      }
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:outline-none focus:border-brand-indigo text-sm"
+                  >
+                    {getCompanySlugsForCategory(companyCategory as CompanyCategory).map(c => (
+                      <option key={c.slug} value={c.slug}>{c.name}</option>
+                    ))}
+                  </select>
+                ) : companyCategory === "manual" ? (
+                  <input
+                    type="text"
+                    value={company}
+                    onChange={e => { setCompany(e.target.value); setCompanyPromptBlock(""); }}
+                    placeholder="e.g., Spotify, Goldman Sachs, Shopify..."
+                    className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+                  />
+                ) : null}
+              </div>
+
+              {/* Company interview style preview */}
+              {companySlug && COMPANY_PROFILES[companySlug] && (
+                <div className="mt-3 p-3 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20">
+                  <p className="text-xs text-brand-light font-medium mb-1">{COMPANY_PROFILES[companySlug].name} Interview Style</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">{COMPANY_PROFILES[companySlug].interviewStyle}</p>
+                  <p className="text-xs text-text-muted mt-2">Rounds: {COMPANY_PROFILES[companySlug].rounds.join(" → ")}</p>
+                </div>
+              )}
             </div>
             <textarea
               value={jobDescription}
@@ -278,7 +350,7 @@ export default function InterviewPage() {
             />
             <button
               onClick={handlePredict}
-              disabled={!jobTitle || !company || !jobDescription || loading}
+              disabled={!jobTitle || !jobDescription || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Predicting..." : "🎯 Generate Questions"}

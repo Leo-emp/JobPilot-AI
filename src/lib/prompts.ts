@@ -224,7 +224,18 @@ Job Description: ${payload.jobDescription}`;
 }
 
 function interviewQuestions(payload: Record<string, any>): string {
-  return `You are an interview preparation expert. Based on this job description, predict ALL the likely interview questions — do NOT limit to a fixed number. Generate as many as needed to thoroughly prepare the candidate.
+  const companyBlock = payload.companyPromptBlock || "";
+  const companyName = payload.company || "the company";
+
+  return `You are an interview preparation expert. Based on this job description${companyBlock ? ` and real interview data from ${companyName}` : ""}, predict ALL the likely interview questions — do NOT limit to a fixed number. Generate as many as needed to thoroughly prepare the candidate.
+${companyBlock ? `\n${companyBlock}\n` : ""}
+ROLE-SPECIFIC RELEVANCE (CRITICAL RULE):
+Every single question MUST make sense for the specific role of "${payload.jobTitle}". Before generating any question, check: "Would a hiring manager for ${payload.jobTitle} at ${companyName} actually ask this?" If not, do NOT include it.
+- A Data Analyst should get SQL, dashboards, data cleaning questions — NOT system architecture or engineering team leadership
+- A Product Manager should get roadmaps, prioritization, stakeholder management — NOT coding algorithms
+- A Sales Executive should get quota, pipeline, objection handling — NOT CI/CD or testing
+- A Software Engineer should get coding, systems, debugging — NOT sales targets
+${companyBlock ? `- Use the real ${companyName} interview questions above as INSPIRATION — adapt them to the "${payload.jobTitle}" role specifically. Do NOT blindly include technical coding questions for a non-technical role just because the company is a tech company.` : ""}
 
 FORMATTING RULES — follow this EXACT structure:
 
@@ -235,7 +246,7 @@ Start with these universal questions that almost every interviewer asks:
 - What are your greatest strengths?
 - What is your biggest weakness?
 - Where do you see yourself in the next 5 years?
-- Why do you want to work at this company?
+- Why do you want to work at ${companyName}?
 - Why are you leaving your current role?
 - What makes you the best candidate for this position?
 
@@ -262,7 +273,7 @@ After the classic questions, continue with these sections using the same format:
 ## Behavioral (STAR Method)
 
 ## Company & Role-Specific
-
+${companyBlock ? `\n(Use the real ${companyName} interview data to generate authentic company-specific questions — reference their evaluation criteria, cultural framework, and known interview patterns. Adapt all questions to the "${payload.jobTitle}" role.)\n` : ""}
 ## Culture Fit
 
 IMPORTANT RULES:
@@ -274,18 +285,22 @@ IMPORTANT RULES:
 - Number questions sequentially across ALL categories (don't restart numbering)
 - Generate as many questions as needed per category — be thorough, not limited
 - Write questions that are specific to THIS role and company, not generic
+${companyBlock ? `- At least 30% of questions should be directly inspired by the real ${companyName} interview patterns provided above\n- Reference ${companyName}'s specific evaluation criteria and cultural values in "What they're looking for" explanations` : ""}
 
 Job Title: ${payload.jobTitle}
-Company: ${payload.company}
+Company: ${companyName}
 Job Description: ${payload.jobDescription}`;
 }
 
 function interviewAnswer(payload: Record<string, any>): string {
+  const companyBlock = payload.companyPromptBlock || "";
+  const companyName = payload.company || "the company";
+
   return `You are an interview coach. Help craft a strong answer to this interview question.
 Use the STAR method (Situation, Task, Action, Result) where applicable.
 Base the answer on the candidate's actual experience from their resume.
 Make it natural and conversational, not robotic.
-
+${companyBlock ? `\n${companyBlock}\n\nTailor the answer to ${companyName}'s interview style, evaluation criteria, and cultural values described above. If ${companyName} uses specific frameworks (e.g., Amazon's Leadership Principles, Google's Googleyness), frame the answer to align with those.\n` : ""}
 Question: ${payload.question}
 
 Candidate's Resume:
@@ -296,8 +311,11 @@ ${payload.jobDescription}`;
 }
 
 function interviewFeedback(payload: Record<string, any>): string {
-  return `You are a senior interview coach. The candidate just answered an interview question. Evaluate their answer and provide actionable coaching.
+  const companyBlock = payload.companyPromptBlock || "";
+  const companyName = payload.company || "the company";
 
+  return `You are a senior interview coach. The candidate just answered an interview question. Evaluate their answer and provide actionable coaching.
+${companyBlock ? `\n${companyBlock}\n` : ""}
 FORMATTING RULES — follow this EXACT structure:
 
 ## Score: X/10
@@ -307,9 +325,9 @@ FORMATTING RULES — follow this EXACT structure:
 
 ## What to Improve
 - (2-3 specific weaknesses with concrete suggestions)
-
+${companyBlock ? `\n## ${companyName}-Specific Tips\n- (1-2 tips on how to better align the answer with ${companyName}'s evaluation criteria and interview style)\n` : ""}
 ## Stronger Answer
-Rewrite their answer as a polished version using the STAR method where applicable. Keep their authentic voice but make it more impactful and structured.
+Rewrite their answer as a polished version using the STAR method where applicable. Keep their authentic voice but make it more impactful and structured.${companyBlock ? ` Frame it to align with ${companyName}'s values and evaluation criteria.` : ""}
 
 IMPORTANT RULES:
 - Be encouraging but honest — don't sugarcoat weak answers
@@ -317,6 +335,7 @@ IMPORTANT RULES:
 - If the answer is too short or vague, say so directly
 - Use their resume to suggest concrete examples they could have included
 - Keep the stronger answer natural and conversational, not robotic
+${companyBlock ? `- Evaluate through ${companyName}'s lens — would this answer score well against their specific evaluation criteria?` : ""}
 
 Question: ${payload.question}
 
