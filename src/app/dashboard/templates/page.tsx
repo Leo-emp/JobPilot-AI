@@ -1218,7 +1218,7 @@ export default function TemplatesPage() {
       /* Step 1: Extract text from PDF on the client */
       const text = await extractTextFromPdf(file);
       if (!text.trim()) {
-        setUploadError("Couldn't read text from this PDF. It may be a scanned image — please fill in your details manually below.");
+        setUploadError("Couldn't read text from this PDF. It may be a scanned image — please try a different file.");
         setUploadStatus("error");
         return;
       }
@@ -1235,7 +1235,7 @@ export default function TemplatesPage() {
       });
 
       if (!res.ok) {
-        setUploadError("Auto-fill is temporarily busy. Please fill in your details manually below — it only takes a minute!");
+        setUploadError("Auto-fill is temporarily busy. Please try again in a moment.");
         setUploadStatus("error");
         return;
       }
@@ -1248,7 +1248,7 @@ export default function TemplatesPage() {
         const cleaned = result.replace(/```json\s*|```\s*/g, "").trim();
         parsed = JSON.parse(cleaned);
       } catch {
-        setUploadError("Couldn't read that format. Please fill in your details manually below.");
+        setUploadError("Couldn't parse that resume. Please try a different PDF file.");
         setUploadStatus("error");
         return;
       }
@@ -1272,7 +1272,7 @@ export default function TemplatesPage() {
       setUploadStatus("done");
     } catch (err) {
       console.error("PDF upload error:", err);
-      setUploadError("Something went wrong. Please try again or fill in your details manually below.");
+      setUploadError("Something went wrong. Please try uploading again.");
       setUploadStatus("error");
     }
   };
@@ -1518,7 +1518,7 @@ export default function TemplatesPage() {
                 <div className="flex-1">
                   <h2 className="text-lg font-bold mb-1">Upload Your Resume PDF</h2>
                   <p className="text-sm text-text-secondary mb-4">
-                    Upload an existing resume and AI will automatically fill in all the fields below. You can edit anything after.
+                    Upload your resume and AI will automatically fill in all the fields below. Review and edit anything before previewing.
                   </p>
 
                   {/* Hidden file input */}
@@ -1593,15 +1593,11 @@ export default function TemplatesPage() {
                 </div>
               </div>
 
-              {/* Divider */}
-              {uploadStatus === "idle" && (
-                <div className="flex items-center gap-3 mt-5">
-                  <div className="flex-1 h-px bg-card-border" />
-                  <span className="text-xs text-text-muted font-medium">OR FILL IN MANUALLY BELOW</span>
-                  <div className="flex-1 h-px bg-card-border" />
-                </div>
-              )}
             </div>
+
+            {/* ---- Form fields only shown after resume is successfully parsed ---- */}
+            {uploadStatus === "done" ? (
+            <>
 
             {/* Personal Info */}
             <div className="glass-card p-6">
@@ -1684,6 +1680,17 @@ export default function TemplatesPage() {
               </button>
             </div>
             {!canPreview && <p className="text-xs text-text-muted">Fill in at least your name and summary or experience to preview.</p>}
+
+            </>
+            ) : (uploadStatus === "idle" || uploadStatus === "error") && (
+              <div className="glass-card p-10 flex flex-col items-center text-center">
+                <svg className="w-14 h-14 text-text-muted mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-text-secondary text-sm font-medium mb-1">Upload your resume to get started</p>
+                <p className="text-text-muted text-xs">AI will extract your details and fill in all the fields automatically so you can review and edit.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
