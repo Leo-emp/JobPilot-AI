@@ -1277,19 +1277,16 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download ---- */
+  /* ---- PDF Download via jspdf + html2canvas (installed deps, no CDN) ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      if (!(window as unknown as Record<string, unknown>).html2pdf) {
-        await new Promise<void>((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js";
-          s.onload = () => resolve();
-          s.onerror = () => reject(new Error("Failed to load PDF library"));
-          document.head.appendChild(s);
-        });
-      }
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
+
+      /* Build an offscreen container with the resume HTML */
       const fullHTML = selected.buildHTML(formData);
       const container = document.createElement("div");
       container.innerHTML = fullHTML.replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>|<!DOCTYPE html>/g, "");
@@ -1301,21 +1298,41 @@ export default function TemplatesPage() {
       }
       container.style.position = "absolute";
       container.style.left = "-9999px";
-      container.style.width = "800px";
+      container.style.width = "794px";
       document.body.appendChild(container);
-      const html2pdf = (window as unknown as Record<string, unknown>).html2pdf as CallableFunction;
-      await html2pdf().set({
-        margin: [0, 0, 0, 0],
-        filename: `${formData.fullName || "resume"}-resume.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      }).from(container).save();
+
+      /* Render to canvas then to PDF */
+      const canvas = await html2canvas(container, { scale: 2, useCORS: true });
       document.body.removeChild(container);
-    } catch {
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+
+      /* Handle multi-page if content is taller than one A4 page */
+      const pageHeight = 297;
+      let position = 0;
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+      } else {
+        let remaining = imgHeight;
+        while (remaining > 0) {
+          pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+          remaining -= pageHeight;
+          position -= pageHeight;
+          if (remaining > 0) pdf.addPage();
+        }
+      }
+
+      pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      /* Fallback: open in new tab for browser print-to-PDF */
       const html = selected.buildHTML(formData);
       const w = window.open("", "_blank");
-      if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 300); }
+      if (w) { w.document.write(html); w.document.close(); }
     } finally { setPdfLoading(false); }
   };
 
