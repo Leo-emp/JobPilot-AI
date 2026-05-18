@@ -89,8 +89,8 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* ---- Onboarding for new users ---- */}
-      <Onboarding hasActivity={hasActivity} />
+      {/* ---- Onboarding for new users (wait for stats before deciding) ---- */}
+      {stats !== null && <Onboarding hasActivity={hasActivity} />}
 
       {/* ---- Welcome Header ---- */}
       <div className="mb-10">
