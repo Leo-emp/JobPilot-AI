@@ -345,16 +345,6 @@ export default function MockInterviewPage() {
       return;
     }
 
-    /* Request microphone permission first — some browsers need this before SpeechRecognition works */
-    try {
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      /* Stop the stream immediately — we just needed permission */
-      micStream.getTracks().forEach(t => t.stop());
-    } catch {
-      setError("Microphone access denied. Please allow microphone permission and try again, or type your answer.");
-      return;
-    }
-
     /* Stop any existing recognition session */
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch { /* ignore */ }
@@ -379,16 +369,19 @@ export default function MockInterviewPage() {
     };
 
     recognition.onerror = (e: Event) => {
-      /* "no-speech" is normal — user just hasn't spoken yet, auto-restart */
       const err = (e as unknown as { error?: string }).error || "";
       if (err === "no-speech" || err === "aborted") return;
+      if (err === "not-allowed") {
+        setIsListening(false);
+        setError("Microphone blocked. Click the lock icon in your browser address bar, allow microphone, then reload the page.");
+        return;
+      }
       setIsListening(false);
       setError(`Mic error: ${err}. Try clicking the mic again.`);
     };
 
     /* Auto-restart if recognition stops while user is still supposed to be talking */
     recognition.onend = () => {
-      /* Chrome kills continuous recognition after silence — restart it */
       if (recognitionRef.current === recognition) {
         try { recognition.start(); } catch { setIsListening(false); }
       }
