@@ -37,12 +37,52 @@ function processInline(text: string): string {
     .replace(/`([^`]+)`/g, '<code class="bg-space-600 px-1.5 py-0.5 rounded text-brand-light text-[13px]">$1</code>');
 }
 
+/* ---- Detect analysis-specific section headings for card styling ---- */
+function isAnalysisHeading(text: string): boolean {
+  const h = text.toLowerCase();
+  return (
+    h.includes("strength") ||
+    h.includes("weakness") ||
+    h.includes("missing keyword") ||
+    h.includes("formatting issue") ||
+    h.includes("formatting") ||
+    (h.includes("priority") && h.includes("action"))
+  );
+}
+
+/* ---- Get color scheme for analysis section cards ---- */
+function getAnalysisStyle(text: string): { border: string; headerBg: string; headerText: string } {
+  const h = text.toLowerCase();
+  if (h.includes("strength")) return { border: "border-l-emerald-500", headerBg: "bg-emerald-500/10", headerText: "text-emerald-400" };
+  if (h.includes("weakness")) return { border: "border-l-red-400", headerBg: "bg-red-400/10", headerText: "text-red-400" };
+  if (h.includes("missing keyword")) return { border: "border-l-violet-400", headerBg: "bg-violet-400/10", headerText: "text-violet-400" };
+  if (h.includes("formatting")) return { border: "border-l-amber-400", headerBg: "bg-amber-400/10", headerText: "text-amber-400" };
+  return { border: "border-l-sky-400", headerBg: "bg-sky-400/10", headerText: "text-sky-400" };
+}
+
 /* ---- Parse markdown string into React-safe HTML ---- */
+/* Enhanced with visual score cards, color-coded analysis sections, and better spacing */
 function parseMarkdown(md: string): string {
   const lines = md.split("\n");
   const htmlParts: string[] = [];
   let inList = false;
   let listType = "";
+  let inSectionCard = false;
+
+  const closeLists = () => {
+    if (inList) {
+      htmlParts.push(listType === "ul" ? "</ul>" : "</ol>");
+      inList = false;
+    }
+  };
+
+  const closeSectionCard = () => {
+    if (inSectionCard) {
+      closeLists();
+      htmlParts.push("</div></div>");
+      inSectionCard = false;
+    }
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -50,33 +90,22 @@ function parseMarkdown(md: string): string {
 
     /* Skip empty lines but close any open list */
     if (!trimmed) {
-      if (inList) {
-        htmlParts.push(listType === "ul" ? "</ul>" : "</ol>");
-        inList = false;
-      }
+      if (inList) closeLists();
       continue;
     }
 
     /* Horizontal rule: --- or ___ or *** */
     if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
-      if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
-      htmlParts.push('<hr class="border-card-border my-6" />');
+      closeLists();
+      if (!inSectionCard) {
+        htmlParts.push(`<hr class="border-card-border my-6" />`);
+      }
       continue;
     }
 
-    /* Headings: # ## ### */
-    if (trimmed.startsWith("# ")) {
-      if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
-      htmlParts.push(`<h1 class="text-2xl font-bold text-white mb-2 mt-4">${processInline(trimmed.slice(2))}</h1>`);
-      continue;
-    }
-    if (trimmed.startsWith("## ")) {
-      if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
-      htmlParts.push(`<h2 class="text-xl font-bold text-white mt-8 mb-4 pb-2 border-b border-card-border uppercase tracking-wide">${processInline(trimmed.slice(3))}</h2>`);
-      continue;
-    }
+    /* H3: ### heading */
     if (trimmed.startsWith("### ")) {
-      if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
+      closeLists();
       const h3Text = trimmed.slice(4);
       const qMatch = h3Text.match(/^Question\s+(\d+)/i);
       if (qMatch) {
@@ -87,15 +116,87 @@ function parseMarkdown(md: string): string {
       continue;
     }
 
+    /* H2: ## heading — with ATS score detection and analysis section cards */
+    if (trimmed.startsWith("## ")) {
+      closeSectionCard();
+      const h2Text = trimmed.slice(3);
+
+      /* ATS Score: render as visual gauge card */
+      const scoreMatch = h2Text.match(/ATS\s+Score[:\s]*(\d+)\s*\/\s*(\d+)/i);
+      if (scoreMatch) {
+        const score = parseInt(scoreMatch[1]);
+        const total = parseInt(scoreMatch[2]);
+        const pct = Math.round((score / total) * 100);
+
+        let ringCls: string, txtCls: string, badgeCls: string, barCls: string, label: string;
+        if (pct >= 75) {
+          ringCls = "border-emerald-400/50"; txtCls = "text-emerald-400";
+          badgeCls = "bg-emerald-400/20 text-emerald-400 border-emerald-400/30";
+          barCls = "from-emerald-500 to-emerald-400"; label = "Strong";
+        } else if (pct >= 50) {
+          ringCls = "border-amber-400/50"; txtCls = "text-amber-400";
+          badgeCls = "bg-amber-400/20 text-amber-400 border-amber-400/30";
+          barCls = "from-amber-500 to-amber-400"; label = "Needs Work";
+        } else {
+          ringCls = "border-red-400/50"; txtCls = "text-red-400";
+          badgeCls = "bg-red-400/20 text-red-400 border-red-400/30";
+          barCls = "from-red-500 to-red-400"; label = "Critical";
+        }
+
+        htmlParts.push(
+          `<div class="mb-8 p-6 rounded-2xl bg-space-600/50 border border-card-border">` +
+            `<div class="flex items-center gap-6 mb-4">` +
+              `<div class="flex items-center justify-center w-20 h-20 rounded-full border-4 ${ringCls} shrink-0">` +
+                `<span class="text-3xl font-bold ${txtCls}">${score}</span>` +
+              `</div>` +
+              `<div>` +
+                `<h2 class="text-xl font-bold text-white mb-1.5">ATS Compatibility Score</h2>` +
+                `<span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${badgeCls} border">${label} — ${score}/${total}</span>` +
+              `</div>` +
+            `</div>` +
+            `<div class="w-full h-3 rounded-full bg-space-700 overflow-hidden">` +
+              `<div class="h-full rounded-full bg-gradient-to-r ${barCls}" style="width: ${pct}%"></div>` +
+            `</div>` +
+          `</div>`
+        );
+        continue;
+      }
+
+      /* Analysis section heading — wrap content in a colored card */
+      if (isAnalysisHeading(h2Text)) {
+        const style = getAnalysisStyle(h2Text);
+        htmlParts.push(
+          `<div class="mb-6 rounded-xl border-l-4 ${style.border} border border-card-border bg-space-600/30 overflow-hidden">` +
+            `<div class="px-5 py-3 ${style.headerBg} border-b border-card-border/50">` +
+              `<h2 class="text-sm font-bold ${style.headerText} uppercase tracking-wider">${processInline(h2Text)}</h2>` +
+            `</div>` +
+            `<div class="px-5 py-4">`
+        );
+        inSectionCard = true;
+        continue;
+      }
+
+      /* Default H2 styling (resume outputs, etc.) */
+      htmlParts.push(`<h2 class="text-xl font-bold text-white mt-8 mb-4 pb-2 border-b border-card-border uppercase tracking-wide">${processInline(h2Text)}</h2>`);
+      continue;
+    }
+
+    /* H1: # heading */
+    if (trimmed.startsWith("# ")) {
+      closeSectionCard();
+      htmlParts.push(`<h1 class="text-2xl font-bold text-white mb-2 mt-4">${processInline(trimmed.slice(2))}</h1>`);
+      continue;
+    }
+
     /* Unordered list items: - item, * item, • item */
     if (/^[-*•] /.test(trimmed)) {
       if (!inList || listType !== "ul") {
         if (inList) htmlParts.push("</ol>");
-        htmlParts.push('<ul class="list-disc list-outside ml-5 space-y-1.5 mb-4">');
+        htmlParts.push(`<ul class="list-disc list-outside ml-5 space-y-2 mb-4">`);
         inList = true;
         listType = "ul";
       }
-      htmlParts.push(`<li class="text-base text-gray-200 leading-relaxed">${processInline(trimmed.replace(/^[-*•] /, ""))}</li>`);
+      htmlParts.push(`<li class="text-[15px] text-gray-200 leading-relaxed">${processInline(trimmed.replace(/^[-*•] /, ""))}</li>`);
       continue;
     }
 
@@ -103,18 +204,18 @@ function parseMarkdown(md: string): string {
     if (/^\d+\. /.test(trimmed)) {
       if (!inList || listType !== "ol") {
         if (inList) htmlParts.push("</ul>");
-        htmlParts.push('<ol class="list-decimal list-outside ml-5 space-y-1.5 mb-4">');
+        htmlParts.push(`<ol class="list-decimal list-outside ml-5 space-y-2 mb-4">`);
         inList = true;
         listType = "ol";
       }
-      htmlParts.push(`<li class="text-base text-gray-200 leading-relaxed">${processInline(trimmed.replace(/^\d+\. /, ""))}</li>`);
+      htmlParts.push(`<li class="text-[15px] text-gray-200 leading-relaxed">${processInline(trimmed.replace(/^\d+\. /, ""))}</li>`);
       continue;
     }
 
     /* Regular paragraph */
-    if (inList) { htmlParts.push(listType === "ul" ? "</ul>" : "</ol>"); inList = false; }
+    if (inList) closeLists();
 
-    if (trimmed.startsWith("**What they're looking for:**") || trimmed.startsWith("**What they’re looking for:**")) {
+    if (trimmed.startsWith("**What they’re looking for:**") || trimmed.startsWith("**What they’re looking for:**")) {
       htmlParts.push(`<div class="mt-3 mb-1 pl-5 py-3 border-l-2 border-brand-indigo/40 bg-brand-indigo/5 rounded-r-lg"><p class="text-[15px] text-gray-200 leading-relaxed m-0">${processInline(trimmed)}</p></div>`);
       continue;
     }
@@ -123,13 +224,11 @@ function parseMarkdown(md: string): string {
       continue;
     }
 
-    htmlParts.push(`<p class="text-base text-gray-200 leading-relaxed mb-3">${processInline(trimmed)}</p>`);
+    htmlParts.push(`<p class="text-[15px] text-gray-200 leading-relaxed mb-3">${processInline(trimmed)}</p>`);
   }
 
-  /* Close any open list at the end */
-  if (inList) {
-    htmlParts.push(listType === "ul" ? "</ul>" : "</ol>");
-  }
+  /* Close any open containers at the end */
+  closeSectionCard();
 
   return htmlParts.join("\n");
 }
