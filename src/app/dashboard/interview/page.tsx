@@ -480,6 +480,7 @@ export default function InterviewPage() {
                   {parsedQuestions.map((q) => {
                     const isExpanded = expandedId === q.id;
                     const hasFeedback = !!feedbackMap[q.id];
+                    const isLoadingThis = feedbackQId === q.id && loading;
                     const isStreamingThis = feedbackQId === q.id && streaming;
                     const hasAnswer = !!userAnswers[q.id]?.trim();
                     const isListening = listeningId === q.id;
@@ -598,7 +599,7 @@ export default function InterviewPage() {
                                     disabled={loading || !resumeText.trim()}
                                     className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:bg-brand-indigo/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                   >
-                                    {isStreamingThis ? "Analyzing..." : "✨ Get AI Feedback"}
+                                    {isLoadingThis || isStreamingThis ? "Analyzing..." : "✨ Get AI Feedback"}
                                   </button>
                                 )}
                                 <button
@@ -609,7 +610,7 @@ export default function InterviewPage() {
                                   disabled={loading || !resumeText.trim()}
                                   className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
-                                  {isStreamingThis && !hasAnswer ? "Generating..." : "💡 Show Model Answer"}
+                                  {(isLoadingThis || isStreamingThis) && !hasAnswer ? "Generating..." : "💡 Show Model Answer"}
                                 </button>
                                 {!resumeText.trim() && (
                                   <p className="text-xs text-text-muted self-center">Paste your resume above for AI feedback</p>
@@ -617,17 +618,26 @@ export default function InterviewPage() {
                               </div>
 
                               {/* AI feedback / model answer result */}
-                              {(isStreamingThis || hasFeedback) && (
+                              {(isLoadingThis || isStreamingThis || hasFeedback) && (
                                 <div className="mt-4">
-                                  <MarkdownResult
-                                    result={isStreamingThis ? streamResult : feedbackMap[q.id]}
-                                    showDownload={false}
-                                  />
-                                  {isStreamingThis && (
-                                    <div className="mt-2 flex items-center gap-2 text-brand-light text-sm">
-                                      <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
-                                      <span>Generating...</span>
+                                  {isLoadingThis && !streamResult ? (
+                                    <div className="flex items-center gap-3 py-6 justify-center text-text-secondary">
+                                      <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
+                                      <span className="text-sm">Generating model answer...</span>
                                     </div>
+                                  ) : (
+                                    <>
+                                      <MarkdownResult
+                                        result={isStreamingThis ? streamResult : feedbackMap[q.id]}
+                                        showDownload={false}
+                                      />
+                                      {isStreamingThis && (
+                                        <div className="mt-2 flex items-center gap-2 text-brand-light text-sm">
+                                          <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
+                                          <span>Generating...</span>
+                                        </div>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               )}
