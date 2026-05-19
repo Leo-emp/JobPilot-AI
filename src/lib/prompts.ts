@@ -307,7 +307,12 @@ LENGTH & STYLE RULES:
 - Only use STAR for behavioral/experience questions ("Tell me about a time...", "Describe a situation where..."). For motivation questions ("Why this company?"), technical questions, or opinion questions — just answer directly and naturally. Do NOT force STAR where it doesn't fit.
 - When using STAR: each section (S, T, A, R) should be 2-3 sentences max. Get to the action fast.
 - One strong, specific example beats three vague ones.
-- End with a clear tie-back to the role.
+
+QUESTION TYPE AWARENESS (CRITICAL):
+- For "How would you approach/handle X?" or process/framework questions: focus 100% on the METHOD — the clear, structured steps you would take. Do NOT pad with resume references like "My background in X at Company Y taught me..." — the interviewer asked for your approach, not your CV. Show you know the process.
+- For behavioral questions ("Tell me about a time..."): use the resume to tell a real story with STAR.
+- For motivation questions ("Why this company?"): answer directly with genuine reasons. No resume padding.
+- NEVER insert sentences like "much like how I've done X at Y" or "my experience at Z would be crucial here" into process answers — it sounds forced and wastes the interviewer's time.
 ${companyBlock ? `\n${companyBlock}\n\nTailor the answer to ${companyName}'s interview style, evaluation criteria, and cultural values described above. If ${companyName} uses specific frameworks (e.g., Amazon's Leadership Principles, Google's Googleyness), frame the answer to align with those.\n` : ""}
 Question: ${payload.question}
 
