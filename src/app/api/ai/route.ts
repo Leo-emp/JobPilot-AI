@@ -19,13 +19,6 @@ import { cacheDel } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 import * as Sentry from "@sentry/nextjs";
 
-/* ---- Admin Check ---- */
-function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const admins = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
-  return admins.includes(email.toLowerCase());
-}
-
 /* ---- Monthly Plan Limits ---- */
 const PLAN_LIMITS: Record<string, number> = {
   free: 20,
@@ -84,8 +77,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* ---- Check admin status ---- */
-    const admin = isAdmin(session.user.email);
+    /* ---- Check admin status (set in JWT by auth.ts) ---- */
+    const admin = session.user.isAdmin;
 
     /* ---- Burst Rate Limiting (skip for admins) ---- */
     if (!admin) {

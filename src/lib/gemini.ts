@@ -20,7 +20,9 @@ const GEMINI_MODELS = [
   "gemini-2.0-flash-lite",
 ];
 
-const deadModels = new Set<string>();
+/* Models that returned 404 — skip them for 1 hour, then retry */
+const deadModels = new Map<string, number>();
+const DEAD_MODEL_TTL_MS = 60 * 60 * 1000;
 const MAX_RETRY_PASSES = 2;
 const AI_TIMEOUT_MS = 30_000;
 
@@ -38,7 +40,9 @@ async function callGeminiCore(parts: any[]): Promise<string> {
     }
 
     for (const model of GEMINI_MODELS) {
-      if (deadModels.has(model)) continue;
+      const deadSince = deadModels.get(model);
+      if (deadSince && Date.now() - deadSince < DEAD_MODEL_TTL_MS) continue;
+      if (deadSince) deadModels.delete(model);
 
       try {
         const controller = new AbortController();
@@ -63,7 +67,7 @@ async function callGeminiCore(parts: any[]): Promise<string> {
         clearTimeout(timeout);
 
         if (response.status === 404) {
-          deadModels.add(model);
+          deadModels.set(model, Date.now());
           continue;
         }
 

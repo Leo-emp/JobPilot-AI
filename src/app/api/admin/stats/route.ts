@@ -9,17 +9,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-/* ---- Admin check (same logic as ai/route.ts) ---- */
-function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const admins = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
-  return admins.includes(email.toLowerCase());
-}
-
 export async function GET() {
   /* ---- Auth + admin gate ---- */
   const session = await auth();
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
+  if (!session?.user?.isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -45,8 +38,9 @@ export async function GET() {
     prisma.coverLetter.count(),
     prisma.contact.count(),
     prisma.company.count(),
-    /* Full user list with usage stats (sorted by most recent first) */
+    /* User list with usage stats (most recent first, capped at 200) */
     prisma.user.findMany({
+      take: 200,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,

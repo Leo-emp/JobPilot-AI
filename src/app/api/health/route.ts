@@ -6,15 +6,20 @@
    Includes DB latency, memory usage, and uptime info.
    ============================================================ */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { dbRetry } from "@/lib/db-retry";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { getRedis, isRedisConfigured } from "@/lib/redis";
 
 /* # Track when the server started (persists across requests in the same instance) */
 const startedAt = new Date().toISOString();
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  /* Only admin sees technical error details */
+  const session = await auth().catch(() => null);
+  const isAdmin = session?.user?.isAdmin ?? false;
+
   const start = Date.now();
 
   /* Check database connectivity with retry for transient failures */
@@ -57,18 +62,22 @@ export async function GET() {
       db: {
         connected: dbOk,
         latencyMs: dbLatencyMs,
-        ...(dbError && { error: dbError }),
+        /* Only expose error details to admin */
+        ...(dbError && isAdmin && { error: dbError }),
       },
       redis: {
         configured: redisConfigured,
         connected: redisOk,
         ...(redisConfigured && { latencyMs: redisLatencyMs }),
       },
-      memory: {
-        heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
-        heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
-        rssMB: Math.round(mem.rss / 1024 / 1024),
-      },
+      /* Memory stats only for admin — prevents leaking server internals */
+      ...(isAdmin && {
+        memory: {
+          heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
+          heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
+          rssMB: Math.round(mem.rss / 1024 / 1024),
+        },
+      }),
       startedAt,
       timestamp: new Date().toISOString(),
     },

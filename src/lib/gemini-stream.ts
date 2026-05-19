@@ -17,7 +17,9 @@ const GEMINI_MODELS = [
   "gemini-2.0-flash-lite",
 ];
 
-const deadModels = new Set<string>();
+/* Models that returned 404 — skip them for 1 hour, then retry */
+const deadModels = new Map<string, number>();
+const DEAD_MODEL_TTL_MS = 60 * 60 * 1000;
 const AI_TIMEOUT_MS = 30_000;
 
 export async function streamGemini(prompt: string): Promise<ReadableStream<Uint8Array>> {
@@ -29,7 +31,9 @@ export async function streamGemini(prompt: string): Promise<ReadableStream<Uint8
   let lastError = "";
 
   for (const model of GEMINI_MODELS) {
-    if (deadModels.has(model)) continue;
+    const deadSince = deadModels.get(model);
+    if (deadSince && Date.now() - deadSince < DEAD_MODEL_TTL_MS) continue;
+    if (deadSince) deadModels.delete(model);
 
     try {
       const controller = new AbortController();
@@ -54,7 +58,7 @@ export async function streamGemini(prompt: string): Promise<ReadableStream<Uint8
       clearTimeout(timeout);
 
       if (response.status === 404) {
-        deadModels.add(model);
+        deadModels.set(model, Date.now());
         continue;
       }
 
@@ -137,7 +141,9 @@ export async function streamGeminiMultimodal(prompt: string, images: { data: str
   let lastError = "";
 
   for (const model of GEMINI_MODELS) {
-    if (deadModels.has(model)) continue;
+    const deadSince = deadModels.get(model);
+    if (deadSince && Date.now() - deadSince < DEAD_MODEL_TTL_MS) continue;
+    if (deadSince) deadModels.delete(model);
 
     try {
       const controller = new AbortController();
@@ -161,7 +167,7 @@ export async function streamGeminiMultimodal(prompt: string, images: { data: str
 
       clearTimeout(timeout);
 
-      if (response.status === 404) { deadModels.add(model); continue; }
+      if (response.status === 404) { deadModels.set(model, Date.now()); continue; }
       if (response.status === 429 || response.status === 503) { lastError = `${model} rate-limited`; continue; }
       if (!response.ok || !response.body) { lastError = `${model} error`; continue; }
 

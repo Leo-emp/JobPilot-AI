@@ -18,12 +18,6 @@ import { cacheDel } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 import * as Sentry from "@sentry/nextjs";
 
-function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const admins = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
-  return admins.includes(email.toLowerCase());
-}
-
 const PLAN_LIMITS: Record<string, number> = { free: 20, pro: 1000 };
 const MAX_PAYLOAD_SIZE = 50_000;
 const MAX_MULTIMODAL_PAYLOAD_SIZE = 20_000_000;
@@ -69,7 +63,7 @@ export async function POST(req: NextRequest) {
       return jsonError(isMultimodal ? "Images too large." : "Input too large.", 413);
     }
 
-    const admin = isAdmin(session.user.email);
+    const admin = session.user.isAdmin;
 
     /* Rate limiting (skip for admins) */
     if (!admin) {
