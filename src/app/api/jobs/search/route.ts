@@ -1,18 +1,20 @@
 /* ============================================================
    JOB SEARCH API - Multi-Source Job Aggregator
    ============================================================
-   GET /api/jobs/search?q=...&location=...&page=1
+   GET /api/jobs/search?q=...&location=...&page=1&country=au&sponsorship=true
    Searches for jobs across multiple free sources in parallel:
    - Adzuna (requires API keys)
+   - Jooble (requires API key)
    - Remotive (free, no key)
    - RemoteOK (free, no key)
    - We Work Remotely (free RSS feed, no key)
-   Merges and deduplicates results. Requires authentication.
+   Merges, deduplicates, and badges sponsor-friendly results.
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { isKnownSponsor } from "@/lib/australian-sponsors";
 
 /* ---- Standardized job format returned to the frontend ---- */
 interface Job {
@@ -27,6 +29,7 @@ interface Job {
   contractTime: string;
   postedDate: string;
   source: string;
+  sponsorsVisas?: boolean;
 }
 
 /* ============================================================
@@ -196,6 +199,40 @@ async function fetchWWR(query: string): Promise<Job[]> {
 }
 
 /* ============================================================
+   SOURCE 5: JOOBLE (requires JOOBLE_API_KEY)
+   ============================================================ */
+async function fetchJooble(query: string, location: string, page: number): Promise<Job[]> {
+  const apiKey = process.env.JOOBLE_API_KEY;
+  if (!apiKey) return [];
+
+  const body: Record<string, string> = { keywords: query, page: String(page) };
+  if (location) body.location = location;
+
+  const res = await fetch(`https://jooble.org/api/${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.jobs || []).map((j: any) => ({
+    id: `jooble-${j.id || Math.random().toString(36).slice(2)}`,
+    title: j.title || "",
+    company: j.company || "Unknown",
+    location: j.location || "",
+    description: stripHTML(j.snippet || ""),
+    url: j.link || "",
+    salary: j.salary || "",
+    category: j.type || "",
+    contractTime: j.type || "",
+    postedDate: j.updated || "",
+    source: "Jooble",
+  }));
+}
+
+/* ============================================================
    HELPERS
    ============================================================ */
 function formatSalary(min?: number, max?: number): string {
@@ -245,9 +282,15 @@ export async function GET(req: NextRequest) {
   const location = searchParams.get("location") || "";
   const page = parseInt(searchParams.get("page") || "1");
   const country = searchParams.get("country") || "us";
+  const sponsorship = searchParams.get("sponsorship") === "true";
+
+  /* # For sponsorship searches, boost query with visa keywords */
+  const effectiveQuery = sponsorship
+    ? `${query} visa sponsorship`.trim()
+    : query;
 
   /* Cache key based on normalized search params (15 min TTL) */
-  const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}`;
+  const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}:${sponsorship}`;
 
   try {
     /* Check cache first — avoids hitting external APIs for repeated searches */
@@ -257,24 +300,40 @@ export async function GET(req: NextRequest) {
     }
 
     /* Fetch all sources in parallel — each one fails gracefully */
-    const [adzunaJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
-      fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
+    const [adzunaJobs, joobleJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
+      fetchAdzuna(sponsorship ? effectiveQuery : query, location, page, country).catch(() => [] as Job[]),
+      fetchJooble(sponsorship ? effectiveQuery : query, location, page).catch(() => [] as Job[]),
       fetchRemotive(query).catch(() => [] as Job[]),
       fetchRemoteOK(query).catch(() => [] as Job[]),
       fetchWWR(query).catch(() => [] as Job[]),
     ]);
 
     /* Merge all results and deduplicate */
-    const allJobs = deduplicateJobs([
+    let allJobs = deduplicateJobs([
       ...adzunaJobs,
+      ...joobleJobs,
       ...remotiveJobs,
       ...remoteOKJobs,
       ...wwrJobs,
     ]);
 
+    /* # Badge jobs from known sponsors (especially useful for AU searches) */
+    if (country === "au") {
+      allJobs = allJobs.map(job => ({
+        ...job,
+        sponsorsVisas: isKnownSponsor(job.company),
+      }));
+
+      /* # When sponsorship filter is on, sort sponsor-friendly jobs to the top */
+      if (sponsorship) {
+        allJobs.sort((a, b) => (b.sponsorsVisas ? 1 : 0) - (a.sponsorsVisas ? 1 : 0));
+      }
+    }
+
     /* Build source summary */
     const sources = [
       adzunaJobs.length > 0 && "Adzuna",
+      joobleJobs.length > 0 && "Jooble",
       remotiveJobs.length > 0 && "Remotive",
       remoteOKJobs.length > 0 && "RemoteOK",
       wwrJobs.length > 0 && "WeWorkRemotely",

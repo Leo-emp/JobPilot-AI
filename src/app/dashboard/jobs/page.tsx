@@ -12,6 +12,7 @@
 import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { AUSTRALIAN_CITIES, isRegionalCity } from "@/lib/australian-sponsors";
 
 /* ---- Type for job search results ---- */
 interface JobResult {
@@ -25,6 +26,7 @@ interface JobResult {
   category: string;
   contractTime: string;
   postedDate: string;
+  sponsorsVisas?: boolean;
 }
 
 export default function JobsPage() {
@@ -42,6 +44,8 @@ export default function JobsPage() {
   const [searchSource, setSearchSource] = useState("");
   const [searchPage, setSearchPage] = useState(1);
   const [hasSearched, setHasSearched] = useState(false);
+  const [sponsorshipFilter, setSponsorshipFilter] = useState(false);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
 
   /* ---- Expanded job description tracking ---- */
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
@@ -122,6 +126,7 @@ export default function JobsPage() {
         country: searchCountry,
       });
       if (searchLocation) params.set("location", searchLocation);
+      if (sponsorshipFilter) params.set("sponsorship", "true");
 
       const res = await fetch(`/api/jobs/search?${params.toString()}`);
       const data = await res.json();
@@ -285,18 +290,42 @@ export default function JobsPage() {
               </div>
 
               {/* Location */}
-              <div className="sm:col-span-3">
+              <div className="sm:col-span-3 relative">
                 <label className="block text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">
                   Location
                 </label>
                 <input
                   type="text"
                   value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch(1)}
-                  placeholder="e.g. London, Remote"
+                  onChange={(e) => { setSearchLocation(e.target.value); setShowLocationSuggestions(searchCountry === "au" && e.target.value.length > 0); }}
+                  onFocus={() => setShowLocationSuggestions(searchCountry === "au" && searchLocation.length === 0)}
+                  onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { handleSearch(1); setShowLocationSuggestions(false); } }}
+                  placeholder={searchCountry === "au" ? "e.g. Sydney, Melbourne" : "e.g. London, Remote"}
                   className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
                 />
+                {/* Australian city suggestions dropdown */}
+                {showLocationSuggestions && searchCountry === "au" && (
+                  <div className="absolute z-20 top-full mt-1 w-full bg-space-700 border border-card-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                    {AUSTRALIAN_CITIES
+                      .filter(c => !searchLocation || c.toLowerCase().includes(searchLocation.toLowerCase()))
+                      .map(city => (
+                        <button
+                          key={city}
+                          type="button"
+                          onMouseDown={() => { setSearchLocation(city); setShowLocationSuggestions(false); }}
+                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-space-600 transition-colors flex items-center justify-between"
+                        >
+                          <span className="text-white">{city}</span>
+                          {isRegionalCity(city) && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Regional
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
 
               {/* Country selector */}
@@ -340,6 +369,26 @@ export default function JobsPage() {
                 </button>
               </div>
             </div>
+
+            {/* Visa sponsorship filter — shown when Australia is selected */}
+            {searchCountry === "au" && (
+              <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-space-700/60 border border-card-border">
+                <button
+                  onClick={() => setSponsorshipFilter(!sponsorshipFilter)}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${
+                    sponsorshipFilter ? "bg-brand-indigo" : "bg-space-600"
+                  }`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    sponsorshipFilter ? "translate-x-5" : ""
+                  }`} />
+                </button>
+                <div>
+                  <span className="text-sm text-white font-medium">Visa Sponsorship</span>
+                  <p className="text-xs text-text-muted">Boost results from employers known to sponsor work visas</p>
+                </div>
+              </div>
+            )}
 
             {/* Source indicator */}
             {searchSource === "sample" && (
@@ -399,9 +448,24 @@ export default function JobsPage() {
 
                     {/* Job metadata chips */}
                     <div className="flex flex-wrap gap-2 mb-3">
+                      {/* Sponsor badge — shown for known Australian sponsors */}
+                      {job.sponsorsVisas && (
+                        <span className="px-3 py-1 rounded-full bg-brand-indigo/15 text-brand-light text-xs font-semibold border border-brand-indigo/25 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          Sponsors Visas
+                        </span>
+                      )}
                       {job.location && (
                         <span className="px-3 py-1 rounded-full bg-space-600 text-text-secondary text-xs">
                           {job.location}
+                        </span>
+                      )}
+                      {/* Regional visa benefits badge */}
+                      {searchCountry === "au" && job.location && isRegionalCity(job.location.split(",")[0]) && (
+                        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">
+                          Regional Visa Benefits
                         </span>
                       )}
                       {job.salary && (
