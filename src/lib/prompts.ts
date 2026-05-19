@@ -140,17 +140,38 @@ Description: ${payload.jobDescription}`;
 }
 
 function matchScore(payload: Record<string, any>): string {
-  return `Analyze how well this resume matches the job description below.
-Return a MATCH_SCORE: X/100 on the first line (just the number).
-Then provide:
-1. **Matching Skills** (what aligns)
-2. **Missing Skills** (gaps to address)
-3. **Recommendations** (how to improve the match)
+  return `You are a senior career strategist and hiring expert. Analyze how well this resume matches the job description and requirements below. Be specific — reference actual skills, tools, and requirements from both documents.
+
+IMPORTANT RULES:
+- Use the ACTUAL content from the resume — reference specific job titles, companies, skills, and achievements
+- Compare against SPECIFIC requirements from the job description — not generic advice
+- Be honest about gaps — don't sugarcoat a weak match
+- Every recommendation must be actionable and specific
+
+Provide this EXACT structure:
+
+## Match Score: X/100
+(One sentence explaining the overall match — what's the strongest alignment and what's the biggest gap)
+
+## Matching Skills
+- (List each skill/qualification from the JD that the candidate demonstrably has, with evidence from their resume. Be specific: "**Python** — used at RealRate for data analysis" not just "Python")
+
+## Missing Skills
+- (List each requirement from the JD that the resume does NOT cover. For each, explain why it matters for the role)
+
+## Experience Gaps
+- (Specific experience or qualifications the JD asks for that the candidate lacks — years of experience, certifications, industry exposure, management experience, etc.)
+
+## Quick Wins
+- (3-5 things the candidate can do THIS WEEK to improve their match — specific courses, certifications, resume tweaks, portfolio additions)
+
+## Action Plan
+- (Numbered step-by-step plan to bridge the gap between current profile and job requirements. Each step should be concrete: "1. Complete Google Data Analytics Certificate (Coursera, ~2 months)" not "Get certified")
 
 Resume:
 ${payload.resume}
 
-Job Description:
+Job Description & Requirements:
 ${payload.jobDescription}`;
 }
 

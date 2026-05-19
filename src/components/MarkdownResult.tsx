@@ -46,17 +46,25 @@ function isAnalysisHeading(text: string): boolean {
     h.includes("missing keyword") ||
     h.includes("formatting issue") ||
     h.includes("formatting") ||
-    (h.includes("priority") && h.includes("action"))
+    (h.includes("priority") && h.includes("action")) ||
+    h.includes("matching skills") ||
+    h.includes("missing skills") ||
+    h.includes("experience gap") ||
+    h.includes("recommendation") ||
+    h.includes("action plan") ||
+    h.includes("quick wins")
   );
 }
 
 /* ---- Get color scheme for analysis section cards ---- */
 function getAnalysisStyle(text: string): { border: string; headerBg: string; headerText: string } {
   const h = text.toLowerCase();
-  if (h.includes("strength")) return { border: "border-l-emerald-500", headerBg: "bg-emerald-500/10", headerText: "text-emerald-400" };
-  if (h.includes("weakness")) return { border: "border-l-red-400", headerBg: "bg-red-400/10", headerText: "text-red-400" };
-  if (h.includes("missing keyword")) return { border: "border-l-violet-400", headerBg: "bg-violet-400/10", headerText: "text-violet-400" };
+  if (h.includes("strength") || h.includes("matching skills")) return { border: "border-l-emerald-500", headerBg: "bg-emerald-500/10", headerText: "text-emerald-400" };
+  if (h.includes("weakness") || h.includes("experience gap")) return { border: "border-l-red-400", headerBg: "bg-red-400/10", headerText: "text-red-400" };
+  if (h.includes("missing keyword") || h.includes("missing skills")) return { border: "border-l-violet-400", headerBg: "bg-violet-400/10", headerText: "text-violet-400" };
   if (h.includes("formatting")) return { border: "border-l-amber-400", headerBg: "bg-amber-400/10", headerText: "text-amber-400" };
+  if (h.includes("recommendation") || h.includes("action plan")) return { border: "border-l-sky-400", headerBg: "bg-sky-400/10", headerText: "text-sky-400" };
+  if (h.includes("quick wins")) return { border: "border-l-teal-400", headerBg: "bg-teal-400/10", headerText: "text-teal-400" };
   return { border: "border-l-sky-400", headerBg: "bg-sky-400/10", headerText: "text-sky-400" };
 }
 

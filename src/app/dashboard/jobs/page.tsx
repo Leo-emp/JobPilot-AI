@@ -9,8 +9,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
 
 /* ---- Type for job search results ---- */
 interface JobResult {
@@ -51,11 +52,56 @@ export default function JobsPage() {
 
   /* ---- Match tab state ---- */
   const [resumeText, setResumeText] = useState("");
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const [savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; content: string }[]>([]);
+  const [resumesLoading, setResumesLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState("");
   const [matchScore, setMatchScore] = useState<number | null>(null);
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState("");
+
+  /* ---- Fetch saved resumes on mount ---- */
+  useEffect(() => {
+    setResumesLoading(true);
+    fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
+      .then(r => r.ok ? r.json() : { data: [] })
+      .then(d => setSavedResumes(d.data || []))
+      .catch(() => {})
+      .finally(() => setResumesLoading(false));
+  }, []);
+
+  /* ---- Handle resume file upload (PDF or TXT) ---- */
+  const handleResumeUpload = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setMatchError("File too large. Maximum 5MB.");
+      return;
+    }
+    if (file.name.endsWith(".txt")) {
+      const text = await file.text();
+      setResumeText(text);
+      setResumeFileName(file.name);
+      return;
+    }
+    if (file.name.endsWith(".pdf")) {
+      setResumeUploading(true);
+      setMatchError("");
+      try {
+        const text = await extractTextFromPdf(file);
+        if (!text.trim()) throw new Error("Could not extract text from PDF");
+        setResumeText(text.trim());
+        setResumeFileName(file.name);
+      } catch (e) {
+        setMatchError(e instanceof Error ? e.message : "Failed to parse PDF.");
+      } finally {
+        setResumeUploading(false);
+      }
+      return;
+    }
+    setMatchError("Unsupported file type. Upload a PDF or TXT file.");
+  };
 
   /* ============================================================
      SEARCH JOBS - Call the Adzuna-powered search API
@@ -150,8 +196,8 @@ export default function JobsPage() {
         return;
       }
 
-      /* Extract the numeric score from the AI response */
-      const scoreMatch = data.result.match(/MATCH_SCORE:\s*(\d+)/);
+      /* Extract the numeric score from the AI response (handles both old and new format) */
+      const scoreMatch = data.result.match(/(?:MATCH_SCORE|Match Score):\s*(\d+)/);
       if (scoreMatch) {
         setMatchScore(parseInt(scoreMatch[1]));
       }
@@ -458,29 +504,94 @@ export default function JobsPage() {
            ============================================================ */}
       {activeTab === "match" && (
         <div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Resume input */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* ---- Resume import ---- */}
             <div className="glass-card p-6">
               <h2 className="text-lg font-bold mb-4">Your Resume</h2>
-              <textarea
-                value={resumeText}
-                onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Paste your resume text here..."
-                rows={10}
-                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
-              />
+
+              {/* Saved resumes selector */}
+              {savedResumes.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs text-text-muted mb-2">Select a saved resume</p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedResumes.map((r) => (
+                      <button
+                        key={r.id}
+                        onClick={() => { setResumeText(r.content); setResumeFileName(r.fileName); }}
+                        className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                          resumeText === r.content
+                            ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+                            : "bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"
+                        }`}
+                      >
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        {r.fileName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {resumesLoading && <p className="text-xs text-text-muted mb-3">Loading saved resumes...</p>}
+
+              {/* File upload */}
+              <input ref={fileInputRef} type="file" accept=".pdf,.txt" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleResumeUpload(f); }} />
+
+              {!resumeText ? (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add("border-brand-indigo/50"); }}
+                  onDragLeave={e => { e.preventDefault(); e.currentTarget.classList.remove("border-brand-indigo/50"); }}
+                  onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove("border-brand-indigo/50"); const f = e.dataTransfer.files[0]; if (f) handleResumeUpload(f); }}
+                  className="w-full px-4 py-10 rounded-xl bg-space-700 border-2 border-dashed border-card-border text-center cursor-pointer hover:border-brand-indigo/40 transition-colors"
+                >
+                  {resumeUploading ? (
+                    <div className="flex items-center justify-center gap-2 text-text-secondary">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                      Extracting text from resume...
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-3xl mb-2">📄</div>
+                      <p className="text-white font-medium">Drop your resume here or click to upload</p>
+                      <p className="text-sm text-text-muted mt-1">PDF or TXT — max 5MB</p>
+                      {!resumesLoading && savedResumes.length === 0 && (
+                        <p className="text-xs text-text-muted mt-3">Or <a href="/dashboard/resume" className="text-brand-light hover:underline">upload one in Resume Intelligence</a> first</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full rounded-xl bg-space-700 border border-card-border overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-space-600/50 border-b border-card-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📄</span>
+                      <span className="text-sm text-white font-medium">{resumeFileName || "Resume loaded"}</span>
+                      <span className="text-xs text-text-muted">({resumeText.length.toLocaleString()} chars)</span>
+                    </div>
+                    <button onClick={() => { setResumeText(""); setResumeFileName(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                      className="text-sm text-red-400 hover:text-red-300 transition-colors">Remove</button>
+                  </div>
+                  <div className="px-4 py-3 max-h-32 overflow-y-auto">
+                    <p className="text-xs text-text-muted whitespace-pre-wrap line-clamp-5">{resumeText.slice(0, 600)}{resumeText.length > 600 ? "..." : ""}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Job description input */}
+            {/* ---- Job Description & Requirements ---- */}
             <div className="glass-card p-6">
-              <h2 className="text-lg font-bold mb-4">Job Description</h2>
+              <h2 className="text-lg font-bold mb-4">Job Description & Requirements</h2>
               <textarea
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
-                placeholder="Paste the job description here..."
+                placeholder="Paste the full job description and requirements here..."
                 rows={10}
                 className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
               />
+              <p className="text-xs text-text-muted mt-2">Include both the description and requirements for the most accurate match analysis.</p>
             </div>
           </div>
 
@@ -490,36 +601,47 @@ export default function JobsPage() {
             disabled={!resumeText || !jobDescription || matchLoading}
             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed mb-8"
           >
-            {matchLoading ? "Calculating..." : "Calculate Match Score"}
+            {matchLoading ? "Analyzing..." : "Calculate Match Score"}
           </button>
+
+          {/* Loading */}
+          {matchLoading && (
+            <div className="flex items-center gap-3 text-text-secondary mb-6">
+              <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm">Analyzing match against job description and requirements...</span>
+            </div>
+          )}
 
           {/* Match Score Display */}
           {matchScore !== null && (
-            <div className="glass-card p-8 text-center mb-8">
-              <p className="text-text-secondary text-sm uppercase tracking-wider mb-2">Match Score</p>
+            <div className="glass-card p-8 text-center mb-6">
+              <p className="text-text-secondary text-sm uppercase tracking-wider mb-3">Match Score</p>
               <div className={`text-6xl font-bold ${getScoreColor(matchScore)}`}>
                 {matchScore}%
               </div>
-              <p className="text-text-muted text-sm mt-2">
-                {matchScore >= 75
-                  ? "Great match! You're a strong candidate."
+              {/* Visual progress bar */}
+              <div className="max-w-xs mx-auto mt-4 h-2.5 bg-space-600 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ${
+                    matchScore >= 75 ? "bg-green-400" : matchScore >= 50 ? "bg-yellow-400" : "bg-red-400"
+                  }`}
+                  style={{ width: `${matchScore}%` }}
+                />
+              </div>
+              <p className="text-text-muted text-sm mt-3">
+                {matchScore >= 80
+                  ? "Excellent match — you're a top candidate for this role."
+                  : matchScore >= 65
+                  ? "Strong match — a few targeted improvements will make you stand out."
                   : matchScore >= 50
-                  ? "Decent match. Consider optimizing your resume."
-                  : "Low match. Use Resume Rebuild to improve."}
+                  ? "Moderate match — review the gaps below and focus on quick wins."
+                  : "Significant gaps — follow the action plan to strengthen your profile."}
               </p>
             </div>
           )}
 
           {/* AI Analysis */}
           {result && <MarkdownResult result={result} showDownload={false} />}
-
-          {/* Loading */}
-          {matchLoading && (
-            <div className="flex items-center gap-3 text-text-secondary">
-              <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm">Analyzing match compatibility...</span>
-            </div>
-          )}
 
           {/* Error */}
           {matchError && (
