@@ -257,6 +257,39 @@ function extractCDATA(xml: string, tag: string): string {
   return match ? match[1].trim() : "";
 }
 
+/* Country code → country name for Jooble location + filtering */
+const COUNTRY_NAMES: Record<string, string> = {
+  au: "Australia", us: "United States", gb: "United Kingdom",
+  ca: "Canada", de: "Germany", fr: "France", in: "India",
+  nz: "New Zealand", sg: "Singapore", nl: "Netherlands",
+  it: "Italy", br: "Brazil", za: "South Africa", at: "Austria",
+  ch: "Switzerland", pl: "Poland", mx: "Mexico",
+};
+
+/* Major cities/states per country for location-based filtering */
+const COUNTRY_MARKERS: Record<string, string[]> = {
+  au: ["australia", "sydney", "melbourne", "brisbane", "perth", "adelaide", "canberra", "hobart", "darwin", "gold coast", "nsw", "vic", "qld", "wa", "sa", "tas", "act", "nt"],
+  us: ["united states", "usa", "new york", "los angeles", "chicago", "san francisco", "seattle", "boston", "texas", "california", "florida"],
+  gb: ["united kingdom", "london", "manchester", "birmingham", "edinburgh", "glasgow", "leeds", "bristol", "england", "scotland", "wales"],
+  ca: ["canada", "toronto", "vancouver", "montreal", "ottawa", "calgary", "edmonton", "ontario", "british columbia", "quebec", "alberta"],
+  nz: ["new zealand", "auckland", "wellington", "christchurch", "hamilton"],
+  in: ["india", "bangalore", "mumbai", "delhi", "hyderabad", "pune", "chennai", "kolkata", "noida", "gurgaon"],
+  de: ["germany", "berlin", "munich", "hamburg", "frankfurt", "cologne", "düsseldorf"],
+  sg: ["singapore"],
+  fr: ["france", "paris", "lyon", "marseille", "toulouse"],
+};
+
+/* Check if a job location matches the selected country */
+function matchesCountry(jobLocation: string, country: string): boolean {
+  if (!jobLocation) return true;
+  const loc = jobLocation.toLowerCase();
+  /* "Remote" or "Worldwide" always passes */
+  if (loc.includes("remote") || loc.includes("worldwide") || loc.includes("anywhere")) return true;
+  const markers = COUNTRY_MARKERS[country];
+  if (!markers) return true;
+  return markers.some(marker => loc.includes(marker));
+}
+
 /* Deduplicate by normalized title+company */
 function deduplicateJobs(jobs: Job[]): Job[] {
   const seen = new Set<string>();
@@ -300,10 +333,17 @@ export async function GET(req: NextRequest) {
        with irrelevant global listings. */
     const isRemoteSearch = !location || location.toLowerCase().includes("remote");
 
+    /* # Build Jooble location: use user's city + country name so
+       Jooble returns results from the correct country */
+    const countryName = COUNTRY_NAMES[country] || "";
+    const joobleLocation = location
+      ? `${location}, ${countryName}`
+      : countryName;
+
     /* Fetch all sources in parallel — each one fails gracefully */
     const [adzunaJobs, joobleJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
       fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
-      fetchJooble(query, location, page).catch(() => [] as Job[]),
+      fetchJooble(query, joobleLocation, page).catch(() => [] as Job[]),
       isRemoteSearch ? fetchRemotive(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchRemoteOK(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchWWR(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
@@ -317,6 +357,12 @@ export async function GET(req: NextRequest) {
       ...remoteOKJobs,
       ...wwrJobs,
     ]);
+
+    /* # Filter out jobs that don't match the selected country.
+       Adzuna uses the country code in the URL so its results are
+       usually correct, but Jooble and remote boards can leak
+       results from other countries. */
+    allJobs = allJobs.filter(job => matchesCountry(job.location, country));
 
     /* # Badge jobs from known sponsors (especially useful for AU searches) */
     if (country === "au") {
