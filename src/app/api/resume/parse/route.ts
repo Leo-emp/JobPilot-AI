@@ -10,15 +10,28 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { createRateLimiter } from "@/lib/rate-limit";
 
 /* Force dynamic — never evaluate at build time */
 export const dynamic = "force-dynamic";
+
+/* 10 uploads per minute per user — prevents storage/compute abuse */
+const uploadLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
 export async function POST(req: NextRequest) {
   /* Check authentication */
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  /* Rate limit file uploads per user */
+  const limitCheck = await uploadLimiter.check(`resume-upload:${session.user.id}`);
+  if (!limitCheck.allowed) {
+    return NextResponse.json(
+      { error: "Too many uploads. Please wait a moment." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(limitCheck.resetIn / 1000)) } }
+    );
   }
 
   try {

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { resetPasswordSchema, formatZodError } from "@/lib/validations";
 import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 import { audit, getClientIp } from "@/lib/audit";
@@ -41,8 +42,11 @@ export async function POST(req: NextRequest) {
 
     const { token, password } = parsed.data;
 
+    /* ---- Hash the token to match what's stored in DB ---- */
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
     /* ---- Find the reset token ---- */
-    const resetRecord = await prisma.passwordReset.findUnique({ where: { token } });
+    const resetRecord = await prisma.passwordReset.findUnique({ where: { token: hashedToken } });
 
     if (!resetRecord) {
       return NextResponse.json({ error: "Invalid or expired reset link. Please request a new one." }, { status: 400 });

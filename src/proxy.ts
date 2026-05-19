@@ -18,6 +18,10 @@ import { audit } from "@/lib/audit";
 /* # Set MAINTENANCE_MODE=true in env vars to block all traffic except /api/health */
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true";
 
+/* ---- Chrome extension ID whitelist ---- */
+/* # Set CHROME_EXTENSION_ID in env to lock CORS to your published extension */
+const ALLOWED_EXTENSION_ID = process.env.CHROME_EXTENSION_ID || "";
+
 /* ---- In-memory IP rate limiter for unauthenticated API routes ---- */
 /* # Edge-compatible burst protection — Redis handles sustained limits in route handlers */
 const ipStore = new Map<string, { count: number; resetAt: number }>();
@@ -144,7 +148,9 @@ export function proxy(req: NextRequest) {
       requestOrigin === `https://${host}` ||
       requestOrigin === `http://${host}`
     );
-    const isChromeExtension = requestOrigin?.startsWith("chrome-extension://");
+    const isChromeExtension = ALLOWED_EXTENSION_ID
+      ? requestOrigin === `chrome-extension://${ALLOWED_EXTENSION_ID}`
+      : requestOrigin?.startsWith("chrome-extension://");
     const isAuthCallback = pathname.startsWith("/api/auth");
     const isWebhook = pathname.startsWith("/api/stripe/webhook");
     const isServerCall = !origin && !referer;
@@ -209,8 +215,11 @@ export function proxy(req: NextRequest) {
     const origin = req.headers.get("origin");
 
     if (pathname.startsWith("/api/extension")) {
-      /* Chrome extension gets its own CORS */
-      if (origin && origin.startsWith("chrome-extension://")) {
+      /* Chrome extension gets its own CORS — locked to specific ID when configured */
+      const isAllowedExtension = ALLOWED_EXTENSION_ID
+        ? origin === `chrome-extension://${ALLOWED_EXTENSION_ID}`
+        : origin?.startsWith("chrome-extension://");
+      if (origin && isAllowedExtension) {
         response.headers.set("Access-Control-Allow-Origin", origin);
         response.headers.set("Access-Control-Allow-Credentials", "true");
         response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");

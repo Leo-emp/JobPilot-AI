@@ -25,10 +25,12 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2mb",
     },
   },
-  /* Allow user-uploaded profile images from any domain */
+  /* Only allow OAuth provider avatar domains — prevents SSRF via image proxy */
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "**" },
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+      { protocol: "https", hostname: "*.licdn.com" },
+      { protocol: "https", hostname: "*.gravatar.com" },
     ],
   },
 };

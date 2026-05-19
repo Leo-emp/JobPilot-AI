@@ -55,6 +55,8 @@ export async function POST(req: NextRequest) {
     if (user && user.password) {
       /* ---- Generate a secure random token ---- */
       const token = crypto.randomBytes(32).toString("hex");
+      /* Hash before storing — DB compromise won't leak usable tokens */
+      const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); /* 1 hour from now */
 
       /* ---- Invalidate any existing tokens for this email ---- */
@@ -63,12 +65,12 @@ export async function POST(req: NextRequest) {
         data: { used: true },
       });
 
-      /* ---- Store the new token ---- */
+      /* ---- Store the hashed token (plaintext sent to user via email) ---- */
       await prisma.passwordReset.create({
-        data: { email: normalizedEmail, token, expiresAt },
+        data: { email: normalizedEmail, token: hashedToken, expiresAt },
       });
 
-      /* ---- Build the reset link ---- */
+      /* ---- Build the reset link (with plaintext token) ---- */
       const baseUrl = process.env.NEXTAUTH_URL
         || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
         || "http://localhost:3000";

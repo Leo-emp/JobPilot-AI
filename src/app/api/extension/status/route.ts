@@ -9,27 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-
-/* ---- Allowed origins for CORS ---- */
-const ALLOWED_ORIGINS = [
-  "chrome-extension://",
-];
-
-/* ---- Add CORS headers to response ---- */
-function corsHeaders(origin: string | null) {
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-
-  /* Allow any chrome-extension origin */
-  if (origin && origin.startsWith("chrome-extension://")) {
-    headers["Access-Control-Allow-Origin"] = origin;
-  }
-
-  return headers;
-}
+import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 
 /* ---- OPTIONS: Handle CORS preflight ---- */
 export async function OPTIONS(req: NextRequest) {

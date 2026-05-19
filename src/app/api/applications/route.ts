@@ -14,21 +14,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createApplicationSchema, formatZodError } from "@/lib/validations";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
-
-/* ---- Add CORS headers for Chrome Extension ---- */
-function corsHeaders(origin: string | null) {
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-
-  if (origin && origin.startsWith("chrome-extension://")) {
-    headers["Access-Control-Allow-Origin"] = origin;
-  }
-
-  return headers;
-}
+import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 
 /* ---- OPTIONS: Handle CORS preflight ---- */
 export async function OPTIONS(req: NextRequest) {
