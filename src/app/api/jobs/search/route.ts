@@ -284,11 +284,6 @@ export async function GET(req: NextRequest) {
   const country = searchParams.get("country") || "us";
   const sponsorship = searchParams.get("sponsorship") === "true";
 
-  /* # For sponsorship searches, boost query with visa keywords */
-  const effectiveQuery = sponsorship
-    ? `${query} visa sponsorship`.trim()
-    : query;
-
   /* Cache key based on normalized search params (15 min TTL) */
   const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}:${sponsorship}`;
 
@@ -307,8 +302,8 @@ export async function GET(req: NextRequest) {
 
     /* Fetch all sources in parallel — each one fails gracefully */
     const [adzunaJobs, joobleJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
-      fetchAdzuna(sponsorship ? effectiveQuery : query, location, page, country).catch(() => [] as Job[]),
-      fetchJooble(sponsorship ? effectiveQuery : query, location, page).catch(() => [] as Job[]),
+      fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
+      fetchJooble(query, location, page).catch(() => [] as Job[]),
       isRemoteSearch ? fetchRemotive(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchRemoteOK(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchWWR(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
