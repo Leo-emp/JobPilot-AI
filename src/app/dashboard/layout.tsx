@@ -30,6 +30,11 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  /* If user has 2FA enabled and hasn't verified yet, block dashboard access */
+  if (session.user.twoFactorPending) {
+    redirect("/verify-2fa");
+  }
+
   return (
     /* SessionProvider makes useSession() available in all child components */
     <SessionProvider session={session}>

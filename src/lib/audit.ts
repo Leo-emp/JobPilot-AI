@@ -39,7 +39,10 @@ export type AuditEvent =
   | "feedback.submitted"
   | "security.rate_limit.hit"
   | "security.csrf.blocked"
-  | "security.body_size.blocked";
+  | "security.body_size.blocked"
+  | "security.waf.blocked"
+  | "auth.2fa.enabled"
+  | "auth.2fa.disabled";
 
 /* # Structured audit log entry */
 interface AuditPayload {

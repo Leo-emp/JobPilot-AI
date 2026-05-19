@@ -70,6 +70,20 @@ export function proxy(req: NextRequest) {
     );
   }
 
+  /* ---- WAF: Block common attack patterns in URL path ---- */
+  const decodedPath = decodeURIComponent(pathname).toLowerCase();
+  const wafBlocked =
+    /(\.\.[/\\])/.test(decodedPath) ||          /* Path traversal */
+    /(union\s+select|drop\s+table|;\s*delete|;\s*insert|;\s*update)/i.test(decodedPath) || /* SQL injection */
+    /(<script|javascript:|data:text\/html|vbscript:)/i.test(decodedPath) || /* XSS in URL */
+    /\.(env|git|svn|htaccess|htpasswd|DS_Store)/i.test(decodedPath) || /* Sensitive file probing */
+    /\/?(wp-admin|wp-login|xmlrpc|phpmyadmin|\.well-known\/security\.txt)/i.test(decodedPath); /* Scanner noise */
+
+  if (wafBlocked) {
+    audit("security.waf.blocked", { ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown", detail: pathname });
+    return new NextResponse(null, { status: 403 });
+  }
+
   /* ---- IP rate limiting for unauthenticated API routes ---- */
   /* # Burst protection at the edge — prevents brute-force attacks on auth routes */
   const isPublicApi = (
@@ -162,20 +176,28 @@ export function proxy(req: NextRequest) {
   }
 
   /* ---- Security Headers + Request Tracing ---- */
-  const response = NextResponse.next();
+  /* Generate a per-request nonce for CSP script/style whitelisting */
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   /* Unique request ID for tracing errors across logs */
   const requestId = crypto.randomUUID();
   response.headers.set("X-Request-Id", requestId);
 
   /* ---- Content Security Policy (CSP) ---- */
-  /* Strongest XSS defense — only allows scripts/styles from trusted sources */
+  /* Nonce-based: scripts/styles must carry the per-request nonce.
+     'unsafe-inline' kept as fallback for browsers that don't support nonces.
+     In CSP2+ browsers, 'unsafe-inline' is ignored when a nonce is present. */
   const csp = [
     "default-src 'self'",
-    /* Scripts: self + inline (Next.js needs it) + eval (dev only hot reload) + Stripe + PostHog + Sentry */
-    `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://js.stripe.com https://us.i.posthog.com https://*.sentry.io`,
-    /* Styles: self + inline (Tailwind injects styles) */
-    "style-src 'self' 'unsafe-inline'",
+    /* Scripts: nonce + fallback unsafe-inline + eval (dev only) + trusted third parties */
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://js.stripe.com https://us.i.posthog.com https://*.sentry.io`,
+    /* Styles: nonce + fallback unsafe-inline (Tailwind injects styles) */
+    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
     /* Images: self + data URIs (base64) + blob (PDF previews) + common CDNs */
     "img-src 'self' data: blob: https://*.googleusercontent.com https://*.licdn.com",
     /* Fonts: self + Google Fonts */

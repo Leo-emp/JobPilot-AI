@@ -13,6 +13,7 @@ declare module "next-auth" {
     user: {
       id: string;
       isAdmin: boolean;
+      twoFactorPending: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -20,5 +21,6 @@ declare module "next-auth" {
 declare module "@auth/core/jwt" {
   interface JWT {
     isAdmin?: boolean;
+    twoFactorPending?: boolean;
   }
 }

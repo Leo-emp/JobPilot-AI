@@ -10,6 +10,7 @@
 "use client";
 
 import { useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import type { jsPDF } from "jspdf";
 import AiDisclosure from "./AiDisclosure";
 
@@ -723,10 +724,10 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         </div>
       </div>
 
-      {/* Rendered markdown content */}
+      {/* Rendered markdown content — DOMPurify as defense-in-depth on top of escapeHtml */}
       <div
         className="p-6 sm:p-8 rounded-xl bg-space-700/80 border border-card-border overflow-x-auto"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
       />
 
       {showDownload && (

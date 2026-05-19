@@ -56,6 +56,16 @@ export default function SettingsPage() {
   const [exportLoading, setExportLoading] = useState(false);
   const [exportMessage, setExportMessage] = useState("");
 
+  /* 2FA setup */
+  const [twoFAStep, setTwoFAStep] = useState<"idle" | "setup" | "verify">("idle");
+  const [twoFAQrCode, setTwoFAQrCode] = useState("");
+  const [twoFASecret, setTwoFASecret] = useState("");
+  const [twoFACode, setTwoFACode] = useState("");
+  const [twoFALoading, setTwoFALoading] = useState(false);
+  const [twoFAMessage, setTwoFAMessage] = useState("");
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+  const [twoFADisableCode, setTwoFADisableCode] = useState("");
+
   /* Account deletion */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
@@ -88,6 +98,14 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => { fetchPlan(); }, [fetchPlan]);
+
+  /* Check 2FA status on mount */
+  useEffect(() => {
+    fetch("/api/auth/two-factor/status")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setTwoFAEnabled(d.enabled); })
+      .catch(() => {});
+  }, []);
 
   /* ---- Profile Image Upload ---- */
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -395,6 +413,152 @@ export default function SettingsPage() {
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Two-Factor Authentication */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-4">Two-Factor Authentication</h2>
+
+              {twoFAEnabled && twoFAStep !== "setup" ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="inline-block w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-green-400 text-sm font-medium">2FA is enabled</span>
+                  </div>
+                  <p className="text-text-secondary text-sm mb-4">
+                    Your account is protected with authenticator app verification.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={twoFADisableCode}
+                      onChange={e => setTwoFADisableCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="Enter code to disable"
+                      className="px-4 py-2 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-red-500/50 text-sm w-48"
+                    />
+                    <button
+                      onClick={async () => {
+                        setTwoFALoading(true);
+                        setTwoFAMessage("");
+                        try {
+                          const res = await fetch("/api/auth/two-factor/disable", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ code: twoFADisableCode }),
+                          });
+                          const data = await res.json();
+                          if (res.ok) {
+                            setTwoFAEnabled(false);
+                            setTwoFADisableCode("");
+                            setTwoFAMessage("2FA has been disabled.");
+                          } else {
+                            setTwoFAMessage(data.error || "Failed to disable.");
+                          }
+                        } catch { setTwoFAMessage("Failed to disable 2FA."); }
+                        finally { setTwoFALoading(false); }
+                      }}
+                      disabled={twoFADisableCode.length !== 6 || twoFALoading}
+                      className="px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    >
+                      {twoFALoading ? "..." : "Disable 2FA"}
+                    </button>
+                  </div>
+                </div>
+              ) : twoFAStep === "idle" ? (
+                <div>
+                  <p className="text-text-secondary text-sm mb-4">
+                    Add an extra layer of security by requiring a code from your authenticator app when signing in.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      setTwoFALoading(true);
+                      setTwoFAMessage("");
+                      try {
+                        const res = await fetch("/api/auth/two-factor/setup", { method: "POST" });
+                        const data = await res.json();
+                        if (res.ok) {
+                          setTwoFAQrCode(data.qrCode);
+                          setTwoFASecret(data.secret);
+                          setTwoFAStep("setup");
+                        } else {
+                          setTwoFAMessage(data.error || "Setup failed.");
+                        }
+                      } catch { setTwoFAMessage("Failed to start 2FA setup."); }
+                      finally { setTwoFALoading(false); }
+                    }}
+                    disabled={twoFALoading}
+                    className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors disabled:opacity-50"
+                  >
+                    {twoFALoading ? "Setting up..." : "Enable 2FA"}
+                  </button>
+                </div>
+              ) : twoFAStep === "setup" ? (
+                <div>
+                  <p className="text-text-secondary text-sm mb-4">
+                    Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password, etc.):
+                  </p>
+                  <div className="flex justify-center mb-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={twoFAQrCode} alt="2FA QR Code" className="w-48 h-48 rounded-xl" />
+                  </div>
+                  <p className="text-xs text-text-muted text-center mb-4">
+                    Or enter manually: <code className="text-brand-light bg-space-800 px-2 py-1 rounded text-xs break-all">{twoFASecret}</code>
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={twoFACode}
+                      onChange={e => setTwoFACode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="Enter 6-digit code"
+                      className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo/50 text-sm w-48 text-center tracking-widest"
+                      autoFocus
+                    />
+                    <button
+                      onClick={async () => {
+                        setTwoFALoading(true);
+                        setTwoFAMessage("");
+                        try {
+                          const res = await fetch("/api/auth/two-factor/verify", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ code: twoFACode }),
+                          });
+                          const data = await res.json();
+                          if (res.ok) {
+                            setTwoFAEnabled(true);
+                            setTwoFAStep("idle");
+                            setTwoFACode("");
+                            setTwoFAMessage("2FA enabled successfully!");
+                          } else {
+                            setTwoFAMessage(data.error || "Invalid code.");
+                          }
+                        } catch { setTwoFAMessage("Verification failed."); }
+                        finally { setTwoFALoading(false); }
+                      }}
+                      disabled={twoFACode.length !== 6 || twoFALoading}
+                      className="btn-primary disabled:opacity-50"
+                    >
+                      {twoFALoading ? "..." : "Verify & Enable"}
+                    </button>
+                    <button
+                      onClick={() => { setTwoFAStep("idle"); setTwoFACode(""); setTwoFAMessage(""); }}
+                      className="text-sm text-text-muted hover:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {twoFAMessage && (
+                <p className={`text-sm mt-4 ${twoFAMessage.includes("success") || twoFAMessage.includes("enabled") || twoFAMessage.includes("disabled") ? "text-green-400" : "text-red-400"}`}>
+                  {twoFAMessage}
+                </p>
+              )}
             </div>
 
             {/* Danger Zone */}

@@ -79,11 +79,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await resetFailures(credentials.email as string);
         audit("auth.login.success", { userId: user.id, email: user.email });
 
+        /* Flag if this user has 2FA enabled — JWT callback will pick this up */
         return {
           id: user.id,
           name: user.name,
           email: user.email,
           image: user.image,
+          twoFactorEnabled: user.twoFactorEnabled,
         };
       },
     }),
@@ -182,12 +184,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     /* jwt() runs when a JWT is created or updated */
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateData }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         const admins = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
         token.isAdmin = admins.includes((user.email || "").toLowerCase());
+        /* If user has 2FA, mark session as pending verification */
+        token.twoFactorPending = (user as Record<string, unknown>).twoFactorEnabled === true;
+      }
+      /* Client called updateSession() — allow clearing 2FA pending flag */
+      if (trigger === "update" && updateData && typeof updateData === "object" && "twoFactorPending" in updateData) {
+        token.twoFactorPending = (updateData as Record<string, unknown>).twoFactorPending === true ? true : false;
       }
       return token;
     },
@@ -198,6 +206,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.email = token.email as string;
         session.user.isAdmin = token.isAdmin ?? false;
+        session.user.twoFactorPending = (token.twoFactorPending as boolean) ?? false;
       }
       return session;
     },
