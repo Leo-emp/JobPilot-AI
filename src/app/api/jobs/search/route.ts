@@ -299,13 +299,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ...cached, cached: true });
     }
 
+    /* # Only include global remote boards when the user is searching
+       for remote jobs or has no specific location. When searching
+       a specific country + city, remote-only boards pollute results
+       with irrelevant global listings. */
+    const isRemoteSearch = !location || location.toLowerCase().includes("remote");
+
     /* Fetch all sources in parallel — each one fails gracefully */
     const [adzunaJobs, joobleJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
       fetchAdzuna(sponsorship ? effectiveQuery : query, location, page, country).catch(() => [] as Job[]),
       fetchJooble(sponsorship ? effectiveQuery : query, location, page).catch(() => [] as Job[]),
-      fetchRemotive(query).catch(() => [] as Job[]),
-      fetchRemoteOK(query).catch(() => [] as Job[]),
-      fetchWWR(query).catch(() => [] as Job[]),
+      isRemoteSearch ? fetchRemotive(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
+      isRemoteSearch ? fetchRemoteOK(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
+      isRemoteSearch ? fetchWWR(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
     ]);
 
     /* Merge all results and deduplicate */
