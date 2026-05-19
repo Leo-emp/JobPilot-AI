@@ -122,8 +122,8 @@ function speakText(text: string): Promise<void> {
     if (!text.trim()) { resolve(); return; }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.15;
-    utterance.pitch = 1.25;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.2;
     utterance.volume = 1.0;
     if (cachedVoice) utterance.voice = cachedVoice;
 
@@ -208,21 +208,32 @@ export default function MockInterviewPage() {
     }
   }, []);
 
-  /* ---- Webcam: start user's camera + request mic permission early ---- */
+  /* ---- Webcam: request camera + mic with graceful fallbacks ---- */
+  /* Try video+audio → video-only → audio-only → continue without media.
+     Each fallback ensures the interview works regardless of permissions. */
   const startWebcam = useCallback(async () => {
+    /* Best case: video + audio together */
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       streamRef.current = stream;
       setWebcamReady(true);
-    } catch {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        streamRef.current = stream;
-        setWebcamReady(true);
-      } catch {
-        /* No camera — interview still works without it */
-      }
-    }
+      return;
+    } catch { /* fall through to next attempt */ }
+
+    /* Fallback 1: video only (mic might be blocked separately) */
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      streamRef.current = stream;
+      setWebcamReady(true);
+      return;
+    } catch { /* fall through */ }
+
+    /* Fallback 2: audio only (camera blocked but mic allowed) */
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      streamRef.current = stream;
+      return;
+    } catch { /* all media blocked — interview continues without */ }
   }, []);
 
   /* ---- Webcam: stop user's camera ---- */
@@ -447,12 +458,16 @@ export default function MockInterviewPage() {
     setError("");
 
     try {
-      /* Switch to interview phase and start webcam */
+      /* Request webcam + mic BEFORE entering interview phase so the
+         browser permission prompt appears on the setup screen, not
+         after the interview UI has already loaded. */
+      await startWebcam();
+
+      /* Switch to interview phase */
       setPhase("interview");
       setMessages([]);
       setExchangeNumber(0);
       setElapsedTime(0);
-      await startWebcam();
 
       /* Instant greeting — no AI call needed */
       const greetingText = `Hey! How are you doing today? Thanks so much for joining — I'm Sarah, and I'll be your interviewer for the ${role} position${company ? ` at ${company}` : ""}. Ready to get started?`;
@@ -804,12 +819,15 @@ export default function MockInterviewPage() {
           </div>
 
           {/* How it works info box */}
-          <div className="p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20">
+          <div className="p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/20 space-y-2">
             <p className="text-sm text-text-secondary">
               <span className="text-brand-light font-medium">How it works:</span> You&apos;ll join a video call with Sarah, your AI interviewer.
               She&apos;ll greet you naturally and ask 10 real interview questions based on your role, experience, and company.
               Speak into your <strong className="text-white">microphone</strong> or type — your <strong className="text-white">webcam</strong> will be on so you can practice eye contact and body language.
               At the end, you&apos;ll get a detailed score breakdown.
+            </p>
+            <p className="text-xs text-text-muted">
+              Tip: Allow camera &amp; microphone when prompted. Turn up your device volume for the best experience — Sarah speaks at maximum browser volume.
             </p>
           </div>
 
@@ -1004,10 +1022,11 @@ export default function MockInterviewPage() {
           <div className="relative rounded-2xl overflow-hidden bg-space-800 border border-card-border aspect-video">
             <video ref={videoRef} autoPlay muted playsInline
               className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
-            {/* Fallback if no webcam */}
+            {/* Fallback if no webcam — hint how to enable it */}
             {!webcamReady && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                 <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-space-600 flex items-center justify-center text-2xl sm:text-3xl text-text-muted">👤</div>
+                <p className="text-xs text-text-muted px-4 text-center">Camera off — click the lock icon in your address bar to enable</p>
               </div>
             )}
             {/* Name badge */}
