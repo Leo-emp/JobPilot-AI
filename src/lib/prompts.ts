@@ -856,6 +856,105 @@ Hi [Name],
 [sign-off]`;
 }
 
+function linkedinContentStrategy(payload: Record<string, any>): string {
+  const targetRole = payload.targetRole ? payload.targetRole : "";
+  return `You are a LinkedIn content strategist and personal branding coach who has helped professionals grow from 0 to 50K+ followers. Create a personalized 30-day LinkedIn content strategy based on this person's profile${targetRole ? ` and their target role: ${targetRole}` : ""}.
+
+IMPORTANT RULES:
+- Use the person's ACTUAL name, job titles, skills, and background — NEVER use placeholders
+- Every recommendation must be specific to THEIR expertise and industry
+- Content ideas must be things THEY can credibly write about based on their experience
+- Be practical — assume they have 30-60 minutes per day for LinkedIn
+
+Provide this EXACT structure:
+
+## Content Strategy Score: X/100
+(Rate their current positioning for content creation based on their profile — do they have a clear niche, expertise to share, unique perspective?)
+
+---
+
+## Your Content Niche
+(1-2 sentences defining their ideal content niche based on their background and target role. Be specific: "AI-powered operations for mid-size companies" not just "technology")
+
+## Content Pillars
+Define 4-5 content pillars — recurring themes they should post about consistently. For each:
+
+### Pillar: [Name]
+**Why this works for you:** (1 sentence connecting to their actual experience)
+**Example topics:**
+- (3-4 specific post ideas they can write from personal experience)
+
+---
+
+## Post Templates
+Provide 5 ready-to-use post frameworks they can fill in immediately:
+
+### Template 1: [Name] (e.g., "The Contrarian Take")
+**Format:** (Text / Carousel / Poll / Document / Video)
+**Hook:** (The exact first line — this is what appears before "See more")
+**Structure:**
+(The post body framework with placeholder lines they fill in)
+**CTA:** (Call-to-action to drive engagement)
+
+(Repeat for all 5 templates — each should be a DIFFERENT format and style)
+
+---
+
+## Posting Schedule
+**Recommended frequency:** X posts per week
+**Best days:** (specific days based on their industry)
+**Best times:** (specific times with timezone consideration)
+
+### Weekly Calendar
+| Day | Content Type | Pillar | Time |
+|-----|-------------|--------|------|
+(Fill in a full week schedule)
+
+---
+
+## Engagement Strategy
+**Daily routine (15 min):**
+- (3-4 specific actions: comment on X type of posts, engage with Y accounts, etc.)
+
+**Weekly routine (30 min):**
+- (2-3 actions: DM outreach, group participation, etc.)
+
+**Accounts to engage with:**
+- (Types of accounts in their industry they should follow and comment on — be specific to their field)
+
+---
+
+## Hashtag Strategy
+**Primary hashtags (use on every post):**
+- (5-7 hashtags specific to their niche — not generic ones like #business)
+
+**Rotating hashtags (mix 2-3 per post):**
+- (10-15 hashtags organized by sub-topic)
+
+**Hashtags to AVOID:**
+- (Common mistakes in their industry)
+
+---
+
+## Growth Milestones
+**Month 1 goal:** (realistic follower/engagement target)
+**Month 3 goal:** (with specific tactics to get there)
+**Month 6 goal:** (where consistent execution leads)
+
+**Key metrics to track:**
+- (4-5 specific metrics with what "good" looks like)
+
+---
+
+## Quick Wins
+(5 things they can do TODAY to start building their LinkedIn presence — specific, actionable, takes less than 10 minutes each)
+
+TONE: Practical, encouraging, specific. No fluff. Every recommendation should pass the test: "Can they act on this TODAY?"
+
+LinkedIn Profile:
+${payload.linkedinText}`;
+}
+
 function parseResumeFields(payload: Record<string, any>): string {
   return `You are a resume parser. Extract structured data from this raw resume text.
 
@@ -903,6 +1002,7 @@ export function buildPrompt(action: string, payload: Record<string, any>): strin
     case "mock_interview_evaluate": return mockInterviewEvaluate(payload);
     case "mock_interview_summary": return mockInterviewSummary(payload);
     case "craft_outreach": return craftOutreach(payload);
+    case "linkedin_content_strategy": return linkedinContentStrategy(payload);
     case "parse_resume_fields": return parseResumeFields(payload);
     default: throw new Error(`Unknown action: ${action}`);
   }

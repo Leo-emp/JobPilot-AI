@@ -52,7 +52,13 @@ function isAnalysisHeading(text: string): boolean {
     h.includes("experience gap") ||
     h.includes("recommendation") ||
     h.includes("action plan") ||
-    h.includes("quick wins")
+    h.includes("quick wins") ||
+    h.includes("content pillar") ||
+    h.includes("post template") ||
+    h.includes("posting schedule") ||
+    h.includes("engagement") ||
+    h.includes("hashtag") ||
+    h.includes("growth")
   );
 }
 

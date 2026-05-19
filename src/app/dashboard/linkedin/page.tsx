@@ -27,6 +27,7 @@ import { useAIStream } from "@/hooks/useAIStream";
 const actionTabs = [
   { id: "audit", label: "Profile Audit", desc: "Score your profile + posts and find weaknesses" },
   { id: "rewrite", label: "Profile Rewrite", desc: "AI rewrites your profile sections" },
+  { id: "content", label: "Content Strategy", desc: "Get a personalized 30-day LinkedIn content plan" },
 ];
 
 /* ---- Maximum file sizes ---- */
@@ -532,7 +533,7 @@ export default function LinkedInPage() {
       {/* ============================================================
          ACTION TABS (Audit / Rewrite)
          ============================================================ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         {actionTabs.map(tab => (
           <button
             key={tab.id}
@@ -635,6 +636,38 @@ export default function LinkedInPage() {
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading && activeTab === "rewrite" ? "Rewriting profile..." : "Rewrite My Profile"}
+            </button>
+          </div>
+        )}
+
+        {/* ---- Content Strategy Tab ---- */}
+        {activeTab === "content" && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">Content Strategy</h2>
+            <p className="text-text-secondary text-sm mb-6">
+              Get a personalized 30-day LinkedIn content plan with post templates, scheduling, hashtag strategy, and growth milestones — all based on your profile and target role.
+            </p>
+
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Target Role
+                <span className="text-text-muted font-normal ml-1">(optional — helps tailor content themes)</span>
+              </label>
+              <input
+                type="text"
+                value={targetRole}
+                onChange={e => setTargetRole(e.target.value)}
+                placeholder="e.g., AI Engineer, Product Manager, Operations Analyst"
+                className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+              />
+            </div>
+
+            <button
+              onClick={() => callAI("linkedin_content_strategy")}
+              disabled={!hasProfileData || loading}
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading && activeTab === "content" ? "Generating content strategy..." : "Generate Content Strategy"}
             </button>
           </div>
         )}
