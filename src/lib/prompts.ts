@@ -302,11 +302,12 @@ Base the answer on the candidate's actual experience from their resume.
 Make it natural and conversational, not robotic.
 
 LENGTH & STYLE RULES:
-- Aim for 200-300 words — enough to be substantive but not an essay. Think 90-120 seconds spoken.
+- HARD LIMIT: 150-200 words. No exceptions. Think 60-90 seconds spoken — that's what real interviewers expect. If your draft is longer, cut ruthlessly.
 - Be punchy and direct. Every sentence should earn its place — cut filler and over-explanation.
 - Only use STAR for behavioral/experience questions ("Tell me about a time...", "Describe a situation where..."). For motivation questions ("Why this company?"), technical questions, or opinion questions — just answer directly and naturally. Do NOT force STAR where it doesn't fit.
-- When using STAR: each section (S, T, A, R) should be 2-3 sentences max. Get to the action fast.
+- When using STAR: Situation = 1 sentence of context. Task = 1 sentence. Action = 2-3 sentences (this is the meat). Result = 1 sentence with a number if possible. That's it.
 - One strong, specific example beats three vague ones.
+- NEVER open with filler like "That's a great question" or "This resonates deeply with my experience" — jump straight into the answer.
 
 QUESTION TYPE AWARENESS (CRITICAL):
 - For "How would you approach/handle X?" or process/framework questions: focus 100% on the METHOD — the clear, structured steps you would take. Do NOT pad with resume references like "My background in X at Company Y taught me..." — the interviewer asked for your approach, not your CV. Show you know the process.
@@ -340,7 +341,7 @@ FORMATTING RULES — follow this EXACT structure:
 - (2-3 specific weaknesses with concrete suggestions)
 ${companyBlock ? `\n## ${companyName}-Specific Tips\n- (1-2 tips on how to better align the answer with ${companyName}'s evaluation criteria and interview style)\n` : ""}
 ## Stronger Answer
-Rewrite their answer as a polished version (200-300 words, punchy and direct). Only use STAR if this is a behavioral/experience question — for motivation, technical, or opinion questions, just answer naturally. Keep their authentic voice but make it more impactful. End with a clear tie-back to the role.${companyBlock ? ` Frame it to align with ${companyName}'s values and evaluation criteria.` : ""}
+Rewrite their answer as a polished version (150-200 words HARD LIMIT). Only use STAR if behavioral — for process/motivation/technical questions, just answer directly. No filler openers. Keep their authentic voice but tighter and more impactful.${companyBlock ? ` Frame it to align with ${companyName}'s values and evaluation criteria.` : ""}
 
 IMPORTANT RULES:
 - Be encouraging but honest — don't sugarcoat weak answers
