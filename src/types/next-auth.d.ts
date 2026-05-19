@@ -11,7 +11,14 @@ import { DefaultSession } from "next-auth";
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string; // Our custom user ID from the database
+      id: string;
+      isAdmin: boolean;
     } & DefaultSession["user"];
+  }
+}
+
+declare module "@auth/core/jwt" {
+  interface JWT {
+    isAdmin?: boolean;
   }
 }

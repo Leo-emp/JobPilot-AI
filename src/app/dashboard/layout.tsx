@@ -41,7 +41,7 @@ export default async function DashboardLayout({
         {/* Sidebar navigation */}
         <DashboardSidebar
           userName={session.user.name || "User"}
-          isAdmin={(process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).includes((session.user.email || "").toLowerCase())}
+          isAdmin={session.user.isAdmin}
         />
 
         {/* ---- Main Content Area ---- */}

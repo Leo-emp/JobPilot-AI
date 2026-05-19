@@ -3,9 +3,12 @@
    ============================================================
    Catches errors within the dashboard layout so the sidebar
    stays visible while showing the error in the main content area.
+   Technical details only visible to admin users.
    ============================================================ */
 
 "use client";
+
+import { useSession } from "next-auth/react";
 
 export default function DashboardError({
   error,
@@ -14,6 +17,9 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.isAdmin ?? false;
+
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center max-w-md">
@@ -27,8 +33,8 @@ export default function DashboardError({
           This page encountered an error. Try refreshing or go back to the dashboard.
         </p>
 
-        {/* Only show technical error details in development — Sentry captures them in production */}
-        {process.env.NODE_ENV === "development" && error.message && (
+        {/* Technical error details — admin only */}
+        {isAdmin && error.message && (
           <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6 font-mono break-all">
             {error.message}
           </p>
