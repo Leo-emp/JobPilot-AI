@@ -35,6 +35,13 @@ interface WeeklyGrowth {
   signups: number;
 }
 
+interface Pagination {
+  page: number;
+  pageSize: number;
+  totalUsers: number;
+  totalPages: number;
+}
+
 interface AdminStats {
   overview: {
     totalUsers: number;
@@ -61,6 +68,7 @@ interface AdminStats {
     totalCompanies: number;
   };
   users: UserRow[];
+  pagination: Pagination;
 }
 
 export default function AdminDashboardPage() {
@@ -68,19 +76,26 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingPage, setLoadingPage] = useState(false);
 
-  /* ---- Fetch admin stats on mount ---- */
-  useEffect(() => {
-    fetch("/api/admin/stats")
+  /* ---- Fetch admin stats ---- */
+  const fetchStats = (page: number, initial = false) => {
+    if (initial) setLoading(true);
+    else setLoadingPage(true);
+
+    fetch(`/api/admin/stats?page=${page}`)
       .then(res => {
         if (res.status === 403) throw new Error("You don't have admin access.");
         if (!res.ok) throw new Error("Failed to load stats");
         return res.json();
       })
-      .then(data => setStats(data))
+      .then(data => { setStats(data); setCurrentPage(page); })
       .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => { setLoading(false); setLoadingPage(false); });
+  };
+
+  useEffect(() => { fetchStats(1, true); }, []);
 
   /* ---- Filter users by search ---- */
   const filteredUsers = stats?.users.filter(u =>
@@ -249,7 +264,7 @@ export default function AdminDashboardPage() {
       {/* ---- User List ---- */}
       <div className="rounded-2xl bg-space-700/80 border border-card-border overflow-hidden">
         <div className="p-5 border-b border-card-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <h3 className="font-semibold text-white">All Users ({stats.users.length})</h3>
+          <h3 className="font-semibold text-white">All Users ({stats.pagination.totalUsers.toLocaleString()})</h3>
           <input
             type="text"
             value={searchQuery}
@@ -321,6 +336,31 @@ export default function AdminDashboardPage() {
             </tbody>
           </table>
         </div>
+
+        {/* ---- Pagination Controls ---- */}
+        {stats.pagination.totalPages > 1 && (
+          <div className="p-4 border-t border-card-border flex items-center justify-between">
+            <p className="text-xs text-text-muted">
+              Page {currentPage} of {stats.pagination.totalPages} · Showing {stats.users.length} of {stats.pagination.totalUsers.toLocaleString()} users
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => fetchStats(currentPage - 1)}
+                disabled={currentPage <= 1 || loadingPage}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-space-600 border border-card-border/50 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-space-500 transition-colors"
+              >
+                ← Prev
+              </button>
+              <button
+                onClick={() => fetchStats(currentPage + 1)}
+                disabled={currentPage >= stats.pagination.totalPages || loadingPage}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-space-600 border border-card-border/50 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-space-500 transition-colors"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
