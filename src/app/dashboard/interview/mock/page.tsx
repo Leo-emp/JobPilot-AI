@@ -244,10 +244,21 @@ export default function MockInterviewPage() {
   }, []);
 
   /* ---- Connect webcam stream to video element after DOM renders ---- */
+  /* Runs on phase change AND webcamReady change. Also retries after a
+     short delay to handle cases where the video element isn't in the
+     DOM yet when the stream becomes available. */
   useEffect(() => {
-    if (webcamReady && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-      videoRef.current.muted = true;
+    const connect = () => {
+      if (videoRef.current && streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+        videoRef.current.muted = true;
+        videoRef.current.play().catch(() => {});
+      }
+    };
+    if (phase === "interview" && (webcamReady || streamRef.current)) {
+      connect();
+      const retry = setTimeout(connect, 500);
+      return () => clearTimeout(retry);
     }
   }, [webcamReady, phase]);
 
@@ -444,8 +455,12 @@ export default function MockInterviewPage() {
       skippedQuestions: JSON.stringify(skippedQuestions),
     });
 
-    const parsed = parseAIJson<{ message: string; isComplete: boolean }>(result);
-    return parsed;
+    try {
+      return parseAIJson<{ message: string; isComplete: boolean }>(result);
+    } catch {
+      /* AI sometimes returns plain text instead of JSON — use it directly */
+      return { message: result, isComplete: false };
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions]);
 
@@ -480,8 +495,8 @@ export default function MockInterviewPage() {
       await speakText(greetingText);
       setIsAISpeaking(false);
       setWaitingForUser(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to start interview");
+    } catch {
+      setError("Could not start the interview. Please check your camera/mic permissions and try again.");
       setPhase("setup");
     } finally {
       setLoading(false);
@@ -527,7 +542,7 @@ export default function MockInterviewPage() {
       }
     } catch (e) {
       setIsAIThinking(false);
-      setError(e instanceof Error ? e.message : "AI response failed. Try again.");
+      setError("Sarah had trouble responding. Please try again or skip this question.");
       setWaitingForUser(true);
     }
   };
@@ -570,7 +585,7 @@ export default function MockInterviewPage() {
       }
     } catch (e) {
       setIsAIThinking(false);
-      setError(e instanceof Error ? e.message : "AI response failed. Try again.");
+      setError("Sarah had trouble responding. Please try again or skip this question.");
       setWaitingForUser(true);
     }
   };
@@ -1020,7 +1035,15 @@ export default function MockInterviewPage() {
 
           {/* ---- RIGHT TILE: User's Webcam ---- */}
           <div className="relative rounded-2xl overflow-hidden bg-space-800 border border-card-border aspect-video">
-            <video ref={videoRef} autoPlay muted playsInline
+            <video ref={(el) => {
+              videoRef.current = el;
+              /* Connect stream immediately when video element mounts */
+              if (el && streamRef.current && !el.srcObject) {
+                el.srcObject = streamRef.current;
+                el.muted = true;
+                el.play().catch(() => {});
+              }
+            }} autoPlay muted playsInline
               className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
             {/* Fallback if no webcam — hint how to enable it */}
             {!webcamReady && (
