@@ -309,6 +309,11 @@ LENGTH & STYLE RULES:
 - One strong, specific example beats three vague ones.
 - NEVER open with filler like "That's a great question" or "This resonates deeply with my experience" — jump straight into the answer.
 
+RESUME EXAMPLE SELECTION (CRITICAL):
+- When choosing which experience to reference from the resume, ALWAYS pick the role that is most relevant to the TARGET job. Match by seniority, responsibilities, and skill overlap — not just any role that vaguely fits.
+- Prioritize the candidate's most recent and senior roles over internships or junior positions, unless the junior role is a clearly better match for the specific question.
+- If the target job is "Operations Analyst" and the resume has "Business Operations Executive" and "Admin Assistant Intern" — use the BOE role, not the internship.
+
 QUESTION TYPE AWARENESS (CRITICAL):
 - For "How would you approach/handle X?" or process/framework questions: focus 100% on the METHOD — the clear, structured steps you would take. Do NOT pad with resume references like "My background in X at Company Y taught me..." — the interviewer asked for your approach, not your CV. Show you know the process.
 - For behavioral questions ("Tell me about a time..."): use the resume to tell a real story with STAR.
