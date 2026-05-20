@@ -72,13 +72,12 @@ export async function POST(req: NextRequest) {
 
       /* ---- Build the reset link (with plaintext token) ---- */
       const baseUrl = process.env.NEXTAUTH_URL
-        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-        || "http://localhost:3000";
+        || "https://jobpilotai.co";
       const resetLink = `${baseUrl}/reset-password?token=${token}`;
 
       /* ---- Send the email via Resend ---- */
       await resend.emails.send({
-        from: "JobPilot AI <onboarding@resend.dev>",
+        from: "JobPilot AI <noreply@jobpilotai.co>",
         to: normalizedEmail,
         subject: "Reset your JobPilot AI password",
         html: `
