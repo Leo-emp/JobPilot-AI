@@ -13,9 +13,12 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import LinkedIn from "next-auth/providers/linkedin";
 import bcrypt from "bcryptjs";
+import { Resend } from "resend";
 import { prisma } from "./prisma";
 import { audit } from "./audit";
 import { isLocked, recordFailure, resetFailures } from "./account-lock";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   /* ---- Auth Providers ---- */
@@ -150,6 +153,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               image: user.image,
             },
           });
+
+          /* Send welcome email to new OAuth users (fire-and-forget) */
+          resend.emails.send({
+            from: "JobPilot AI <noreply@jobpilotai.co>",
+            to: user.email,
+            subject: "Welcome to JobPilot AI — let's land your dream job",
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 20px; color: #333;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                  <h1 style="color: #1a1a2e; font-size: 28px; margin: 0;">Welcome aboard, ${user.name || "there"}!</h1>
+                </div>
+                <p style="line-height: 1.7; font-size: 16px;">
+                  You're all set. JobPilot AI is your personal career co-pilot — here's what you can do right now:
+                </p>
+                <ul style="line-height: 2; font-size: 15px; padding-left: 20px;">
+                  <li><strong>Upload your resume</strong> — get an instant ATS score and improvement tips</li>
+                  <li><strong>Search for jobs</strong> — AI-matched to your skills and experience</li>
+                  <li><strong>Generate cover letters</strong> — tailored to each job in seconds</li>
+                  <li><strong>Practice interviews</strong> — AI mock interviews with real-time feedback</li>
+                </ul>
+                <div style="text-align: center; margin: 36px 0;">
+                  <a href="https://jobpilotai.co/dashboard" style="display: inline-block; background: linear-gradient(135deg, #4338CA, #7C3AED); color: white; text-decoration: none; padding: 14px 36px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+                    Go to Dashboard
+                  </a>
+                </div>
+                <p style="color: #888; font-size: 13px; line-height: 1.6; text-align: center;">
+                  Questions? Just reply to this email — we read every message.
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
+                <p style="color: #aaa; font-size: 12px; text-align: center;">
+                  JobPilot AI — Your AI-powered career co-pilot
+                </p>
+              </div>
+            `,
+          }).catch(() => {});
         } else if (!dbUser.image && user.image) {
           /* Update profile image if user exists but doesn't have one */
           await prisma.user.update({
