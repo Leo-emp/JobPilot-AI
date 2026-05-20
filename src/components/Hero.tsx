@@ -1,13 +1,57 @@
 /* ============================================================
    HERO SECTION - Main Landing Above the Fold
+   ============================================================
+   Staggered entrance animation: elements fade up one-by-one
+   as soon as the page loads (above the fold = no scroll trigger).
+   Uses Framer Motion variants with staggerChildren for a
+   premium, coordinated reveal effect.
    ============================================================ */
 
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import RocketIcon from "./RocketIcon";
+
+/* # Smooth deceleration curve — Apple-style feel */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/* # Parent variant — staggers children 120ms apart */
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12 } },
+};
+
+/* # Child variant — each element fades up from 30px below */
+/* Custom cubic-bezier gives an Apple-style deceleration curve */
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.9, ease: EASE },
+  },
+};
+
+/* # Rocket gets a subtle scale-in on top of the fade-up */
+const rocketReveal = {
+  hidden: { opacity: 0, y: 20, scale: 0.9 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 1, ease: EASE },
+  },
+};
 
 export default function Hero() {
   return (
-    <section className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-36">
+    <motion.section
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+      className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-36"
+    >
 
       {/* ---- Ambient cyan light wash behind entire hero ---- */}
       <div
@@ -18,7 +62,7 @@ export default function Hero() {
       />
 
       {/* ---- Badge ---- */}
-      <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.07] bg-white/[0.03]">
+      <motion.div variants={fadeUp} className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.07] bg-white/[0.03]">
         <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded-full uppercase">
           New
         </span>
@@ -26,10 +70,10 @@ export default function Hero() {
           AI-Powered Career Pivot Mode
         </span>
         <span className="text-text-muted">→</span>
-      </div>
+      </motion.div>
 
-      {/* ---- Rocket Icon ---- */}
-      <div className="relative mb-8">
+      {/* ---- Rocket Icon — scale + fade for a dramatic entrance ---- */}
+      <motion.div variants={rocketReveal} className="relative mb-8">
         <div
           className="absolute -inset-16 rounded-full blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.06) 40%, transparent 70%)" }}
@@ -37,39 +81,39 @@ export default function Hero() {
         <div className="relative">
           <RocketIcon size={120} />
         </div>
-      </div>
+      </motion.div>
 
       {/* ---- Title ---- */}
-      <h1 className="font-[family-name:var(--font-space-grotesk)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] mb-6 glow-text-strong">
+      <motion.h1 variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] mb-6 glow-text-strong">
         JobPilot AI
-      </h1>
+      </motion.h1>
 
       {/* ---- Tagline ---- */}
-      <p className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl md:text-2xl font-medium tracking-[0.15em] uppercase mb-8 glow-text-subtle">
+      <motion.p variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl md:text-2xl font-medium tracking-[0.15em] uppercase mb-8 glow-text-subtle">
         Your Career Co-Pilot
-      </p>
+      </motion.p>
 
       {/* ---- Description ---- */}
-      <p className="max-w-2xl text-base sm:text-lg text-text-secondary leading-relaxed mb-12">
+      <motion.p variants={fadeUp} className="max-w-2xl text-base sm:text-lg text-text-secondary leading-relaxed mb-12">
         AI-powered resume optimization, intelligent job matching,
         personalized cover letters, and interview prep —
         everything you need to land your dream job, in one place.
-      </p>
+      </motion.p>
 
       {/* ---- CTA Buttons ---- */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4">
         <Link href="/signup" className="btn-primary text-base px-8 py-4">
           Get Started Free →
         </Link>
         <Link href="/#features" className="btn-secondary text-base px-8 py-4">
           See Features
         </Link>
-      </div>
+      </motion.div>
 
       {/* ---- Trust Line ---- */}
-      <p className="mt-8 text-sm text-text-muted">
+      <motion.p variants={fadeUp} className="mt-8 text-sm text-text-muted">
         No credit card required · Free forever plan available
-      </p>
-    </section>
+      </motion.p>
+    </motion.section>
   );
 }

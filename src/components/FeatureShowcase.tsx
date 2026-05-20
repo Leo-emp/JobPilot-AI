@@ -1,16 +1,19 @@
-﻿/* ============================================================
+/* ============================================================
    FEATURE SHOWCASE - Deep-Dive Feature Sections
    ============================================================
    Full-width alternating sections that explain each core feature
-   in depth with benefit-driven headlines, detailed descriptions,
-   capability bullet points, and visual accent elements.
-
-   Pattern: alternating left-content/right-visual layout.
-   Each section builds trust by showing exactly what users get
-   and why it matters for their career.
+   in depth. Content slides in from its side, visual card slides
+   from the opposite side — creates a premium reveal effect.
+   Bullet points stagger in. Progress bars animate on scroll.
    ============================================================ */
 
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
+
+/* # Smooth deceleration curve */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /* ---- Feature data with detailed breakdowns ---- */
 const showcaseFeatures = [
@@ -176,13 +179,55 @@ const showcaseFeatures = [
   },
 ];
 
+/* # Section header fade */
+const headerFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
+/* # Bullet stagger container */
+const bulletStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } },
+};
+
+/* # Individual bullet item */
+const bulletItem = {
+  hidden: { opacity: 0, x: -8 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: EASE },
+  },
+};
+
+/* # Bottom CTA fade */
+const ctaFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
 export default function FeatureShowcase() {
   return (
     <section className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-6xl mx-auto">
 
-        {/* ---- Section Header ---- */}
-        <div className="text-center mb-20 sm:mb-28">
+        {/* ---- Section Header — fades in on scroll ---- */}
+        <motion.div
+          variants={headerFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="text-center mb-20 sm:mb-28"
+        >
           <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Built for Results
           </p>
@@ -194,299 +239,443 @@ export default function FeatureShowcase() {
             Each feature is purpose-built to solve a specific problem in your job search.
             No fluff. No gimmicks. Just tools that get you hired.
           </p>
-        </div>
+        </motion.div>
 
         {/* ---- Feature Deep-Dive Sections ---- */}
         <div className="space-y-24 sm:space-y-32">
-          {showcaseFeatures.map((feature, index) => (
-            <div
-              key={index}
-              id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
-              className={`scroll-mt-24 flex flex-col ${
-                index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-              } gap-10 lg:gap-16 items-center`}
-            >
-              {/* ---- Content Side ---- */}
-              <div className="flex-1 max-w-xl">
-                {/* Feature tag pill */}
-                <div className="inline-flex items-center gap-2 mb-5">
-                  <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
-                    {feature.icon}
-                  </div>
-                  <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
-                    {feature.tag}
-                  </span>
-                </div>
+          {showcaseFeatures.map((feature, index) => {
+            /* # Even index: content left, visual right */
+            /* # Odd index: content right, visual left (flex-row-reverse) */
+            const isEven = index % 2 === 0;
 
-                {/* Headline */}
-                <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-                  {feature.headline}
-                </h3>
-
-                {/* Description */}
-                <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6">
-                  {feature.description}
-                </p>
-
-                {/* Capability bullet points */}
-                <ul className="space-y-3">
-                  {feature.capabilities.map((cap, j) => (
-                    <li key={j} className="flex items-start gap-3">
-                      {/* Checkmark icon */}
-                      <svg
-                        className={`w-5 h-5 flex-shrink-0 mt-0.5 ${feature.iconColor}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-base text-text-secondary leading-relaxed">
-                        {cap}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* ---- Visual Side — Feature Preview Card ---- */}
-              <div className="flex-1 w-full max-w-lg">
-                <div className="glass-card p-8 sm:p-10 relative overflow-hidden">
-                  {/* Gradient accent bar at top */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.accent}`} />
-
-                  {/* Simulated UI preview */}
-                  <div className="space-y-4">
-                    {/* Fake header bar */}
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                      <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50" />
+            return (
+              <div
+                key={index}
+                id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`scroll-mt-24 flex flex-col ${
+                  isEven ? "lg:flex-row" : "lg:flex-row-reverse"
+                } gap-10 lg:gap-16 items-center`}
+              >
+                {/* ---- Content Side — slides in from its edge ---- */}
+                <motion.div
+                  initial={{ opacity: 0, x: isEven ? -28 : 28 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.9, ease: EASE }}
+                  className="flex-1 max-w-xl"
+                >
+                  {/* # Feature tag pill */}
+                  <div className="inline-flex items-center gap-2 mb-5">
+                    <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
+                      {feature.icon}
                     </div>
-
-                    {/* Simulated content lines matching the feature */}
-                    {index === 0 && (
-                      /* Resume Analysis Preview */
-                      <>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-text-muted uppercase tracking-wider">ATS Score</span>
-                          <span className="text-2xl font-bold text-green-400">87/100</span>
-                        </div>
-                        <div className="w-full h-2.5 rounded-full bg-space-600 overflow-hidden">
-                          <div className="h-full w-[87%] rounded-full bg-gradient-to-r from-green-500 to-emerald-400" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 mt-4">
-                          <div className="p-3 rounded-lg bg-space-600/40">
-                            <div className="text-xs text-text-muted mb-1">Keywords</div>
-                            <div className="text-sm font-semibold text-white">12 found</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-space-600/40">
-                            <div className="text-xs text-text-muted mb-1">Missing</div>
-                            <div className="text-sm font-semibold text-amber-400">4 critical</div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 1 && (
-                      /* Resume Rebuild Preview */
-                      <>
-                        <div className="p-3 rounded-lg bg-space-600/40 border-l-2 border-red-400/50">
-                          <div className="text-xs text-red-400 mb-1">Before</div>
-                          <div className="text-xs text-text-muted line-through">Responsible for managing team projects</div>
-                        </div>
-                        <div className="flex justify-center">
-                          <svg className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                          </svg>
-                        </div>
-                        <div className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50">
-                          <div className="text-xs text-green-400 mb-1">After</div>
-                          <div className="text-xs text-white">Spearheaded cross-functional team of 8, delivering 3 projects ahead of schedule and reducing costs by 22%</div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 2 && (
-                      /* Match Score Preview */
-                      <>
-                        <div className="text-center mb-4">
-                          <div className="text-4xl font-bold text-green-400 mb-1">78%</div>
-                          <div className="text-xs text-text-muted">Match Score</div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-400" />
-                            <span className="text-xs text-text-secondary">React, TypeScript, Node.js</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-400" />
-                            <span className="text-xs text-text-secondary">3+ years experience</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-amber-400" />
-                            <span className="text-xs text-text-secondary">AWS — mentioned but not emphasized</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-xs text-text-secondary">GraphQL — not found in resume</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 3 && (
-                      /* Cover Letter Preview */
-                      <>
-                        <div className="space-y-2.5">
-                          <div className="h-2.5 rounded bg-space-600/60 w-[60%]" />
-                          <div className="h-2.5 rounded bg-space-600/60 w-full" />
-                          <div className="h-2.5 rounded bg-space-600/60 w-[90%]" />
-                          <div className="h-2.5 rounded bg-space-600/60 w-[75%]" />
-                          <div className="h-3 rounded bg-space-600/20 w-full mt-3" />
-                          <div className="h-2.5 rounded bg-space-600/60 w-full" />
-                          <div className="h-2.5 rounded bg-space-600/60 w-[85%]" />
-                          <div className="h-2.5 rounded bg-space-600/60 w-[70%]" />
-                        </div>
-                        <div className="mt-4 flex items-center gap-2">
-                          <div className="px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                            <span className="text-xs text-emerald-400 font-medium">312 words</span>
-                          </div>
-                          <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
-                            <span className="text-xs text-blue-400 font-medium">Personalized</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 4 && (
-                      /* Interview Prep Preview */
-                      <>
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-lg bg-space-600/40">
-                            <div className="text-xs text-amber-400 mb-1">Behavioral</div>
-                            <div className="text-xs text-white">&ldquo;Tell me about a time you led a team through a difficult challenge&rdquo;</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-space-600/40">
-                            <div className="text-xs text-blue-400 mb-1">Technical</div>
-                            <div className="text-xs text-white">&ldquo;How would you design a scalable notification system?&rdquo;</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-space-600/40">
-                            <div className="text-xs text-blue-400 mb-1">Culture Fit</div>
-                            <div className="text-xs text-white">&ldquo;What does collaboration look like to you?&rdquo;</div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 5 && (
-                      /* Career Pivot Mode Preview */
-                      <>
-                        <div className="p-3 rounded-lg bg-space-600/40 border-l-2 border-rose-400/50 mb-3">
-                          <div className="text-xs text-text-muted mb-1">Current: Marketing Manager</div>
-                          <div className="text-xs text-white">7 years in B2B SaaS marketing</div>
-                        </div>
-                        <div className="flex justify-center mb-3">
-                          <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                          </svg>
-                        </div>
-                        <div className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50 mb-4">
-                          <div className="text-xs text-green-400 mb-1">Target: Product Manager</div>
-                          <div className="text-xs text-white">Reframed for product leadership</div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-400" />
-                            <span className="text-xs text-text-secondary">5 transferable skills found</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-amber-400" />
-                            <span className="text-xs text-text-secondary">2 skills to emphasize more</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-xs text-text-secondary">1 certification recommended</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 6 && (
-                      /* LinkedIn Optimizer Preview */
-                      <>
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs text-text-muted uppercase tracking-wider">Profile Score</span>
-                          <span className="text-2xl font-bold text-cyan-400">62/100</span>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-text-secondary">Headline</span>
-                            <span className="text-xs text-red-400 font-medium">Weak — 4/10</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-text-secondary">About</span>
-                            <span className="text-xs text-amber-400 font-medium">Okay — 6/10</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-text-secondary">Experience</span>
-                            <span className="text-xs text-green-400 font-medium">Strong — 8/10</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-text-secondary">Skills</span>
-                            <span className="text-xs text-amber-400 font-medium">Okay — 5/10</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {index === 7 && (
-                      /* Resume Templates Preview */
-                      <>
-                        <div className="grid grid-cols-3 gap-2 mb-4">
-                          {["Classic", "Modern", "Executive"].map((name, i) => (
-                            <div key={i} className={`p-2 rounded-lg border text-center ${i === 1 ? "bg-slate-500/10 border-slate-500/30" : "bg-space-600/40 border-space-600/60"}`}>
-                              <div className={`w-full h-1 rounded mb-2 ${i === 0 ? "bg-blue-500" : i === 1 ? "bg-indigo-500" : "bg-gray-500"}`} />
-                              <div className="h-1.5 rounded bg-space-500/60 w-[70%] mx-auto mb-1" />
-                              <div className="h-1 rounded bg-space-500/40 w-full mb-0.5" />
-                              <div className="h-1 rounded bg-space-500/40 w-[80%]" />
-                              <div className={`text-[9px] mt-2 font-medium ${i === 1 ? "text-slate-400" : "text-text-muted"}`}>{name}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="px-3 py-1.5 rounded-md bg-slate-500/10 border border-slate-500/20">
-                            <span className="text-xs text-slate-400 font-medium">PDF</span>
-                          </div>
-                          <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
-                            <span className="text-xs text-blue-400 font-medium">Word</span>
-                          </div>
-                          <span className="text-xs text-text-muted ml-1">Ready to download</span>
-                        </div>
-                      </>
-                    )}
+                    <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                      {feature.tag}
+                    </span>
                   </div>
-                </div>
+
+                  {/* # Headline */}
+                  <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+                    {feature.headline}
+                  </h3>
+
+                  {/* # Description */}
+                  <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6">
+                    {feature.description}
+                  </p>
+
+                  {/* # Capability bullets — stagger in one-by-one */}
+                  <motion.ul
+                    variants={bulletStagger}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, margin: "-50px" }}
+                    className="space-y-3"
+                  >
+                    {feature.capabilities.map((cap, j) => (
+                      <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
+                        <svg
+                          className={`w-5 h-5 flex-shrink-0 mt-0.5 ${feature.iconColor}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span className="text-base text-text-secondary leading-relaxed">
+                          {cap}
+                        </span>
+                      </motion.li>
+                    ))}
+                  </motion.ul>
+                </motion.div>
+
+                {/* ---- Visual Side — slides in from opposite edge ---- */}
+                <motion.div
+                  initial={{ opacity: 0, x: isEven ? 28 : -28 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.9, ease: EASE, delay: 0.15 }}
+                  className="flex-1 w-full max-w-lg"
+                >
+                  <div className="glass-card p-8 sm:p-10 relative overflow-hidden">
+                    {/* # Gradient accent bar at top */}
+                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.accent}`} />
+
+                    {/* # Simulated UI preview */}
+                    <div className="space-y-4">
+                      {/* # Fake header bar */}
+                      <div className="flex items-center gap-2 mb-6">
+                        <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                        <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                        <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50" />
+                      </div>
+
+                      {/* # Each index renders a unique card preview */}
+                      {index === 0 && (
+                        <>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-text-muted uppercase tracking-wider">ATS Score</span>
+                            <span className="text-2xl font-bold text-green-400">87/100</span>
+                          </div>
+                          {/* # Progress bar — fills up when scrolled into view */}
+                          <div className="w-full h-2.5 rounded-full bg-space-600 overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              whileInView={{ width: "87%" }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 1.2, ease: EASE, delay: 0.4 }}
+                              className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 mt-4">
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+                              className="p-3 rounded-lg bg-space-600/40"
+                            >
+                              <div className="text-xs text-text-muted mb-1">Keywords</div>
+                              <div className="text-sm font-semibold text-white">12 found</div>
+                            </motion.div>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.5, ease: EASE, delay: 0.7 }}
+                              className="p-3 rounded-lg bg-space-600/40"
+                            >
+                              <div className="text-xs text-text-muted mb-1">Missing</div>
+                              <div className="text-sm font-semibold text-amber-400">4 critical</div>
+                            </motion.div>
+                          </div>
+                        </>
+                      )}
+
+                      {index === 1 && (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0, x: -15 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-red-400/50"
+                          >
+                            <div className="text-xs text-red-400 mb-1">Before</div>
+                            <div className="text-xs text-text-muted line-through">Responsible for managing team projects</div>
+                          </motion.div>
+                          <div className="flex justify-center">
+                            <motion.svg
+                              initial={{ opacity: 0, y: -5 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.4, ease: EASE, delay: 0.5 }}
+                              className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </motion.svg>
+                          </div>
+                          <motion.div
+                            initial={{ opacity: 0, x: -15 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50"
+                          >
+                            <div className="text-xs text-green-400 mb-1">After</div>
+                            <div className="text-xs text-white">Spearheaded cross-functional team of 8, delivering 3 projects ahead of schedule and reducing costs by 22%</div>
+                          </motion.div>
+                        </>
+                      )}
+
+                      {index === 2 && (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, ease: EASE, delay: 0.3 }}
+                            className="text-center mb-4"
+                          >
+                            <div className="text-4xl font-bold text-green-400 mb-1">78%</div>
+                            <div className="text-xs text-text-muted">Match Score</div>
+                          </motion.div>
+                          <motion.div
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.5 } } }}
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            className="space-y-2"
+                          >
+                            {[
+                              { color: "bg-green-400", text: "React, TypeScript, Node.js" },
+                              { color: "bg-green-400", text: "3+ years experience" },
+                              { color: "bg-amber-400", text: "AWS — mentioned but not emphasized" },
+                              { color: "bg-red-400", text: "GraphQL — not found in resume" },
+                            ].map((item, i) => (
+                              <motion.div
+                                key={i}
+                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                className="flex items-center gap-2"
+                              >
+                                <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                                <span className="text-xs text-text-secondary">{item.text}</span>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+
+                      {index === 3 && (
+                        <>
+                          <motion.div
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.3 } } }}
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            className="space-y-2.5"
+                          >
+                            {[60, 100, 90, 75, 0, 100, 85, 70].map((w, i) => (
+                              <motion.div
+                                key={i}
+                                variants={{ hidden: { opacity: 0, scaleX: 0 }, show: { opacity: 1, scaleX: 1, transition: { duration: 0.4, ease: EASE } } }}
+                                style={{ transformOrigin: "left", width: w === 0 ? "100%" : `${w}%` }}
+                                className={`rounded ${w === 0 ? "h-3 bg-space-600/20 mt-3" : "h-2.5 bg-space-600/60"}`}
+                              />
+                            ))}
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.8 }}
+                            className="mt-4 flex items-center gap-2"
+                          >
+                            <div className="px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                              <span className="text-xs text-emerald-400 font-medium">312 words</span>
+                            </div>
+                            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
+                              <span className="text-xs text-blue-400 font-medium">Personalized</span>
+                            </div>
+                          </motion.div>
+                        </>
+                      )}
+
+                      {index === 4 && (
+                        <motion.div
+                          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.3 } } }}
+                          initial="hidden"
+                          whileInView="show"
+                          viewport={{ once: true }}
+                          className="space-y-3"
+                        >
+                          {[
+                            { label: "Behavioral", color: "text-amber-400", q: "“Tell me about a time you led a team through a difficult challenge”" },
+                            { label: "Technical", color: "text-blue-400", q: "“How would you design a scalable notification system?”" },
+                            { label: "Culture Fit", color: "text-blue-400", q: "“What does collaboration look like to you?”" },
+                          ].map((item, i) => (
+                            <motion.div
+                              key={i}
+                              variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+                              className="p-3 rounded-lg bg-space-600/40"
+                            >
+                              <div className={`text-xs ${item.color} mb-1`}>{item.label}</div>
+                              <div className="text-xs text-white">{item.q}</div>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+
+                      {index === 5 && (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0, x: -15 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-rose-400/50 mb-3"
+                          >
+                            <div className="text-xs text-text-muted mb-1">Current: Marketing Manager</div>
+                            <div className="text-xs text-white">7 years in B2B SaaS marketing</div>
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.4, delay: 0.5 }}
+                            className="flex justify-center mb-3"
+                          >
+                            <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, x: -15 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50 mb-4"
+                          >
+                            <div className="text-xs text-green-400 mb-1">Target: Product Manager</div>
+                            <div className="text-xs text-white">Reframed for product leadership</div>
+                          </motion.div>
+                          <motion.div
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.7 } } }}
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            className="space-y-2"
+                          >
+                            {[
+                              { color: "bg-green-400", text: "5 transferable skills found" },
+                              { color: "bg-amber-400", text: "2 skills to emphasize more" },
+                              { color: "bg-red-400", text: "1 certification recommended" },
+                            ].map((item, i) => (
+                              <motion.div
+                                key={i}
+                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                className="flex items-center gap-2"
+                              >
+                                <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                                <span className="text-xs text-text-secondary">{item.text}</span>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+
+                      {index === 6 && (
+                        <>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                            className="flex items-center justify-between mb-3"
+                          >
+                            <span className="text-xs text-text-muted uppercase tracking-wider">Profile Score</span>
+                            <span className="text-2xl font-bold text-cyan-400">62/100</span>
+                          </motion.div>
+                          <motion.div
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.4 } } }}
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            className="space-y-2"
+                          >
+                            {[
+                              { label: "Headline", score: "Weak — 4/10", color: "text-red-400" },
+                              { label: "About", score: "Okay — 6/10", color: "text-amber-400" },
+                              { label: "Experience", score: "Strong — 8/10", color: "text-green-400" },
+                              { label: "Skills", score: "Okay — 5/10", color: "text-amber-400" },
+                            ].map((item, i) => (
+                              <motion.div
+                                key={i}
+                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                className="flex items-center justify-between"
+                              >
+                                <span className="text-xs text-text-secondary">{item.label}</span>
+                                <span className={`text-xs ${item.color} font-medium`}>{item.score}</span>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+
+                      {index === 7 && (
+                        <>
+                          <motion.div
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } } }}
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            className="grid grid-cols-3 gap-2 mb-4"
+                          >
+                            {[
+                              { name: "Classic", color: "bg-blue-500", active: false },
+                              { name: "Modern", color: "bg-indigo-500", active: true },
+                              { name: "Executive", color: "bg-gray-500", active: false },
+                            ].map((tmpl, i) => (
+                              <motion.div
+                                key={i}
+                                variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                className={`p-2 rounded-lg border text-center ${tmpl.active ? "bg-slate-500/10 border-slate-500/30" : "bg-space-600/40 border-space-600/60"}`}
+                              >
+                                <div className={`w-full h-1 rounded mb-2 ${tmpl.color}`} />
+                                <div className="h-1.5 rounded bg-space-500/60 w-[70%] mx-auto mb-1" />
+                                <div className="h-1 rounded bg-space-500/40 w-full mb-0.5" />
+                                <div className="h-1 rounded bg-space-500/40 w-[80%]" />
+                                <div className={`text-[9px] mt-2 font-medium ${tmpl.active ? "text-slate-400" : "text-text-muted"}`}>{tmpl.name}</div>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, ease: EASE, delay: 0.7 }}
+                            className="flex items-center gap-2"
+                          >
+                            <div className="px-3 py-1.5 rounded-md bg-slate-500/10 border border-slate-500/20">
+                              <span className="text-xs text-slate-400 font-medium">PDF</span>
+                            </div>
+                            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
+                              <span className="text-xs text-blue-400 font-medium">Word</span>
+                            </div>
+                            <span className="text-xs text-text-muted ml-1">Ready to download</span>
+                          </motion.div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* ---- Bottom CTA ---- */}
-        <div className="mt-24 sm:mt-32 text-center">
+        {/* ---- Bottom CTA — fades up on scroll ---- */}
+        <motion.div
+          variants={ctaFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="mt-24 sm:mt-32 text-center"
+        >
           <p className="text-text-secondary text-lg mb-6">
             All ten tools. One platform. Zero guesswork.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Start Optimizing for Free
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

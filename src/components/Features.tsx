@@ -3,9 +3,13 @@
    ============================================================
    Displays 8 core features in a clean centered grid.
    Top row: 4 features. Bottom row: 4 features.
-   Each card has an SVG icon, title, and description.
-   Centered text layout for a polished, professional look.
+   Each card fades in on scroll with a stagger effect.
+   Cards also lift slightly on hover for interactivity.
    ============================================================ */
+
+"use client";
+
+import { motion } from "framer-motion";
 
 /* ---- Feature Data ---- */
 /* Each feature has an SVG icon path, accent color, title, description, and showcase ID for scroll linking */
@@ -124,13 +128,48 @@ const features = [
   },
 ];
 
+/* # Smooth deceleration curve */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/* # Section header animation */
+const headerFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
+/* # Grid container — staggers card reveals */
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
+/* # Individual card — fades up, has hover lift */
+const cardReveal = {
+  hidden: { opacity: 0, y: 18 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: EASE },
+  },
+};
+
 export default function Features() {
   return (
     <section id="features" className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-6xl mx-auto">
 
-        {/* ---- Section Header ---- */}
-        <div className="text-center mb-16 sm:mb-20">
+        {/* ---- Section Header — fades in on scroll ---- */}
+        <motion.div
+          variants={headerFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="text-center mb-16 sm:mb-20"
+        >
           <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Features
           </p>
@@ -142,34 +181,41 @@ export default function Features() {
             Ten AI-powered tools working together to take you from application
             to interview — all in one platform.
           </p>
-        </div>
+        </motion.div>
 
-        {/* ---- Feature Cards Grid ---- */}
-        {/* 1 col mobile, 2 col tablet, 4 col desktop — centered text */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* ---- Feature Cards Grid — staggered reveal + hover lift ---- */}
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
           {features.map((feature, index) => (
-            <a
+            <motion.a
               key={index}
               href={`#${feature.showcaseId}`}
-              className="group relative rounded-2xl border border-card-border bg-space-800/60 p-7 text-center hover:border-brand-indigo/30 hover:bg-space-700/60 transition-all duration-300 cursor-pointer"
+              variants={cardReveal}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="group relative rounded-2xl border border-card-border bg-space-800/60 p-7 text-center hover:border-brand-indigo/30 hover:bg-space-700/60 transition-colors duration-300 cursor-pointer"
             >
-              {/* Icon circle — centered */}
+              {/* # Icon circle — centered */}
               <div className={`mx-auto mb-5 w-14 h-14 rounded-xl ${feature.bg} border ${feature.border} flex items-center justify-center ${feature.color}`}>
                 {feature.icon}
               </div>
 
-              {/* Title */}
+              {/* # Title */}
               <h3 className="text-lg font-bold mb-2 group-hover:text-brand-light transition-colors">
                 {feature.title}
               </h3>
 
-              {/* Description */}
+              {/* # Description */}
               <p className="text-sm text-text-secondary leading-relaxed">
                 {feature.description}
               </p>
-            </a>
+            </motion.a>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

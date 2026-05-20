@@ -2,9 +2,14 @@
    HOW IT WORKS - Step-by-Step Flow
    ============================================================
    Shows users the 3 simple steps to get started with JobPilot AI.
-   Visual numbered steps with connecting lines between them.
-   Builds trust by showing how simple the process is.
+   Each step slides in from the left with a staggered delay,
+   creating a visual "building" effect as you scroll down.
+   Uses whileInView so animations trigger on scroll.
    ============================================================ */
+
+"use client";
+
+import { motion } from "framer-motion";
 
 /* ---- Step Data ---- */
 const steps = [
@@ -28,6 +33,36 @@ const steps = [
   },
 ];
 
+/* # Smooth deceleration curve */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/* # Section header fade-in */
+const headerFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
+/* # Steps container — staggers each step 180ms apart */
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.18 } },
+};
+
+/* # Each step slides in from left + fades up */
+const stepReveal = {
+  hidden: { opacity: 0, x: -20, y: 8 },
+  show: {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    transition: { duration: 0.9, ease: EASE },
+  },
+};
+
 export default function HowItWorks() {
   return (
     <section
@@ -36,8 +71,14 @@ export default function HowItWorks() {
     >
       <div className="max-w-5xl mx-auto">
 
-        {/* ---- Section Header ---- */}
-        <div className="text-center mb-16 sm:mb-20">
+        {/* ---- Section Header — fades in on scroll ---- */}
+        <motion.div
+          variants={headerFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="text-center mb-16 sm:mb-20"
+        >
           <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             How It Works
           </p>
@@ -48,25 +89,30 @@ export default function HowItWorks() {
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
             No complicated setup. No learning curve. Just results.
           </p>
-        </div>
+        </motion.div>
 
-        {/* ---- Steps List ---- */}
-        {/* Vertical layout with connecting line on the left */}
-        <div className="space-y-12 sm:space-y-16">
+        {/* ---- Steps List — staggered slide-in from left ---- */}
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="space-y-12 sm:space-y-16"
+        >
           {steps.map((step, index) => (
-            <div
+            <motion.div
               key={index}
+              variants={stepReveal}
               className="flex gap-6 sm:gap-10 items-start"
             >
-              {/* Step Number Circle */}
-              {/* Large gradient-bordered number for visual hierarchy */}
+              {/* # Step Number Circle */}
               <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-space-700 border border-card-border flex items-center justify-center">
                 <span className="text-2xl sm:text-3xl font-bold glow-text">
                   {step.number}
                 </span>
               </div>
 
-              {/* Step Content */}
+              {/* # Step Content */}
               <div className="pt-1">
                 <h3 className="text-xl sm:text-2xl font-bold mb-3">
                   {step.title}
@@ -75,9 +121,9 @@ export default function HowItWorks() {
                   {step.description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

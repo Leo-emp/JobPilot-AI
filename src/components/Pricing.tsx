@@ -3,16 +3,17 @@
    ============================================================
    Unified layout: two plan cards side by side with the feature
    comparison built into each card. Monthly/annual toggle.
-   Clean, compact design — no separate table below.
+   Cards fade in on scroll with stagger. The Pro card gets
+   a subtle scale emphasis to draw attention.
    ============================================================ */
 
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 /* ---- Feature rows shown inside each card ---- */
-/* Grouped into fewer, clearer lines */
 const featureRows = [
   { name: "All 10 AI Tools (full access)", free: true, pro: true },
   { name: "Resume Analysis & ATS Scoring", free: true, pro: true },
@@ -26,6 +27,35 @@ const featureRows = [
   { name: "PDF & Word Download", free: true, pro: true },
 ];
 
+/* # Smooth deceleration curve */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/* # Section header fade */
+const headerFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
+/* # Cards container — staggers the two plan cards */
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.18 } },
+};
+
+/* # Free plan card — standard fade up */
+const cardFade = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
 export default function Pricing() {
   const [annual, setAnnual] = useState(false);
 
@@ -33,8 +63,14 @@ export default function Pricing() {
     <section id="pricing" className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-5xl mx-auto">
 
-        {/* ---- Section Header ---- */}
-        <div className="text-center mb-12 sm:mb-16">
+        {/* ---- Section Header — fades in on scroll ---- */}
+        <motion.div
+          variants={headerFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="text-center mb-12 sm:mb-16"
+        >
           <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Pricing
           </p>
@@ -45,10 +81,16 @@ export default function Pricing() {
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
             Start free. Upgrade when you&apos;re ready. Cancel anytime.
           </p>
-        </div>
+        </motion.div>
 
         {/* ---- Billing Toggle ---- */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex items-center justify-center gap-4 mb-12"
+        >
           <span className={`text-base font-medium transition-colors ${!annual ? "text-white" : "text-text-muted"}`}>
             Monthly
           </span>
@@ -67,20 +109,26 @@ export default function Pricing() {
               Save 43%
             </span>
           )}
-        </div>
+        </motion.div>
 
-        {/* ---- Pricing Cards ---- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* ---- Pricing Cards — staggered fade-in ---- */}
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
 
           {/* ---- Free Plan ---- */}
-          <div className="rounded-2xl border border-card-border bg-space-800/60 p-8 flex flex-col">
+          <motion.div variants={cardFade} className="rounded-2xl border border-card-border bg-space-800/60 p-8 flex flex-col">
             <h3 className="text-2xl font-bold mb-2">Free</h3>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-5xl font-extrabold">£0</span>
             </div>
             <p className="text-text-secondary text-sm mb-6">20 AI calls per month</p>
 
-            {/* Feature list */}
+            {/* # Feature list */}
             <div className="space-y-2.5 mb-8 flex-1">
               {featureRows.map((row, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -103,10 +151,10 @@ export default function Pricing() {
             <Link href="/signup" className="btn-secondary w-full text-center text-base py-3">
               Get Started Free
             </Link>
-          </div>
+          </motion.div>
 
           {/* ---- Pro Plan ---- */}
-          <div className="relative rounded-2xl border border-brand-indigo/40 bg-space-800/60 p-8 flex flex-col ring-1 ring-brand-indigo/20 shadow-lg shadow-brand-indigo/10">
+          <motion.div variants={cardFade} className="relative rounded-2xl border border-brand-indigo/40 bg-space-800/60 p-8 flex flex-col ring-1 ring-brand-indigo/20 shadow-lg shadow-brand-indigo/10">
             <div className="absolute -top-3 left-8">
               <span className="px-4 py-1 text-xs font-bold uppercase tracking-wider bg-brand-indigo text-white rounded-full">
                 Most Popular
@@ -124,7 +172,7 @@ export default function Pricing() {
               <p className="text-text-secondary text-sm mb-6">1,000 AI calls/month — effectively unlimited</p>
             )}
 
-            {/* Feature list — all checked */}
+            {/* # Feature list — all checked */}
             <div className="space-y-2.5 mb-8 flex-1">
               {featureRows.map((row, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -139,13 +187,19 @@ export default function Pricing() {
             <Link href="/signup?plan=pro" className="btn-primary w-full text-center text-base py-3">
               Upgrade to Pro
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* ---- Bottom trust line ---- */}
-        <p className="mt-8 text-center text-base text-text-muted">
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-8 text-center text-base text-text-muted"
+        >
           No credit card required to start &bull; Cancel anytime &bull; 7-day money-back guarantee
-        </p>
+        </motion.p>
       </div>
     </section>
   );

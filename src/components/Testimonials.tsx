@@ -1,14 +1,17 @@
 /* ============================================================
    TESTIMONIALS - Social Proof Section
    ============================================================
-   Shows user testimonials in glassmorphism cards (like OpenClaw).
-   Builds trust and credibility with potential users.
-   Horizontally scrollable on mobile, grid on desktop.
+   Shows user testimonials in glassmorphism cards.
+   Cards fade in on scroll with a stagger effect — each card
+   appears slightly after the previous one, creating a
+   cascading reveal. Builds trust and credibility.
    ============================================================ */
 
+"use client";
+
+import { motion } from "framer-motion";
+
 /* ---- Testimonial Data ---- */
-/* These are placeholder testimonials — replace with real ones later */
-/* These are placeholder testimonials — replace with real ones later */
 const testimonials = [
   {
     name: "Sarah M.",
@@ -40,6 +43,35 @@ const testimonials = [
   },
 ];
 
+/* # Smooth deceleration curve */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/* # Section header fade */
+const headerFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
+/* # Cards container — staggers children */
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
+
+/* # Individual card — fades up into place */
+const cardReveal = {
+  hidden: { opacity: 0, y: 18 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: EASE },
+  },
+};
+
 export default function Testimonials() {
   return (
     <section
@@ -48,8 +80,14 @@ export default function Testimonials() {
     >
       <div className="max-w-7xl mx-auto">
 
-        {/* ---- Section Header ---- */}
-        <div className="text-center mb-16 sm:mb-20">
+        {/* ---- Section Header — fades in on scroll ---- */}
+        <motion.div
+          variants={headerFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="text-center mb-16 sm:mb-20"
+        >
           <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Testimonials
           </p>
@@ -60,14 +98,19 @@ export default function Testimonials() {
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
             Join thousands of job seekers who launched their careers with JobPilot AI.
           </p>
-        </div>
+        </motion.div>
 
-        {/* ---- Testimonial Cards Grid ---- */}
-        {/* 1 column on mobile, 2 on tablet, 4 on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* ---- Testimonial Cards — staggered fade-in on scroll ---- */}
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           {testimonials.map((t, index) => (
-            <div key={index} className="glass-card p-6 sm:p-8 flex flex-col">
-              {/* Avatar circle with gradient background and initials */}
+            <motion.div key={index} variants={cardReveal} className="glass-card p-6 sm:p-8 flex flex-col">
+              {/* # Avatar circle with gradient background and initials */}
               <div className="flex items-center gap-3 mb-5">
                 <div
                   className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-sm font-bold text-white`}
@@ -80,13 +123,13 @@ export default function Testimonials() {
                 </div>
               </div>
 
-              {/* Testimonial text */}
+              {/* # Testimonial text */}
               <p className="text-text-secondary text-base leading-relaxed flex-1">
                 &ldquo;{t.text}&rdquo;
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
