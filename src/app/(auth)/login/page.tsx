@@ -37,7 +37,14 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password.");
+        /* Show specific messages based on the error type from authorize() */
+        if (result.error.includes("ACCOUNT_LOCKED")) {
+          setError("Too many failed attempts. Your account is temporarily locked. Please try again in 15 minutes.");
+        } else if (result.error.includes("SERVER_ERROR")) {
+          setError("Something went wrong on our end. Please try again in a moment.");
+        } else {
+          setError("Invalid email or password.");
+        }
       } else {
         router.push("/dashboard");
       }

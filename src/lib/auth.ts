@@ -41,52 +41,63 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       /* authorize() runs when the user submits the login form */
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+
+          /* Check if account is locked from too many failed attempts */
+          const lockStatus = await isLocked(credentials.email as string);
+          if (lockStatus.locked) {
+            audit("auth.account.locked", { email: credentials.email as string, detail: `locked for ${Math.ceil(lockStatus.retryAfterMs / 60000)}min` });
+            throw new Error("ACCOUNT_LOCKED");
+          }
+
+          /* Look up the user by email */
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string },
+          });
+
+          /* If no user found, OAuth-only account, or soft-deleted — fail */
+          if (!user || !user.password || user.deletedAt) {
+            await recordFailure(credentials.email as string);
+            audit("auth.login.failed", { email: credentials.email as string, detail: !user ? "not_found" : user.deletedAt ? "soft_deleted" : "no_password" });
+            return null;
+          }
+
+          /* Compare the provided password with the stored hash */
+          const passwordMatch = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
+
+          if (!passwordMatch) {
+            await recordFailure(credentials.email as string);
+            audit("auth.login.failed", { email: credentials.email as string, detail: "wrong_password" });
+            return null;
+          }
+
+          await resetFailures(credentials.email as string);
+          audit("auth.login.success", { userId: user.id, email: user.email });
+
+          /* Flag if this user has 2FA enabled — JWT callback will pick this up */
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            twoFactorEnabled: user.twoFactorEnabled,
+          };
+        } catch (error) {
+          /* Re-throw known auth errors so the login page can show specific messages */
+          if (error instanceof Error && error.message === "ACCOUNT_LOCKED") {
+            throw error;
+          }
+          /* Log unexpected errors (DB crashes, network issues) instead of swallowing them */
+          console.error("Login error:", error);
+          audit("auth.login.failed", { email: (credentials?.email as string) || "unknown", detail: `server_error: ${String(error)}` });
+          throw new Error("SERVER_ERROR");
         }
-
-        /* Check if account is locked from too many failed attempts */
-        const lockStatus = await isLocked(credentials.email as string);
-        if (lockStatus.locked) {
-          audit("auth.account.locked", { email: credentials.email as string, detail: `locked for ${Math.ceil(lockStatus.retryAfterMs / 60000)}min` });
-          return null;
-        }
-
-        /* Look up the user by email */
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
-
-        /* If no user found, OAuth-only account, or soft-deleted — fail */
-        if (!user || !user.password || user.deletedAt) {
-          await recordFailure(credentials.email as string);
-          audit("auth.login.failed", { email: credentials.email as string, detail: !user ? "not_found" : user.deletedAt ? "soft_deleted" : "no_password" });
-          return null;
-        }
-
-        /* Compare the provided password with the stored hash */
-        const passwordMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!passwordMatch) {
-          await recordFailure(credentials.email as string);
-          audit("auth.login.failed", { email: credentials.email as string, detail: "wrong_password" });
-          return null;
-        }
-
-        await resetFailures(credentials.email as string);
-        audit("auth.login.success", { userId: user.id, email: user.email });
-
-        /* Flag if this user has 2FA enabled — JWT callback will pick this up */
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          twoFactorEnabled: user.twoFactorEnabled,
-        };
       },
     }),
   ],
