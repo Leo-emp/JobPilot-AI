@@ -6,7 +6,7 @@
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
     "http://localhost:3000/*",
-    "https://jobpilot-website.vercel.app/*"
+    "https://jobpilotai.co/*"
   ],
   "action": {
     "default_popup": "popup.html",

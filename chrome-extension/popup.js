@@ -11,7 +11,7 @@
 /* ---- Configuration ---- */
 /* Switch between local dev and production URLs */
 const API_URLS = [
-  "https://jobpilot-website.vercel.app",
+  "https://jobpilotai.co",
   "http://localhost:3000",
 ];
 
