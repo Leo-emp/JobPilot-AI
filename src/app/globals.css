@@ -86,6 +86,12 @@ body {
   }
 }
 
+/* # Slow-breathing glow behind hero title — barely perceptible pulse */
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.08; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.15; transform: translate(-50%, -50%) scale(1.05); }
+}
+
 /* # Gentle twinkle — most stars use this (small opacity range) */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 0.3; }

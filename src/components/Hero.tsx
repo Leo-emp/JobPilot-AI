@@ -60,16 +60,15 @@ export default function Hero() {
         }}
       />
 
-      {/* ---- Badge ---- */}
-      <motion.div variants={fadeUp} className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.07] bg-white/[0.03]">
-        <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded-full uppercase">
-          New
-        </span>
-        <span className="text-sm text-text-secondary">
-          AI-Powered Career Pivot Mode
-        </span>
-        <span className="text-text-muted">→</span>
-      </motion.div>
+      {/* ---- Breathing glow — slow pulse behind the title area ---- */}
+      {/* Barely visible, creates a living atmosphere */}
+      <div
+        className="absolute top-1/2 left-1/2 w-[600px] sm:w-[900px] h-[300px] sm:h-[500px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse, rgba(99,102,241,0.5) 0%, rgba(56,189,248,0.3) 30%, transparent 65%)",
+          animation: "glow-breathe 4s ease-in-out infinite",
+        }}
+      />
 
       {/* ---- Rocket Icon — scale + fade for a dramatic entrance ---- */}
       <motion.div variants={rocketReveal} className="relative mb-8">
