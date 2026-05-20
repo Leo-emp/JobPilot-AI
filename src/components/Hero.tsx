@@ -13,23 +13,22 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import RocketIcon from "./RocketIcon";
 
-/* # Smooth deceleration curve — Apple-style feel */
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/* # Zero-bounce spring — physics-based, no hard start/stop */
+const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };
 
-/* # Parent variant — staggers children 120ms apart */
+/* # Parent variant — staggers children 140ms apart */
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.12 } },
+  show: { transition: { staggerChildren: 0.14 } },
 };
 
-/* # Child variant — each element fades up from 30px below */
-/* Custom cubic-bezier gives an Apple-style deceleration curve */
+/* # Child variant — each element fades up with spring physics */
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.9, ease: EASE },
+    transition: SPRING,
   },
 };
 
@@ -40,7 +39,7 @@ const rocketReveal = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 1, ease: EASE },
+    transition: { ...SPRING, duration: 1.4 },
   },
 };
 

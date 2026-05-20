@@ -43,8 +43,8 @@ const testimonials = [
   },
 ];
 
-/* # Smooth deceleration curve */
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/* # Zero-bounce spring — naturally settles with no hard stop */
+const SPRING = { type: "spring" as const, duration: 1, bounce: 0 };
 
 /* # Section header fade */
 const headerFade = {
@@ -52,14 +52,14 @@ const headerFade = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: SPRING,
   },
 };
 
 /* # Cards container — staggers children */
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
+  show: { transition: { staggerChildren: 0.12 } },
 };
 
 /* # Individual card — fades up into place */
@@ -68,7 +68,7 @@ const cardReveal = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: SPRING,
   },
 };
 

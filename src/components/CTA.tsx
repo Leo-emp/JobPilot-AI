@@ -11,22 +11,22 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-/* # Smooth deceleration curve */
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/* # Zero-bounce spring — naturally settles with no hard stop */
+const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };
 
 /* # Parent — staggers children for sequential reveal */
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.12 } },
+  show: { transition: { staggerChildren: 0.14 } },
 };
 
-/* # Child — each element fades up smoothly */
+/* # Child — each element fades up with spring physics */
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.9, ease: EASE },
+    transition: SPRING,
   },
 };
 

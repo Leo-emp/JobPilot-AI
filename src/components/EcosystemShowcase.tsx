@@ -13,8 +13,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-/* # Smooth deceleration curve */
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/* # Zero-bounce spring — naturally settles with no hard stop */
+const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };
 
 /* # Section header fade */
 const headerFade = {
@@ -22,7 +22,7 @@ const headerFade = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: { ...SPRING, duration: 1 },
   },
 };
 
@@ -38,7 +38,7 @@ const bulletItem = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.6, ease: EASE },
+    transition: { ...SPRING, duration: 0.8 },
   },
 };
 
@@ -48,7 +48,7 @@ const ctaFade = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: { ...SPRING, duration: 1 },
   },
 };
 
@@ -88,7 +88,7 @@ export default function EcosystemShowcase() {
             initial={{ opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: EASE }}
+            transition={{ ...SPRING }}
             className="flex-1 max-w-xl"
           >
             {/* # Feature tag */}
@@ -142,7 +142,7 @@ export default function EcosystemShowcase() {
             initial={{ opacity: 0, x: 28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: EASE, delay: 0.15 }}
+            transition={{ ...SPRING, delay: 0.15 }}
             className="flex-1 w-full max-w-lg"
           >
             <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
@@ -162,7 +162,7 @@ export default function EcosystemShowcase() {
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
                 className="flex gap-2 mb-5"
               >
                 <div className="flex-1 px-3 py-2 rounded-lg bg-space-700 border border-card-border">
@@ -181,7 +181,7 @@ export default function EcosystemShowcase() {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.45 }}
+                transition={{ ...SPRING, duration: 0.7, delay: 0.45 }}
                 className="text-xs text-text-muted mb-3"
               >
                 2,847 jobs found
@@ -196,7 +196,7 @@ export default function EcosystemShowcase() {
               >
                 {/* # Job card 1 */}
                 <motion.div
-                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.8 } } }}
                   className="p-3 rounded-lg bg-space-700/50 border border-card-border mb-3"
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -217,7 +217,7 @@ export default function EcosystemShowcase() {
 
                 {/* # Job card 2 */}
                 <motion.div
-                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.8 } } }}
                   className="p-3 rounded-lg bg-space-700/50 border border-card-border mb-3"
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -238,7 +238,7 @@ export default function EcosystemShowcase() {
 
                 {/* # Job card 3 — partial, faded */}
                 <motion.div
-                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 0.6, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 0.6, y: 0, transition: { ...SPRING, duration: 0.8 } } }}
                   className="p-3 rounded-lg bg-space-700/50 border border-card-border"
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -268,7 +268,7 @@ export default function EcosystemShowcase() {
             initial={{ opacity: 0, x: 28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: EASE }}
+            transition={{ ...SPRING }}
             className="flex-1 max-w-xl"
           >
             {/* # Feature tag */}
@@ -322,7 +322,7 @@ export default function EcosystemShowcase() {
             initial={{ opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: EASE, delay: 0.15 }}
+            transition={{ ...SPRING, delay: 0.15 }}
             className="flex-1 w-full max-w-lg"
           >
             <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
@@ -342,7 +342,7 @@ export default function EcosystemShowcase() {
                 initial={{ opacity: 0, x: -15 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
                 className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-space-700/50 border border-card-border"
               >
                 <span className="text-sm">📄</span>
@@ -355,7 +355,7 @@ export default function EcosystemShowcase() {
                 initial={{ opacity: 0, x: -15 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: EASE, delay: 0.45 }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.45 }}
                 className="mb-4 px-3 py-2 rounded-lg bg-space-700/50 border border-card-border"
               >
                 <div className="text-[10px] text-text-muted mb-1">Reaching out to:</div>
@@ -377,7 +377,7 @@ export default function EcosystemShowcase() {
                 ].map((tab, i) => (
                   <motion.div
                     key={i}
-                    variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } } }}
+                    variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
                     className={`px-3 py-1.5 rounded-lg ${tab.active ? "bg-brand-indigo/20 border border-brand-indigo/30" : "bg-space-700/50"}`}
                   >
                     <span className={`text-[10px] font-medium ${tab.active ? "text-white" : "text-text-muted"}`}>{tab.label}</span>
@@ -390,7 +390,7 @@ export default function EcosystemShowcase() {
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
+                transition={{ ...SPRING, duration: 0.9, delay: 0.7 }}
                 className="p-3 rounded-lg bg-space-700/50 border border-brand-indigo/20 mb-3"
               >
                 <p className="text-[11px] text-text-secondary leading-relaxed">
@@ -405,7 +405,7 @@ export default function EcosystemShowcase() {
                 initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: EASE, delay: 0.85 }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.85 }}
                 className="flex gap-2"
               >
                 <div className="flex-1 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-center">

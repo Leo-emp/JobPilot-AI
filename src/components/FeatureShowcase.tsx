@@ -12,7 +12,9 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-/* # Smooth deceleration curve */
+/* # Zero-bounce spring — naturally settles with no hard stop */
+const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };
+/* # Tween ease for width animations (springs can't animate CSS width smoothly) */
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /* ---- Feature data with detailed breakdowns ---- */
@@ -185,7 +187,7 @@ const headerFade = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: { ...SPRING, duration: 1 },
   },
 };
 
@@ -201,7 +203,7 @@ const bulletItem = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.6, ease: EASE },
+    transition: { ...SPRING, duration: 0.8 },
   },
 };
 
@@ -211,7 +213,7 @@ const ctaFade = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: { ...SPRING, duration: 1 },
   },
 };
 
@@ -261,7 +263,7 @@ export default function FeatureShowcase() {
                   initial={{ opacity: 0, x: isEven ? -28 : 28 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.9, ease: EASE }}
+                  transition={{ ...SPRING }}
                   className="flex-1 max-w-xl"
                 >
                   {/* # Feature tag pill */}
@@ -320,7 +322,7 @@ export default function FeatureShowcase() {
                   initial={{ opacity: 0, x: isEven ? 28 : -28 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.9, ease: EASE, delay: 0.15 }}
+                  transition={{ ...SPRING, delay: 0.15 }}
                   className="flex-1 w-full max-w-lg"
                 >
                   <div className="glass-card p-8 sm:p-10 relative overflow-hidden">
@@ -359,7 +361,7 @@ export default function FeatureShowcase() {
                               initial={{ opacity: 0, y: 10 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
-                              transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+                              transition={{ ...SPRING, duration: 0.8, delay: 0.6 }}
                               className="p-3 rounded-lg bg-space-600/40"
                             >
                               <div className="text-xs text-text-muted mb-1">Keywords</div>
@@ -369,7 +371,7 @@ export default function FeatureShowcase() {
                               initial={{ opacity: 0, y: 10 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
-                              transition={{ duration: 0.5, ease: EASE, delay: 0.7 }}
+                              transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
                               className="p-3 rounded-lg bg-space-600/40"
                             >
                               <div className="text-xs text-text-muted mb-1">Missing</div>
@@ -385,7 +387,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, x: -15 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
                             className="p-3 rounded-lg bg-space-600/40 border-l-2 border-red-400/50"
                           >
                             <div className="text-xs text-red-400 mb-1">Before</div>
@@ -396,7 +398,7 @@ export default function FeatureShowcase() {
                               initial={{ opacity: 0, y: -5 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
-                              transition={{ duration: 0.4, ease: EASE, delay: 0.5 }}
+                              transition={{ ...SPRING, duration: 0.7, delay: 0.5 }}
                               className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             >
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -406,7 +408,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, x: -15 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.6 }}
                             className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50"
                           >
                             <div className="text-xs text-green-400 mb-1">After</div>
@@ -421,7 +423,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, scale: 0.8 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.6, ease: EASE, delay: 0.3 }}
+                            transition={{ ...SPRING, duration: 0.9, delay: 0.3 }}
                             className="text-center mb-4"
                           >
                             <div className="text-4xl font-bold text-green-400 mb-1">78%</div>
@@ -442,7 +444,7 @@ export default function FeatureShowcase() {
                             ].map((item, i) => (
                               <motion.div
                                 key={i}
-                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
                                 className="flex items-center gap-2"
                               >
                                 <div className={`w-2 h-2 rounded-full ${item.color}`} />
@@ -465,7 +467,7 @@ export default function FeatureShowcase() {
                             {[60, 100, 90, 75, 0, 100, 85, 70].map((w, i) => (
                               <motion.div
                                 key={i}
-                                variants={{ hidden: { opacity: 0, scaleX: 0 }, show: { opacity: 1, scaleX: 1, transition: { duration: 0.4, ease: EASE } } }}
+                                variants={{ hidden: { opacity: 0, scaleX: 0 }, show: { opacity: 1, scaleX: 1, transition: { ...SPRING, duration: 0.7 } } }}
                                 style={{ transformOrigin: "left", width: w === 0 ? "100%" : `${w}%` }}
                                 className={`rounded ${w === 0 ? "h-3 bg-space-600/20 mt-3" : "h-2.5 bg-space-600/60"}`}
                               />
@@ -475,7 +477,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.8 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.8 }}
                             className="mt-4 flex items-center gap-2"
                           >
                             <div className="px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
@@ -503,7 +505,7 @@ export default function FeatureShowcase() {
                           ].map((item, i) => (
                             <motion.div
                               key={i}
-                              variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+                              variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.8 } } }}
                               className="p-3 rounded-lg bg-space-600/40"
                             >
                               <div className={`text-xs ${item.color} mb-1`}>{item.label}</div>
@@ -519,7 +521,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, x: -15 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
                             className="p-3 rounded-lg bg-space-600/40 border-l-2 border-rose-400/50 mb-3"
                           >
                             <div className="text-xs text-text-muted mb-1">Current: Marketing Manager</div>
@@ -529,7 +531,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0 }}
                             whileInView={{ opacity: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.4, delay: 0.5 }}
+                            transition={{ ...SPRING, duration: 0.7, delay: 0.5 }}
                             className="flex justify-center mb-3"
                           >
                             <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -540,7 +542,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, x: -15 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.6 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.6 }}
                             className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50 mb-4"
                           >
                             <div className="text-xs text-green-400 mb-1">Target: Product Manager</div>
@@ -560,7 +562,7 @@ export default function FeatureShowcase() {
                             ].map((item, i) => (
                               <motion.div
                                 key={i}
-                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
                                 className="flex items-center gap-2"
                               >
                                 <div className={`w-2 h-2 rounded-full ${item.color}`} />
@@ -577,7 +579,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0 }}
                             whileInView={{ opacity: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.3 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
                             className="flex items-center justify-between mb-3"
                           >
                             <span className="text-xs text-text-muted uppercase tracking-wider">Profile Score</span>
@@ -598,7 +600,7 @@ export default function FeatureShowcase() {
                             ].map((item, i) => (
                               <motion.div
                                 key={i}
-                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
                                 className="flex items-center justify-between"
                               >
                                 <span className="text-xs text-text-secondary">{item.label}</span>
@@ -625,7 +627,7 @@ export default function FeatureShowcase() {
                             ].map((tmpl, i) => (
                               <motion.div
                                 key={i}
-                                variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } } }}
+                                variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
                                 className={`p-2 rounded-lg border text-center ${tmpl.active ? "bg-slate-500/10 border-slate-500/30" : "bg-space-600/40 border-space-600/60"}`}
                               >
                                 <div className={`w-full h-1 rounded mb-2 ${tmpl.color}`} />
@@ -640,7 +642,7 @@ export default function FeatureShowcase() {
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, ease: EASE, delay: 0.7 }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
                             className="flex items-center gap-2"
                           >
                             <div className="px-3 py-1.5 rounded-md bg-slate-500/10 border border-slate-500/20">

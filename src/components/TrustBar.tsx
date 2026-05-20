@@ -52,8 +52,8 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
   );
 }
 
-/* # Smooth deceleration curve */
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/* # Zero-bounce spring — naturally settles with no hard stop */
+const SPRING = { type: "spring" as const, duration: 1, bounce: 0 };
 
 /* # Fade-up variant for each stat card */
 const fadeUp = {
@@ -61,14 +61,14 @@ const fadeUp = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: SPRING,
   },
 };
 
 /* # Parent variant — staggers the 4 stats */
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
+  show: { transition: { staggerChildren: 0.12 } },
 };
 
 export default function TrustBar() {

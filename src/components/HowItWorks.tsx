@@ -33,8 +33,8 @@ const steps = [
   },
 ];
 
-/* # Smooth deceleration curve */
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/* # Zero-bounce spring — naturally settles with no hard stop */
+const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };
 
 /* # Section header fade-in */
 const headerFade = {
@@ -42,14 +42,14 @@ const headerFade = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: EASE },
+    transition: { ...SPRING, duration: 1 },
   },
 };
 
-/* # Steps container — staggers each step 180ms apart */
+/* # Steps container — staggers each step 200ms apart */
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.18 } },
+  show: { transition: { staggerChildren: 0.2 } },
 };
 
 /* # Each step slides in from left + fades up */
@@ -59,7 +59,7 @@ const stepReveal = {
     opacity: 1,
     x: 0,
     y: 0,
-    transition: { duration: 0.9, ease: EASE },
+    transition: SPRING,
   },
 };
 
