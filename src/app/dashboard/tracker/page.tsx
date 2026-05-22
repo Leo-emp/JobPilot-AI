@@ -28,7 +28,7 @@ interface Application {
   appliedDate: string | null;
   interviewDate: string | null;
   createdAt: string;
-  job?: { url: string | null; description: string | null } | null;
+  job?: { url: string | null; description: string | null; salary: string | null } | null;
 }
 
 export default function TrackerPage() {
@@ -38,6 +38,8 @@ export default function TrackerPage() {
   const [showForm, setShowForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCompany, setNewCompany] = useState("");
+  const [newSalary, setNewSalary] = useState("");
+  const [newDescription, setNewDescription] = useState("");
   const [loading, setLoading] = useState(true);
 
   /* ---- Fetch Applications ---- */
@@ -67,12 +69,19 @@ export default function TrackerPage() {
       const res = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobTitle: newTitle, company: newCompany }),
+        body: JSON.stringify({
+          jobTitle: newTitle,
+          company: newCompany,
+          ...(newSalary && { salary: newSalary }),
+          ...(newDescription && { description: newDescription }),
+        }),
       });
 
       if (res.ok) {
         setNewTitle("");
         setNewCompany("");
+        setNewSalary("");
+        setNewDescription("");
         setShowForm(false);
         fetchApps();
       }
@@ -173,17 +182,31 @@ export default function TrackerPage() {
               type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Job Title"
+              placeholder="Job Title *"
               className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
             />
             <input
               type="text"
               value={newCompany}
               onChange={(e) => setNewCompany(e.target.value)}
-              placeholder="Company Name"
+              placeholder="Company Name *"
               className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
             />
+            <input
+              type="text"
+              value={newSalary}
+              onChange={(e) => setNewSalary(e.target.value)}
+              placeholder="Salary (e.g. $80k - $120k)"
+              className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm sm:col-span-2"
+            />
           </div>
+          <textarea
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            placeholder="Paste job description here (optional)"
+            rows={4}
+            className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm mb-4 resize-y"
+          />
           <div className="flex gap-3">
             <button onClick={handleAdd} className="btn-primary text-sm">
               Save
@@ -232,6 +255,9 @@ export default function TrackerPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold truncate">{app.jobTitle}</h3>
                   <p className="text-sm text-text-secondary">{app.company}</p>
+                  {app.job?.salary && (
+                    <p className="text-xs text-green-400 mt-0.5">{app.job.salary}</p>
+                  )}
                   <div className="flex flex-wrap items-center gap-3 mt-1.5">
                     {app.appliedDate && (
                       <span className="text-xs text-text-muted">

@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   const applications = await prisma.application.findMany({
     where: { userId: session.user.id },
     ...query,
-    include: { job: { select: { url: true, description: true } } },
+    include: { job: { select: { url: true, description: true, salary: true } } },
   });
 
   return NextResponse.json(paginatedResponse(applications, params.limit), { headers: corsHeaders(origin) });
@@ -66,12 +66,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const { jobTitle, company, salary, description } = parsed.data;
+
+  /* If user provided description or salary, create a SavedJob to store them */
+  let jobId: string | undefined;
+  if (description || salary) {
+    const savedJob = await prisma.savedJob.create({
+      data: {
+        userId: session.user.id,
+        title: jobTitle,
+        company,
+        description: description || "",
+        salary: salary || null,
+      },
+    });
+    jobId = savedJob.id;
+  }
+
   const application = await prisma.application.create({
     data: {
       userId: session.user.id,
-      jobTitle: parsed.data.jobTitle,
-      company: parsed.data.company,
+      jobTitle,
+      company,
       status: "Saved",
+      ...(jobId && { jobId }),
     },
   });
 

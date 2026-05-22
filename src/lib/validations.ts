@@ -108,6 +108,8 @@ const applicationStatuses = [
 export const createApplicationSchema = z.object({
   jobTitle: shortText("Job title"),
   company: shortText("Company"),
+  salary: optionalShortText,
+  description: optionalLongText,
 });
 
 /* PATCH /api/applications/[id] */
