@@ -46,6 +46,9 @@ export default function ResumePage() {
   const [company, setCompany] = useState("");
   const [jobDescription, setJobDescription] = useState("");
 
+  /* Cache analyze result so the same resume always returns the same score */
+  const [analyzeCache, setAnalyzeCache] = useState<{ text: string; result: string } | null>(null);
+
   /* ---- Handle File Upload ---- */
   /* Parses PDFs client-side using pdf.js loaded from CDN */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,9 +115,15 @@ export default function ResumePage() {
       payload.jobDescription = jobDescription;
     }
 
+    if (action === "analyze_resume" && analyzeCache && analyzeCache.text === resumeText) {
+      resetAI(analyzeCache.result);
+      return;
+    }
+
     const fullResult = await streamAI(action, payload);
 
     if (fullResult && action === "analyze_resume") {
+      setAnalyzeCache({ text: resumeText, result: fullResult });
       await saveResume(fullResult);
     }
   };

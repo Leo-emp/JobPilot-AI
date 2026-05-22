@@ -19,7 +19,7 @@ interface UseAIStreamReturn {
   plan: string;
   remaining: number | "unlimited" | null;
   callAI: (action: string, payload: Record<string, unknown>) => Promise<string | null>;
-  reset: () => void;
+  reset: (prefill?: string) => void;
 }
 
 export function useAIStream(): UseAIStreamReturn {
@@ -30,8 +30,8 @@ export function useAIStream(): UseAIStreamReturn {
   const { plan, remaining, updateRemaining } = usePlan();
   const abortRef = useRef<AbortController | null>(null);
 
-  const reset = useCallback(() => {
-    setResult("");
+  const reset = useCallback((prefill?: string) => {
+    setResult(prefill ?? "");
     setError("");
     setLoading(false);
     setStreaming(false);
