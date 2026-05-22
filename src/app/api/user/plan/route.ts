@@ -41,6 +41,7 @@ export async function GET() {
         plan: true,
         aiUsageCount: true,
         usageResetDate: true,
+        weeklyDigest: true,
       },
     })
   );
@@ -54,6 +55,7 @@ export async function GET() {
     plan: user.plan,
     aiUsageCount: user.aiUsageCount,
     usageResetDate: user.usageResetDate.toISOString(),
+    weeklyDigest: user.weeklyDigest,
   };
   await cacheSet(cacheKey, planData, PLAN_CACHE_TTL);
 

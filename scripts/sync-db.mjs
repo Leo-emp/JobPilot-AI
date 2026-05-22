@@ -23,6 +23,8 @@ const SCHEMA = {
     twoFactorSecret: "TEXT",
     twoFactorEnabled: "BOOLEAN DEFAULT 0",
     deletedAt: "DATETIME",
+    weeklyDigest: "BOOLEAN DEFAULT 1",
+    topSkills: "TEXT",
     createdAt: "DATETIME",
     updatedAt: "DATETIME",
   },
@@ -65,6 +67,7 @@ const SCHEMA = {
     url: "TEXT",
     salary: "TEXT",
     matchScore: "INTEGER",
+    requiredSkills: "TEXT",
     createdAt: "DATETIME",
   },
   Application: {
@@ -75,6 +78,7 @@ const SCHEMA = {
     company: "TEXT",
     status: "TEXT DEFAULT 'Saved'",
     notes: "TEXT",
+    outcomeNote: "TEXT",
     appliedDate: "DATETIME",
     interviewDate: "DATETIME",
     createdAt: "DATETIME",
@@ -126,6 +130,25 @@ const SCHEMA = {
     content: "TEXT",
     createdAt: "DATETIME",
   },
+  CareerInsight: {
+    id: "TEXT",
+    userId: "TEXT",
+    type: "TEXT",
+    title: "TEXT",
+    data: "TEXT",
+    priority: "INTEGER DEFAULT 0",
+    createdAt: "DATETIME",
+    updatedAt: "DATETIME",
+  },
+  JobView: {
+    id: "TEXT",
+    userId: "TEXT",
+    title: "TEXT",
+    company: "TEXT",
+    url: "TEXT",
+    source: "TEXT",
+    viewedAt: "DATETIME",
+  },
 };
 
 async function syncDatabase() {
@@ -141,7 +164,16 @@ async function syncDatabase() {
   const client = createClient({ url, authToken });
 
   for (const [table, columns] of Object.entries(SCHEMA)) {
+    /* Create table if it doesn't exist (new tables like CareerInsight, JobView) */
     const existing = await client.execute(`PRAGMA table_info(${table})`);
+    if (existing.rows.length === 0) {
+      const colDefs = Object.entries(columns).map(([col, type]) => `${col} ${type}`).join(", ");
+      const createSql = `CREATE TABLE IF NOT EXISTS ${table} (${colDefs})`;
+      console.log(`[sync-db] Creating table: ${table}`);
+      await client.execute(createSql);
+      continue;
+    }
+
     const existingCols = new Set(existing.rows.map((r) => r.name));
 
     for (const [col, type] of Object.entries(columns)) {

@@ -20,6 +20,7 @@ interface UserPlan {
   plan: string;
   aiUsageCount: number;
   usageResetDate: string;
+  weeklyDigest: boolean;
 }
 
 /* ---- Tab configuration ---- */
@@ -51,6 +52,10 @@ export default function SettingsPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   const [message, setMessage] = useState("");
+
+  /* Weekly digest */
+  const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [digestSaving, setDigestSaving] = useState(false);
 
   /* Data export */
   const [exportLoading, setExportLoading] = useState(false);
@@ -98,6 +103,11 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => { fetchPlan(); }, [fetchPlan]);
+
+  /* Sync weeklyDigest from plan data */
+  useEffect(() => {
+    if (userPlan) setWeeklyDigest(userPlan.weeklyDigest);
+  }, [userPlan]);
 
   /* Check 2FA status on mount */
   useEffect(() => {
@@ -392,6 +402,43 @@ export default function SettingsPage() {
                 <Link href="/terms" className="px-4 py-2 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors">
                   Terms of Service
                 </Link>
+              </div>
+
+              {/* Weekly Career Intelligence Email */}
+              <div className="mt-5 pt-5 border-t border-card-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white mb-1">Weekly Career Intelligence Email</h3>
+                    <p className="text-text-muted text-xs">
+                      Receive a weekly summary of your skill gaps, application stats, and follow-up reminders every Monday.
+                    </p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setDigestSaving(true);
+                      const newVal = !weeklyDigest;
+                      try {
+                        const res = await fetch("/api/user/profile", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ weeklyDigest: newVal }),
+                        });
+                        if (res.ok) setWeeklyDigest(newVal);
+                      } catch {}
+                      setDigestSaving(false);
+                    }}
+                    disabled={digestSaving}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
+                      weeklyDigest ? "bg-brand-indigo" : "bg-space-600"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        weeklyDigest ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* Data Export — GDPR right to data portability */}

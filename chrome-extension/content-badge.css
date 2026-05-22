@@ -1,0 +1,216 @@
+/* ============================================================
+   JOBPILOT AI - Floating Badge on Job Pages
+   ============================================================
+   Injected by content.js on LinkedIn, Indeed, Glassdoor job pages.
+   Shows match score and quick-save button.
+   ============================================================ */
+
+#jobpilot-badge {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+#jobpilot-badge * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Main badge pill */
+.jp-badge-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #1e1b4b, #0f172a);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  padding: 10px 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 12px rgba(99, 102, 241, 0.15);
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.jp-badge-main:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Logo icon */
+.jp-badge-logo {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+/* Text area */
+.jp-badge-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.jp-badge-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a5b4fc;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.jp-badge-score {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.jp-badge-score.loading {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Expanded panel */
+.jp-badge-panel {
+  background: linear-gradient(135deg, #1e1b4b, #0f172a);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  width: 280px;
+  display: none;
+}
+
+.jp-badge-panel.open {
+  display: block;
+}
+
+.jp-badge-panel h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.jp-badge-job-info {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.jp-badge-job-info strong {
+  color: #e2e8f0;
+  display: block;
+}
+
+/* Buttons */
+.jp-badge-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+}
+
+.jp-badge-btn:last-child {
+  margin-bottom: 0;
+}
+
+.jp-badge-btn-save {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+}
+
+.jp-badge-btn-save:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.jp-badge-btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.jp-badge-btn-saved {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  cursor: default;
+}
+
+.jp-badge-btn-open {
+  background: rgba(99, 102, 241, 0.1);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.jp-badge-btn-open:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+/* Close button */
+.jp-badge-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.jp-badge-close:hover {
+  color: #e2e8f0;
+}
+
+/* Toast */
+.jp-toast {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  background: #1e1b4b;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 2147483647;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.jp-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}

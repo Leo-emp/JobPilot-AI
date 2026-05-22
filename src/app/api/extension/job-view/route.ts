@@ -1,0 +1,76 @@
+/* ============================================================
+   EXTENSION JOB VIEW API - Passive Browse Tracking
+   ============================================================
+   POST /api/extension/job-view
+   Records which job pages the user visits via the content script.
+   Deduplicated by URL per user. Used for career intelligence
+   insights like "You viewed 15 PM roles this week."
+   ============================================================ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
+import { extractSkillsFromJD, extractAndStoreJobSkills } from "@/lib/career-intelligence";
+
+/* ---- OPTIONS: CORS preflight ---- */
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(req.headers.get("origin")),
+  });
+}
+
+/* ---- POST: Track a job page view ---- */
+export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Not authenticated" },
+      { status: 401, headers: corsHeaders(origin) }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const { title, company, url, source } = body;
+
+    if (!title || !url) {
+      return NextResponse.json(
+        { error: "Missing title or url" },
+        { status: 400, headers: corsHeaders(origin) }
+      );
+    }
+
+    /* Upsert — update viewedAt if same URL already tracked */
+    await prisma.jobView.upsert({
+      where: {
+        userId_url: {
+          userId: session.user.id,
+          url: url.slice(0, 2000),
+        },
+      },
+      update: { viewedAt: new Date() },
+      create: {
+        userId: session.user.id,
+        title: (title || "").slice(0, 500),
+        company: (company || "").slice(0, 200),
+        url: url.slice(0, 2000),
+        source: source || "other",
+      },
+    });
+
+    return NextResponse.json(
+      { success: true },
+      { headers: corsHeaders(origin) }
+    );
+  } catch (err) {
+    console.error("[job-view] Error:", err);
+    return NextResponse.json(
+      { error: "Failed to track view" },
+      { status: 500, headers: corsHeaders(origin) }
+    );
+  }
+}

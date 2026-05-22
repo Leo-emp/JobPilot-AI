@@ -150,6 +150,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    /* Inject career intelligence context for relevant actions */
+    const contextActions = ["optimize_resume", "rebuild_resume", "career_pivot", "cover_letter", "interview_questions"];
+    if (contextActions.includes(action)) {
+      try {
+        const userData = await prisma.user.findUnique({ where: { id: session.user.id }, select: { topSkills: true } });
+        const topSkills: string[] = userData?.topSkills ? JSON.parse(userData.topSkills) : [];
+        if (topSkills.length > 0) {
+          const savedJobs = await prisma.savedJob.findMany({ where: { userId: session.user.id, requiredSkills: { not: null } }, select: { requiredSkills: true }, take: 20 });
+          const jobSkillCounts = new Map<string, number>();
+          for (const j of savedJobs) {
+            const skills: string[] = JSON.parse(j.requiredSkills!);
+            for (const s of skills) jobSkillCounts.set(s, (jobSkillCounts.get(s) || 0) + 1);
+          }
+          const userLower = new Set(topSkills.map(s => s.toLowerCase()));
+          const gaps = [...jobSkillCounts.entries()].filter(([s]) => !userLower.has(s.toLowerCase())).sort((a, b) => b[1] - a[1]).slice(0, 5);
+          const parts: string[] = [];
+          parts.push(`User's skills: ${topSkills.slice(0, 15).join(", ")}`);
+          if (gaps.length > 0) parts.push(`Top skill gaps (missing from resume but requested in jobs): ${gaps.map(([s, c]) => `${s} (${c} jobs)`).join(", ")}`);
+          payload.careerContext = parts.join("\n");
+        }
+      } catch { /* Non-critical — proceed without context */ }
+    }
+
     /* Build the prompt and call Gemini */
     const prompt = buildPrompt(action, payload);
     const result = isMultimodal

@@ -87,7 +87,7 @@ Resume:
 ${payload.resume}
 
 Job Description:
-${payload.jobDescription}`;
+${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}`;
 }
 
 function rebuildResume(payload: Record<string, any>): string {
@@ -136,7 +136,7 @@ ${payload.resume}
 Target Job:
 Title: ${payload.jobTitle}
 Company: ${payload.company}
-Description: ${payload.jobDescription}`;
+Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}`;
 }
 
 function matchScore(payload: Record<string, any>): string {
@@ -241,7 +241,7 @@ ${payload.resume}
 
 Job Title: ${payload.jobTitle}
 Company: ${payload.company}
-Job Description: ${payload.jobDescription}`;
+Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (emphasize these matching skills):\n${payload.careerContext}` : ""}`;
 }
 
 function interviewQuestions(payload: Record<string, any>): string {
@@ -310,7 +310,7 @@ ${companyBlock ? `- At least 30% of questions should be directly inspired by the
 
 Job Title: ${payload.jobTitle}
 Company: ${companyName}
-Job Description: ${payload.jobDescription}`;
+Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (focus questions on these skill areas where the candidate is weakest):\n${payload.careerContext}` : ""}`;
 }
 
 function interviewAnswer(payload: Record<string, any>): string {
@@ -433,7 +433,7 @@ ${payload.resume}
 
 Target Role: ${payload.jobTitle}
 Target Industry: ${payload.company}
-Target Job Description: ${payload.jobDescription}`;
+Target Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}`;
 }
 
 function linkedinAudit(payload: Record<string, any>): string {

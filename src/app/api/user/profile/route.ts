@@ -15,6 +15,7 @@ import { formatZodError } from "@/lib/validations";
 const profileSchema = z.object({
   name: z.string().trim().min(1, "Name is required.").max(100, "Name is too long.").optional(),
   image: z.string().max(2_000_000, "Image is too large.").optional().nullable(),
+  weeklyDigest: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -31,9 +32,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
     }
 
-    const updates: Record<string, string | null> = {};
+    const updates: Record<string, string | boolean | null> = {};
     if (parsed.data.name !== undefined) updates.name = parsed.data.name;
     if (parsed.data.image !== undefined) updates.image = parsed.data.image;
+    if (parsed.data.weeklyDigest !== undefined) updates.weeklyDigest = parsed.data.weeklyDigest;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No changes provided." }, { status: 400 });

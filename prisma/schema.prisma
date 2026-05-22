@@ -34,15 +34,20 @@ model User {
   createdAt      DateTime @default(now())        // When the account was created
   updatedAt      DateTime @updatedAt             // Auto-updates on any change
 
+  weeklyDigest   Boolean  @default(true)          // Opt-out for weekly intelligence emails
+  topSkills      String?                           // JSON array of extracted skills (cached)
+
   // Relationships — one user has many of each
-  accounts     Account[]
-  resumes      Resume[]
-  jobs         SavedJob[]
-  applications Application[]
-  coverLetters CoverLetter[]
-  contacts     Contact[]
-  companies    Company[]
-  aiResults    AiResult[]
+  accounts       Account[]
+  resumes        Resume[]
+  jobs           SavedJob[]
+  applications   Application[]
+  coverLetters   CoverLetter[]
+  contacts       Contact[]
+  companies      Company[]
+  aiResults      AiResult[]
+  careerInsights CareerInsight[]
+  jobViews       JobView[]
 }
 
 // ---- Password Reset Token ----
@@ -107,8 +112,9 @@ model SavedJob {
   description String                        // Full job description
   url         String?                        // Link to the original posting
   salary      String?                        // Salary range if available
-  matchScore  Int?                           // AI-calculated match score (0-100)
-  createdAt   DateTime @default(now())
+  matchScore      Int?                        // AI-calculated match score (0-100)
+  requiredSkills  String?                     // JSON array of skills extracted from JD
+  createdAt       DateTime @default(now())
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications Application[]
@@ -126,6 +132,7 @@ model Application {
   company       String                       // Company name
   status        String   @default("Saved")   // Current status (Saved, Applied, Interview, etc.)
   notes         String?                      // User's personal notes
+  outcomeNote   String?                      // Why rejected/offered — for pattern learning
   appliedDate   DateTime?                    // When they applied
   interviewDate DateTime?                    // Scheduled interview date
   createdAt     DateTime @default(now())
@@ -211,4 +218,38 @@ model CoverLetter {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ---- Career Intelligence Insight ----
+// Computed insights from cross-feature data (skill gaps, success patterns, recommendations)
+model CareerInsight {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String                             // skill_gap, success_pattern, score_trend, recommendation
+  title     String                             // Human-readable label
+  data      String                             // JSON blob with structured insight data
+  priority  Int      @default(0)               // Higher = more relevant
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+// ---- Passive Job View ----
+// Tracks job pages visited via Chrome extension for browsing pattern analysis
+model JobView {
+  id       String   @id @default(cuid())
+  userId   String
+  title    String                              // Job title from page
+  company  String                              // Company name from page
+  url      String                              // Page URL (deduplicated per user)
+  source   String                              // linkedin, indeed, glassdoor, other
+  viewedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@unique([userId, url])
 }
