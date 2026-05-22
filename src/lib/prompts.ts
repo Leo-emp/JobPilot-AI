@@ -71,8 +71,8 @@ STRUCTURE (follow this EXACT order):
 2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
-   - **Category Name:** Skill, Skill, Skill, Skill
-   (3-5 categories, 3-6 skills each — pull keywords directly from job description)
+   - **Category Name:** Skill, Skill, Skill
+   (3-5 categories, 3-4 skills each — pick only the most relevant keywords from the job description. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points per role — only the highest-impact achievements
@@ -116,8 +116,8 @@ STRUCTURE (follow this EXACT order):
 2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
-   - **Category Name:** Skill, Skill, Skill, Skill
-   (3-5 categories, 3-6 skills each — pull keywords directly from job description)
+   - **Category Name:** Skill, Skill, Skill
+   (3-5 categories, 3-4 skills each — pick only the most relevant keywords from the job description. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points per role — only the highest-impact achievements
@@ -412,10 +412,10 @@ STRUCTURE (follow this EXACT order):
 2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly adaptable Business Operations Executive seeking to transition..." or "Resourceful Marketing Specialist with transferable expertise in...". Then show how their background uniquely positions them for the target role. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target title. Mention specific transferable strengths.)
 3. ## Core Skills
    Bullet points grouped by category:
-   - **Transferable Skills:** Skills that directly map to the target role
-   - **Target Industry:** Keywords pulled from the job description
-   - **Technical:** Tools and technologies
-   (3-5 categories, 3-6 skills each)
+   - **Transferable Skills:** Skill, Skill, Skill
+   - **Target Industry:** Skill, Skill, Skill
+   - **Technical:** Tool, Tool, Tool
+   (3-5 categories, 3-4 skills each — pick only the most relevant. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value
