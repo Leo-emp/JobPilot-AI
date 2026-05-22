@@ -180,13 +180,9 @@ export default function JobsPage() {
   };
 
   /* ============================================================
-     APPLY & TRACK - Save job as "Applied" and open external URL
+     MARK AS APPLIED - User confirms they submitted an application
      ============================================================ */
-  const handleApplyJob = async (job: JobResult) => {
-    /* Open the external job page immediately */
-    window.open(job.url, "_blank");
-
-    /* Save + mark as Applied in the background */
+  const handleMarkApplied = async (job: JobResult) => {
     try {
       const res = await fetch("/api/extension/save-job", {
         method: "POST",
@@ -527,22 +523,30 @@ export default function JobsPage() {
                       {expandedJob === job.id ? "Show less" : "Show more"}
                     </span>
 
-                    {/* Apply button — saves as "Applied" and opens external URL */}
+                    {/* Job actions — view posting + confirm application */}
                     {job.url && expandedJob === job.id && (
                       <div className="mt-3 pt-3 border-t border-card-border flex items-center gap-3">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleApplyJob(job); }}
-                          disabled={appliedJobs.has(job.id)}
-                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                            appliedJobs.has(job.id)
-                              ? "bg-green-500/15 text-green-400 border border-green-500/30"
-                              : "bg-brand-indigo/15 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/25"
-                          }`}
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-4 py-2 rounded-lg text-sm font-semibold bg-space-600 text-text-secondary border border-card-border hover:text-white hover:bg-space-500 transition-all"
                         >
-                          {appliedJobs.has(job.id) ? "Applied — Tracked" : "Apply & Track →"}
-                        </button>
-                        {appliedJobs.has(job.id) && (
-                          <span className="text-xs text-text-muted">Saved to your tracker as &quot;Applied&quot;</span>
+                          View Job →
+                        </a>
+                        {appliedJobs.has(job.id) ? (
+                          <span className="px-4 py-2 rounded-lg text-sm font-semibold bg-green-500/15 text-green-400 border border-green-500/30">
+                            Applied — Tracked
+                          </span>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleMarkApplied(job); }}
+                            disabled={!savedJobs.has(job.id) && savingJobId === job.id}
+                            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-indigo/15 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/25 transition-all"
+                          >
+                            I Applied
+                          </button>
                         )}
                       </div>
                     )}
