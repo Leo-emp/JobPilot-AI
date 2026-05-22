@@ -54,9 +54,6 @@ export default function JobsPage() {
   const [savingJobId, setSavingJobId] = useState<string | null>(null);
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
 
-  /* ---- Apply tracking state ---- */
-  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
-
   /* ---- Match tab state ---- */
   const [resumeText, setResumeText] = useState("");
   const [resumeFileName, setResumeFileName] = useState("");
@@ -177,31 +174,6 @@ export default function JobsPage() {
     } finally {
       setSavingJobId(null);
     }
-  };
-
-  /* ============================================================
-     MARK AS APPLIED - User confirms they submitted an application
-     ============================================================ */
-  const handleMarkApplied = async (job: JobResult) => {
-    try {
-      const res = await fetch("/api/extension/save-job", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobTitle: job.title,
-          company: job.company,
-          location: job.location,
-          url: job.url,
-          description: job.description,
-          status: "Applied",
-        }),
-      });
-
-      if (res.ok) {
-        setSavedJobs((prev) => new Set(prev).add(job.id));
-        setAppliedJobs((prev) => new Set(prev).add(job.id));
-      }
-    } catch { /* fire and forget */ }
   };
 
   /* ============================================================
@@ -523,31 +495,18 @@ export default function JobsPage() {
                       {expandedJob === job.id ? "Show less" : "Show more"}
                     </span>
 
-                    {/* Job actions — view posting + confirm application */}
+                    {/* Apply link — only if URL exists and job is expanded */}
                     {job.url && expandedJob === job.id && (
-                      <div className="mt-3 pt-3 border-t border-card-border flex items-center gap-3">
+                      <div className="mt-3 pt-3 border-t border-card-border">
                         <a
                           href={job.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="px-4 py-2 rounded-lg text-sm font-semibold bg-space-600 text-text-secondary border border-card-border hover:text-white hover:bg-space-500 transition-all"
+                          className="text-sm text-brand-light hover:text-white transition-colors font-medium"
                         >
-                          View Job →
+                          View & Apply &rarr;
                         </a>
-                        {appliedJobs.has(job.id) ? (
-                          <span className="px-4 py-2 rounded-lg text-sm font-semibold bg-green-500/15 text-green-400 border border-green-500/30">
-                            Applied — Tracked
-                          </span>
-                        ) : (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleMarkApplied(job); }}
-                            disabled={!savedJobs.has(job.id) && savingJobId === job.id}
-                            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-indigo/15 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/25 transition-all"
-                          >
-                            I Applied
-                          </button>
-                        )}
                       </div>
                     )}
                   </div>

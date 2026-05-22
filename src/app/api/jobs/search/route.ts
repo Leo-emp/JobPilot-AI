@@ -183,7 +183,7 @@ async function fetchWWR(query: string): Promise<Job[]> {
       title,
       company,
       location: region,
-      description: desc.slice(0, 500),
+      description: desc,
       url: link,
       salary: "",
       category,
