@@ -177,8 +177,8 @@ export default function CoverLetterPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* ---- Input Column ---- */}
+      <div className="space-y-6">
+        {/* ---- Input Section ---- */}
         <div className="space-y-6">
           {/* Resume input with toggle */}
           <div className="glass-card p-6">
@@ -330,7 +330,7 @@ export default function CoverLetterPage() {
           </button>
         </div>
 
-        {/* ---- Result Column ---- */}
+        {/* ---- Result Section (full-width below inputs) ---- */}
         <div className="glass-card p-6 sm:p-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Your Cover Letter</h2>
