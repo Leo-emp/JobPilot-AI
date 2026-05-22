@@ -338,7 +338,7 @@ export default function ResumePage() {
         {/* ---- AI Result Display (shows while streaming + after complete) ---- */}
         {result && (
           <div className="relative">
-            <MarkdownResult result={result} showDownload={!streaming} />
+            <MarkdownResult result={result} showDownload={!streaming} editable={activeTab !== "analyze"} />
             {streaming && (
               <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
                 <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />

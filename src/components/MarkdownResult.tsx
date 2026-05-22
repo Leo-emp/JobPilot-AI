@@ -516,10 +516,11 @@ function domToMarkdown(root: HTMLElement): string {
 interface MarkdownResultProps {
   result: string;
   showDownload?: boolean;
+  editable?: boolean;
 }
 
 /* ---- Main Component ---- */
-export default function MarkdownResult({ result, showDownload = true }: MarkdownResultProps) {
+export default function MarkdownResult({ result, showDownload = true, editable = true }: MarkdownResultProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -764,20 +765,20 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <h3 className="text-xl font-bold glow-text-subtle">AI Result</h3>
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => {
-              setEditing((prev) => {
-                if (prev && contentRef.current) contentRef.current.blur();
-                if (!prev && contentRef.current) {
-                  contentRef.current.focus();
-                }
-                return !prev;
-              });
-            }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${editing ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-space-600 border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"}`}
-          >
-            {editing ? "Done Editing" : "Edit Text"}
-          </button>
+          {editable && (
+            <button
+              onClick={() => {
+                setEditing((prev) => {
+                  if (prev && contentRef.current) contentRef.current.blur();
+                  if (!prev && contentRef.current) contentRef.current.focus();
+                  return !prev;
+                });
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${editing ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-space-600 border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30"}`}
+            >
+              {editing ? "Done Editing" : "Edit Text"}
+            </button>
+          )}
           <button
             onClick={() => navigator.clipboard.writeText(getEditedMarkdown())}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors"
@@ -807,7 +808,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       {/* Rendered markdown content — editable so users can tweak text before downloading */}
       <div
         ref={contentRef}
-        contentEditable={editing}
+        contentEditable={editable && editing}
         suppressContentEditableWarning
         className={`p-6 sm:p-8 rounded-xl bg-space-700/80 border overflow-x-auto transition-colors ${editing ? "border-emerald-500/40 ring-1 ring-emerald-500/20 cursor-text" : "border-card-border"}`}
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
