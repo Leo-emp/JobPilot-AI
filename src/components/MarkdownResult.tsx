@@ -618,8 +618,8 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         }
 
         /* ---- Bullet list items — filled circle + hanging indent ---- */
-        if (/^[-*•] /.test(trimmed)) {
-          const text = trimmed.replace(/^[-*•] /, "");
+        if (/^[-*•]\s/.test(trimmed)) {
+          const text = trimmed.replace(/^[-*•]\s+/, "");
           const clean = text.replace(/\*\*/g, "");
           doc.setFontSize(bSize);
           doc.setTextColor(40, 40, 40);
