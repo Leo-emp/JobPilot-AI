@@ -52,7 +52,7 @@ type Phase = "setup" | "interview" | "results";
 /* Max exchanges as a safety limit — AI decides when to wrap up naturally */
 const MAX_EXCHANGES = 30;
 
-/* ---- Helper: call the /api/ai endpoint ---- */
+/* ---- Helper: call the /api/ai endpoint (non-streaming for scoring) ---- */
 async function callAI(action: string, payload: Record<string, string>): Promise<string> {
   const res = await fetch("/api/ai", {
     method: "POST",
@@ -62,6 +62,35 @@ async function callAI(action: string, payload: Record<string, string>): Promise<
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "AI request failed");
   return data.result;
+}
+
+/* ---- Helper: stream AI response, calling onToken for each chunk ---- */
+async function streamAI(
+  action: string,
+  payload: Record<string, string>,
+  onToken: (text: string) => void
+): Promise<string> {
+  const res = await fetch("/api/ai/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, payload }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "AI request failed");
+  }
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No stream available");
+  const decoder = new TextDecoder();
+  let full = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    full += chunk;
+    onToken(full);
+  }
+  return full;
 }
 
 /* ---- Helper: parse JSON from AI response (strips code fences) ---- */
@@ -438,9 +467,9 @@ export default function MockInterviewPage() {
     return msgs.map(m => `${m.role === "ai" ? "Sarah" : "Candidate"}: ${m.text}`).join("\n");
   };
 
-  /* ---- Send a message to AI and get the next response ---- */
+  /* ---- Send a message to AI and get the next response (streaming) ---- */
   const getAIResponse = useCallback(async (currentMessages: ChatMessage[], exchNum: number) => {
-    const result = await callAI("mock_interview_respond", {
+    const result = await streamAI("mock_interview_respond", {
       role,
       industry,
       experience,
@@ -453,12 +482,19 @@ export default function MockInterviewPage() {
       exchangeNumber: String(exchNum),
       questionNumber: String(questionNumber),
       skippedQuestions: JSON.stringify(skippedQuestions),
+    }, (partial) => {
+      try {
+        const parsed = parseAIJson<{ message: string }>(partial);
+        if (parsed.message) setCurrentAIMessage(parsed.message);
+      } catch {
+        const m = partial.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+        if (m) setCurrentAIMessage(m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"'));
+      }
     });
 
     try {
       return parseAIJson<{ message: string; isComplete: boolean }>(result);
     } catch {
-      /* AI sometimes returns plain text instead of JSON — use it directly */
       return { message: result, isComplete: false };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -520,7 +556,7 @@ export default function MockInterviewPage() {
     setExchangeNumber(nextExchange);
     setQuestionNumber(prev => prev + 1);
 
-    /* Get AI's next response */
+    /* Get AI's next response (streams text into currentAIMessage progressively) */
     setIsAIThinking(true);
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
@@ -1027,7 +1063,7 @@ export default function MockInterviewPage() {
             {(isAISpeaking || isAIThinking) && (
               <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 sm:px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
                 <span className="text-xs text-text-secondary">
-                  {isAIThinking ? "Thinking..." : "Speaking..."}
+                  {isAIThinking ? "Responding..." : "Speaking..."}
                 </span>
               </div>
             )}
@@ -1104,7 +1140,7 @@ export default function MockInterviewPage() {
               onChange={e => setUserAnswer(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmitAnswer(); } }}
               placeholder={
-                isAIThinking ? "Sarah is thinking..."
+                isAIThinking ? "Sarah is responding..."
                   : isAISpeaking ? "Sarah is speaking..."
                     : waitingForUser ? "Type your answer or click the mic..."
                       : "Waiting..."
