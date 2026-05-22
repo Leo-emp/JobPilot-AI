@@ -137,6 +137,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
           <Link
             key={item.href}
             href={item.href}
+            prefetch={true}
             onClick={() => setMobileOpen(false)}
             className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
               isActive(item.href)
@@ -155,6 +156,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
             <div className="my-2 border-t border-card-border/50" />
             <Link
               href="/dashboard/admin"
+              prefetch={true}
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive("/dashboard/admin")
