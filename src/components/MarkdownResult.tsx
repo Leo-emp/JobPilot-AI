@@ -575,14 +575,18 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
           if (dateInfo) {
             const rawMatch = raw.match(/^(.*?)(?:\s*[—–\-]{1,2}\s*\d|,\s*\d{1,2}\/\d{4})/);
             const leftRaw = rawMatch ? rawMatch[1].trim() : dateInfo.left;
-            renderBoldLine(doc, leftRaw, mL, y, 10.5, "normal");
+
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10.5);
+            const dateW = doc.getTextWidth(dateInfo.date);
+            const maxLeftW = cW - dateW - 4;
+
             doc.text(dateInfo.date, pageWidth - mR, y, { align: "right" });
+            y = renderWrappedText(doc, leftRaw, mL, y, maxLeftW, 10.5, 5.5, pageHeight, mTop);
           } else {
             renderBoldLine(doc, raw, mL, y, 10.5, "bold");
+            y += 5.5;
           }
-          y += 5.5;
           continue;
         }
 
@@ -632,11 +636,14 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
             drawBullet(mL + 4, y);
             const rawMatch = text.match(/^(.*?)(?:\s*[—–\-]{1,2}\s*\d|,\s*\d{1,2}\/\d{4})/);
             const leftRaw = rawMatch ? rawMatch[1].trim() : bulletDate.left;
-            renderBoldLine(doc, leftRaw, textX, y, bSize, "normal");
+
             doc.setFont("helvetica", "bold");
             doc.setFontSize(bSize);
+            const dateW = doc.getTextWidth(bulletDate.date);
+            const maxBulletLeftW = textW - dateW - 4;
+
             doc.text(bulletDate.date, pageWidth - mR, y, { align: "right" });
-            y += bLH;
+            y = renderWrappedText(doc, leftRaw, textX, y, maxBulletLeftW, bSize, bLH, pageHeight, mTop);
           } else {
             drawBullet(mL + 4, y);
             doc.setFont("helvetica", "normal");
