@@ -44,24 +44,41 @@ const descriptionInput = document.getElementById("description");
    INITIALIZATION - Check login status on popup open
    ============================================================ */
 document.addEventListener("DOMContentLoaded", async () => {
-  /* Auto-fill the URL field with the current tab's URL */
+  /* Auto-fill from content script extracted data if on a supported job page */
+  let autoFilled = false;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.url && !tab.url.startsWith("chrome://")) {
+    const stored = await chrome.storage.local.get("jp_current_job");
+    const job = stored.jp_current_job;
+
+    /* Auto-fill if we have extracted data matching the current tab (within 30 min) */
+    if (job && tab?.url && job.url === tab.url && (Date.now() - job.timestamp) < 1800000) {
+      if (job.title) { jobTitleInput.value = job.title; autoFilled = true; }
+      if (job.company) { companyInput.value = job.company; autoFilled = true; }
+      if (job.description) { descriptionInput.value = job.description; autoFilled = true; }
+      if (job.url) jobUrlInput.value = job.url;
+    } else if (tab?.url && !tab.url.startsWith("chrome://")) {
+      /* Fall back to just the URL */
       jobUrlInput.value = tab.url;
     }
   } catch {
-    /* Can't access tab URL — that's fine */
+    /* Can't access tab or storage — that's fine */
   }
 
   /* Enable/disable save button based on required fields */
   jobTitleInput.addEventListener("input", toggleSaveButton);
   companyInput.addEventListener("input", toggleSaveButton);
+  toggleSaveButton();
 
   /* Show AI tools section when description is entered */
   descriptionInput.addEventListener("input", () => {
     aiSection.style.display = descriptionInput.value.trim() ? "block" : "none";
   });
+
+  /* If auto-filled with description, show AI tools immediately */
+  if (autoFilled && descriptionInput.value.trim()) {
+    aiSection.style.display = "block";
+  }
 
   /* Check if user is authenticated */
   await checkAuth();

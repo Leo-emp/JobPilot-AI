@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   const applications = await prisma.application.findMany({
     where: { userId: session.user.id },
     ...query,
-    include: { job: { select: { url: true } } },
+    include: { job: { select: { url: true, description: true } } },
   });
 
   return NextResponse.json(paginatedResponse(applications, params.limit), { headers: corsHeaders(origin) });

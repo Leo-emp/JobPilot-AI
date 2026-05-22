@@ -28,7 +28,7 @@ interface Application {
   appliedDate: string | null;
   interviewDate: string | null;
   createdAt: string;
-  job?: { url: string | null } | null;
+  job?: { url: string | null; description: string | null } | null;
 }
 
 export default function TrackerPage() {
@@ -80,6 +80,9 @@ export default function TrackerPage() {
       /* Handle error silently */
     }
   };
+
+  /* ---- Expanded description state ---- */
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   /* ---- Interview date picker state ---- */
   const [interviewPrompt, setInterviewPrompt] = useState<string | null>(null);
@@ -223,55 +226,74 @@ export default function TrackerPage() {
           {apps.map((app) => (
             <div
               key={app.id}
-              className="glass-card p-5 flex items-center justify-between gap-4"
+              className="glass-card p-5"
             >
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold truncate">{app.jobTitle}</h3>
-                <p className="text-sm text-text-secondary">{app.company}</p>
-                <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                  {app.appliedDate && (
-                    <span className="text-xs text-text-muted">
-                      Applied {new Date(app.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </span>
-                  )}
-                  {app.interviewDate && (
-                    <span className="text-xs text-yellow-400 font-medium">
-                      Interview {new Date(app.interviewDate).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                    </span>
-                  )}
-                  {app.job?.url && (
-                    <a
-                      href={app.job.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-brand-light hover:text-white transition-colors"
-                    >
-                      View posting →
-                    </a>
-                  )}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold truncate">{app.jobTitle}</h3>
+                  <p className="text-sm text-text-secondary">{app.company}</p>
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                    {app.appliedDate && (
+                      <span className="text-xs text-text-muted">
+                        Applied {new Date(app.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                    )}
+                    {app.interviewDate && (
+                      <span className="text-xs text-yellow-400 font-medium">
+                        Interview {new Date(app.interviewDate).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                      </span>
+                    )}
+                    {app.job?.url && (
+                      <a
+                        href={app.job.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-brand-light hover:text-white transition-colors"
+                      >
+                        View posting →
+                      </a>
+                    )}
+                    {app.job?.description && (
+                      <button
+                        onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
+                        className="text-xs text-brand-light hover:text-white transition-colors"
+                      >
+                        {expandedId === app.id ? "Hide description" : "Show description"}
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {/* Status dropdown */}
+                <select
+                  value={app.status}
+                  onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${getStatusStyle(app.status)} bg-transparent cursor-pointer focus:outline-none`}
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s.value} value={s.value} className="bg-space-800">
+                      {s.value}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Delete button */}
+                <button
+                  onClick={() => handleDelete(app.id)}
+                  className="text-text-muted hover:text-red-400 transition-colors text-sm"
+                >
+                  ✕
+                </button>
               </div>
 
-              {/* Status dropdown */}
-              <select
-                value={app.status}
-                onChange={(e) => handleStatusChange(app.id, e.target.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${getStatusStyle(app.status)} bg-transparent cursor-pointer focus:outline-none`}
-              >
-                {STATUSES.map((s) => (
-                  <option key={s.value} value={s.value} className="bg-space-800">
-                    {s.value}
-                  </option>
-                ))}
-              </select>
-
-              {/* Delete button */}
-              <button
-                onClick={() => handleDelete(app.id)}
-                className="text-text-muted hover:text-red-400 transition-colors text-sm"
-              >
-                ✕
-              </button>
+              {/* Expandable job description */}
+              {expandedId === app.id && app.job?.description && (
+                <div className="mt-4 pt-4 border-t border-card-border">
+                  <p className="text-sm text-text-secondary whitespace-pre-line leading-relaxed max-h-80 overflow-y-auto">
+                    {app.job.description}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>

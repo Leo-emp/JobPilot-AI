@@ -184,10 +184,63 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 3000);
 }
 
+/* ---- Extract skills/keywords from a job description ---- */
+function extractSkills(description) {
+  if (!description) return [];
+
+  /* Common technical and professional skills to look for */
+  const skillPatterns = [
+    "JavaScript", "TypeScript", "Python", "Java", "C\\+\\+", "C#", "Go", "Rust", "Ruby", "PHP", "Swift", "Kotlin",
+    "React", "Angular", "Vue", "Next\\.js", "Node\\.js", "Express", "Django", "Flask", "Spring",
+    "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "CI/CD",
+    "SQL", "PostgreSQL", "MySQL", "MongoDB", "Redis", "GraphQL", "REST",
+    "Git", "Linux", "Agile", "Scrum", "Jira",
+    "Machine Learning", "Deep Learning", "NLP", "Computer Vision", "Data Science",
+    "Figma", "Sketch", "Adobe", "UI/UX",
+    "Salesforce", "SAP", "Tableau", "Power BI", "Excel",
+    "Communication", "Leadership", "Problem.Solving", "Teamwork", "Project Management",
+  ];
+
+  const text = description;
+  const found = [];
+  for (const pattern of skillPatterns) {
+    const regex = new RegExp(`\\b${pattern}\\b`, "i");
+    if (regex.test(text)) {
+      /* Use the pattern name cleaned up as the display text */
+      const display = pattern.replace(/\\\+/g, "+").replace(/\\\./g, ".").replace(/\\./, " ");
+      if (!found.includes(display)) found.push(display);
+    }
+  }
+  return found.slice(0, 12);
+}
+
+/* ---- Store extracted job data for the popup to read ---- */
+function storeJobDataForPopup(jobData, skills) {
+  try {
+    chrome.storage.local.set({
+      jp_current_job: {
+        title: jobData.title,
+        company: jobData.company,
+        description: jobData.description,
+        url: jobData.url,
+        source: jobData.source,
+        skills: skills,
+        timestamp: Date.now(),
+      },
+    });
+  } catch { /* storage unavailable */ }
+}
+
 /* ---- Build and inject the floating badge ---- */
 async function injectBadge(jobData) {
   /* Don't inject twice */
   if (document.getElementById("jobpilot-badge")) return;
+
+  /* Extract skills from description */
+  const skills = extractSkills(jobData.description);
+
+  /* Store job data so the popup can auto-fill */
+  storeJobDataForPopup(jobData, skills);
 
   /* Check if user previously minimized the badge */
   let minimized = false;
@@ -195,6 +248,14 @@ async function injectBadge(jobData) {
     const stored = await chrome.storage.local.get("jp_badge_minimized");
     minimized = stored.jp_badge_minimized === true;
   } catch { /* storage unavailable — show full */ }
+
+  /* Build skills HTML for the panel */
+  const skillsHtml = skills.length > 0
+    ? `<div class="jp-badge-skills">
+        <div class="jp-badge-skills-title">Skills Detected</div>
+        <div class="jp-badge-skills-tags">${skills.map(s => `<span class="jp-badge-skill-tag">${escapeHtml(s)}</span>`).join("")}</div>
+      </div>`
+    : "";
 
   const badge = document.createElement("div");
   badge.id = "jobpilot-badge";
@@ -207,6 +268,7 @@ async function injectBadge(jobData) {
         <strong>${escapeHtml(jobData.title)}</strong>
         ${escapeHtml(jobData.company)}
       </div>
+      ${skillsHtml}
       <button class="jp-badge-btn jp-badge-btn-save" id="jp-save-btn">
         Save + Track
       </button>
