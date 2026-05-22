@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { jobTitle, company, location, url, description } = parsed.data;
+  const { jobTitle, company, location, url, description, status } = parsed.data;
+  const appliedStatus = status || "Saved";
 
   /* Save the job listing */
   const savedJob = await prisma.savedJob.create({
@@ -67,7 +68,8 @@ export async function POST(req: NextRequest) {
       jobId: savedJob.id,
       jobTitle,
       company,
-      status: "Saved",
+      status: appliedStatus,
+      ...(appliedStatus === "Applied" && { appliedDate: new Date() }),
     },
   });
 

@@ -38,6 +38,9 @@ export async function PATCH(
       ...(body.status && { status: body.status }),
       ...(body.notes !== undefined && { notes: body.notes }),
       ...(body.status === "Applied" && { appliedDate: new Date() }),
+      ...(body.interviewDate !== undefined && {
+        interviewDate: body.interviewDate ? new Date(body.interviewDate) : null,
+      }),
     },
   });
 

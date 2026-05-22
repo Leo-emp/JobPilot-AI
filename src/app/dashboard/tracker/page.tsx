@@ -26,7 +26,9 @@ interface Application {
   status: string;
   notes: string | null;
   appliedDate: string | null;
+  interviewDate: string | null;
   createdAt: string;
+  job?: { url: string | null } | null;
 }
 
 export default function TrackerPage() {
@@ -79,14 +81,45 @@ export default function TrackerPage() {
     }
   };
 
+  /* ---- Interview date picker state ---- */
+  const [interviewPrompt, setInterviewPrompt] = useState<string | null>(null);
+  const [interviewDateInput, setInterviewDateInput] = useState("");
+
   /* ---- Update Status ---- */
   const handleStatusChange = async (id: string, status: string) => {
+    /* When changing to Interview, prompt for the date */
+    if (status === "Interview") {
+      setInterviewPrompt(id);
+      setInterviewDateInput("");
+      return;
+    }
+
     try {
       await fetch(`/api/applications/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+      fetchApps();
+    } catch {
+      /* Handle error silently */
+    }
+  };
+
+  /* ---- Confirm Interview with date ---- */
+  const handleConfirmInterview = async () => {
+    if (!interviewPrompt) return;
+    try {
+      await fetch(`/api/applications/${interviewPrompt}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "Interview",
+          ...(interviewDateInput && { interviewDate: new Date(interviewDateInput).toISOString() }),
+        }),
+      });
+      setInterviewPrompt(null);
+      setInterviewDateInput("");
       fetchApps();
     } catch {
       /* Handle error silently */
@@ -195,6 +228,28 @@ export default function TrackerPage() {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold truncate">{app.jobTitle}</h3>
                 <p className="text-sm text-text-secondary">{app.company}</p>
+                <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                  {app.appliedDate && (
+                    <span className="text-xs text-text-muted">
+                      Applied {new Date(app.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                  )}
+                  {app.interviewDate && (
+                    <span className="text-xs text-yellow-400 font-medium">
+                      Interview {new Date(app.interviewDate).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                    </span>
+                  )}
+                  {app.job?.url && (
+                    <a
+                      href={app.job.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-brand-light hover:text-white transition-colors"
+                    >
+                      View posting →
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Status dropdown */}
@@ -219,6 +274,42 @@ export default function TrackerPage() {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ---- Interview Date Modal ---- */}
+      {interviewPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => setInterviewPrompt(null)}
+          />
+          <div className="relative w-full max-w-sm bg-space-800 border border-card-border rounded-2xl p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">Schedule Interview</h3>
+            <p className="text-text-secondary text-sm mb-4">
+              When is the interview? You can skip this and add it later.
+            </p>
+            <input
+              type="datetime-local"
+              value={interviewDateInput}
+              onChange={(e) => setInterviewDateInput(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white focus:outline-none focus:border-brand-indigo text-sm mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmInterview}
+                className="flex-1 btn-primary text-sm"
+              >
+                {interviewDateInput ? "Confirm Interview" : "Mark as Interview"}
+              </button>
+              <button
+                onClick={() => setInterviewPrompt(null)}
+                className="px-4 py-2.5 text-sm text-text-secondary border border-card-border rounded-xl hover:bg-space-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

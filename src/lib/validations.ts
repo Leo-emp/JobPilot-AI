@@ -114,9 +114,10 @@ export const createApplicationSchema = z.object({
 export const updateApplicationSchema = z.object({
   status: z.enum(applicationStatuses).optional(),
   notes: optionalLongText,
+  interviewDate: z.string().datetime().optional().nullable(),
 }).refine(
-  (data) => data.status !== undefined || data.notes !== undefined,
-  "At least one field (status or notes) must be provided."
+  (data) => data.status !== undefined || data.notes !== undefined || data.interviewDate !== undefined,
+  "At least one field (status, notes, or interviewDate) must be provided."
 );
 
 
@@ -245,6 +246,7 @@ export const extensionSaveJobSchema = z.object({
   location: optionalShortText,
   url: optionalUrl,
   description: z.string().max(50_000).optional().or(z.literal("")),
+  status: z.enum(["Saved", "Applied"]).optional(),
 });
 
 /* POST /api/extension/ai */

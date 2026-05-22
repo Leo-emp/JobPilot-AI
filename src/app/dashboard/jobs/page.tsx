@@ -54,6 +54,9 @@ export default function JobsPage() {
   const [savingJobId, setSavingJobId] = useState<string | null>(null);
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
 
+  /* ---- Apply tracking state ---- */
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
+
   /* ---- Match tab state ---- */
   const [resumeText, setResumeText] = useState("");
   const [resumeFileName, setResumeFileName] = useState("");
@@ -174,6 +177,35 @@ export default function JobsPage() {
     } finally {
       setSavingJobId(null);
     }
+  };
+
+  /* ============================================================
+     APPLY & TRACK - Save job as "Applied" and open external URL
+     ============================================================ */
+  const handleApplyJob = async (job: JobResult) => {
+    /* Open the external job page immediately */
+    window.open(job.url, "_blank");
+
+    /* Save + mark as Applied in the background */
+    try {
+      const res = await fetch("/api/extension/save-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: job.title,
+          company: job.company,
+          location: job.location,
+          url: job.url,
+          description: job.description,
+          status: "Applied",
+        }),
+      });
+
+      if (res.ok) {
+        setSavedJobs((prev) => new Set(prev).add(job.id));
+        setAppliedJobs((prev) => new Set(prev).add(job.id));
+      }
+    } catch { /* fire and forget */ }
   };
 
   /* ============================================================
@@ -495,18 +527,23 @@ export default function JobsPage() {
                       {expandedJob === job.id ? "Show less" : "Show more"}
                     </span>
 
-                    {/* Apply link — only if URL exists and job is expanded */}
+                    {/* Apply button — saves as "Applied" and opens external URL */}
                     {job.url && expandedJob === job.id && (
-                      <div className="mt-3 pt-3 border-t border-card-border">
-                        <a
-                          href={job.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-sm text-brand-light hover:text-white transition-colors font-medium"
+                      <div className="mt-3 pt-3 border-t border-card-border flex items-center gap-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleApplyJob(job); }}
+                          disabled={appliedJobs.has(job.id)}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                            appliedJobs.has(job.id)
+                              ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                              : "bg-brand-indigo/15 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/25"
+                          }`}
                         >
-                          View & Apply &rarr;
-                        </a>
+                          {appliedJobs.has(job.id) ? "Applied — Tracked" : "Apply & Track →"}
+                        </button>
+                        {appliedJobs.has(job.id) && (
+                          <span className="text-xs text-text-muted">Saved to your tracker as &quot;Applied&quot;</span>
+                        )}
                       </div>
                     )}
                   </div>
