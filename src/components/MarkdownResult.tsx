@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import type { jsPDF } from "jspdf";
 import AiDisclosure from "./AiDisclosure";
@@ -461,6 +461,57 @@ function stripCodeFences(text: string): string {
     .trim();
 }
 
+/* ---- Convert contentEditable DOM back to markdown for downloads ---- */
+function inlineToMd(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent || "";
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  const tag = (node as Element).tagName.toLowerCase();
+  const inner = Array.from(node.childNodes).map(inlineToMd).join("");
+  if (tag === "strong" || tag === "b") return `**${inner}**`;
+  if (tag === "em" || tag === "i") return `*${inner}*`;
+  if (tag === "code") return `\`${inner}\``;
+  if (tag === "br") return "\n";
+  return inner;
+}
+
+function domToMarkdown(root: HTMLElement): string {
+  const lines: string[] = [];
+
+  function walk(node: Node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const t = (node.textContent || "").trim();
+      if (t) { lines.push(t); lines.push(""); }
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const el = node as Element;
+    const tag = el.tagName.toLowerCase();
+
+    if (tag === "h1") { lines.push(`# ${inlineToMd(el)}`); lines.push(""); }
+    else if (tag === "h2") { lines.push(`## ${inlineToMd(el)}`); lines.push(""); }
+    else if (tag === "h3") { lines.push(`### ${inlineToMd(el)}`); lines.push(""); }
+    else if (tag === "hr") { lines.push("---"); lines.push(""); }
+    else if (tag === "ul") {
+      for (const li of Array.from(el.children))
+        if (li.tagName.toLowerCase() === "li") lines.push(`- ${inlineToMd(li)}`);
+      lines.push("");
+    }
+    else if (tag === "ol") {
+      Array.from(el.children).forEach((li, i) => {
+        if (li.tagName.toLowerCase() === "li") lines.push(`${i + 1}. ${inlineToMd(li)}`);
+      });
+      lines.push("");
+    }
+    else if (tag === "p") { lines.push(inlineToMd(el)); lines.push(""); }
+    else if (tag === "div" || tag === "span" || tag === "section") {
+      for (const child of Array.from(el.childNodes)) walk(child);
+    }
+  }
+
+  for (const child of Array.from(root.childNodes)) walk(child);
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /* ---- Props for the component ---- */
 interface MarkdownResultProps {
   result: string;
@@ -470,8 +521,14 @@ interface MarkdownResultProps {
 /* ---- Main Component ---- */
 export default function MarkdownResult({ result, showDownload = true }: MarkdownResultProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
   const cleaned = stripCodeFences(result);
   const html = parseMarkdown(cleaned);
+
+  const getEditedMarkdown = useCallback((): string => {
+    if (!contentRef.current) return cleaned;
+    return domToMarkdown(contentRef.current);
+  }, [cleaned]);
 
   /* Download as PDF — matches reference resume layout exactly */
   const downloadPDF = async () => {
@@ -524,7 +581,8 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         return null;
       };
 
-      const lines = cleaned.split("\n");
+      const editedMarkdown = getEditedMarkdown();
+      const lines = editedMarkdown.split("\n");
 
       for (const line of lines) {
         const trimmed = line.trim();
@@ -674,7 +732,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
       doc.save("resume-jobpilot.pdf");
     } catch {
       /* Fallback: open print dialog with styled HTML */
-      const downloadHTML = markdownToDownloadHTML(cleaned);
+      const downloadHTML = markdownToDownloadHTML(getEditedMarkdown());
       const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
@@ -688,7 +746,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
 
   /* Download as Word — creates .doc blob */
   const downloadWord = () => {
-    const downloadHTML = markdownToDownloadHTML(cleaned);
+    const downloadHTML = markdownToDownloadHTML(getEditedMarkdown());
     const wordContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`;
     const blob = new Blob([wordContent], { type: "application/msword" });
     const url = URL.createObjectURL(blob);
@@ -706,7 +764,7 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         <h3 className="text-xl font-bold glow-text-subtle">AI Result</h3>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => navigator.clipboard.writeText(cleaned)}
+            onClick={() => navigator.clipboard.writeText(getEditedMarkdown())}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors"
           >
             Copy Text
@@ -731,11 +789,15 @@ export default function MarkdownResult({ result, showDownload = true }: Markdown
         </div>
       </div>
 
-      {/* Rendered markdown content — DOMPurify as defense-in-depth on top of escapeHtml */}
+      {/* Rendered markdown content — editable so users can tweak text before downloading */}
       <div
-        className="p-6 sm:p-8 rounded-xl bg-space-700/80 border border-card-border overflow-x-auto"
+        ref={contentRef}
+        contentEditable
+        suppressContentEditableWarning
+        className="p-6 sm:p-8 rounded-xl bg-space-700/80 border border-card-border overflow-x-auto cursor-text focus:outline-none focus:ring-1 focus:ring-brand-indigo/40"
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
       />
+      <p className="mt-2 text-xs text-text-muted text-right">Click the text above to edit before downloading</p>
 
       {showDownload && (
         <p className="mt-4 text-sm text-text-muted text-center">
