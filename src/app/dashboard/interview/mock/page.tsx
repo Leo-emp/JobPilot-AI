@@ -168,6 +168,17 @@ function speakText(text: string): Promise<void> {
   });
 }
 
+/* ---- Helper: create a single TTS utterance with the cached voice ---- */
+function makeUtterance(text: string): SpeechSynthesisUtterance {
+  if (!cachedVoice) cachedVoice = getBestVoice();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.0;
+  u.pitch = 1.2;
+  u.volume = 1.0;
+  if (cachedVoice) u.voice = cachedVoice;
+  return u;
+}
+
 /* ============================================================
    MAIN COMPONENT
    ============================================================ */
@@ -220,6 +231,8 @@ export default function MockInterviewPage() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);        /* speech recognition instance */
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null); /* interview timer */
   const messagesRef = useRef<ChatMessage[]>([]);                        /* sync ref for messages in closures */
+  const spokenLenRef = useRef(0);                                       /* chars already sent to TTS */
+  const ttsKeepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* Keep messagesRef in sync with messages state */
   useEffect(() => { messagesRef.current = messages; }, [messages]);
@@ -467,6 +480,21 @@ export default function MockInterviewPage() {
     return msgs.map(m => `${m.role === "ai" ? "Sarah" : "Candidate"}: ${m.text}`).join("\n");
   };
 
+  /* ---- Feed new complete sentences to TTS as they stream in ---- */
+  const feedProgressiveTTS = useCallback((messageText: string) => {
+    const already = spokenLenRef.current;
+    const newText = messageText.slice(already);
+    const sentenceRe = /[^.!?]*[.!?]+(?:\s|$)/g;
+    let match;
+    let consumed = 0;
+    while ((match = sentenceRe.exec(newText)) !== null) {
+      const sentence = match[0].trim();
+      if (sentence) window.speechSynthesis.speak(makeUtterance(sentence));
+      consumed = match.index + match[0].length;
+    }
+    if (consumed > 0) spokenLenRef.current = already + consumed;
+  }, []);
+
   /* ---- Send a message to AI and get the next response (streaming) ---- */
   const getAIResponse = useCallback(async (currentMessages: ChatMessage[], exchNum: number) => {
     const result = await streamAI("mock_interview_respond", {
@@ -483,12 +511,17 @@ export default function MockInterviewPage() {
       questionNumber: String(questionNumber),
       skippedQuestions: JSON.stringify(skippedQuestions),
     }, (partial) => {
+      let msgText = "";
       try {
         const parsed = parseAIJson<{ message: string }>(partial);
-        if (parsed.message) setCurrentAIMessage(parsed.message);
+        if (parsed.message) msgText = parsed.message;
       } catch {
         const m = partial.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-        if (m) setCurrentAIMessage(m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"'));
+        if (m) msgText = m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+      }
+      if (msgText) {
+        setCurrentAIMessage(msgText);
+        feedProgressiveTTS(msgText);
       }
     });
 
@@ -498,7 +531,7 @@ export default function MockInterviewPage() {
       return { message: result, isComplete: false };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions]);
+  }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions, feedProgressiveTTS]);
 
   /* ---- Start the interview: instant greeting, no AI wait ---- */
   /* The greeting is hardcoded so the interview starts in <1 second. */
@@ -556,8 +589,14 @@ export default function MockInterviewPage() {
     setExchangeNumber(nextExchange);
     setQuestionNumber(prev => prev + 1);
 
-    /* Get AI's next response (streams text into currentAIMessage progressively) */
+    /* Get AI's next response (streams text + speaks sentences progressively) */
     setIsAIThinking(true);
+    setIsAISpeaking(true);
+    spokenLenRef.current = 0;
+    window.speechSynthesis.cancel();
+    ttsKeepAliveRef.current = setInterval(() => {
+      if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
+    }, 5000);
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
@@ -565,9 +604,19 @@ export default function MockInterviewPage() {
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
 
-      /* Speak the AI's response */
-      setIsAISpeaking(true);
-      await speakText(response.message);
+      /* Speak any remaining text not yet sent to TTS */
+      const remaining = response.message.slice(spokenLenRef.current).trim();
+      if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
+
+      /* Wait for the speech queue to finish */
+      await new Promise<void>(resolve => {
+        const check = () => {
+          if (!window.speechSynthesis.speaking) { resolve(); return; }
+          setTimeout(check, 200);
+        };
+        setTimeout(check, 200);
+      });
+      if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setIsAISpeaking(false);
 
       /* If AI says interview is complete or we hit the safety limit */
@@ -578,6 +627,9 @@ export default function MockInterviewPage() {
       }
     } catch (e) {
       setIsAIThinking(false);
+      setIsAISpeaking(false);
+      window.speechSynthesis.cancel();
+      if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setWaitingForUser(true);
     }
@@ -603,6 +655,12 @@ export default function MockInterviewPage() {
     setExchangeNumber(nextExchange);
 
     setIsAIThinking(true);
+    setIsAISpeaking(true);
+    spokenLenRef.current = 0;
+    window.speechSynthesis.cancel();
+    ttsKeepAliveRef.current = setInterval(() => {
+      if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
+    }, 5000);
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
@@ -610,8 +668,16 @@ export default function MockInterviewPage() {
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
 
-      setIsAISpeaking(true);
-      await speakText(response.message);
+      const remaining = response.message.slice(spokenLenRef.current).trim();
+      if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
+      await new Promise<void>(resolve => {
+        const check = () => {
+          if (!window.speechSynthesis.speaking) { resolve(); return; }
+          setTimeout(check, 200);
+        };
+        setTimeout(check, 200);
+      });
+      if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setIsAISpeaking(false);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
@@ -621,6 +687,9 @@ export default function MockInterviewPage() {
       }
     } catch (e) {
       setIsAIThinking(false);
+      setIsAISpeaking(false);
+      window.speechSynthesis.cancel();
+      if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setWaitingForUser(true);
     }
