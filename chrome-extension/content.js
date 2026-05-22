@@ -185,12 +185,20 @@ function showToast(message) {
 }
 
 /* ---- Build and inject the floating badge ---- */
-function injectBadge(jobData) {
+async function injectBadge(jobData) {
   /* Don't inject twice */
   if (document.getElementById("jobpilot-badge")) return;
 
+  /* Check if user previously minimized the badge */
+  let minimized = false;
+  try {
+    const stored = await chrome.storage.local.get("jp_badge_minimized");
+    minimized = stored.jp_badge_minimized === true;
+  } catch { /* storage unavailable — show full */ }
+
   const badge = document.createElement("div");
   badge.id = "jobpilot-badge";
+  if (minimized) badge.classList.add("jp-minimized");
 
   badge.innerHTML = `
     <div class="jp-badge-panel" id="jp-panel">
@@ -212,6 +220,10 @@ function injectBadge(jobData) {
         <span class="jp-badge-title">JobPilot AI</span>
         <span class="jp-badge-score loading" id="jp-score">Checking match...</span>
       </div>
+      <button class="jp-badge-minimize" id="jp-minimize" title="Minimize badge">×</button>
+    </div>
+    <div class="jp-badge-mini" id="jp-mini-trigger" title="Open JobPilot AI">
+      <div class="jp-badge-logo">JP</div>
     </div>
   `;
 
@@ -222,9 +234,25 @@ function injectBadge(jobData) {
   const panel = document.getElementById("jp-panel");
   let panelOpen = false;
 
-  trigger.addEventListener("click", () => {
+  trigger.addEventListener("click", (e) => {
+    if (e.target.id === "jp-minimize") return;
     panelOpen = !panelOpen;
     panel.classList.toggle("open", panelOpen);
+  });
+
+  /* Minimize button — collapse to small icon */
+  document.getElementById("jp-minimize").addEventListener("click", (e) => {
+    e.stopPropagation();
+    badge.classList.add("jp-minimized");
+    panel.classList.remove("open");
+    panelOpen = false;
+    try { chrome.storage.local.set({ jp_badge_minimized: true }); } catch {}
+  });
+
+  /* Mini trigger — expand back to full badge */
+  document.getElementById("jp-mini-trigger").addEventListener("click", () => {
+    badge.classList.remove("jp-minimized");
+    try { chrome.storage.local.set({ jp_badge_minimized: false }); } catch {}
   });
 
   /* Save button */

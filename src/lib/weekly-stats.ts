@@ -41,6 +41,7 @@ export async function computeWeeklyStats(userId: string): Promise<WeeklyDigestDa
   /* Parallel queries for all data */
   const [
     user,
+    resumeCount,
     applicationsThisWeek,
     aiCallsThisWeek,
     upcomingInterviews,
@@ -55,6 +56,9 @@ export async function computeWeeklyStats(userId: string): Promise<WeeklyDigestDa
       where: { id: userId },
       select: { name: true, topSkills: true },
     }),
+
+    /* Resume count — skip digest for users who never uploaded one */
+    prisma.resume.count({ where: { userId } }),
 
     /* Applications created this week */
     prisma.application.count({
@@ -118,6 +122,10 @@ export async function computeWeeklyStats(userId: string): Promise<WeeklyDigestDa
   ]);
 
   if (!user) return null;
+
+  /* Don't email users who haven't meaningfully engaged yet */
+  const totalApplications = allApplications.length;
+  if (resumeCount === 0 && totalApplications < 3) return null;
 
   /* Response rate: applications with Interview or Offer / total applied */
   const applied = allApplications.filter(a => a.status !== "Saved").length;
