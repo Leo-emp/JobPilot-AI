@@ -294,15 +294,22 @@ function markdownToDownloadHTML(md: string): string {
       const clean = raw.replace(/\*\*/g, "");
       const dateInfo = splitDate(clean);
       if (dateInfo) {
-        const leftHtml = raw.slice(0, raw.replace(/\*\*/g, "").indexOf(dateInfo.left) + dateInfo.left.length + (raw.length - clean.length))
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
         const rawInfo = splitDate(raw);
         const leftRaw = rawInfo ? rawInfo.left : dateInfo.left;
-        const leftFormatted = leftRaw.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-        htmlParts.push(`<div class="entry-row"><span>${leftFormatted}</span><span class="date">${dateInfo.date}</span></div>`);
+        const leftFormatted = leftRaw.replace(/\*\*/g, "");
+        htmlParts.push(`<div class="entry-row"><span><strong>${leftFormatted}</strong></span><span class="date"><strong>${dateInfo.date}</strong></span></div>`);
       } else {
         htmlParts.push(`<h3>${raw.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</h3>`);
       }
+      continue;
+    }
+
+    /* Bold line with date — job title entry (e.g. **Title, Company — Dates**) */
+    if (/^\*\*/.test(trimmed) && splitDate(trimmed.replace(/\*\*/g, ""))) {
+      if (inList) { htmlParts.push("</ul>"); inList = false; }
+      const clean = trimmed.replace(/\*\*/g, "");
+      const dateInfo = splitDate(clean)!;
+      htmlParts.push(`<div class="entry-row"><span><strong>${dateInfo.left}</strong></span><span class="date"><strong>${dateInfo.date}</strong></span></div>`);
       continue;
     }
     if (trimmed.startsWith("## ")) {
@@ -647,6 +654,25 @@ export default function MarkdownResult({ result, showDownload = true, editable =
             renderBoldLine(doc, raw, mL, y, 10.5, "bold");
             y += 5.5;
           }
+          continue;
+        }
+
+        /* ---- Bold line with date — job title entry (e.g. **Title, Company — Dates**) ---- */
+        if (/^\*\*/.test(trimmed) && extractDate(trimmed.replace(/\*\*/g, ""))) {
+          const clean = trimmed.replace(/\*\*/g, "");
+          y += 2;
+          checkPage(10);
+          doc.setFontSize(10.5);
+          doc.setTextColor(17, 17, 17);
+
+          const dateInfo = extractDate(clean)!;
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.5);
+          const dateW = doc.getTextWidth(dateInfo.date);
+          const maxLeftW = cW - dateW - 4;
+
+          doc.text(dateInfo.date, pageWidth - mR, y, { align: "right" });
+          y = renderWrappedText(doc, `**${dateInfo.left}**`, mL, y, maxLeftW, 10.5, 5.5, pageHeight, mTop);
           continue;
         }
 

@@ -68,7 +68,7 @@ WRITING QUALITY STANDARDS:
 
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
-- The ONLY place to use bold is the job title line under Work Experience: **Job Title, Company, Location — Dates**
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
 - Do NOT use ### headings for job titles — use **bold** inline text instead
 
 STRUCTURE (follow this EXACT order):
@@ -116,7 +116,7 @@ WRITING QUALITY STANDARDS:
 
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
-- The ONLY place to use bold is the job title line under Work Experience: **Job Title, Company, Location — Dates**
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
 - Do NOT use ### headings for job titles — use **bold** inline text instead
 
 STRUCTURE (follow this EXACT order):
@@ -417,7 +417,7 @@ WRITING QUALITY STANDARDS:
 
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
-- The ONLY place to use bold is the job title line under Work Experience: **Job Title, Company, Location — Dates**
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
 - Do NOT use ### headings for job titles — use **bold** inline text instead
 
 STRUCTURE (follow this EXACT order):
