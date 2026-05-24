@@ -78,7 +78,7 @@ STRUCTURE (follow this EXACT order):
 3. ## Core Skills
    Bullet points grouped by category:
    - Category Name: Skill, Skill, Skill
-   (3-4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
+   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
@@ -126,7 +126,7 @@ STRUCTURE (follow this EXACT order):
 3. ## Core Skills
    Bullet points grouped by category:
    - Category Name: Skill, Skill, Skill
-   (3-4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
+   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
@@ -429,7 +429,7 @@ STRUCTURE (follow this EXACT order):
    - Transferable Skills: Skill, Skill, Skill
    - Target Industry: Skill, Skill, Skill
    - Technical: Tool, Tool, Tool
-   (3-4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
+   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
