@@ -1,7 +1,8 @@
 /* ============================================================
    JOBPILOT AI - Content Script
    ============================================================
-   Runs on LinkedIn, Indeed, and Glassdoor job pages.
+   Runs on 25+ job sites: LinkedIn, Indeed, Glassdoor,
+   Greenhouse, Lever, Workday, and many more.
    - Extracts job title, company, and description from the page
    - Shows a floating badge with instant match score
    - One-click save to application tracker
@@ -13,73 +14,386 @@ const API_URLS = ["https://jobpilotai.co", "http://localhost:3000"];
 let BASE_URL = API_URLS[0];
 let isLoggedIn = false;
 
-/* ---- Site-specific extractors ---- */
+/* ---- Extraction helpers ---- */
+
+/* Try multiple CSS selectors, return first match's text */
+function queryText(...selectors) {
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    const text = el?.textContent?.trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+/* Extract company name from subdomain (e.g. "acme.wd5.myworkdayjobs.com" → "Acme") */
+function companyFromHostname() {
+  const host = window.location.hostname;
+  const sub = host.split(".")[0].replace(/^careers?-?/, "");
+  return sub.charAt(0).toUpperCase() + sub.slice(1);
+}
+
+/* Parse JSON-LD structured data for JobPosting schema */
+function getJsonLd() {
+  const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+  for (const script of scripts) {
+    try {
+      let data = JSON.parse(script.textContent);
+      if (Array.isArray(data)) data = data.find(d => d["@type"] === "JobPosting") || data[0];
+      if (data?.["@graph"]) data = data["@graph"].find(d => d["@type"] === "JobPosting") || data;
+      if (data?.["@type"] === "JobPosting") return data;
+    } catch { /* malformed JSON-LD */ }
+  }
+  return null;
+}
+
+/* Get a meta tag's content attribute */
+function metaContent(name) {
+  const el = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+  return el?.getAttribute("content")?.trim() || "";
+}
+
+/* Strip HTML tags from a string */
+function stripTags(html) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.textContent?.trim() || "";
+}
+
+/* ---- Site-specific extractors (25+ sites) ---- */
 const extractors = {
+  /* === Major Job Boards === */
   linkedin: {
     test: () => window.location.hostname.includes("linkedin.com"),
-    title: () => {
-      const el = document.querySelector(".job-details-jobs-unified-top-card__job-title a") ||
-                 document.querySelector(".jobs-unified-top-card__job-title a") ||
-                 document.querySelector("h1.t-24") ||
-                 document.querySelector("h1");
-      return el?.textContent?.trim() || "";
-    },
-    company: () => {
-      const el = document.querySelector(".job-details-jobs-unified-top-card__company-name a") ||
-                 document.querySelector(".jobs-unified-top-card__company-name a") ||
-                 document.querySelector(".jobs-unified-top-card__subtitle-primary-grouping span");
-      return el?.textContent?.trim() || "";
-    },
-    description: () => {
-      const el = document.querySelector(".jobs-description__content") ||
-                 document.querySelector("#job-details") ||
-                 document.querySelector(".jobs-box__html-content");
-      return el?.textContent?.trim()?.slice(0, 2000) || "";
-    },
+    title: () => queryText(
+      ".job-details-jobs-unified-top-card__job-title a",
+      ".jobs-unified-top-card__job-title a",
+      "h1.t-24", "h1"
+    ),
+    company: () => queryText(
+      ".job-details-jobs-unified-top-card__company-name a",
+      ".jobs-unified-top-card__company-name a",
+      ".jobs-unified-top-card__subtitle-primary-grouping span"
+    ),
+    description: () => queryText(
+      ".jobs-description__content",
+      "#job-details",
+      ".jobs-box__html-content"
+    ),
     source: "linkedin",
   },
   indeed: {
     test: () => window.location.hostname.includes("indeed.com"),
-    title: () => {
-      const el = document.querySelector(".jobsearch-JobInfoHeader-title") ||
-                 document.querySelector("h1[data-testid='jobsearch-JobInfoHeader-title']") ||
-                 document.querySelector("h1.icl-u-xs-mb--xs");
-      return el?.textContent?.trim() || "";
-    },
-    company: () => {
-      const el = document.querySelector("[data-testid='inlineHeader-companyName']") ||
-                 document.querySelector(".jobsearch-InlineCompanyRating div:first-child a") ||
-                 document.querySelector(".icl-u-lg-mr--sm");
-      return el?.textContent?.trim() || "";
-    },
-    description: () => {
-      const el = document.querySelector("#jobDescriptionText") ||
-                 document.querySelector(".jobsearch-jobDescriptionText");
-      return el?.textContent?.trim()?.slice(0, 2000) || "";
-    },
+    title: () => queryText(
+      ".jobsearch-JobInfoHeader-title",
+      "h1[data-testid='jobsearch-JobInfoHeader-title']",
+      "h1.icl-u-xs-mb--xs"
+    ),
+    company: () => queryText(
+      "[data-testid='inlineHeader-companyName']",
+      ".jobsearch-InlineCompanyRating div:first-child a",
+      ".icl-u-lg-mr--sm"
+    ),
+    description: () => queryText(
+      "#jobDescriptionText",
+      ".jobsearch-jobDescriptionText"
+    ),
     source: "indeed",
   },
   glassdoor: {
     test: () => window.location.hostname.includes("glassdoor.com"),
-    title: () => {
-      const el = document.querySelector("[data-test='job-title']") ||
-                 document.querySelector(".css-1vg6q84") ||
-                 document.querySelector("h1");
-      return el?.textContent?.trim() || "";
-    },
-    company: () => {
-      const el = document.querySelector("[data-test='employer-name']") ||
-                 document.querySelector(".css-87uc0g");
-      return el?.textContent?.trim() || "";
-    },
-    description: () => {
-      const el = document.querySelector(".jobDescriptionContent") ||
-                 document.querySelector("[data-test='job-description']") ||
-                 document.querySelector(".desc");
-      return el?.textContent?.trim()?.slice(0, 2000) || "";
-    },
+    title: () => queryText("[data-test='job-title']", ".css-1vg6q84", "h1"),
+    company: () => queryText("[data-test='employer-name']", ".css-87uc0g"),
+    description: () => queryText(
+      ".jobDescriptionContent",
+      "[data-test='job-description']",
+      ".desc"
+    ),
     source: "glassdoor",
   },
+  ziprecruiter: {
+    test: () => window.location.hostname.includes("ziprecruiter.com"),
+    title: () => queryText("h1.job_title", "h1.job-title", "h1"),
+    company: () => queryText(
+      ".t-company-name a",
+      ".hiring_company_text",
+      "[data-testid='job-company']"
+    ),
+    description: () => queryText(
+      ".job_description",
+      ".jobDescriptionSection",
+      "[data-testid='job-description']"
+    ),
+    source: "ziprecruiter",
+  },
+  monster: {
+    test: () => window.location.hostname.includes("monster.com"),
+    title: () => queryText("h1.JobViewTitle", "h1[name='viewjobtitle']", "h1"),
+    company: () => queryText(
+      ".headerstyle__JobViewHeaderCompany a",
+      "[data-testid='company-name']",
+      ".company-name"
+    ),
+    description: () => queryText(
+      ".descriptionstyles__DescriptionContainer",
+      "[name='viewjobbody']",
+      ".job-description"
+    ),
+    source: "monster",
+  },
+  dice: {
+    test: () => window.location.hostname.includes("dice.com"),
+    title: () => queryText("h1[data-cy='jobTitle']", "h1.jobTitle", "h1"),
+    company: () => queryText(
+      "[data-cy='companyNameLink']",
+      "a[data-cy='companyNameLink']"
+    ),
+    description: () => queryText(
+      "[data-testid='jobDescriptionHtml']",
+      "#jobDescriptionHtml",
+      ".job-description"
+    ),
+    source: "dice",
+  },
+  simplyhired: {
+    test: () => window.location.hostname.includes("simplyhired.com"),
+    title: () => queryText(
+      "h1[data-testid='viewJobTitle']",
+      "h2.viewjob-jobTitle", "h1"
+    ),
+    company: () => queryText(
+      "[data-testid='viewJobCompanyName']",
+      ".viewjob-labelWithIcon span"
+    ),
+    description: () => queryText(
+      ".viewjob-jobDescription",
+      "[data-testid='viewJobBody']"
+    ),
+    source: "simplyhired",
+  },
+  careerbuilder: {
+    test: () => window.location.hostname.includes("careerbuilder.com"),
+    title: () => queryText("h1.data-results-title", "h2.job-title", "h1"),
+    company: () => queryText(".data-details .company span", ".data-details a"),
+    description: () => queryText(
+      ".jdp-description-content",
+      ".data-details .description"
+    ),
+    source: "careerbuilder",
+  },
+  flexjobs: {
+    test: () => window.location.hostname.includes("flexjobs.com"),
+    title: () => queryText("h1#JobTitle", "h1.job-title", "h1"),
+    company: () => queryText(".company-name a", ".job-company a"),
+    description: () => queryText(
+      "#job-description",
+      ".job-description",
+      ".dsp-description"
+    ),
+    source: "flexjobs",
+  },
+  themuse: {
+    test: () => window.location.hostname.includes("themuse.com"),
+    title: () => queryText("h1[class*='JobTitle']", "h1.job-title", "h1"),
+    company: () => queryText("a[class*='CompanyName']", ".company-name a"),
+    description: () => queryText(
+      ".job-post-description",
+      "[class*='JobDescription']",
+      ".job-description"
+    ),
+    source: "themuse",
+  },
+  builtin: {
+    test: () => window.location.hostname.includes("builtin.com"),
+    title: () => queryText("h1.field-title", "h1"),
+    company: () => queryText(".company-title a", ".field-company a", "h2 a"),
+    description: () => queryText(".job-description", ".field-description"),
+    source: "builtin",
+  },
+  wellfound: {
+    test: () => window.location.hostname.includes("wellfound.com"),
+    title: () => queryText("h1.listing-title", "h1"),
+    company: () => queryText(
+      "h2.company-name a",
+      "a[data-test='company-name']",
+      "[class*='CompanyName']"
+    ),
+    description: () => queryText(
+      "[data-test='job-description']",
+      ".description",
+      ".job-description"
+    ),
+    source: "wellfound",
+  },
+  seek: {
+    test: () => window.location.hostname.includes("seek.com"),
+    title: () => queryText(
+      "h1[data-automation='job-detail-title']",
+      "h1"
+    ),
+    company: () => queryText(
+      "[data-automation='advertiser-name']",
+      ".job-header .company"
+    ),
+    description: () => queryText(
+      "[data-automation='jobAdDetails']",
+      ".job-detail-body"
+    ),
+    source: "seek",
+  },
+  reed: {
+    test: () => window.location.hostname.includes("reed.co.uk"),
+    title: () => queryText("h1[itemprop='title']", "h1.job-title", "h1"),
+    company: () => queryText("[itemprop='name']", ".company-name a"),
+    description: () => queryText(
+      "[itemprop='description']",
+      ".job-description",
+      ".description"
+    ),
+    source: "reed",
+  },
+  totaljobs: {
+    test: () => window.location.hostname.includes("totaljobs.com"),
+    title: () => queryText("h1.job-title", "h1"),
+    company: () => queryText(".company-link", ".recruiter-name"),
+    description: () => queryText(".job-description", ".description"),
+    source: "totaljobs",
+  },
+
+  /* === ATS Platforms === */
+  greenhouse: {
+    test: () => window.location.hostname.includes("greenhouse.io"),
+    title: () => queryText("h1.app-title", ".opening h1", "h1"),
+    company: () => queryText(".company-name", ".logo span") || metaContent("og:site_name"),
+    description: () => queryText("#content", ".body .content"),
+    source: "greenhouse",
+  },
+  lever: {
+    test: () => window.location.hostname.includes("lever.co"),
+    title: () => queryText(".posting-headline h2", "h2.posting-title", "h2"),
+    company: () => queryText(
+      ".main-header-logo a",
+      ".posting-headline .display-name"
+    ) || metaContent("og:site_name"),
+    description: () => queryText(
+      ".posting-page .content",
+      ".section-wrapper .posting-requirements",
+      ".section-wrapper"
+    ),
+    source: "lever",
+  },
+  workday: {
+    test: () => window.location.hostname.includes("myworkdayjobs.com"),
+    title: () => queryText(
+      "h2[data-automation-id='jobPostingHeader']",
+      "h1[data-automation-id='jobPostingHeader']",
+      "h1"
+    ),
+    company: () => companyFromHostname(),
+    description: () => queryText(
+      "[data-automation-id='jobPostingDescription']",
+      ".css-1uoojr6",
+      ".job-description"
+    ),
+    source: "workday",
+  },
+  smartrecruiters: {
+    test: () => window.location.hostname.includes("smartrecruiters.com"),
+    title: () => queryText("h1.job-title", "h1"),
+    company: () => queryText(".company-name", ".topbar-logo") || metaContent("og:site_name"),
+    description: () => queryText(".job-description", ".sectionBody"),
+    source: "smartrecruiters",
+  },
+  ashby: {
+    test: () => window.location.hostname.includes("ashbyhq.com"),
+    title: () => queryText(
+      "h1.ashby-job-posting-brief-title",
+      "h1[class*='JobPostingTitle']",
+      "h1"
+    ),
+    company: () => queryText(
+      ".ashby-job-posting-brief-company-name",
+      "[class*='CompanyName']"
+    ) || metaContent("og:site_name"),
+    description: () => queryText(
+      ".ashby-job-posting-description",
+      "[class*='JobPostingDescription']",
+      ".job-description"
+    ),
+    source: "ashby",
+  },
+  workable: {
+    test: () => window.location.hostname.includes("workable.com"),
+    title: () => queryText("h1[data-ui='job-title']", "h1"),
+    company: () => queryText(
+      "[data-ui='company-name']",
+      ".company-name"
+    ) || metaContent("og:site_name"),
+    description: () => queryText(
+      "[data-ui='job-description']",
+      ".job-description"
+    ),
+    source: "workable",
+  },
+  icims: {
+    test: () => window.location.hostname.includes("icims.com"),
+    title: () => queryText(".iCIMS_Header h1", "h1.iCIMS_Header", "h1"),
+    company: () => queryText(".iCIMS_CompanyName") || companyFromHostname(),
+    description: () => queryText(
+      ".iCIMS_JobContent",
+      ".iCIMS_InfoMsg_Job",
+      "#job-description"
+    ),
+    source: "icims",
+  },
+  bamboohr: {
+    test: () => window.location.hostname.includes("bamboohr.com"),
+    title: () => queryText("h2.ResearchHeader__title", "h1"),
+    company: () => queryText(".ResearchHeader__companyName") || companyFromHostname(),
+    description: () => queryText(".BambooRichText", ".JobPost__description"),
+    source: "bamboohr",
+  },
+  jobvite: {
+    test: () => window.location.hostname.includes("jobvite.com"),
+    title: () => queryText("h2.jv-header", ".jv-job-detail-name", "h1"),
+    company: () => queryText(".jv-company-name", ".company-name") || metaContent("og:site_name"),
+    description: () => queryText(
+      ".jv-job-detail-description",
+      ".job-description"
+    ),
+    source: "jobvite",
+  },
+};
+
+/* ---- Generic fallback — uses JSON-LD structured data and common patterns ---- */
+const genericExtractor = {
+  title: () => {
+    const ld = getJsonLd();
+    if (ld?.title) return stripTags(ld.title);
+    return queryText(
+      "[itemprop='title']", "[itemprop='name']",
+      "h1.job-title", "h1.job_title", "h1"
+    ) || metaContent("og:title");
+  },
+  company: () => {
+    const ld = getJsonLd();
+    const org = ld?.hiringOrganization;
+    if (org?.name) return stripTags(org.name);
+    return queryText(
+      "[itemprop='hiringOrganization'] [itemprop='name']",
+      ".company-name", ".company_name"
+    ) || metaContent("og:site_name");
+  },
+  description: () => {
+    const ld = getJsonLd();
+    if (ld?.description) return stripTags(ld.description);
+    return queryText(
+      "[itemprop='description']",
+      ".job-description", ".job_description",
+      "#job-description", "#jobDescriptionText"
+    ) || metaContent("og:description");
+  },
+  source: "other",
 };
 
 /* ---- Detect which site we're on ---- */
@@ -87,13 +401,13 @@ function getExtractor() {
   for (const ext of Object.values(extractors)) {
     if (ext.test()) return ext;
   }
-  return null;
+  /* Fall back to generic JSON-LD / meta-tag extraction */
+  return genericExtractor;
 }
 
 /* ---- Extract job data from current page ---- */
 function extractJobData() {
   const ext = getExtractor();
-  if (!ext) return null;
 
   const title = ext.title();
   const company = ext.company();
@@ -382,8 +696,9 @@ async function init() {
 /* Run on load */
 init();
 
-/* LinkedIn is an SPA — watch for URL changes */
-if (window.location.hostname.includes("linkedin.com")) {
+/* SPA sites — watch for URL changes and re-init */
+const spaHosts = ["linkedin.com", "wellfound.com", "builtin.com", "glassdoor.com", "dice.com"];
+if (spaHosts.some(h => window.location.hostname.includes(h))) {
   let lastUrl = location.href;
   const observer = new MutationObserver(() => {
     if (location.href !== lastUrl) {
