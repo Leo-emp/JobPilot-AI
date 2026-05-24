@@ -105,12 +105,19 @@ export default function InterviewPage() {
   /* ---- AI streaming hook ---- */
   const { result: streamResult, loading, streaming, error, callAI: streamAI, reset: resetAI } = useAIStream();
 
-  /* ---- Fetch saved resumes on mount ---- */
+  /* ---- Fetch saved resumes on mount and auto-select the latest ---- */
   useEffect(() => {
     setResumesLoading(true);
     fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
       .then(r => r.ok ? r.json() : { data: [] })
-      .then(d => setSavedResumes(d.data || []))
+      .then(d => {
+        const list = d.data || [];
+        setSavedResumes(list);
+        /* Auto-select the most recent resume so it's ready for feedback */
+        if (list.length > 0 && !resumeText) {
+          setResumeText(list[0].content);
+        }
+      })
       .catch(() => {})
       .finally(() => setResumesLoading(false));
   }, []);

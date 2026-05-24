@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { useAIStream } from "@/hooks/useAIStream";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Type for saved cover letters ---- */
 interface SavedLetter {
@@ -37,6 +38,8 @@ export default function CoverLetterPage() {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  /* Auto-load saved resume */
+  const { defaultResume } = useDefaultResume();
   /* AI streaming hook */
   const { result: aiResult, loading, streaming, error, plan, remaining, callAI: streamAI } = useAIStream();
   /* Viewed saved letter (when clicking from history) */
@@ -50,6 +53,14 @@ export default function CoverLetterPage() {
   const [editedResult, setEditedResult] = useState("");
   /* Saved cover letters history */
   const [savedLetters, setSavedLetters] = useState<SavedLetter[]>([]);
+
+  /* ---- Pre-fill resume from saved default ---- */
+  useEffect(() => {
+    if (defaultResume && !resumeText) {
+      setResumeText(defaultResume.content);
+      setFileName(defaultResume.fileName);
+    }
+  }, [defaultResume]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---- Load previously saved cover letters ---- */
   useEffect(() => {

@@ -17,9 +17,10 @@
 
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { usePlan } from "@/hooks/usePlan";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Max resume PDF size ---- */
 import { extractTextFromPdf } from "@/lib/pdf-extract";
@@ -125,6 +126,14 @@ export default function OutreachHubPage() {
   const [resumeParsing, setResumeParsing] = useState(false);
   const [resumeError, setResumeError] = useState("");
   const resumeInputRef = useRef<HTMLInputElement>(null);
+
+  /* Auto-load user's most recent saved resume */
+  const { defaultResume } = useDefaultResume();
+  useEffect(() => {
+    if (defaultResume && !resumeText) {
+      setResumeText(defaultResume.content);
+    }
+  }, [defaultResume]);
 
   /* ---- Result state ---- */
   const [generatedMessage, setGeneratedMessage] = useState(""); /* raw AI response */

@@ -13,11 +13,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { useAIStream } from "@/hooks/useAIStream";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Tab names for the feature sub-sections ---- */
 const tabs = [
@@ -40,6 +41,15 @@ export default function ResumePage() {
   const [uploading, setUploading] = useState(false);
   /* File upload error (separate from AI error) */
   const [uploadError, setUploadError] = useState("");
+
+  /* Auto-load user's most recent saved resume */
+  const { defaultResume } = useDefaultResume();
+  useEffect(() => {
+    if (defaultResume && !resumeText) {
+      setResumeText(defaultResume.content);
+      setFileName(defaultResume.fileName);
+    }
+  }, [defaultResume]);
 
   /* Job-specific fields for optimize/rebuild/pivot */
   const [jobTitle, setJobTitle] = useState("");
