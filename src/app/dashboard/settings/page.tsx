@@ -200,8 +200,7 @@ export default function SettingsPage() {
     }
   };
 
-  /* ---- Export User Data ---- */
-  /* Downloads all user data as a JSON file (GDPR data portability) */
+  /* ---- Export User Data as PDF ---- */
   const handleExportData = async () => {
     setExportLoading(true);
     setExportMessage("");
@@ -211,16 +210,207 @@ export default function SettingsPage() {
         setExportMessage("Failed to export data. Please try again.");
         return;
       }
-      /* # Create a download link from the response blob */
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `jobpilot-export-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const data = await res.json();
+
+      /* Dynamic import — only loads ~400KB when user clicks export */
+      const { default: jsPDF } = await import("jspdf");
+      const { default: autoTable } = await import("jspdf-autotable");
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const doc = new jsPDF() as any;
+      const brand: [number, number, number] = [79, 70, 229];
+      const dark: [number, number, number] = [15, 23, 42];
+      let y = 20;
+
+      /* --- Header banner --- */
+      doc.setFillColor(...brand);
+      doc.rect(0, 0, 210, 35, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("JobPilot AI", 14, 18);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Data Export — ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, 14, 28);
+      y = 45;
+
+      /* --- Section header helper --- */
+      const section = (title: string) => {
+        if (y > 260) { doc.addPage(); y = 20; }
+        doc.setTextColor(...dark);
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(title, 14, y);
+        y += 2;
+        doc.setDrawColor(...brand);
+        doc.setLineWidth(0.5);
+        doc.line(14, y, 196, y);
+        y += 8;
+      };
+
+      /* --- Date formatter --- */
+      const fmt = (d: string | null) =>
+        d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+      /* --- Profile --- */
+      section("Profile");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      const p = data.profile;
+      if (p) {
+        [`Name: ${p.name || "—"}`, `Email: ${p.email || "—"}`, `Plan: ${(p.plan || "free").toUpperCase()}`,
+         `AI Requests Used: ${p.aiUsageCount || 0}`, `Member Since: ${fmt(p.createdAt)}`
+        ].forEach((line: string) => { doc.text(line, 14, y); y += 6; });
+        y += 4;
+      }
+
+      /* --- Applications --- */
+      if (data.applications?.length) {
+        section(`Applications (${data.applications.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        autoTable(doc, {
+          startY: y,
+          head: [["Job Title", "Company", "Status", "Applied", "Interview"]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: data.applications.map((a: any) => [
+            a.jobTitle || "—", a.company || "—", a.status || "—",
+            fmt(a.appliedDate), fmt(a.interviewDate),
+          ]),
+          headStyles: { fillColor: brand, fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      /* --- Saved Jobs --- */
+      if (data.savedJobs?.length) {
+        section(`Saved Jobs (${data.savedJobs.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        autoTable(doc, {
+          startY: y,
+          head: [["Title", "Company", "Location", "Salary", "Match", "Saved"]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: data.savedJobs.map((j: any) => [
+            j.title || "—", j.company || "—", j.location || "—",
+            j.salary || "—", j.matchScore ? `${j.matchScore}%` : "—", fmt(j.createdAt),
+          ]),
+          headStyles: { fillColor: brand, fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      /* --- Cover Letters --- */
+      if (data.coverLetters?.length) {
+        section(`Cover Letters (${data.coverLetters.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data.coverLetters.forEach((cl: any) => {
+          if (y > 250) { doc.addPage(); y = 20; }
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(...dark);
+          doc.text(`${cl.jobTitle || "Untitled"} — ${cl.company || "Unknown"}`, 14, y);
+          y += 5;
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(80, 80, 80);
+          doc.setFontSize(8);
+          const lines: string[] = doc.splitTextToSize(cl.content || "", 178);
+          const show = lines.slice(0, 25);
+          doc.text(show, 14, y);
+          y += show.length * 3.5 + 8;
+        });
+      }
+
+      /* --- Contacts --- */
+      if (data.contacts?.length) {
+        section(`Contacts (${data.contacts.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        autoTable(doc, {
+          startY: y,
+          head: [["Name", "Email", "Company", "Role", "Relationship"]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: data.contacts.map((c: any) => [
+            c.name || "—", c.email || "—", c.company || "—",
+            c.role || "—", c.relationship || "—",
+          ]),
+          headStyles: { fillColor: brand, fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      /* --- Companies --- */
+      if (data.companies?.length) {
+        section(`Companies (${data.companies.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        autoTable(doc, {
+          startY: y,
+          head: [["Name", "Industry", "Location", "Size", "Status"]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: data.companies.map((c: any) => [
+            c.name || "—", c.industry || "—", c.location || "—",
+            c.size || "—", c.status || "—",
+          ]),
+          headStyles: { fillColor: brand, fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      /* --- Resumes --- */
+      if (data.resumes?.length) {
+        section(`Resumes (${data.resumes.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        autoTable(doc, {
+          startY: y,
+          head: [["File Name", "Uploaded"]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: data.resumes.map((r: any) => [r.fileName || "—", fmt(r.createdAt)]),
+          headStyles: { fillColor: brand, fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      /* --- AI History --- */
+      if (data.aiHistory?.length) {
+        section(`AI History (${data.aiHistory.length})`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        autoTable(doc, {
+          startY: y,
+          head: [["Action", "Title", "Date"]],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: data.aiHistory.map((h: any) => [
+            h.action || "—", (h.title || "—").slice(0, 60), fmt(h.createdAt),
+          ]),
+          headStyles: { fillColor: brand, fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { left: 14, right: 14 },
+        });
+      }
+
+      /* --- Page numbers footer --- */
+      const pages = doc.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`JobPilot AI — Page ${i} of ${pages}`, 14, 290);
+      }
+
+      doc.save(`jobpilot-export-${new Date().toISOString().slice(0, 10)}.pdf`);
       setExportMessage("Data exported successfully!");
     } catch {
       setExportMessage("Failed to export data.");
@@ -445,7 +635,7 @@ export default function SettingsPage() {
               <div className="mt-5 pt-5 border-t border-card-border">
                 <h3 className="text-sm font-semibold text-white mb-2">Export Your Data</h3>
                 <p className="text-text-muted text-xs mb-3">
-                  Download all your data (profile, resumes, applications, contacts, cover letters, AI history) as a JSON file.
+                  Download all your data (profile, resumes, applications, contacts, cover letters, AI history) as a PDF file.
                 </p>
                 <button
                   onClick={handleExportData}
