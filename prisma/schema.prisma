@@ -36,6 +36,8 @@ model User {
 
   weeklyDigest   Boolean  @default(true)          // Opt-out for weekly intelligence emails
   topSkills      String?                           // JSON array of extracted skills (cached)
+  goal           String?                           // User's primary goal from onboarding
+  referralSource String?                           // How they heard about JobPilot (attribution)
 
   // Relationships — one user has many of each
   accounts       Account[]
