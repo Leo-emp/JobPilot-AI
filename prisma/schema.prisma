@@ -38,6 +38,7 @@ model User {
   topSkills      String?                           // JSON array of extracted skills (cached)
   goal           String?                           // User's primary goal from onboarding
   referralSource String?                           // How they heard about JobPilot (attribution)
+  defaultResumeId String?                          // ID of the resume to preload on feature pages
 
   // Relationships — one user has many of each
   accounts       Account[]

@@ -71,6 +71,13 @@ export default function SettingsPage() {
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
   const [twoFADisableCode, setTwoFADisableCode] = useState("");
 
+  /* Default resume */
+  const [defaultResume, setDefaultResume] = useState<{ id: string; fileName: string } | null>(null);
+  const [savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; createdAt: string }[]>([]);
+  const [resumesLoading, setResumesLoading] = useState(true);
+  const [resumeSaving, setResumeSaving] = useState(false);
+  const [resumeMessage, setResumeMessage] = useState("");
+
   /* Account deletion */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
@@ -115,6 +122,20 @@ export default function SettingsPage() {
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setTwoFAEnabled(d.enabled); })
       .catch(() => {});
+  }, []);
+
+  /* Fetch default resume + all saved resumes on mount */
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/user/default-resume").then(r => r.ok ? r.json() : { data: null }),
+      fetch("/api/resumes?limit=50&sort=createdAt&order=desc").then(r => r.ok ? r.json() : { data: [] }),
+    ])
+      .then(([defRes, allRes]) => {
+        if (defRes.data) setDefaultResume({ id: defRes.data.id, fileName: defRes.data.fileName });
+        setSavedResumes(allRes.data || []);
+      })
+      .catch(() => {})
+      .finally(() => setResumesLoading(false));
   }, []);
 
   /* ---- Profile Image Upload ---- */
@@ -577,6 +598,104 @@ export default function SettingsPage() {
               >
                 {profileSaving ? "Saving..." : "Save Changes"}
               </button>
+            </div>
+
+            {/* Default Resume */}
+            <div className="glass-card p-6">
+              <h2 className="text-lg font-bold mb-2">Default Resume</h2>
+              <p className="text-text-secondary text-sm mb-5">
+                This resume is automatically preloaded on all AI features (Resume Intelligence, Cover Letter, Interview Prep, Outreach Hub). Change it here anytime.
+              </p>
+
+              {resumesLoading ? (
+                <p className="text-sm text-text-muted">Loading resumes...</p>
+              ) : savedResumes.length === 0 ? (
+                <div className="p-4 rounded-xl bg-space-700/40 border border-card-border">
+                  <p className="text-sm text-text-muted">
+                    No resumes uploaded yet. Upload one on the{" "}
+                    <a href="/dashboard/resume" className="text-brand-light hover:underline">Resume Intelligence</a> page or during onboarding.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {savedResumes.map((r) => (
+                    <div
+                      key={r.id}
+                      className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                        defaultResume?.id === r.id
+                          ? "bg-brand-indigo/10 border-brand-indigo/30"
+                          : "bg-space-700/30 border-card-border hover:border-card-border-hover"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <svg className="w-5 h-5 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{r.fileName}</p>
+                          <p className="text-xs text-text-muted">
+                            {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                      {defaultResume?.id === r.id ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-brand-light font-medium px-2 py-1 rounded-full bg-brand-indigo/20 border border-brand-indigo/30">
+                            Default
+                          </span>
+                          <button
+                            onClick={async () => {
+                              setResumeSaving(true);
+                              setResumeMessage("");
+                              try {
+                                const res = await fetch("/api/user/default-resume", { method: "DELETE" });
+                                if (res.ok) {
+                                  setDefaultResume(null);
+                                  setResumeMessage("Default resume removed.");
+                                }
+                              } catch {}
+                              setResumeSaving(false);
+                            }}
+                            disabled={resumeSaving}
+                            className="text-xs text-text-muted hover:text-red-400 transition-colors disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={async () => {
+                            setResumeSaving(true);
+                            setResumeMessage("");
+                            try {
+                              const res = await fetch("/api/user/default-resume", {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ resumeId: r.id }),
+                              });
+                              if (res.ok) {
+                                setDefaultResume({ id: r.id, fileName: r.fileName });
+                                setResumeMessage("Default resume updated!");
+                              }
+                            } catch {}
+                            setResumeSaving(false);
+                          }}
+                          disabled={resumeSaving}
+                          className="px-3 py-1.5 text-xs font-medium text-brand-light border border-brand-indigo/30 rounded-lg hover:bg-brand-indigo/10 transition-colors disabled:opacity-50"
+                        >
+                          Set as Default
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {resumeMessage && (
+                <p className={`text-sm mt-4 ${resumeMessage.includes("removed") ? "text-yellow-400" : "text-green-400"}`}>
+                  {resumeMessage}
+                </p>
+              )}
             </div>
 
             {/* Data & Privacy */}

@@ -245,6 +245,14 @@ export default function Onboarding({ hasActivity }: OnboardingProps) {
         }),
       });
       if (!saveRes.ok) throw new Error("Failed to save resume");
+      const savedResume = await saveRes.json();
+
+      /* Step 3: Set as default resume for all feature pages */
+      await fetch("/api/user/default-resume", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId: savedResume.id }),
+      });
 
       setResumeUploaded(true);
     } catch {

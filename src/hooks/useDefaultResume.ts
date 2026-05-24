@@ -1,9 +1,9 @@
 /* ============================================================
-   useDefaultResume — Auto-load the user's most recent resume
+   useDefaultResume — Load the user's designated default resume
    ============================================================
-   Fetches the latest saved resume on mount so feature pages
-   (Resume Intelligence, Cover Letter, Interview Prep) can
-   pre-fill the resume field instead of starting blank.
+   Fetches the resume the user explicitly set as default (via
+   onboarding or account settings). Feature pages use this to
+   pre-fill the resume field on mount.
    ============================================================ */
 
 "use client";
@@ -11,6 +11,7 @@
 import { useState, useEffect } from "react";
 
 interface DefaultResume {
+  id: string;
   content: string;
   fileName: string;
 }
@@ -20,12 +21,11 @@ export function useDefaultResume() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/resumes?limit=1&sort=createdAt&order=desc")
-      .then(r => r.ok ? r.json() : { data: [] })
+    fetch("/api/user/default-resume")
+      .then(r => r.ok ? r.json() : { data: null })
       .then(data => {
-        const latest = data.data?.[0];
-        if (latest?.content) {
-          setDefaultResume({ content: latest.content, fileName: latest.fileName });
+        if (data.data) {
+          setDefaultResume(data.data);
         }
       })
       .catch(() => {})
