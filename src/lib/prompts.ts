@@ -65,17 +65,23 @@ WRITING QUALITY STANDARDS:
 - Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
 - Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
 
+FORMATTING RULES:
+- NEVER use bold (**text**) inside Professional Summary text — write it as plain text
+- NEVER bold action verbs, metrics, or key phrases inside bullet points — write all bullet text as plain text
+- ONLY use bold for Core Skills category names (e.g., "- **Category Name:** Skill, Skill, Skill")
+- Job title lines under Work Experience should use ### heading format which will render as bold: ### Job Title, Company, Location — Dates
+
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
+2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill
    (3-5 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
-   Exactly 4 bullet points per role — only the highest-impact achievements
+   Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text — no bold anywhere in bullets.
 5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
 6. ## Certifications and Trainings (if applicable, list each with institution and date)
@@ -110,17 +116,23 @@ WRITING QUALITY STANDARDS:
 - Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
 - Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
 
+FORMATTING RULES:
+- NEVER use bold (**text**) inside Professional Summary text — write it as plain text
+- NEVER bold action verbs, metrics, or key phrases inside bullet points — write all bullet text as plain text
+- ONLY use bold for Core Skills category names (e.g., "- **Category Name:** Skill, Skill, Skill")
+- Job title lines under Work Experience should use ### heading format which will render as bold: ### Job Title, Company, Location — Dates
+
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
+2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill
    (3-5 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
-   Exactly 4 bullet points per role — only the highest-impact achievements
+   Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text — no bold anywhere in bullets.
 5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
 6. ## Certifications and Trainings
@@ -406,10 +418,16 @@ WRITING QUALITY STANDARDS:
 - Reframe each achievement using the TARGET INDUSTRY's language, not the source industry
 - Professional Summary must directly address the career change — why their background is an ASSET, not a gap
 
+FORMATTING RULES:
+- NEVER use bold (**text**) inside Professional Summary text — write it as plain text
+- NEVER bold action verbs, metrics, or key phrases inside bullet points — write all bullet text as plain text
+- ONLY use bold for Core Skills category names (e.g., "- **Transferable Skills:** Skill, Skill, Skill")
+- Job title lines under Work Experience should use ### heading format which will render as bold: ### Job Title, Company, Location — Dates
+
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
    Contact info on one line: Location • Phone • Email • LinkedIn
-2. ## Professional Summary (3-4 sentences in first person. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly adaptable Business Operations Executive seeking to transition..." or "Resourceful Marketing Specialist with transferable expertise in...". Then show how their background uniquely positions them for the target role. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target title. Mention specific transferable strengths.)
+2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly adaptable Business Operations Executive seeking to transition..." or "Resourceful Marketing Specialist with transferable expertise in...". Then show how their background uniquely positions them for the target role. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target title. Mention specific transferable strengths.)
 3. ## Core Skills
    Bullet points grouped by category:
    - **Transferable Skills:** Skill, Skill, Skill
@@ -418,7 +436,7 @@ STRUCTURE (follow this EXACT order):
    (3-5 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
-   Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value
+   Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text — no bold anywhere in bullets.
 5. ## Education
    For each entry: ### Degree, Institution, Location — Dates
 6. ## Certifications and Trainings
