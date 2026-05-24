@@ -26,7 +26,7 @@ interface JobResult {
   category: string;
   contractTime: string;
   postedDate: string;
-  sponsorsVisas?: boolean;
+  sponsorship?: "available" | "unavailable";
 }
 
 export default function JobsPage() {
@@ -370,8 +370,8 @@ export default function JobsPage() {
               </div>
             </div>
 
-            {/* Visa sponsorship filter — shown when Australia is selected */}
-            {searchCountry === "au" && (
+            {/* Visa sponsorship filter — shown for AU, US, UK */}
+            {["au", "us", "gb"].includes(searchCountry) && (
               <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-space-700/60 border border-card-border">
                 <button
                   onClick={() => setSponsorshipFilter(!sponsorshipFilter)}
@@ -385,7 +385,7 @@ export default function JobsPage() {
                 </button>
                 <div>
                   <span className="text-sm text-white font-medium">Visa Sponsorship</span>
-                  <p className="text-xs text-text-muted">Boost results from employers known to sponsor work visas</p>
+                  <p className="text-xs text-text-muted">Show jobs that mention visa sponsorship in the posting</p>
                 </div>
               </div>
             )}
@@ -448,13 +448,18 @@ export default function JobsPage() {
 
                     {/* Job metadata chips */}
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {/* Sponsor badge — shown for known Australian sponsors */}
-                      {job.sponsorsVisas && (
-                        <span className="px-3 py-1 rounded-full bg-brand-indigo/15 text-brand-light text-xs font-semibold border border-brand-indigo/25 flex items-center gap-1">
+                      {/* Sponsorship badge — based on job description text */}
+                      {job.sponsorship === "available" && (
+                        <span className="px-3 py-1 rounded-full bg-green-500/15 text-green-400 text-xs font-semibold border border-green-500/25 flex items-center gap-1">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
-                          Sponsors Visas
+                          Sponsorship Available
+                        </span>
+                      )}
+                      {job.sponsorship === "unavailable" && (
+                        <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-400/80 text-xs font-medium border border-red-500/20">
+                          No Sponsorship
                         </span>
                       )}
                       {job.location && (

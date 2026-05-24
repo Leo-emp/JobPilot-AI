@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { cacheGet, cacheSet } from "@/lib/redis";
-import { isKnownSponsor } from "@/lib/australian-sponsors";
+import { detectSponsorship } from "@/lib/sponsorship-detector";
 
 /* ---- Standardized job format returned to the frontend ---- */
 interface Job {
@@ -29,7 +29,7 @@ interface Job {
   contractTime: string;
   postedDate: string;
   source: string;
-  sponsorsVisas?: boolean;
+  sponsorship?: "available" | "unavailable";
 }
 
 /* ============================================================
@@ -364,16 +364,19 @@ export async function GET(req: NextRequest) {
        results from other countries. */
     allJobs = allJobs.filter(job => matchesCountry(job.location, country));
 
-    /* # Badge jobs from known sponsors (especially useful for AU searches) */
-    if (country === "au") {
-      allJobs = allJobs.map(job => ({
-        ...job,
-        sponsorsVisas: isKnownSponsor(job.company),
-      }));
+    /* # Detect sponsorship signals from job descriptions (AU, US, UK) */
+    if (["au", "us", "gb"].includes(country)) {
+      allJobs = allJobs.map(job => {
+        const result = detectSponsorship(job.description, job.title, country);
+        return result ? { ...job, sponsorship: result } : job;
+      });
 
-      /* # When sponsorship filter is on, sort sponsor-friendly jobs to the top */
+      /* # When sponsorship filter is on, sort sponsored jobs to the top and hide "unavailable" */
       if (sponsorship) {
-        allJobs.sort((a, b) => (b.sponsorsVisas ? 1 : 0) - (a.sponsorsVisas ? 1 : 0));
+        allJobs = allJobs.filter(job => job.sponsorship !== "unavailable");
+        allJobs.sort((a, b) =>
+          (a.sponsorship === "available" ? 0 : 1) - (b.sponsorship === "available" ? 0 : 1)
+        );
       }
     }
 
