@@ -46,24 +46,25 @@ ${wrapUserInput("resume", payload.resume)}`;
 }
 
 function optimizeResume(payload: Record<string, any>): string {
-  return `You are a world-class resume writer who has helped candidates land roles at Google, McKinsey, and Fortune 500 companies. Optimize this resume for the job description below.
+  const hasJD = payload.jobDescription?.trim();
+  return `You are a world-class resume writer who has helped candidates land roles at Google, McKinsey, and Fortune 500 companies. ${hasJD ? "Optimize this resume for the job description below." : "Optimize this resume for maximum impact and ATS readability across industries."}
 
 CRITICAL RULES:
 - Use the candidate's REAL name, contact info, experience, and education — NEVER invent or fabricate
 - NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data only
-- Extract EXACT keywords and phrases from the job description and weave them naturally into bullet points
+${hasJD ? "- Extract EXACT keywords and phrases from the job description and weave them naturally into bullet points" : "- Use strong, industry-standard keywords and ATS-friendly language throughout"}
 - Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
 - If the resume contains a number or metric, ALWAYS preserve and highlight it (e.g., "by 10%", "50+ customers", "30 calls/day")
 - If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
 - Prioritize bullets by impact: lead with the most impressive achievement for each role
-- Mirror the job description's language — if they say "stakeholder management", use that exact phrase, not a synonym
+${hasJD ? "- Mirror the job description's language — if they say \"stakeholder management\", use that exact phrase, not a synonym" : "- Use widely recognized industry terminology that ATS systems scan for"}
 - NEVER claim the candidate already holds the target job title — state their ACTUAL current role and frame relevant experience as qualification for the target role
 
 WRITING QUALITY STANDARDS:
 - Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
 - Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
 - Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
-- Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
+- Professional Summary must ${hasJD ? "directly address the target role and mention 2-3 key requirements from the job description" : "showcase the candidate's strongest value proposition and core expertise"}
 
 FORMATTING RULES:
 - NEVER use bold (**text**) inside Professional Summary text — write it as plain text
@@ -78,7 +79,7 @@ STRUCTURE (follow this EXACT order):
 3. ## Core Skills
    Bullet points grouped by category:
    - **Category Name:** Skill, Skill, Skill
-   (3-5 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
+   (3-5 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
    For EACH role: ### Job Title, Company, Location — Dates
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text — no bold anywhere in bullets.
@@ -91,9 +92,7 @@ Return the COMPLETE optimized resume in clean markdown format.
 
 Resume:
 ${payload.resume}
-
-Job Description:
-${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}`;
+${hasJD ? `\nJob Description:\n${payload.jobDescription}` : ""}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}`;
 }
 
 function rebuildResume(payload: Record<string, any>): string {

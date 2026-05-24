@@ -240,21 +240,21 @@ export default function ResumePage() {
           <div>
             <h2 className="text-xl font-bold mb-2">Quick Optimize</h2>
             <p className="text-text-secondary text-sm mb-6">
-              Optimize your resume for a specific job description.
+              Optimize your resume — paste a job description for targeted optimization, or leave it blank for a general improvement.
             </p>
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste the job description here..."
+              placeholder="Paste the job description here (optional)..."
               rows={5}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
             />
             <button
               onClick={() => callAI("optimize_resume")}
-              disabled={!resumeText || !jobDescription || loading}
+              disabled={!resumeText || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Optimizing..." : "Optimize Resume"}
+              {loading ? "Optimizing..." : jobDescription ? "Optimize for Job" : "Optimize Resume"}
             </button>
           </div>
         )}
