@@ -67,9 +67,9 @@ WRITING QUALITY STANDARDS:
 - Professional Summary must ${hasJD ? "directly address the target role and mention 2-3 key requirements from the job description" : "showcase the candidate's strongest value proposition and core expertise"}
 
 FORMATTING RULES:
-- NEVER use bold (**text**) anywhere in the resume — no bold in summary, bullets, or skill categories
-- Write ALL text as plain text — no **bold** markdown anywhere
-- Job title lines under Work Experience should use ### heading format: ### Job Title, Company, Location — Dates
+- NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
+- The ONLY place to use bold is the job title line under Work Experience: **Job Title, Company, Location — Dates**
+- Do NOT use ### headings for job titles — use **bold** inline text instead
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
@@ -80,10 +80,10 @@ STRUCTURE (follow this EXACT order):
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
-   For EACH role: ### Job Title, Company, Location — Dates
+   For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: ### Degree, Institution, Location — Dates
+   For each entry: Degree, Institution, Location — Dates
 6. ## Certifications and Trainings (if applicable, list each with institution and date)
 7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
 
@@ -115,9 +115,9 @@ WRITING QUALITY STANDARDS:
 - Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
 
 FORMATTING RULES:
-- NEVER use bold (**text**) anywhere in the resume — no bold in summary, bullets, or skill categories
-- Write ALL text as plain text — no **bold** markdown anywhere
-- Job title lines under Work Experience should use ### heading format: ### Job Title, Company, Location — Dates
+- NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
+- The ONLY place to use bold is the job title line under Work Experience: **Job Title, Company, Location — Dates**
+- Do NOT use ### headings for job titles — use **bold** inline text instead
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
@@ -128,10 +128,10 @@ STRUCTURE (follow this EXACT order):
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
-   For EACH role: ### Job Title, Company, Location — Dates
+   For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: ### Degree, Institution, Location — Dates
+   For each entry: Degree, Institution, Location — Dates
 6. ## Certifications and Trainings
    List each certification/training with institution and date
 7. ## Languages
@@ -416,9 +416,9 @@ WRITING QUALITY STANDARDS:
 - Professional Summary must directly address the career change — why their background is an ASSET, not a gap
 
 FORMATTING RULES:
-- NEVER use bold (**text**) anywhere in the resume — no bold in summary, bullets, or skill categories
-- Write ALL text as plain text — no **bold** markdown anywhere
-- Job title lines under Work Experience should use ### heading format: ### Job Title, Company, Location — Dates
+- NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
+- The ONLY place to use bold is the job title line under Work Experience: **Job Title, Company, Location — Dates**
+- Do NOT use ### headings for job titles — use **bold** inline text instead
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
@@ -431,10 +431,10 @@ STRUCTURE (follow this EXACT order):
    - Technical: Tool, Tool, Tool
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
-   For EACH role: ### Job Title, Company, Location — Dates
+   For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: ### Degree, Institution, Location — Dates
+   For each entry: Degree, Institution, Location — Dates
 6. ## Certifications and Trainings
    List each certification/training with institution and date
 7. ## Languages
