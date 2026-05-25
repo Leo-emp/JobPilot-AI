@@ -574,6 +574,14 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         if (y + need > pageHeight - mBot) { doc.addPage(); y = mTop; }
       };
 
+      const measureTextHeight = (text: string, maxWidth: number, fontSize: number, lineHeight: number): number => {
+        const clean = text.replace(/\*\*/g, "");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(fontSize);
+        const lines = doc.splitTextToSize(clean, maxWidth);
+        return lines.length * lineHeight;
+      };
+
       /* Draw a filled bullet circle (since jsPDF helvetica lacks ● glyph) */
       const drawBullet = (bx: number, by: number) => {
         doc.setFillColor(25, 25, 25);
@@ -626,7 +634,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           seenSection = true;
           const text = trimmed.slice(3).replace(/\*\*/g, "").toUpperCase();
           y += 5;
-          checkPage(12);
+          checkPage(30);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
           doc.setTextColor(17, 17, 17);
@@ -643,8 +651,9 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         if (/^### /.test(trimmed)) {
           const raw = trimmed.slice(4);
           const clean = raw.replace(/\*\*/g, "");
+          const h3Height = measureTextHeight(clean, cW * 0.65, 10.5, 5.5) + 4;
           y += 2;
-          checkPage(10);
+          checkPage(Math.max(h3Height, 16));
           doc.setFontSize(10.5);
           doc.setTextColor(17, 17, 17);
 
@@ -670,8 +679,9 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         /* ---- Bold line with date — job title entry (e.g. **Title, Company — Dates**) ---- */
         if (/^\*\*/.test(trimmed) && extractDate(trimmed.replace(/\*\*/g, ""))) {
           const clean = trimmed.replace(/\*\*/g, "");
+          const boldHeight = measureTextHeight(clean, cW * 0.65, 10.5, 5.5) + 4;
           y += 2;
-          checkPage(10);
+          checkPage(Math.max(boldHeight, 16));
           doc.setFontSize(10.5);
           doc.setTextColor(17, 17, 17);
 
@@ -743,6 +753,9 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           const textX = mL + 8;
           const textW = cW - 8;
 
+          const bulletHeight = measureTextHeight(clean, textW, bSize, bLH);
+          checkPage(bulletHeight);
+
           const bulletDate = extractDate(clean);
           if (bulletDate) {
             drawBullet(mL + 4, y);
@@ -781,8 +794,9 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         const plainClean = trimmed.replace(/\*\*/g, "");
         const plainDate = extractDate(plainClean);
         if (plainDate && !(/^[-*•]\s/.test(trimmed)) && !(/^\d+\. /.test(trimmed))) {
+          const plainHeight = measureTextHeight(plainClean, cW * 0.65, 10.5, 5.5) + 4;
           y += 2;
-          checkPage(10);
+          checkPage(Math.max(plainHeight, 12));
           doc.setFontSize(10.5);
           doc.setTextColor(17, 17, 17);
 
