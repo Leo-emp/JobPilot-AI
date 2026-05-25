@@ -1455,9 +1455,15 @@ export default function TemplatesPage() {
       while (yOffset < canvas.height) {
         let sliceBottom = Math.min(yOffset + pageHeightPx, canvas.height);
 
-        /* Smart page break: scan upward from ideal break to find a white row */
+        /* Smart page break: scan upward to find a gap of consecutive white rows.
+           A single white row sits between wrapped lines of text — we need a real
+           gap (between paragraphs or bullet points) to break cleanly. */
         if (sliceBottom < canvas.height && ctx) {
-          const scanEnd = Math.max(yOffset + Math.floor(pageHeightPx * 0.8), yOffset);
+          const scanEnd = Math.max(yOffset + Math.floor(pageHeightPx * 0.7), yOffset);
+          const MIN_GAP = 6;
+          let consecutive = 0;
+          let breakRow = -1;
+
           for (let row = sliceBottom; row > scanEnd; row--) {
             const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
             let allWhite = true;
@@ -1467,8 +1473,18 @@ export default function TemplatesPage() {
                 break;
               }
             }
-            if (allWhite) { sliceBottom = row; break; }
+            if (allWhite) {
+              consecutive++;
+              if (consecutive >= MIN_GAP) {
+                breakRow = row + Math.floor(MIN_GAP / 2);
+                break;
+              }
+            } else {
+              consecutive = 0;
+            }
           }
+
+          if (breakRow > yOffset) sliceBottom = breakRow;
         }
 
         const sliceH = sliceBottom - yOffset;
