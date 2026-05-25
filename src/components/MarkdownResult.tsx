@@ -564,8 +564,8 @@ export default function MarkdownResult({ result, showDownload = true, editable =
       const mBot = 16;
       const cW = pageWidth - mL - mR;
       let y = mTop;
-      const bSize = 9.5;
-      const bLH = 4.8;
+      const bSize = 10;
+      const bLH = 5;
       let nameRendered = false;
       let contactRendered = false;
       let seenSection = false;
