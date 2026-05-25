@@ -257,10 +257,10 @@ const DOWNLOAD_STYLES = `
   h3, .entry-row { font-size: 13px; font-weight: 700; margin: 8px 0 2px 0; color: #111; }
   .entry-row { display: flex; justify-content: space-between; align-items: baseline; }
   .entry-row .date { font-weight: 700; white-space: nowrap; margin-left: 12px; }
-  p { margin: 0 0 6px 0; font-size: 12.5px; color: #333; }
-  .contact-line { font-size: 12px; color: #444; margin-bottom: 10px; }
+  p { margin: 0 0 6px 0; font-size: 12.5px; color: #191919; }
+  .contact-line { font-size: 12px; color: #191919; margin-bottom: 10px; }
   ul, ol { padding-left: 20px; margin: 2px 0 8px 0; list-style-type: disc; }
-  li { margin-bottom: 2px; font-size: 12.5px; color: #333; line-height: 1.45; }
+  li { margin-bottom: 2px; font-size: 12.5px; color: #191919; line-height: 1.45; }
   strong { color: #111; font-weight: 700; }
   em { font-style: italic; }
   hr { border: none; border-top: 1px solid #ddd; margin: 10px 0; }
@@ -576,7 +576,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
 
       /* Draw a filled bullet circle (since jsPDF helvetica lacks ● glyph) */
       const drawBullet = (bx: number, by: number) => {
-        doc.setFillColor(40, 40, 40);
+        doc.setFillColor(25, 25, 25);
         doc.circle(bx, by - 1, 0.7, "F");
       };
 
@@ -710,7 +710,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         if (!seenSection && !contactRendered && isContactLine(trimmed)) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
-          doc.setTextColor(60, 60, 60);
+          doc.setTextColor(25, 25, 25);
           const contactText = trimmed.replace(/\*\*/g, "");
           const linkedinMatch = contactText.match(/(https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s|•·,)]+)/i);
           if (linkedinMatch) {
@@ -723,7 +723,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
             doc.setTextColor(0, 51, 153);
             doc.textWithLink(url, cx, y, { url });
             cx += doc.getTextWidth(url);
-            doc.setTextColor(60, 60, 60);
+            doc.setTextColor(25, 25, 25);
             if (after.trim()) { doc.text(after, cx, y); }
           } else {
             doc.text(contactText, mL, y);
@@ -738,7 +738,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           const text = trimmed.replace(/^[-*•]\s+/, "");
           const clean = text.replace(/\*\*/g, "");
           doc.setFontSize(bSize);
-          doc.setTextColor(40, 40, 40);
+          doc.setTextColor(25, 25, 25);
 
           const textX = mL + 8;
           const textW = cW - 8;
@@ -769,7 +769,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           const match = trimmed.match(/^(\d+)\. (.+)/);
           if (match) {
             doc.setFontSize(bSize);
-            doc.setTextColor(40, 40, 40);
+            doc.setTextColor(25, 25, 25);
             doc.setFont("helvetica", "normal");
             doc.text(`${match[1]}.`, mL + 1, y);
             y = renderWrappedText(doc, match[2], mL + 7, y, cW - 7, bSize, bLH, pageHeight, mTop);
@@ -798,7 +798,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         }
 
         /* ---- Regular paragraph ---- */
-        doc.setTextColor(40, 40, 40);
+        doc.setTextColor(25, 25, 25);
         y = renderWrappedText(doc, trimmed, mL, y, cW, bSize, bLH, pageHeight, mTop);
         y += 1;
       }
