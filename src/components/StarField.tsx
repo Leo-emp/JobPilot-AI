@@ -45,15 +45,6 @@ export default function StarField() {
       {/* # Dot grid pattern */}
       <div className="absolute inset-0 grid-bg" />
 
-      {/* # Ambient cyan-blue glow at top of page */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-full sm:w-[1000px] h-[400px] sm:h-[800px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(ellipse, rgba(56,189,248,0.06) 0%, rgba(56,189,248,0.02) 35%, transparent 65%)",
-        }}
-      />
-
       {/* # Stars — small stars get gentle pulse + drift, */}
       {/* # large stars get dramatic twinkle with scale */}
       {stars.map((star) => {

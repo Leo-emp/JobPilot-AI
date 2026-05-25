@@ -52,32 +52,9 @@ export default function Hero() {
       className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-36"
     >
 
-      {/* ---- Ambient cyan light wash behind entire hero ---- */}
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full sm:w-[1200px] h-[500px] sm:h-[900px] pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse, rgba(56,189,248,0.04) 0%, rgba(56,189,248,0.015) 30%, transparent 60%)",
-        }}
-      />
-
-      {/* ---- Breathing glow — slow pulse behind the title area ---- */}
-      <div
-        className="absolute top-1/2 left-1/2 w-[600px] sm:w-[900px] h-[300px] sm:h-[500px] rounded-full pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, rgba(56,189,248,0.08) 30%, transparent 65%)",
-          animation: "glow-breathe 4s ease-in-out infinite",
-        }}
-      />
-
       {/* ---- Rocket Icon — scale + fade for a dramatic entrance ---- */}
       <motion.div variants={rocketReveal} className="relative mb-8">
-        <div
-          className="absolute -inset-16 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0.03) 40%, transparent 70%)" }}
-        />
-        <div className="relative">
-          <RocketIcon size={120} />
-        </div>
+        <RocketIcon size={120} />
       </motion.div>
 
       {/* ---- Title ---- */}
