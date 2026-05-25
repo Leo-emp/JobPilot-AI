@@ -1445,24 +1445,46 @@ export default function TemplatesPage() {
       document.body.removeChild(iframe);
 
       const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-
-      /* Handle multi-page if content is taller than one A4 page */
       const pageHeight = 297;
-      let position = 0;
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const pageHeightPx = Math.floor(pageHeight * canvas.width / imgWidth);
+      const ctx = canvas.getContext("2d");
+      let yOffset = 0;
+      let isFirstPage = true;
 
-      if (imgHeight <= pageHeight) {
-        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
-      } else {
-        let remaining = imgHeight;
-        while (remaining > 0) {
-          pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-          remaining -= pageHeight;
-          position -= pageHeight;
-          if (remaining > 0) pdf.addPage();
+      while (yOffset < canvas.height) {
+        let sliceBottom = Math.min(yOffset + pageHeightPx, canvas.height);
+
+        /* Smart page break: scan upward from ideal break to find a white row */
+        if (sliceBottom < canvas.height && ctx) {
+          const scanEnd = Math.max(yOffset + Math.floor(pageHeightPx * 0.8), yOffset);
+          for (let row = sliceBottom; row > scanEnd; row--) {
+            const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
+            let allWhite = true;
+            for (let i = 0; i < rowPixels.length; i += 16) {
+              if (rowPixels[i] < 245 || rowPixels[i+1] < 245 || rowPixels[i+2] < 245) {
+                allWhite = false;
+                break;
+              }
+            }
+            if (allWhite) { sliceBottom = row; break; }
+          }
         }
+
+        const sliceH = sliceBottom - yOffset;
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = pageHeightPx;
+        const pctx = pageCanvas.getContext("2d")!;
+        pctx.fillStyle = "#ffffff";
+        pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+
+        if (!isFirstPage) pdf.addPage();
+        pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
+
+        yOffset = sliceBottom;
+        isFirstPage = false;
       }
 
       pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
