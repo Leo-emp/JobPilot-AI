@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { extractTextFromPdf } from "@/lib/pdf-extract";
 
 /* ---- Types ---- */
 interface UserPlan {
@@ -609,94 +610,123 @@ export default function SettingsPage() {
 
               {resumesLoading ? (
                 <p className="text-sm text-text-muted">Loading resumes...</p>
-              ) : savedResumes.length === 0 ? (
-                <div className="p-4 rounded-xl bg-space-700/40 border border-card-border">
-                  <p className="text-sm text-text-muted">
-                    No resumes uploaded yet. Upload one on the{" "}
-                    <a href="/dashboard/resume" className="text-brand-light hover:underline">Resume Intelligence</a> page or during onboarding.
-                  </p>
-                </div>
+              ) : !defaultResume ? (
+                <label className="flex items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-card-border hover:border-brand-indigo/40 cursor-pointer transition-colors">
+                  <svg className="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-sm text-text-secondary">
+                    {resumeSaving ? "Uploading..." : "Upload your resume (PDF or TXT)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,.txt"
+                    className="hidden"
+                    disabled={resumeSaving}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setResumeSaving(true);
+                      setResumeMessage("");
+                      try {
+                        let text = "";
+                        if (file.name.toLowerCase().endsWith(".txt")) {
+                          text = await file.text();
+                        } else if (file.name.toLowerCase().endsWith(".pdf")) {
+                          text = await extractTextFromPdf(file);
+                        }
+                        if (text.trim().length < 50) {
+                          setResumeMessage("Could not extract enough text from this file. Try a different resume.");
+                          setResumeSaving(false);
+                          return;
+                        }
+                        const saveRes = await fetch("/api/resumes", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ fileName: file.name, content: text, analysis: null }),
+                        });
+                        if (!saveRes.ok) throw new Error("Save failed");
+                        const saved = await saveRes.json();
+                        const setRes = await fetch("/api/user/default-resume", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ resumeId: saved.id }),
+                        });
+                        if (setRes.ok) {
+                          setDefaultResume({ id: saved.id, fileName: file.name });
+                          setResumeMessage("Default resume set! It will now preload on all AI features.");
+                        } else {
+                          setResumeMessage("Resume saved but failed to set as default. Please try again.");
+                        }
+                      } catch {
+                        setResumeMessage("Failed to upload resume. Please try again.");
+                      }
+                      setResumeSaving(false);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
               ) : (
-                <div className="space-y-2">
-                  {savedResumes.map((r) => (
-                    <div
-                      key={r.id}
-                      className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                        defaultResume?.id === r.id
-                          ? "bg-brand-indigo/10 border-brand-indigo/30"
-                          : "bg-space-700/30 border-card-border hover:border-card-border-hover"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <svg className="w-5 h-5 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{r.fileName}</p>
-                          <p className="text-xs text-text-muted">
-                            {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </p>
-                        </div>
-                      </div>
-                      {defaultResume?.id === r.id ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-brand-light font-medium px-2 py-1 rounded-full bg-brand-indigo/20 border border-brand-indigo/30">
-                            Default
-                          </span>
-                          <button
-                            onClick={async () => {
-                              setResumeSaving(true);
-                              setResumeMessage("");
-                              try {
-                                const res = await fetch("/api/user/default-resume", { method: "DELETE" });
-                                if (res.ok) {
-                                  setDefaultResume(null);
-                                  setResumeMessage("Default resume removed.");
-                                } else {
-                                  setResumeMessage("Failed to remove default. Please try again.");
-                                }
-                              } catch {
-                                setResumeMessage("Failed to connect. Please try again.");
-                              }
-                              setResumeSaving(false);
-                            }}
-                            disabled={resumeSaving}
-                            className="text-xs text-text-muted hover:text-red-400 transition-colors disabled:opacity-50"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            setResumeSaving(true);
-                            setResumeMessage("");
-                            try {
-                              const res = await fetch("/api/user/default-resume", {
-                                method: "PUT",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ resumeId: r.id }),
-                              });
-                              if (res.ok) {
-                                setDefaultResume({ id: r.id, fileName: r.fileName });
-                                setResumeMessage("Default resume set! It will now preload on all AI features.");
-                              } else {
-                                const data = await res.json().catch(() => ({}));
-                                setResumeMessage(data.error || "Failed to set default resume. Please try again.");
-                              }
-                            } catch {
-                              setResumeMessage("Failed to connect. Please try again.");
-                            }
-                            setResumeSaving(false);
-                          }}
-                          disabled={resumeSaving}
-                          className="px-3 py-1.5 text-xs font-medium text-brand-light border border-brand-indigo/30 rounded-lg hover:bg-brand-indigo/10 transition-colors disabled:opacity-50"
-                        >
-                          {resumeSaving ? "Saving..." : "Set as Default"}
-                        </button>
-                      )}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-brand-indigo/10 border border-brand-indigo/30">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <svg className="w-5 h-5 text-brand-light shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{defaultResume.fileName}</p>
+                      <p className="text-xs text-text-muted">Current default</p>
                     </div>
-                  ))}
+                  </div>
+                  <label className="px-3 py-1.5 text-xs font-medium text-brand-light border border-brand-indigo/30 rounded-lg hover:bg-brand-indigo/10 transition-colors cursor-pointer">
+                    {resumeSaving ? "Uploading..." : "Change"}
+                    <input
+                      type="file"
+                      accept=".pdf,.txt"
+                      className="hidden"
+                      disabled={resumeSaving}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setResumeSaving(true);
+                        setResumeMessage("");
+                        try {
+                          let text = "";
+                          if (file.name.toLowerCase().endsWith(".txt")) {
+                            text = await file.text();
+                          } else if (file.name.toLowerCase().endsWith(".pdf")) {
+                            text = await extractTextFromPdf(file);
+                          }
+                          if (text.trim().length < 50) {
+                            setResumeMessage("Could not extract enough text from this file. Try a different resume.");
+                            setResumeSaving(false);
+                            return;
+                          }
+                          const saveRes = await fetch("/api/resumes", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ fileName: file.name, content: text, analysis: null }),
+                          });
+                          if (!saveRes.ok) throw new Error("Save failed");
+                          const saved = await saveRes.json();
+                          const setRes = await fetch("/api/user/default-resume", {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ resumeId: saved.id }),
+                          });
+                          if (setRes.ok) {
+                            setDefaultResume({ id: saved.id, fileName: file.name });
+                            setResumeMessage("Default resume updated!");
+                          } else {
+                            setResumeMessage("Resume saved but failed to set as default. Please try again.");
+                          }
+                        } catch {
+                          setResumeMessage("Failed to upload resume. Please try again.");
+                        }
+                        setResumeSaving(false);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                 </div>
               )}
 
