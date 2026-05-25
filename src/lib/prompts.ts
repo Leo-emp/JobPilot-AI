@@ -67,14 +67,17 @@ WRITING QUALITY STANDARDS:
 - Professional Summary must ${hasJD ? "directly address the target role and mention 2-3 key requirements from the job description" : "showcase the candidate's strongest value proposition and core expertise"}
 
 FORMATTING RULES:
-- NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
+- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
+- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- For Education and Certifications entries, keep the title/degree as plain text but bold the dates: Degree, Institution, Location — **Dates**
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **Dates**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **Dates**
 - Do NOT use ### headings — use **bold** inline text only where specified above
+- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
-   Contact info on one line: Location • Phone • Email • LinkedIn
+   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username (full URL)
 2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
@@ -84,8 +87,8 @@ STRUCTURE (follow this EXACT order):
    For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: Degree, Institution, Location — **Dates**
-6. ## Certifications and Trainings (if applicable, list each with institution and bold the date: Certification Name, Institution — **Date**)
+   For each entry, plain text title with bold dates on right: Degree, Institution, Location — **Dates**
+6. ## Certifications and Trainings (if applicable, plain text title with bold dates on right: Certification Name, Institution — **Dates**)
 7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
 
 Return the COMPLETE optimized resume in clean markdown format.
@@ -116,14 +119,17 @@ WRITING QUALITY STANDARDS:
 - Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
 
 FORMATTING RULES:
-- NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
+- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
+- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- For Education and Certifications entries, keep the title/degree as plain text but bold the dates: Degree, Institution, Location — **Dates**
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **Dates**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **Dates**
 - Do NOT use ### headings — use **bold** inline text only where specified above
+- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
-   Contact info on one line: Location • Phone • Email • LinkedIn
+   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username (full URL)
 2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
 3. ## Core Skills
    Bullet points grouped by category:
@@ -133,9 +139,9 @@ STRUCTURE (follow this EXACT order):
    For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: Degree, Institution, Location — **Dates**
+   For each entry, plain text title with bold dates on right: Degree, Institution, Location — **Dates**
 6. ## Certifications and Trainings
-   List each certification/training with institution, bold the date: Certification Name, Institution — **Date**
+   Plain text title with bold dates on right: Certification Name, Institution — **Dates**
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
@@ -418,14 +424,17 @@ WRITING QUALITY STANDARDS:
 - Professional Summary must directly address the career change — why their background is an ASSET, not a gap
 
 FORMATTING RULES:
-- NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
+- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
+- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- For Education and Certifications entries, keep the title/degree as plain text but bold the dates: Degree, Institution, Location — **Dates**
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **Dates**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **Dates**
 - Do NOT use ### headings — use **bold** inline text only where specified above
+- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
-   Contact info on one line: Location • Phone • Email • LinkedIn
+   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username (full URL)
 2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly adaptable Business Operations Executive seeking to transition..." or "Resourceful Marketing Specialist with transferable expertise in...". Then show how their background uniquely positions them for the target role. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target title. Mention specific transferable strengths.)
 3. ## Core Skills
    Bullet points grouped by category:
@@ -437,9 +446,9 @@ STRUCTURE (follow this EXACT order):
    For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: Degree, Institution, Location — **Dates**
+   For each entry, plain text title with bold dates on right: Degree, Institution, Location — **Dates**
 6. ## Certifications and Trainings
-   List each certification/training with institution, bold the date: Certification Name, Institution — **Date**
+   Plain text title with bold dates on right: Certification Name, Institution — **Dates**
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 

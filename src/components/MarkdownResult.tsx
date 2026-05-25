@@ -357,9 +357,19 @@ function markdownToDownloadHTML(md: string): string {
     }
 
     if (inList) { htmlParts.push("</ul>"); inList = false; }
+
+    /* Plain line with date — education/cert entry (title plain, date right-aligned bold) */
+    const pClean = trimmed.replace(/\*\*/g, "");
+    const pDate = splitDate(pClean);
+    if (pDate) {
+      htmlParts.push(`<div class="entry-row"><span>${pDate.left}</span><span class="date"><strong>${pDate.date}</strong></span></div>`);
+      continue;
+    }
+
     const content = trimmed
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>");
+      .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, "<em>$1</em>")
+      .replace(/(https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s|•·,)<]+)/gi, '<a href="$1" style="color:#003399;text-decoration:underline">$1</a>');
     htmlParts.push(`<p>${content}</p>`);
   }
 
@@ -701,7 +711,23 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
           doc.setTextColor(60, 60, 60);
-          doc.text(trimmed.replace(/\*\*/g, ""), mL, y);
+          const contactText = trimmed.replace(/\*\*/g, "");
+          const linkedinMatch = contactText.match(/(https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s|•·,)]+)/i);
+          if (linkedinMatch) {
+            const url = linkedinMatch[1];
+            const idx = contactText.indexOf(url);
+            const before = contactText.slice(0, idx);
+            const after = contactText.slice(idx + url.length);
+            let cx = mL;
+            if (before) { doc.text(before, cx, y); cx += doc.getTextWidth(before); }
+            doc.setTextColor(0, 51, 153);
+            doc.textWithLink(url, cx, y, { url });
+            cx += doc.getTextWidth(url);
+            doc.setTextColor(60, 60, 60);
+            if (after.trim()) { doc.text(after, cx, y); }
+          } else {
+            doc.text(contactText, mL, y);
+          }
           contactRendered = true;
           y += 6;
           continue;
