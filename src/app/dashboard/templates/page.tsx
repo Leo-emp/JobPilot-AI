@@ -1117,9 +1117,108 @@ function buildRightSidebar(d: ResumeData): string {
 
 
 /* ============================================================
-   TEMPLATE REGISTRY — All 20 templates
+   TEMPLATE 0: STANDARD ATS — Matches JobPilot AI PDF output exactly
+   ============================================================ */
+function buildStandardATS(d: ResumeData): string {
+  const css = `
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Helvetica, Arial, sans-serif; max-width:760px; margin:0 auto; padding:30px 36px; line-height:1.45; font-size:10pt; color:#191919; }
+    .name { font-size:24pt; font-weight:700; color:#111; margin-bottom:2px; }
+    .contact { font-size:10pt; color:#191919; margin-bottom:14px; }
+    .contact a { color:#003399; text-decoration:underline; }
+    h2 { font-size:12pt; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#111; border-bottom:2px solid #1a1a1a; padding-bottom:3px; margin:18px 0 10px; }
+    .summary { font-size:10pt; color:#191919; line-height:1.5; margin-bottom:4px; }
+    .entry { margin-bottom:10px; }
+    .entry-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px; }
+    .entry-row .left { font-weight:700; font-size:10.5pt; color:#111; }
+    .entry-row .date { font-weight:700; font-size:10.5pt; color:#111; white-space:nowrap; margin-left:12px; }
+    .edu-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+    .edu-row .left { font-weight:400; font-size:10.5pt; color:#191919; }
+    .edu-row .date { font-weight:700; font-size:10.5pt; color:#111; white-space:nowrap; margin-left:12px; }
+    ul { padding-left:20px; margin:2px 0 8px; list-style-type:disc; }
+    li { font-size:10pt; line-height:1.45; margin-bottom:2px; color:#191919; }
+    .skill-group { font-size:10pt; margin-bottom:3px; color:#191919; }
+    .skill-group strong { color:#111; }
+    .lang-line { font-size:10pt; color:#191919; margin-bottom:3px; }
+  `;
+
+  let html = `<div class="name">${esc(d.fullName || "Your Name")}</div>`;
+  const contact = contactParts(d);
+  const contactStr = contact.map(c => {
+    if (c.includes("linkedin.com")) return `<a href="${c.startsWith("http") ? esc(c) : "https://" + esc(c)}">${esc(c)}</a>`;
+    return esc(c);
+  }).join(" &bull; ");
+  html += `<div class="contact">${contactStr}</div>`;
+
+  if (d.summary) html += `<h2>Professional Summary</h2><div class="summary">${esc(d.summary)}</div>`;
+
+  if (d.skills) {
+    html += `<h2>Core Skills</h2>`;
+    const groups = parseSkillGroups(d.skills);
+    html += groups.map(g => `<div class="skill-group">${g.category ? `${esc(g.category)}: ` : ""}${g.items.map(i => esc(i)).join(", ")}</div>`).join("");
+  }
+
+  if (d.experience) {
+    html += `<h2>Work Experience</h2>`;
+    const entries = parseEntries(d.experience);
+    html += entries.map(e => {
+      let row = `<div class="entry"><div class="entry-row"><span class="left">${esc(e.title)}</span>`;
+      if (e.sub) {
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
+        if (datePart) row += `<span class="date">${esc(datePart[1])}</span>`;
+      }
+      row += `</div>`;
+      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
+      row += `</div>`;
+      return row;
+    }).join("");
+  }
+
+  if (d.education) {
+    html += `<h2>Education</h2>`;
+    const entries = parseEntries(d.education);
+    html += entries.map(e => {
+      let row = `<div class="edu-row"><span class="left">${esc(e.title)}${e.sub ? " · " + esc(e.sub) : ""}</span>`;
+      if (e.sub) {
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
+        if (datePart) row = `<div class="edu-row"><span class="left">${esc(e.title)}</span><span class="date">${esc(datePart[1])}</span>`;
+      }
+      row += `</div>`;
+      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
+      return row;
+    }).join("");
+  }
+
+  if (d.certifications) {
+    html += `<h2>Certifications and Trainings</h2>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    html += lines.map(l => {
+      const clean = l.replace(/^[-•]\s*/, "");
+      const datePart = clean.match(/[-—–]\s*([\d/]+ *[-–] *[\d/\w]+)$/);
+      if (datePart) {
+        const title = clean.slice(0, clean.indexOf(datePart[0])).trim();
+        return `<div class="edu-row"><span class="left">${esc(title)}</span><span class="date">${esc(datePart[1])}</span></div>`;
+      }
+      return `<div class="edu-row"><span class="left">${esc(clean)}</span></div>`;
+    }).join("");
+  }
+
+  if (d.languages) {
+    html += `<h2>Languages</h2>`;
+    html += langLines(d.languages).map(l => `<div class="lang-line">${esc(l)}</div>`).join("");
+  }
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+}
+
+
+/* ============================================================
+   TEMPLATE REGISTRY — All 21 templates
    ============================================================ */
 const TEMPLATES: Template[] = [
+  /* ---- STANDARD ---- */
+  { id: "standard-ats", name: "Standard ATS-Friendly", desc: "JobPilot's signature layout — clean Helvetica, bold headers, right-aligned dates", category: "Standard", buildHTML: buildStandardATS },
+
   /* ---- CLASSIC ---- */
   { id: "traditional", name: "Traditional", desc: "Classic serif layout trusted by Fortune 500 recruiters", category: "Classic", buildHTML: buildTraditional },
   { id: "ats-friendly", name: "ATS-Friendly", desc: "Zero-decoration layout that passes every ATS parser", category: "Classic", buildHTML: buildATS },
@@ -1203,7 +1302,7 @@ export default function TemplatesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selected = TEMPLATES.find(t => t.id === selectedId)!;
-  const categories = ["All", "Classic", "Sidebar", "Visual", "Modern", "Special"];
+  const categories = ["All", "Standard", "Classic", "Sidebar", "Visual", "Modern", "Special"];
   const filtered = filter === "All" ? TEMPLATES : TEMPLATES.filter(t => t.category === filter);
 
   const updateField = useCallback((field: keyof ResumeData, value: string) => {
