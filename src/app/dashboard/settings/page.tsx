@@ -652,8 +652,12 @@ export default function SettingsPage() {
                                 if (res.ok) {
                                   setDefaultResume(null);
                                   setResumeMessage("Default resume removed.");
+                                } else {
+                                  setResumeMessage("Failed to remove default. Please try again.");
                                 }
-                              } catch {}
+                              } catch {
+                                setResumeMessage("Failed to connect. Please try again.");
+                              }
                               setResumeSaving(false);
                             }}
                             disabled={resumeSaving}
@@ -675,15 +679,20 @@ export default function SettingsPage() {
                               });
                               if (res.ok) {
                                 setDefaultResume({ id: r.id, fileName: r.fileName });
-                                setResumeMessage("Default resume updated!");
+                                setResumeMessage("Default resume set! It will now preload on all AI features.");
+                              } else {
+                                const data = await res.json().catch(() => ({}));
+                                setResumeMessage(data.error || "Failed to set default resume. Please try again.");
                               }
-                            } catch {}
+                            } catch {
+                              setResumeMessage("Failed to connect. Please try again.");
+                            }
                             setResumeSaving(false);
                           }}
                           disabled={resumeSaving}
                           className="px-3 py-1.5 text-xs font-medium text-brand-light border border-brand-indigo/30 rounded-lg hover:bg-brand-indigo/10 transition-colors disabled:opacity-50"
                         >
-                          Set as Default
+                          {resumeSaving ? "Saving..." : "Set as Default"}
                         </button>
                       )}
                     </div>
@@ -692,7 +701,7 @@ export default function SettingsPage() {
               )}
 
               {resumeMessage && (
-                <p className={`text-sm mt-4 ${resumeMessage.includes("removed") ? "text-yellow-400" : "text-green-400"}`}>
+                <p className={`text-sm mt-4 ${resumeMessage.includes("Failed") ? "text-red-400" : resumeMessage.includes("removed") ? "text-yellow-400" : "text-green-400"}`}>
                   {resumeMessage}
                 </p>
               )}
