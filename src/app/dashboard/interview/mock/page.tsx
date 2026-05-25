@@ -18,6 +18,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Types ---- */
 /* Each message in the conversation (AI or user) */
@@ -200,6 +201,15 @@ export default function MockInterviewPage() {
   const [resumeFileName, setResumeFileName] = useState("");
   const [resumeUploading, setResumeUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  /* Auto-load user's default resume */
+  const { defaultResume } = useDefaultResume();
+  useEffect(() => {
+    if (defaultResume && !resume) {
+      setResume(defaultResume.content);
+      setResumeFileName(defaultResume.fileName);
+    }
+  }, [defaultResume]);
 
   /* ---- Interview conversation state ---- */
   const [messages, setMessages] = useState<ChatMessage[]>([]);          /* full conversation log */
