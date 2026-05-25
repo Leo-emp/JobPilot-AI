@@ -56,16 +56,15 @@ export default function Hero() {
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full sm:w-[1200px] h-[500px] sm:h-[900px] pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse, rgba(56,189,248,0.08) 0%, rgba(56,189,248,0.03) 30%, transparent 60%)",
+          background: "radial-gradient(ellipse, rgba(56,189,248,0.04) 0%, rgba(56,189,248,0.015) 30%, transparent 60%)",
         }}
       />
 
       {/* ---- Breathing glow — slow pulse behind the title area ---- */}
-      {/* Barely visible, creates a living atmosphere */}
       <div
         className="absolute top-1/2 left-1/2 w-[600px] sm:w-[900px] h-[300px] sm:h-[500px] rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse, rgba(99,102,241,0.5) 0%, rgba(56,189,248,0.3) 30%, transparent 65%)",
+          background: "radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, rgba(56,189,248,0.08) 30%, transparent 65%)",
           animation: "glow-breathe 4s ease-in-out infinite",
         }}
       />
@@ -74,7 +73,7 @@ export default function Hero() {
       <motion.div variants={rocketReveal} className="relative mb-8">
         <div
           className="absolute -inset-16 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0.06) 40%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0.03) 40%, transparent 70%)" }}
         />
         <div className="relative">
           <RocketIcon size={120} />

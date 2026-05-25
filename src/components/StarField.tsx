@@ -50,7 +50,7 @@ export default function StarField() {
         className="absolute top-0 left-1/2 -translate-x-1/2 w-full sm:w-[1000px] h-[400px] sm:h-[800px] rounded-full"
         style={{
           background:
-            "radial-gradient(ellipse, rgba(56,189,248,0.12) 0%, rgba(56,189,248,0.04) 35%, transparent 65%)",
+            "radial-gradient(ellipse, rgba(56,189,248,0.06) 0%, rgba(56,189,248,0.02) 35%, transparent 65%)",
         }}
       />
 
