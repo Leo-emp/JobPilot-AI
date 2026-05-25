@@ -69,9 +69,10 @@ WRITING QUALITY STANDARDS:
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
 - NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
-- Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **Dates**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **Dates**
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY** (the entire line including dates must be wrapped in **)
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
+- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names (not "July 2024", not "Jul 2024"). Use "Current" for ongoing roles.
 - Do NOT use ### headings — use **bold** inline text only where specified above
 - LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
@@ -84,11 +85,11 @@ STRUCTURE (follow this EXACT order):
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
-   For EACH role: **Job Title, Company, Location — Dates**
+   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry, plain text title with bold dates on right: Degree, Institution, Location — **Dates**
-6. ## Certifications and Trainings (if applicable, plain text title with bold dates on right: Certification Name, Institution — **Dates**)
+   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
+6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY**
 7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
 
 Return the COMPLETE optimized resume in clean markdown format.
@@ -121,9 +122,10 @@ WRITING QUALITY STANDARDS:
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
 - NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
-- Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **Dates**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **Dates**
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY** (the entire line including dates must be wrapped in **)
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
+- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names (not "July 2024", not "Jul 2024"). Use "Current" for ongoing roles.
 - Do NOT use ### headings — use **bold** inline text only where specified above
 - LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
@@ -136,12 +138,12 @@ STRUCTURE (follow this EXACT order):
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
-   For EACH role: **Job Title, Company, Location — Dates**
+   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry, plain text title with bold dates on right: Degree, Institution, Location — **Dates**
+   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
 6. ## Certifications and Trainings
-   Plain text title with bold dates on right: Certification Name, Institution — **Dates**
+   Certification Name, Institution — **MM/YYYY – MM/YYYY**
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
@@ -426,9 +428,10 @@ WRITING QUALITY STANDARDS:
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
 - NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
-- Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **Dates**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **Dates**
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY** (the entire line including dates must be wrapped in **)
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
+- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names (not "July 2024", not "Jul 2024"). Use "Current" for ongoing roles.
 - Do NOT use ### headings — use **bold** inline text only where specified above
 - LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
@@ -443,12 +446,12 @@ STRUCTURE (follow this EXACT order):
    - Technical: Tool, Tool, Tool
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
 4. ## Work Experience
-   For EACH role: **Job Title, Company, Location — Dates**
+   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
 5. ## Education
-   For each entry, plain text title with bold dates on right: Degree, Institution, Location — **Dates**
+   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
 6. ## Certifications and Trainings
-   Plain text title with bold dates on right: Certification Name, Institution — **Dates**
+   Certification Name, Institution — **MM/YYYY – MM/YYYY**
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
