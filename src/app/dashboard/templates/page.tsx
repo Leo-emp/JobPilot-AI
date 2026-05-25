@@ -1403,16 +1403,18 @@ export default function TemplatesPage() {
       /* Build an offscreen container with the resume HTML */
       const fullHTML = selected.buildHTML(formData);
       const container = document.createElement("div");
+      container.className = "resume-render";
       container.innerHTML = fullHTML.replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>|<!DOCTYPE html>/g, "");
       const styleMatch = fullHTML.match(/<style>([\s\S]*?)<\/style>/);
       if (styleMatch) {
         const styleEl = document.createElement("style");
-        styleEl.textContent = styleMatch[1];
+        styleEl.textContent = styleMatch[1].replace(/\bbody\b\s*\{/g, ".resume-render {");
         container.prepend(styleEl);
       }
       container.style.position = "absolute";
       container.style.left = "-9999px";
       container.style.width = "794px";
+      container.style.background = "#ffffff";
       document.body.appendChild(container);
 
       /* Render to canvas then to PDF */
