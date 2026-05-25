@@ -87,7 +87,7 @@ function parseEntries(text: string): { title: string; sub: string; bullets: stri
     if (t.includes(" | ")) {
       if (current) entries.push(current);
       const parts = t.split(" | ").map(p => p.trim());
-      current = { title: parts[0], sub: [parts[1], parts[2]].filter(Boolean).join(" · "), bullets: [] };
+      current = { title: parts[0], sub: parts.slice(1).filter(Boolean).join(" · "), bullets: [] };
     } else if (t.startsWith("- ") || t.startsWith("• ")) {
       if (current) current.bullets.push(t.replace(/^[-•]\s*/, ""));
     } else if (current) {
@@ -1162,11 +1162,20 @@ function buildStandardATS(d: ResumeData): string {
     html += `<h2>Work Experience</h2>`;
     const entries = parseEntries(d.experience);
     html += entries.map(e => {
-      let row = `<div class="entry"><div class="entry-row"><span class="left">${esc(e.title)}</span>`;
+      let leftText = e.title;
+      let dateText = "";
       if (e.sub) {
         const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
-        if (datePart) row += `<span class="date">${esc(datePart[1])}</span>`;
+        if (datePart) {
+          dateText = datePart[1];
+          const beforeDate = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+          if (beforeDate) leftText += ", " + beforeDate;
+        } else {
+          leftText += ", " + e.sub.replace(/ · /g, ", ");
+        }
       }
+      let row = `<div class="entry"><div class="entry-row"><span class="left">${esc(leftText)}</span>`;
+      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
       row += `</div>`;
       if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
       row += `</div>`;
@@ -1178,11 +1187,20 @@ function buildStandardATS(d: ResumeData): string {
     html += `<h2>Education</h2>`;
     const entries = parseEntries(d.education);
     html += entries.map(e => {
-      let row = `<div class="edu-row"><span class="left">${esc(e.title)}${e.sub ? " · " + esc(e.sub) : ""}</span>`;
+      let leftText = e.title;
+      let dateText = "";
       if (e.sub) {
         const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
-        if (datePart) row = `<div class="edu-row"><span class="left">${esc(e.title)}</span><span class="date">${esc(datePart[1])}</span>`;
+        if (datePart) {
+          dateText = datePart[1];
+          const beforeDate = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+          if (beforeDate) leftText += ", " + beforeDate;
+        } else {
+          leftText += ", " + e.sub.replace(/ · /g, ", ");
+        }
       }
+      let row = `<div class="edu-row"><span class="left">${esc(leftText)}</span>`;
+      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
       row += `</div>`;
       if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
       return row;
@@ -1391,7 +1409,7 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download via jspdf + html2canvas (installed deps, no CDN) ---- */
+  /* ---- PDF Download via jspdf + html2canvas inside isolated iframe ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -1400,26 +1418,31 @@ export default function TemplatesPage() {
         import("html2canvas"),
       ]);
 
-      /* Build an offscreen container with the resume HTML */
       const fullHTML = selected.buildHTML(formData);
-      const container = document.createElement("div");
-      container.className = "resume-render";
-      container.innerHTML = fullHTML.replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>|<!DOCTYPE html>/g, "");
-      const styleMatch = fullHTML.match(/<style>([\s\S]*?)<\/style>/);
-      if (styleMatch) {
-        const styleEl = document.createElement("style");
-        styleEl.textContent = styleMatch[1].replace(/\bbody\b\s*\{/g, ".resume-render {");
-        container.prepend(styleEl);
-      }
-      container.style.position = "absolute";
-      container.style.left = "-9999px";
-      container.style.width = "794px";
-      container.style.background = "#ffffff";
-      document.body.appendChild(container);
 
-      /* Render to canvas then to PDF */
-      const canvas = await html2canvas(container, { scale: 2, useCORS: true });
-      document.body.removeChild(container);
+      /* Use an iframe for complete CSS isolation from the dark theme */
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:1122px;border:none;visibility:hidden;";
+      document.body.appendChild(iframe);
+
+      const idoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!idoc) throw new Error("Cannot access iframe document");
+      idoc.open();
+      idoc.write(fullHTML);
+      idoc.close();
+
+      /* Wait for fonts and layout to settle */
+      await new Promise(r => setTimeout(r, 500));
+
+      const canvas = await html2canvas(idoc.body, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        windowWidth: 794,
+      });
+
+      document.body.removeChild(iframe);
 
       const imgWidth = 210;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;

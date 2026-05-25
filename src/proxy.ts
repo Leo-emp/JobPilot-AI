@@ -196,16 +196,16 @@ export function proxy(req: NextRequest) {
     "default-src 'self'",
     /* Scripts: nonce + fallback unsafe-inline + eval (dev only) + trusted third parties */
     `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://js.stripe.com https://us.i.posthog.com https://*.sentry.io`,
-    /* Styles: nonce + fallback unsafe-inline (Tailwind injects styles) */
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    /* Styles: unsafe-inline needed for Tailwind + template preview iframes */
+    "style-src 'self' 'unsafe-inline'",
     /* Images: self + data URIs (base64) + blob (PDF previews) + common CDNs */
     "img-src 'self' data: blob: https://*.googleusercontent.com https://*.licdn.com",
     /* Fonts: self + Google Fonts */
     "font-src 'self' https://fonts.gstatic.com",
     /* API calls: self + Stripe + Gemini + PostHog + Sentry */
     "connect-src 'self' https://api.stripe.com https://generativelanguage.googleapis.com https://us.i.posthog.com https://*.sentry.io",
-    /* Frames: only Stripe checkout iframe */
-    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    /* Frames: self (srcDoc iframes for template previews) + Stripe checkout */
+    "frame-src 'self' blob: https://js.stripe.com https://hooks.stripe.com",
     /* Block all other embeds */
     "object-src 'none'",
     "base-uri 'self'",
