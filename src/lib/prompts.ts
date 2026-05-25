@@ -69,7 +69,8 @@ WRITING QUALITY STANDARDS:
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- Do NOT use ### headings for job titles — use **bold** inline text instead
+- For Education and Certifications entries, keep the title/degree as plain text but bold the dates: Degree, Institution, Location — **Dates**
+- Do NOT use ### headings — use **bold** inline text only where specified above
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
@@ -83,8 +84,8 @@ STRUCTURE (follow this EXACT order):
    For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: Degree, Institution, Location — Dates
-6. ## Certifications and Trainings (if applicable, list each with institution and date)
+   For each entry: Degree, Institution, Location — **Dates**
+6. ## Certifications and Trainings (if applicable, list each with institution and bold the date: Certification Name, Institution — **Date**)
 7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
 
 Return the COMPLETE optimized resume in clean markdown format.
@@ -117,7 +118,8 @@ WRITING QUALITY STANDARDS:
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- Do NOT use ### headings for job titles — use **bold** inline text instead
+- For Education and Certifications entries, keep the title/degree as plain text but bold the dates: Degree, Institution, Location — **Dates**
+- Do NOT use ### headings — use **bold** inline text only where specified above
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
@@ -131,9 +133,9 @@ STRUCTURE (follow this EXACT order):
    For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: Degree, Institution, Location — Dates
+   For each entry: Degree, Institution, Location — **Dates**
 6. ## Certifications and Trainings
-   List each certification/training with institution and date
+   List each certification/training with institution, bold the date: Certification Name, Institution — **Date**
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 
@@ -418,7 +420,8 @@ WRITING QUALITY STANDARDS:
 FORMATTING RULES:
 - NEVER use bold (**text**) in Professional Summary, bullet points, or skill categories — all plain text
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — Dates** (the entire line including dates must be wrapped in **)
-- Do NOT use ### headings for job titles — use **bold** inline text instead
+- For Education and Certifications entries, keep the title/degree as plain text but bold the dates: Degree, Institution, Location — **Dates**
+- Do NOT use ### headings — use **bold** inline text only where specified above
 
 STRUCTURE (follow this EXACT order):
 1. # Name (from resume)
@@ -434,9 +437,9 @@ STRUCTURE (follow this EXACT order):
    For EACH role: **Job Title, Company, Location — Dates**
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
 5. ## Education
-   For each entry: Degree, Institution, Location — Dates
+   For each entry: Degree, Institution, Location — **Dates**
 6. ## Certifications and Trainings
-   List each certification/training with institution and date
+   List each certification/training with institution, bold the date: Certification Name, Institution — **Date**
 7. ## Languages
    List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
 

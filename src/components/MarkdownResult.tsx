@@ -751,6 +751,26 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           continue;
         }
 
+        /* ---- Plain line with date (education/cert entries) — right-align the date ---- */
+        const plainClean = trimmed.replace(/\*\*/g, "");
+        const plainDate = extractDate(plainClean);
+        if (plainDate && !(/^[-*•]\s/.test(trimmed)) && !(/^\d+\. /.test(trimmed))) {
+          y += 2;
+          checkPage(10);
+          doc.setFontSize(10.5);
+          doc.setTextColor(17, 17, 17);
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.5);
+          const dateW = doc.getTextWidth(plainDate.date);
+          const maxLeftW = cW - dateW - 4;
+
+          doc.text(plainDate.date, pageWidth - mR, y, { align: "right" });
+          doc.setFont("helvetica", "normal");
+          y = renderWrappedText(doc, plainDate.left, mL, y, maxLeftW, 10.5, 5.5, pageHeight, mTop);
+          continue;
+        }
+
         /* ---- Regular paragraph ---- */
         doc.setTextColor(40, 40, 40);
         y = renderWrappedText(doc, trimmed, mL, y, cW, bSize, bLH, pageHeight, mTop);
