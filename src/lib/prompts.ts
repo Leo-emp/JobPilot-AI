@@ -84,9 +84,10 @@ STRUCTURE (follow this EXACT order):
    Bullet points grouped by category:
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
-4. ## Work Experience
+4. ## Work Experience (if the resume has work experience)
    For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
+   If the resume has NO work experience, replace this section with ## Projects or ## Relevant Experience using academic projects, volunteer work, freelance, or personal projects from the resume. Use the same format: **Project/Role Name, Organization/Context — MM/YYYY – MM/YYYY** with 3-4 bullet points each.
 5. ## Education
    For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
 6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY**
@@ -137,9 +138,10 @@ STRUCTURE (follow this EXACT order):
    Bullet points grouped by category:
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
-4. ## Work Experience
+4. ## Work Experience (if the resume has work experience)
    For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
+   If the resume has NO work experience, replace this section with ## Projects or ## Relevant Experience using academic projects, volunteer work, freelance, or personal projects from the resume. Use the same format: **Project/Role Name, Organization/Context — MM/YYYY – MM/YYYY** with 3-4 bullet points each.
 5. ## Education
    For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
 6. ## Certifications and Trainings
@@ -445,9 +447,10 @@ STRUCTURE (follow this EXACT order):
    - Target Industry: Skill, Skill, Skill
    - Technical: Tool, Tool, Tool
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
-4. ## Work Experience
+4. ## Work Experience (if the resume has work experience)
    For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
    Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
+   If the resume has NO work experience, replace this section with ## Projects or ## Relevant Experience using academic projects, volunteer work, freelance, or personal projects from the resume. Use the same format: **Project/Role Name, Organization/Context — MM/YYYY – MM/YYYY** with 3-4 bullet points each.
 5. ## Education
    For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
 6. ## Certifications and Trainings
