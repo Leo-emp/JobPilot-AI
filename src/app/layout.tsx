@@ -69,11 +69,10 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      /* Apply font CSS variables so they're available everywhere */
-      /* All three font CSS variables are made available globally */
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
+      style={{ colorScheme: "dark", backgroundColor: "#09090b" }}
     >
-      <body className="min-h-screen flex flex-col" nonce={nonce}>
+      <body className="min-h-screen flex flex-col" style={{ backgroundColor: "#09090b" }} nonce={nonce}>
         {children}
         <CookieConsent />
       </body>
