@@ -664,7 +664,7 @@ export default function InterviewPage() {
         {loading && !streaming && !streamResult && (
           <div className="mt-6 flex items-center gap-3 text-text-secondary">
             <div className="w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">Connecting to AI...</span>
+            <span className="text-sm">Generating...</span>
           </div>
         )}
 
