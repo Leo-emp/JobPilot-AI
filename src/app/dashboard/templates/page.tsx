@@ -1482,7 +1482,7 @@ export default function TemplatesPage() {
             if (allWhite) {
               consecutive++;
               if (consecutive >= 28) {
-                breakRow = row + Math.floor(consecutive / 2);
+                breakRow = row;
                 break;
               }
             } else {
