@@ -1195,13 +1195,20 @@ function buildStandardATS(d: ResumeData): string {
       let leftText = e.title;
       let dateText = "";
       if (e.sub) {
-        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{4})$/);
         if (datePart) {
           dateText = datePart[1];
           const beforeDate = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
           if (beforeDate) leftText += ", " + beforeDate;
         } else {
           leftText += ", " + e.sub.replace(/ · /g, ", ");
+        }
+      }
+      if (!dateText) {
+        const inlineDate = leftText.match(/,\s*((?:\d{4}\s*[-–]\s*(?:Current|Present|\d{4}))|\d{4})\s*$/);
+        if (inlineDate) {
+          dateText = inlineDate[1];
+          leftText = leftText.slice(0, leftText.indexOf(inlineDate[0])).trim();
         }
       }
       let row = `<div class="edu-row"><span class="left">${esc(leftText)}</span>`;
@@ -1217,7 +1224,7 @@ function buildStandardATS(d: ResumeData): string {
     const lines = d.certifications.split("\n").filter(l => l.trim());
     html += lines.map(l => {
       const clean = l.replace(/^[-•]\s*/, "");
-      const datePart = clean.match(/[-—–]\s*([\d/]+ *[-–] *[\d/\w]+)$/);
+      const datePart = clean.match(/[-—–]\s*([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|Current|Present|\d{4})\s*$/);
       if (datePart) {
         const title = clean.slice(0, clean.indexOf(datePart[0])).trim();
         return `<div class="edu-row"><span class="left">${esc(title)}</span><span class="date">${esc(datePart[1])}</span></div>`;
