@@ -91,7 +91,12 @@ function parseEntries(text: string): { title: string; sub: string; bullets: stri
     } else if (t.startsWith("- ") || t.startsWith("• ")) {
       if (current) current.bullets.push(t.replace(/^[-•]\s*/, ""));
     } else if (current) {
-      current.bullets.push(t);
+      const prev = current.bullets.length > 0 ? current.bullets[current.bullets.length - 1] : "";
+      if (prev && !prev.match(/[.!?)\]:]$/)) {
+        current.bullets[current.bullets.length - 1] += " " + t;
+      } else {
+        current.bullets.push(t);
+      }
     }
   }
   if (current) entries.push(current);
