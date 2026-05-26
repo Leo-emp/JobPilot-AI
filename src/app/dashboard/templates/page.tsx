@@ -1452,18 +1452,18 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      const CONT_TOP_MARGIN = 56;
+      /* Consistent margins on EVERY page (top + bottom) */
+      const PAGE_MARGIN = 56;
+      const contentHeight = pageHeightPx - PAGE_MARGIN * 2;
 
       while (yOffset < canvas.height) {
-        const topMargin = isFirstPage ? 0 : CONT_TOP_MARGIN;
-        const usableHeight = pageHeightPx - topMargin;
-        let sliceBottom = Math.min(yOffset + usableHeight, canvas.height);
+        let sliceBottom = Math.min(yOffset + contentHeight, canvas.height);
 
         /* Smart page break: find the LARGEST whitespace gap in the bottom 30%.
            The largest gap is always a real element boundary (section/entry/bullet). */
         if (sliceBottom < canvas.height && ctx) {
           const scanStart = sliceBottom;
-          const scanEnd = Math.max(yOffset + Math.floor(usableHeight * 0.70), yOffset);
+          const scanEnd = Math.max(yOffset + Math.floor(contentHeight * 0.70), yOffset);
 
           const gaps: { top: number; bottom: number; size: number }[] = [];
           let gapTopRow = -1;
@@ -1497,8 +1497,6 @@ export default function TemplatesPage() {
               if (gaps[i].size > best.size) best = gaps[i];
             }
             if (best.size >= 20) {
-              /* Break at the top edge of the gap — page 1 keeps content up to the gap,
-                 page 2 starts right where next content begins (no leading whitespace). */
               const breakRow = best.top;
               if (breakRow > yOffset) sliceBottom = breakRow;
             }
@@ -1512,12 +1510,12 @@ export default function TemplatesPage() {
         const pctx = pageCanvas.getContext("2d")!;
         pctx.fillStyle = "#ffffff";
         pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, topMargin, canvas.width, sliceH);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, PAGE_MARGIN, canvas.width, sliceH);
 
         if (!isFirstPage) pdf.addPage();
         pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
 
-        /* Skip past the whitespace gap so page 2 starts at the next content */
+        /* Skip past the whitespace gap so next page starts at content */
         if (sliceBottom < canvas.height && ctx) {
           let skipTo = sliceBottom;
           while (skipTo < canvas.height) {
