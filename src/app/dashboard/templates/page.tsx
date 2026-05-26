@@ -1470,11 +1470,17 @@ export default function TemplatesPage() {
       let FIXED_MARGIN = 0;
       let marginSet = false;
 
+      /* Scan only the right 55% of the canvas for white gaps.
+         This ensures two-column templates with dark sidebars still
+         get proper page breaks based on the main content area. */
+      const scanX = Math.floor(canvas.width * 0.45);
+      const scanW = canvas.width - scanX - 20;
+
       const findBreak = (from: number, to: number): number => {
         if (!ctx) return -1;
         let consecutive = 0;
         for (let row = from; row > to; row--) {
-          const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
+          const rowPixels = ctx.getImageData(scanX, row, scanW, 1).data;
           let allWhite = true;
           for (let i = 0; i < rowPixels.length; i += 16) {
             if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
@@ -1496,7 +1502,7 @@ export default function TemplatesPage() {
         if (!ctx) return from;
         let pos = from;
         while (pos < canvas.height) {
-          const rowPixels = ctx.getImageData(20, pos, canvas.width - 40, 1).data;
+          const rowPixels = ctx.getImageData(scanX, pos, scanW, 1).data;
           let allWhite = true;
           for (let i = 0; i < rowPixels.length; i += 16) {
             if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
