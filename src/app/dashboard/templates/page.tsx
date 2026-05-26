@@ -1452,19 +1452,21 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* Max content per page, leaving at least 50px each side for margins */
-      const maxContentH = pageHeightPx - 100;
+      /* Each page's top margin = previous page's bottom margin.
+         This guarantees the whitespace on both sides of every page
+         boundary is identical. */
+      let nextTopPad = 0;
 
       while (yOffset < canvas.height) {
-        let sliceBottom = Math.min(yOffset + maxContentH, canvas.height);
+        const topPad = nextTopPad;
+        const availableH = pageHeightPx - topPad;
+        let sliceBottom = Math.min(yOffset + availableH, canvas.height);
         const isLastSlice = sliceBottom >= canvas.height;
 
-        /* Smart page break: scan upward from the cut line for the first
-           whitespace gap ≥ 28px (a real element boundary at scale 2).
-           Takes the closest valid break to the page bottom. */
+        /* Smart page break: first gap ≥ 28px scanning up from the cut line */
         if (!isLastSlice && ctx) {
           const scanStart = sliceBottom;
-          const scanEnd = Math.max(yOffset + Math.floor(maxContentH * 0.75), yOffset);
+          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.75), yOffset);
           let consecutive = 0;
           let breakRow = -1;
 
@@ -1492,9 +1494,8 @@ export default function TemplatesPage() {
         }
 
         const sliceH = sliceBottom - yOffset;
-
-        /* Center content vertically — guarantees top margin = bottom margin */
-        const topPad = Math.floor((pageHeightPx - sliceH) / 2);
+        const bottomSpace = pageHeightPx - topPad - sliceH;
+        nextTopPad = Math.max(50, Math.min(bottomSpace, 300));
 
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
