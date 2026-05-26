@@ -1452,50 +1452,71 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* Each page's top margin = previous page's bottom margin.
-         This guarantees the whitespace on both sides of every page
-         boundary is identical. */
-      let nextTopPad = 0;
+      /* Two-phase approach: slice page 1 first to measure its bottom
+         whitespace, then use that exact value as the FIXED margin for
+         every edge on every subsequent page. */
+      let FIXED_MARGIN = 0;
+      let marginSet = false;
+
+      const findBreak = (from: number, to: number): number => {
+        if (!ctx) return -1;
+        let consecutive = 0;
+        for (let row = from; row > to; row--) {
+          const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
+          let allWhite = true;
+          for (let i = 0; i < rowPixels.length; i += 16) {
+            if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
+              allWhite = false;
+              break;
+            }
+          }
+          if (allWhite) {
+            consecutive++;
+            if (consecutive >= 28) return row;
+          } else {
+            consecutive = 0;
+          }
+        }
+        return -1;
+      };
+
+      const skipWhite = (from: number): number => {
+        if (!ctx) return from;
+        let pos = from;
+        while (pos < canvas.height) {
+          const rowPixels = ctx.getImageData(20, pos, canvas.width - 40, 1).data;
+          let allWhite = true;
+          for (let i = 0; i < rowPixels.length; i += 16) {
+            if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
+              allWhite = false;
+              break;
+            }
+          }
+          if (!allWhite) break;
+          pos++;
+        }
+        return pos;
+      };
 
       while (yOffset < canvas.height) {
-        const topPad = nextTopPad;
-        const availableH = pageHeightPx - topPad;
+        const topPad = marginSet ? FIXED_MARGIN : 0;
+        const bottomReserve = marginSet ? FIXED_MARGIN : 0;
+        const availableH = pageHeightPx - topPad - bottomReserve;
         let sliceBottom = Math.min(yOffset + availableH, canvas.height);
         const isLastSlice = sliceBottom >= canvas.height;
 
-        /* Smart page break: first gap ≥ 28px scanning up from the cut line */
-        if (!isLastSlice && ctx) {
-          const scanStart = sliceBottom;
-          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.75), yOffset);
-          let consecutive = 0;
-          let breakRow = -1;
-
-          for (let row = scanStart; row > scanEnd; row--) {
-            const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
-            let allWhite = true;
-            for (let i = 0; i < rowPixels.length; i += 16) {
-              if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
-                allWhite = false;
-                break;
-              }
-            }
-            if (allWhite) {
-              consecutive++;
-              if (consecutive >= 28) {
-                breakRow = row;
-                break;
-              }
-            } else {
-              consecutive = 0;
-            }
-          }
-
-          if (breakRow > yOffset) sliceBottom = breakRow;
+        if (!isLastSlice) {
+          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.80), yOffset);
+          const br = findBreak(sliceBottom, scanEnd);
+          if (br > yOffset) sliceBottom = br;
         }
 
         const sliceH = sliceBottom - yOffset;
-        const bottomSpace = pageHeightPx - topPad - sliceH;
-        nextTopPad = Math.max(50, Math.min(bottomSpace, 300));
+
+        if (!marginSet) {
+          FIXED_MARGIN = pageHeightPx - sliceH;
+          marginSet = true;
+        }
 
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
@@ -1508,25 +1529,7 @@ export default function TemplatesPage() {
         if (!isFirstPage) pdf.addPage();
         pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
 
-        /* Skip past the whitespace gap so next page starts at content */
-        if (!isLastSlice && ctx) {
-          let skipTo = sliceBottom;
-          while (skipTo < canvas.height) {
-            const rowPixels = ctx.getImageData(20, skipTo, canvas.width - 40, 1).data;
-            let allWhite = true;
-            for (let i = 0; i < rowPixels.length; i += 16) {
-              if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
-                allWhite = false;
-                break;
-              }
-            }
-            if (!allWhite) break;
-            skipTo++;
-          }
-          yOffset = skipTo;
-        } else {
-          yOffset = sliceBottom;
-        }
+        yOffset = isLastSlice ? sliceBottom : skipWhite(sliceBottom);
         isFirstPage = false;
       }
 
