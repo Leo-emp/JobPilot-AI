@@ -1452,18 +1452,21 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* Consistent margins on EVERY page (top + bottom) */
-      const PAGE_MARGIN = 56;
-      const contentHeight = pageHeightPx - PAGE_MARGIN * 2;
+      /* Page 1 has body padding:30px = 60px at scale 2 baked into the HTML.
+         Continuation pages have no HTML padding, so we add the same 60px margin.
+         Bottom margin of 60px on every page keeps content off the edge. */
+      const MARGIN = 60;
 
       while (yOffset < canvas.height) {
-        let sliceBottom = Math.min(yOffset + contentHeight, canvas.height);
+        const topPad = isFirstPage ? 0 : MARGIN;
+        const availableH = pageHeightPx - topPad - MARGIN;
+        let sliceBottom = Math.min(yOffset + availableH, canvas.height);
 
         /* Smart page break: find the LARGEST whitespace gap in the bottom 30%.
            The largest gap is always a real element boundary (section/entry/bullet). */
         if (sliceBottom < canvas.height && ctx) {
           const scanStart = sliceBottom;
-          const scanEnd = Math.max(yOffset + Math.floor(contentHeight * 0.70), yOffset);
+          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.70), yOffset);
 
           const gaps: { top: number; bottom: number; size: number }[] = [];
           let gapTopRow = -1;
@@ -1510,7 +1513,7 @@ export default function TemplatesPage() {
         const pctx = pageCanvas.getContext("2d")!;
         pctx.fillStyle = "#ffffff";
         pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, PAGE_MARGIN, canvas.width, sliceH);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, topPad, canvas.width, sliceH);
 
         if (!isFirstPage) pdf.addPage();
         pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
