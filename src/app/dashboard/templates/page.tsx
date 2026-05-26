@@ -1455,36 +1455,53 @@ export default function TemplatesPage() {
       while (yOffset < canvas.height) {
         let sliceBottom = Math.min(yOffset + pageHeightPx, canvas.height);
 
-        /* Smart page break: scan upward to find a gap of consecutive white rows.
-           A single white row sits between wrapped lines of text — we need a real
-           gap (between paragraphs or bullet points) to break cleanly. */
+        /* Smart page break: find the LARGEST whitespace gap in the bottom 30% of the page.
+           At scale 2, gaps between wrapped text lines within a bullet can be 15-25px,
+           while gaps between separate elements (bullets, entries, sections) are 30-80px.
+           By choosing the largest gap, we always break at a real element boundary. */
         if (sliceBottom < canvas.height && ctx) {
-          const scanEnd = Math.max(yOffset + Math.floor(pageHeightPx * 0.7), yOffset);
-          const MIN_GAP = 6;
-          let consecutive = 0;
-          let breakRow = -1;
+          const scanStart = sliceBottom;
+          const scanEnd = Math.max(yOffset + Math.floor(pageHeightPx * 0.70), yOffset);
 
-          for (let row = sliceBottom; row > scanEnd; row--) {
+          /* Collect all whitespace gaps in the scan zone */
+          const gaps: { start: number; end: number; size: number }[] = [];
+          let gapStart = -1;
+
+          for (let row = scanStart; row > scanEnd; row--) {
             const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
             let allWhite = true;
             for (let i = 0; i < rowPixels.length; i += 16) {
-              if (rowPixels[i] < 245 || rowPixels[i+1] < 245 || rowPixels[i+2] < 245) {
+              if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
                 allWhite = false;
                 break;
               }
             }
             if (allWhite) {
-              consecutive++;
-              if (consecutive >= MIN_GAP) {
-                breakRow = row + Math.floor(MIN_GAP / 2);
-                break;
-              }
+              if (gapStart === -1) gapStart = row;
             } else {
-              consecutive = 0;
+              if (gapStart !== -1) {
+                const gapEnd = row + 1;
+                gaps.push({ start: gapEnd, end: gapStart, size: gapStart - gapEnd + 1 });
+                gapStart = -1;
+              }
             }
           }
+          if (gapStart !== -1) {
+            gaps.push({ start: scanEnd, end: gapStart, size: gapStart - scanEnd + 1 });
+          }
 
-          if (breakRow > yOffset) sliceBottom = breakRow;
+          /* Pick the largest gap (most likely a real element boundary) */
+          if (gaps.length > 0) {
+            let best = gaps[0];
+            for (let i = 1; i < gaps.length; i++) {
+              if (gaps[i].size > best.size) best = gaps[i];
+            }
+            /* Only use gaps that are meaningful (at least 20px at scale 2 = real spacing) */
+            if (best.size >= 20) {
+              const breakRow = best.start + Math.floor(best.size / 2);
+              if (breakRow > yOffset) sliceBottom = breakRow;
+            }
+          }
         }
 
         const sliceH = sliceBottom - yOffset;
