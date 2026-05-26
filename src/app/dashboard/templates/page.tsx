@@ -1479,6 +1479,10 @@ export default function TemplatesPage() {
       const findBreak = (from: number, to: number): number => {
         if (!ctx) return -1;
         let consecutive = 0;
+        let bestRow = -1;
+        let bestSize = 0;
+        let gapTopRow = -1;
+
         for (let row = from; row > to; row--) {
           const rowPixels = ctx.getImageData(scanX, row, scanW, 1).data;
           let allWhite = true;
@@ -1490,12 +1494,20 @@ export default function TemplatesPage() {
           }
           if (allWhite) {
             consecutive++;
-            if (consecutive >= 28) return row;
+            if (gapTopRow === -1) gapTopRow = row;
           } else {
+            if (consecutive >= 20 && consecutive > bestSize) {
+              bestSize = consecutive;
+              bestRow = gapTopRow - consecutive + 1;
+            }
             consecutive = 0;
+            gapTopRow = -1;
           }
         }
-        return -1;
+        if (consecutive >= 20 && consecutive > bestSize) {
+          bestRow = gapTopRow - consecutive + 1;
+        }
+        return bestRow;
       };
 
       const skipWhite = (from: number): number => {
