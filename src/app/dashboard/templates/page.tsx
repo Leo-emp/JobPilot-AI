@@ -1452,20 +1452,21 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      while (yOffset < canvas.height) {
-        let sliceBottom = Math.min(yOffset + pageHeightPx, canvas.height);
+      const CONT_TOP_MARGIN = 56;
 
-        /* Smart page break: find the LARGEST whitespace gap in the bottom 30% of the page.
-           At scale 2, gaps between wrapped text lines within a bullet can be 15-25px,
-           while gaps between separate elements (bullets, entries, sections) are 30-80px.
-           By choosing the largest gap, we always break at a real element boundary. */
+      while (yOffset < canvas.height) {
+        const topMargin = isFirstPage ? 0 : CONT_TOP_MARGIN;
+        const usableHeight = pageHeightPx - topMargin;
+        let sliceBottom = Math.min(yOffset + usableHeight, canvas.height);
+
+        /* Smart page break: find the LARGEST whitespace gap in the bottom 30%.
+           The largest gap is always a real element boundary (section/entry/bullet). */
         if (sliceBottom < canvas.height && ctx) {
           const scanStart = sliceBottom;
-          const scanEnd = Math.max(yOffset + Math.floor(pageHeightPx * 0.70), yOffset);
+          const scanEnd = Math.max(yOffset + Math.floor(usableHeight * 0.70), yOffset);
 
-          /* Collect all whitespace gaps in the scan zone */
-          const gaps: { start: number; end: number; size: number }[] = [];
-          let gapStart = -1;
+          const gaps: { top: number; bottom: number; size: number }[] = [];
+          let gapTopRow = -1;
 
           for (let row = scanStart; row > scanEnd; row--) {
             const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
@@ -1477,28 +1478,28 @@ export default function TemplatesPage() {
               }
             }
             if (allWhite) {
-              if (gapStart === -1) gapStart = row;
+              if (gapTopRow === -1) gapTopRow = row;
             } else {
-              if (gapStart !== -1) {
-                const gapEnd = row + 1;
-                gaps.push({ start: gapEnd, end: gapStart, size: gapStart - gapEnd + 1 });
-                gapStart = -1;
+              if (gapTopRow !== -1) {
+                const gapBottomRow = row + 1;
+                gaps.push({ top: gapBottomRow, bottom: gapTopRow, size: gapTopRow - gapBottomRow + 1 });
+                gapTopRow = -1;
               }
             }
           }
-          if (gapStart !== -1) {
-            gaps.push({ start: scanEnd, end: gapStart, size: gapStart - scanEnd + 1 });
+          if (gapTopRow !== -1) {
+            gaps.push({ top: scanEnd, bottom: gapTopRow, size: gapTopRow - scanEnd + 1 });
           }
 
-          /* Pick the largest gap (most likely a real element boundary) */
           if (gaps.length > 0) {
             let best = gaps[0];
             for (let i = 1; i < gaps.length; i++) {
               if (gaps[i].size > best.size) best = gaps[i];
             }
-            /* Only use gaps that are meaningful (at least 20px at scale 2 = real spacing) */
             if (best.size >= 20) {
-              const breakRow = best.start + Math.floor(best.size / 2);
+              /* Break at the top edge of the gap — page 1 keeps content up to the gap,
+                 page 2 starts right where next content begins (no leading whitespace). */
+              const breakRow = best.top;
               if (breakRow > yOffset) sliceBottom = breakRow;
             }
           }
@@ -1511,12 +1512,30 @@ export default function TemplatesPage() {
         const pctx = pageCanvas.getContext("2d")!;
         pctx.fillStyle = "#ffffff";
         pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, topMargin, canvas.width, sliceH);
 
         if (!isFirstPage) pdf.addPage();
         pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
 
-        yOffset = sliceBottom;
+        /* Skip past the whitespace gap so page 2 starts at the next content */
+        if (sliceBottom < canvas.height && ctx) {
+          let skipTo = sliceBottom;
+          while (skipTo < canvas.height) {
+            const rowPixels = ctx.getImageData(20, skipTo, canvas.width - 40, 1).data;
+            let allWhite = true;
+            for (let i = 0; i < rowPixels.length; i += 16) {
+              if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
+                allWhite = false;
+                break;
+              }
+            }
+            if (!allWhite) break;
+            skipTo++;
+          }
+          yOffset = skipTo;
+        } else {
+          yOffset = sliceBottom;
+        }
         isFirstPage = false;
       }
 
