@@ -1452,24 +1452,21 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* Page 1 has body padding:30px = 60px at scale 2 baked into the HTML.
-         Continuation pages have no HTML padding, so we add the same 60px margin.
-         Bottom margin of 60px on every page keeps content off the edge. */
-      const MARGIN = 60;
+      /* Max content per page, leaving at least 50px each side for margins */
+      const maxContentH = pageHeightPx - 100;
 
       while (yOffset < canvas.height) {
-        const topPad = isFirstPage ? 0 : MARGIN;
-        const availableH = pageHeightPx - topPad - MARGIN;
-        let sliceBottom = Math.min(yOffset + availableH, canvas.height);
+        let sliceBottom = Math.min(yOffset + maxContentH, canvas.height);
+        const isLastSlice = sliceBottom >= canvas.height;
 
-        /* Smart page break: find the LARGEST whitespace gap in the bottom 30%.
-           The largest gap is always a real element boundary (section/entry/bullet). */
-        if (sliceBottom < canvas.height && ctx) {
+        /* Smart page break: scan upward from the cut line for the first
+           whitespace gap ≥ 28px (a real element boundary at scale 2).
+           Takes the closest valid break to the page bottom. */
+        if (!isLastSlice && ctx) {
           const scanStart = sliceBottom;
-          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.70), yOffset);
-
-          const gaps: { top: number; bottom: number; size: number }[] = [];
-          let gapTopRow = -1;
+          const scanEnd = Math.max(yOffset + Math.floor(maxContentH * 0.75), yOffset);
+          let consecutive = 0;
+          let breakRow = -1;
 
           for (let row = scanStart; row > scanEnd; row--) {
             const rowPixels = ctx.getImageData(20, row, canvas.width - 40, 1).data;
@@ -1481,32 +1478,24 @@ export default function TemplatesPage() {
               }
             }
             if (allWhite) {
-              if (gapTopRow === -1) gapTopRow = row;
-            } else {
-              if (gapTopRow !== -1) {
-                const gapBottomRow = row + 1;
-                gaps.push({ top: gapBottomRow, bottom: gapTopRow, size: gapTopRow - gapBottomRow + 1 });
-                gapTopRow = -1;
+              consecutive++;
+              if (consecutive >= 28) {
+                breakRow = row + Math.floor(consecutive / 2);
+                break;
               }
+            } else {
+              consecutive = 0;
             }
-          }
-          if (gapTopRow !== -1) {
-            gaps.push({ top: scanEnd, bottom: gapTopRow, size: gapTopRow - scanEnd + 1 });
           }
 
-          if (gaps.length > 0) {
-            let best = gaps[0];
-            for (let i = 1; i < gaps.length; i++) {
-              if (gaps[i].size > best.size) best = gaps[i];
-            }
-            if (best.size >= 20) {
-              const breakRow = best.top;
-              if (breakRow > yOffset) sliceBottom = breakRow;
-            }
-          }
+          if (breakRow > yOffset) sliceBottom = breakRow;
         }
 
         const sliceH = sliceBottom - yOffset;
+
+        /* Center content vertically — guarantees top margin = bottom margin */
+        const topPad = Math.floor((pageHeightPx - sliceH) / 2);
+
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
         pageCanvas.height = pageHeightPx;
@@ -1519,7 +1508,7 @@ export default function TemplatesPage() {
         pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
 
         /* Skip past the whitespace gap so next page starts at content */
-        if (sliceBottom < canvas.height && ctx) {
+        if (!isLastSlice && ctx) {
           let skipTo = sliceBottom;
           while (skipTo < canvas.height) {
             const rowPixels = ctx.getImageData(20, skipTo, canvas.width - 40, 1).data;
