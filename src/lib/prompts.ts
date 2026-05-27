@@ -201,8 +201,8 @@ function coverLetter(payload: Record<string, any>): string {
 
 REFERENCE EXAMPLE (match this style precisely):
 ---
-Pan Myint Zu Oo
-pmzo.mm08@gmail.com | +44 7570150580 | London, UK
+[Applicant Full Name]
+[applicant@email.com] | [phone number] | [City, Country]
 
 May 12, 2026
 
@@ -217,7 +217,7 @@ Beyond my operational experience, I bring expert-level proficiency in Microsoft 
 I am a proactive problem-solver dedicated to streamlining operations and ensuring consistency in high-stakes documentation. I look forward to the opportunity to discuss how my technical bridge between AI and operations can support Google's next phase of system development.
 
 Sincerely,
-Pan Myint Zu Oo
+[Applicant Full Name]
 ---
 
 RULES:
