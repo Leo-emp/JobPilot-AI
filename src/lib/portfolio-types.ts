@@ -9,18 +9,22 @@
 /* ---- Template names ---- */
 export const TEMPLATES = [
   "minimal", "developer", "creative", "corporate", "academic", "modern",
+  "videographer", "photographer", "architect",
 ] as const;
 
 export type TemplateName = (typeof TEMPLATES)[number];
 
 /* ---- Template display info for the picker UI ---- */
 export const TEMPLATE_INFO: Record<TemplateName, { name: string; desc: string; accent: string }> = {
-  minimal:   { name: "Minimal",    desc: "Clean whitespace, universal appeal",          accent: "#3b82f6" },
-  developer: { name: "Developer",  desc: "Dark terminal aesthetic, code vibes",         accent: "#00ff88" },
-  creative:  { name: "Creative",   desc: "Bold gradients, visual emphasis",             accent: "#ec4899" },
-  corporate: { name: "Corporate",  desc: "Elegant serif, navy & gold",                 accent: "#c8a96e" },
-  academic:  { name: "Academic",   desc: "Research-focused, publication-oriented",      accent: "#2c5282" },
-  modern:    { name: "Modern",     desc: "Animated gradient hero, startup vibe",        accent: "#8b5cf6" },
+  minimal:      { name: "Minimal",      desc: "Refined elegance with glassmorphism",           accent: "#3b82f6" },
+  developer:    { name: "Developer",    desc: "Cyberpunk terminal with neon glow",             accent: "#00ff88" },
+  creative:     { name: "Creative",     desc: "Bold gradients & floating glass panels",        accent: "#ec4899" },
+  corporate:    { name: "Corporate",    desc: "Luxury serif with navy & gold textures",        accent: "#c8a96e" },
+  academic:     { name: "Academic",     desc: "Scholarly paper with elegant citations",        accent: "#2c5282" },
+  modern:       { name: "Modern",       desc: "Animated mesh gradient, bento cards",           accent: "#8b5cf6" },
+  videographer: { name: "Videographer", desc: "Cinematic widescreen, dark film aesthetic",     accent: "#e50914" },
+  photographer: { name: "Photographer", desc: "Full-bleed gallery, image-forward design",     accent: "#f5f5f5" },
+  architect:    { name: "Architect",    desc: "Blueprint grid, clean structural lines",        accent: "#2dd4bf" },
 };
 
 /* ---- Section types ---- */

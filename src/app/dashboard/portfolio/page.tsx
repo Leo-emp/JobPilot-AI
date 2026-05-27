@@ -2,7 +2,7 @@
    PORTFOLIO BUILDER — Dashboard Editor
    ============================================================
    Full portfolio management page with:
-   - Template picker (6 premium templates)
+   - Template picker (9 premium templates)
    - Section list (reorder, toggle visibility, edit)
    - Per-section edit forms
    - Live preview panel (renders actual template at scale)
