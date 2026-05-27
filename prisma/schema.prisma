@@ -51,6 +51,7 @@ model User {
   aiResults      AiResult[]
   careerInsights CareerInsight[]
   jobViews       JobView[]
+  portfolio      Portfolio?
 }
 
 // ---- Password Reset Token ----
@@ -238,6 +239,31 @@ model CareerInsight {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
+}
+
+// ---- Portfolio ----
+// Shareable personal website generated from user's career data
+// One portfolio per user — published at /p/{slug}
+model Portfolio {
+  id          String   @id @default(cuid())
+  userId      String   @unique                  // One portfolio per user
+  slug        String   @unique                  // Public URL: /p/{slug}
+  title       String                            // Portfolio headline
+  tagline     String?                           // Short subtitle under name
+  bio         String?                           // About paragraph
+  template    String   @default("minimal")      // minimal, developer, creative, corporate, academic, modern
+  themeColors String?                           // JSON: { primary, secondary, accent, background }
+  socialLinks String?                           // JSON: { github, linkedin, twitter, ... }
+  avatarUrl   String?                           // Profile photo URL (external link)
+  published   Boolean  @default(false)          // Toggle for public visibility
+  sections    String   @default("[]")           // JSON array of typed section objects
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([userId])
 }
 
 // ---- Passive Job View ----

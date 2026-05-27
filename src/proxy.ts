@@ -133,6 +133,7 @@ export function proxy(req: NextRequest) {
     const isPublic =
       pathname.startsWith("/api/auth") ||
       pathname.startsWith("/api/stripe/webhook") ||
+      pathname.startsWith("/api/portfolio/public/") ||
       pathname === "/api/health";
 
     if (!isPublic) {

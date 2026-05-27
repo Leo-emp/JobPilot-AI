@@ -271,6 +271,49 @@ export const deleteUserSchema = z.object({
 
 
 /* ============================================================
+   PORTFOLIO SCHEMAS
+   ============================================================ */
+
+/* Valid portfolio template names */
+const portfolioTemplates = [
+  "minimal", "developer", "creative", "corporate", "academic", "modern",
+] as const;
+
+/* Slug: 3-40 chars, lowercase alphanumeric + hyphens, no leading/trailing hyphens */
+const portfolioSlug = z.string()
+  .trim()
+  .min(3, "Slug must be at least 3 characters.")
+  .max(40, "Slug must be 40 characters or less.")
+  .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, "Only lowercase letters, numbers, and hyphens allowed.");
+
+/* POST /api/portfolio */
+export const createPortfolioSchema = z.object({
+  slug: portfolioSlug,
+  title: shortText("Portfolio title"),
+  tagline: optionalShortText,
+  template: z.enum(portfolioTemplates).optional().default("minimal"),
+});
+
+/* PATCH /api/portfolio */
+export const updatePortfolioSchema = z.object({
+  slug: portfolioSlug.optional(),
+  title: shortText("Portfolio title").optional(),
+  tagline: optionalShortText,
+  bio: optionalLongText,
+  template: z.enum(portfolioTemplates).optional(),
+  themeColors: z.string().max(500).optional().or(z.literal("")),
+  socialLinks: z.string().max(5000).optional().or(z.literal("")),
+  avatarUrl: optionalUrl,
+  sections: z.string().max(200_000).optional(),
+});
+
+/* POST /api/portfolio/publish */
+export const publishPortfolioSchema = z.object({
+  published: z.boolean(),
+});
+
+
+/* ============================================================
    HELPER: Format Zod errors into user-friendly messages
    ============================================================ */
 export function formatZodError(error: z.ZodError): string {
