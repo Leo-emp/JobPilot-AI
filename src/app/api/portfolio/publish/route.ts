@@ -11,10 +11,28 @@ import { prisma } from "@/lib/prisma";
 import { publishPortfolioSchema, formatZodError } from "@/lib/validations";
 import type { PortfolioSection } from "@/lib/portfolio-types";
 
+/* # Write rate limiter — 10 publish toggles per minute */
+const publishStore = new Map<string, { count: number; resetAt: number }>();
+function checkPublishLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = publishStore.get(userId);
+  if (!entry || now > entry.resetAt) {
+    publishStore.set(userId, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 10) return false;
+  entry.count++;
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!checkPublishLimit(session.user.id)) {
+    return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }
 
   const portfolio = await prisma.portfolio.findUnique({

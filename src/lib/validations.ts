@@ -277,6 +277,7 @@ export const deleteUserSchema = z.object({
 /* Valid portfolio template names */
 const portfolioTemplates = [
   "minimal", "developer", "creative", "corporate", "academic", "modern",
+  "videographer", "photographer", "architect",
 ] as const;
 
 /* Slug: 3-40 chars, lowercase alphanumeric + hyphens, no leading/trailing hyphens */
@@ -285,6 +286,122 @@ const portfolioSlug = z.string()
   .min(3, "Slug must be at least 3 characters.")
   .max(40, "Slug must be 40 characters or less.")
   .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, "Only lowercase letters, numbers, and hyphens allowed.");
+
+/* Safe URL: block javascript: and data: protocols to prevent XSS */
+const safeUrl = z.string().max(2000).refine(
+  (val) => !val || /^https?:\/\//.test(val) || val === "",
+  "URLs must start with http:// or https://",
+);
+
+/* Section limits — prevent abuse through oversized portfolios */
+const MAX_SECTIONS = 20;
+const MAX_ENTRIES_PER_SECTION = 50;
+const MAX_ACHIEVEMENTS = 20;
+const MAX_SKILLS_PER_GROUP = 30;
+const MAX_SKILL_GROUPS = 15;
+const MAX_TECH_STACK = 20;
+
+const validSectionTypes = [
+  "about", "experience", "education", "skills", "projects",
+  "certifications", "publications", "awards", "gallery",
+  "testimonials", "contact",
+] as const;
+
+/* Deep sections validator — parses JSON string, validates structure & limits */
+export function validateSections(sectionsStr: string): { valid: boolean; error?: string } {
+  let sections: unknown[];
+  try {
+    sections = JSON.parse(sectionsStr);
+  } catch {
+    return { valid: false, error: "Invalid sections JSON." };
+  }
+
+  if (!Array.isArray(sections)) {
+    return { valid: false, error: "Sections must be an array." };
+  }
+
+  if (sections.length > MAX_SECTIONS) {
+    return { valid: false, error: `Maximum ${MAX_SECTIONS} sections allowed.` };
+  }
+
+  for (let i = 0; i < sections.length; i++) {
+    const s = sections[i] as Record<string, unknown>;
+    if (!s || typeof s !== "object") {
+      return { valid: false, error: `Section ${i + 1} is invalid.` };
+    }
+
+    if (!validSectionTypes.includes(s.type as typeof validSectionTypes[number])) {
+      return { valid: false, error: `Section ${i + 1} has invalid type "${String(s.type)}".` };
+    }
+
+    if (typeof s.visible !== "boolean") {
+      return { valid: false, error: `Section ${i + 1} must have a visible boolean.` };
+    }
+
+    /* Validate entry counts for array-based sections */
+    if ("entries" in s && Array.isArray(s.entries)) {
+      if (s.entries.length > MAX_ENTRIES_PER_SECTION) {
+        return { valid: false, error: `Section "${String(s.type)}" exceeds ${MAX_ENTRIES_PER_SECTION} entries limit.` };
+      }
+
+      for (const entry of s.entries as Record<string, unknown>[]) {
+        if (!entry || typeof entry !== "object") continue;
+
+        /* Validate achievements array size */
+        if ("achievements" in entry && Array.isArray(entry.achievements)) {
+          if (entry.achievements.length > MAX_ACHIEVEMENTS) {
+            return { valid: false, error: `Maximum ${MAX_ACHIEVEMENTS} achievements per entry.` };
+          }
+        }
+
+        /* Validate techStack array size */
+        if ("techStack" in entry && Array.isArray(entry.techStack)) {
+          if (entry.techStack.length > MAX_TECH_STACK) {
+            return { valid: false, error: `Maximum ${MAX_TECH_STACK} tech stack items per entry.` };
+          }
+        }
+
+        /* Block dangerous URLs in imageUrl, videoUrl, liveUrl, repoUrl, link */
+        for (const urlField of ["imageUrl", "videoUrl", "liveUrl", "repoUrl", "link"]) {
+          const val = entry[urlField];
+          if (typeof val === "string" && val.length > 0) {
+            if (val.length > 2000) {
+              return { valid: false, error: `URL in ${urlField} exceeds 2000 characters.` };
+            }
+            if (!/^https?:\/\//.test(val)) {
+              return { valid: false, error: `URLs must start with http:// or https:// (found in ${urlField}).` };
+            }
+          }
+        }
+      }
+    }
+
+    /* Validate skill groups */
+    if ("groups" in s && Array.isArray(s.groups)) {
+      if (s.groups.length > MAX_SKILL_GROUPS) {
+        return { valid: false, error: `Maximum ${MAX_SKILL_GROUPS} skill groups allowed.` };
+      }
+      for (const group of s.groups as Record<string, unknown>[]) {
+        if (group && "skills" in group && Array.isArray(group.skills)) {
+          if (group.skills.length > MAX_SKILLS_PER_GROUP) {
+            return { valid: false, error: `Maximum ${MAX_SKILLS_PER_GROUP} skills per group.` };
+          }
+        }
+      }
+    }
+
+    /* Validate string field lengths within sections */
+    for (const [key, val] of Object.entries(s)) {
+      if (typeof val === "string" && key !== "type") {
+        if (val.length > 10_000) {
+          return { valid: false, error: `Field "${key}" in section "${String(s.type)}" exceeds 10,000 character limit.` };
+        }
+      }
+    }
+  }
+
+  return { valid: true };
+}
 
 /* POST /api/portfolio */
 export const createPortfolioSchema = z.object({
@@ -303,7 +420,7 @@ export const updatePortfolioSchema = z.object({
   template: z.enum(portfolioTemplates).optional(),
   themeColors: z.string().max(500).optional().or(z.literal("")),
   socialLinks: z.string().max(5000).optional().or(z.literal("")),
-  avatarUrl: optionalUrl,
+  avatarUrl: safeUrl.optional().or(z.literal("")),
   sections: z.string().max(200_000).optional(),
 });
 

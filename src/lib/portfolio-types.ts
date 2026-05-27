@@ -111,6 +111,7 @@ export interface ProjectEntry {
   liveUrl: string;
   repoUrl: string;
   imageUrl: string;
+  videoUrl: string;
 }
 
 export interface ProjectsSection {
@@ -162,6 +163,8 @@ export interface GalleryEntry {
   title: string;
   description: string;
   imageUrl: string;
+  videoUrl: string;
+  category: string;
   link: string;
 }
 

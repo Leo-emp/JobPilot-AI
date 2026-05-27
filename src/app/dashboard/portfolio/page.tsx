@@ -36,11 +36,11 @@ const editorTabs = [
 /* ---- Empty entries for adding new items ---- */
 const EMPTY_EXPERIENCE: ExperienceEntry = { title: "", company: "", location: "", startDate: "", endDate: "", description: "", achievements: [] };
 const EMPTY_EDUCATION: EducationEntry = { degree: "", school: "", location: "", startDate: "", endDate: "", description: "" };
-const EMPTY_PROJECT: ProjectEntry = { title: "", description: "", techStack: [], liveUrl: "", repoUrl: "", imageUrl: "" };
+const EMPTY_PROJECT: ProjectEntry = { title: "", description: "", techStack: [], liveUrl: "", repoUrl: "", imageUrl: "", videoUrl: "" };
 const EMPTY_CERTIFICATION: CertificationEntry = { name: "", issuer: "", date: "", link: "" };
 const EMPTY_PUBLICATION: PublicationEntry = { title: "", venue: "", date: "", link: "" };
 const EMPTY_AWARD: AwardEntry = { title: "", issuer: "", date: "", description: "" };
-const EMPTY_GALLERY: GalleryEntry = { title: "", description: "", imageUrl: "", link: "" };
+const EMPTY_GALLERY: GalleryEntry = { title: "", description: "", imageUrl: "", videoUrl: "", category: "", link: "" };
 const EMPTY_TESTIMONIAL: TestimonialEntry = { quote: "", author: "", role: "", company: "" };
 
 export default function PortfolioPage() {

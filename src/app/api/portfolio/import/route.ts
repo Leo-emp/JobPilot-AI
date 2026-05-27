@@ -225,6 +225,7 @@ export async function POST() {
         liveUrl: "",
         repoUrl: "",
         imageUrl: "",
+        videoUrl: "",
       })),
     });
   }

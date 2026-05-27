@@ -12,8 +12,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createPortfolioSchema, updatePortfolioSchema, formatZodError } from "@/lib/validations";
+import { createPortfolioSchema, updatePortfolioSchema, validateSections, formatZodError } from "@/lib/validations";
 import { getDefaultSections } from "@/lib/portfolio-types";
+
+/* # In-memory write rate limiter — 20 writes per minute per user */
+const writeStore = new Map<string, { count: number; resetAt: number }>();
+const WRITE_LIMIT = 20;
+const WRITE_WINDOW_MS = 60_000;
+
+function checkWriteLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = writeStore.get(userId);
+  if (!entry || now > entry.resetAt) {
+    writeStore.set(userId, { count: 1, resetAt: now + WRITE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= WRITE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
+/* # Max request body size: 500KB */
+const MAX_BODY_SIZE = 512_000;
 
 /* ---- GET: Fetch the logged-in user's portfolio ---- */
 export async function GET() {
@@ -45,6 +65,16 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!checkWriteLimit(session.user.id)) {
+    return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
+  }
+
+  /* # Enforce body size limit */
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
+  if (contentLength > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Request body too large." }, { status: 413 });
   }
 
   /* # Check if user already has a portfolio */
@@ -93,6 +123,16 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!checkWriteLimit(session.user.id)) {
+    return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
+  }
+
+  /* # Enforce body size limit */
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
+  if (contentLength > MAX_BODY_SIZE) {
+    return NextResponse.json({ error: "Request body too large (max 500KB)." }, { status: 413 });
+  }
+
   const existing = await prisma.portfolio.findUnique({
     where: { userId: session.user.id },
   });
@@ -104,6 +144,14 @@ export async function PATCH(req: NextRequest) {
   const parsed = updatePortfolioSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
+  }
+
+  /* # Deep-validate sections JSON structure if provided */
+  if (parsed.data.sections) {
+    const sectionsCheck = validateSections(parsed.data.sections);
+    if (!sectionsCheck.valid) {
+      return NextResponse.json({ error: sectionsCheck.error }, { status: 400 });
+    }
   }
 
   /* # If slug is changing, check uniqueness */
@@ -146,6 +194,10 @@ export async function DELETE() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!checkWriteLimit(session.user.id)) {
+    return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }
 
   const existing = await prisma.portfolio.findUnique({
