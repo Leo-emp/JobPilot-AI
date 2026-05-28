@@ -43,6 +43,74 @@ const EMPTY_AWARD: AwardEntry = { title: "", issuer: "", date: "", description: 
 const EMPTY_GALLERY: GalleryEntry = { title: "", description: "", imageUrl: "", videoUrl: "", category: "", link: "" };
 const EMPTY_TESTIMONIAL: TestimonialEntry = { quote: "", author: "", role: "", company: "" };
 
+/* # Template thumbnail previews — styled mini-mockups showing each template's personality */
+const TEMPLATE_THUMBNAILS: Record<TemplateName, { bg: string; fg: string; headerBg: string; pattern?: string }> = {
+  minimal:      { bg: "#f8fafc", fg: "#1e293b", headerBg: "#3b82f6" },
+  developer:    { bg: "#050510", fg: "#00ff88", headerBg: "#0a0a1a", pattern: "grid" },
+  creative:     { bg: "#0f0f23", fg: "#ec4899", headerBg: "linear-gradient(135deg, #ec4899, #8b5cf6)" },
+  corporate:    { bg: "#1a1a3e", fg: "#c8a96e", headerBg: "#0d0d2b" },
+  academic:     { bg: "#fefcf7", fg: "#2c5282", headerBg: "#2c5282" },
+  modern:       { bg: "#0a0a0f", fg: "#8b5cf6", headerBg: "linear-gradient(135deg, #7c3aed, #06b6d4)" },
+  videographer: { bg: "#0a0a0a", fg: "#e50914", headerBg: "#1a1a1a" },
+  photographer: { bg: "#111111", fg: "#f5f5f5", headerBg: "#222222" },
+  architect:    { bg: "#f0fdf9", fg: "#2dd4bf", headerBg: "#042f2e", pattern: "blueprint" },
+};
+
+function TemplateThumbnail({ name, accent, isActive }: { name: TemplateName; accent: string; isActive: boolean }) {
+  const t = TEMPLATE_THUMBNAILS[name];
+  return (
+    <div className="relative h-32 overflow-hidden" style={{ background: t.bg }}>
+      {/* # Grid pattern for developer/architect */}
+      {t.pattern === "grid" && (
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: `linear-gradient(${t.fg}40 1px, transparent 1px), linear-gradient(90deg, ${t.fg}40 1px, transparent 1px)`,
+          backgroundSize: "16px 16px",
+        }} />
+      )}
+      {t.pattern === "blueprint" && (
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: `linear-gradient(${t.fg}30 1px, transparent 1px), linear-gradient(90deg, ${t.fg}30 1px, transparent 1px)`,
+          backgroundSize: "20px 20px",
+        }} />
+      )}
+
+      {/* # Fake hero section */}
+      <div className="absolute top-4 left-4 right-4">
+        {/* # Name placeholder */}
+        <div className="h-3 rounded-full mb-2" style={{ background: t.fg, width: "60%", opacity: 0.8 }} />
+        <div className="h-2 rounded-full mb-1" style={{ background: t.fg, width: "40%", opacity: 0.3 }} />
+        <div className="h-1.5 rounded-full" style={{ background: t.fg, width: "80%", opacity: 0.15 }} />
+      </div>
+
+      {/* # Fake content blocks */}
+      <div className="absolute bottom-3 left-4 right-4 flex gap-2">
+        <div className="flex-1 rounded-lg p-2" style={{ background: `${t.fg}10`, border: `1px solid ${t.fg}15` }}>
+          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "70%", opacity: 0.4 }} />
+          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "50%", opacity: 0.2 }} />
+          <div className="h-1 rounded-full" style={{ background: t.fg, width: "60%", opacity: 0.2 }} />
+        </div>
+        <div className="flex-1 rounded-lg p-2" style={{ background: `${t.fg}10`, border: `1px solid ${t.fg}15` }}>
+          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "60%", opacity: 0.4 }} />
+          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "80%", opacity: 0.2 }} />
+          <div className="h-1 rounded-full" style={{ background: t.fg, width: "45%", opacity: 0.2 }} />
+        </div>
+      </div>
+
+      {/* # Accent glow */}
+      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl" style={{ background: accent, opacity: 0.2 }} />
+
+      {/* # Active overlay */}
+      {isActive && (
+        <div className="absolute inset-0 border-2 rounded-t-xl" style={{ borderColor: accent, background: `${accent}08` }}>
+          <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: accent }}>
+            ✓
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PortfolioPage() {
   const { data: session } = useSession();
 
@@ -306,14 +374,16 @@ export default function PortfolioPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
           {TEMPLATES.map(t => (
             <button key={t} onClick={() => setTemplate(t)}
-              className={`p-4 rounded-xl border text-left transition-all ${
+              className={`rounded-xl border text-left transition-all overflow-hidden ${
                 template === t
-                  ? "border-brand-indigo bg-brand-indigo/10 ring-2 ring-brand-indigo/30"
-                  : "border-card-border bg-space-700 hover:border-text-muted"
+                  ? "border-brand-indigo ring-2 ring-brand-indigo/30"
+                  : "border-card-border hover:border-text-muted"
               }`}>
-              <div className="w-6 h-6 rounded-full mb-2" style={{ backgroundColor: TEMPLATE_INFO[t].accent }} />
-              <p className="text-sm font-semibold text-white">{TEMPLATE_INFO[t].name}</p>
-              <p className="text-xs text-text-muted mt-0.5">{TEMPLATE_INFO[t].desc}</p>
+              <TemplateThumbnail name={t} accent={TEMPLATE_INFO[t].accent} isActive={template === t} />
+              <div className="px-3 py-2.5 bg-space-700">
+                <p className="text-sm font-semibold text-white">{TEMPLATE_INFO[t].name}</p>
+                <p className="text-xs text-text-muted mt-0.5">{TEMPLATE_INFO[t].desc}</p>
+              </div>
             </button>
           ))}
         </div>
@@ -393,14 +463,17 @@ export default function PortfolioPage() {
             <div className="grid grid-cols-2 gap-3">
               {TEMPLATES.map(t => (
                 <button key={t} onClick={() => changeTemplate(t)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
+                  className={`rounded-xl border text-left transition-all overflow-hidden ${
                     template === t
-                      ? "border-brand-indigo bg-brand-indigo/10 ring-2 ring-brand-indigo/30"
-                      : "border-card-border bg-space-700 hover:border-text-muted"
+                      ? "border-brand-indigo ring-2 ring-brand-indigo/30"
+                      : "border-card-border hover:border-text-muted"
                   }`}>
-                  <div className="w-8 h-8 rounded-full mb-3" style={{ backgroundColor: TEMPLATE_INFO[t].accent }} />
-                  <p className="text-sm font-semibold text-white">{TEMPLATE_INFO[t].name}</p>
-                  <p className="text-xs text-text-muted mt-0.5">{TEMPLATE_INFO[t].desc}</p>
+                  {/* # Styled mini-preview showing template personality */}
+                  <TemplateThumbnail name={t} accent={TEMPLATE_INFO[t].accent} isActive={template === t} />
+                  <div className="px-4 py-3 bg-space-700">
+                    <p className="text-sm font-semibold text-white">{TEMPLATE_INFO[t].name}</p>
+                    <p className="text-xs text-text-muted mt-0.5">{TEMPLATE_INFO[t].desc}</p>
+                  </div>
                 </button>
               ))}
             </div>
@@ -552,13 +625,19 @@ export default function PortfolioPage() {
 
       {/* ---- Right: Live Preview ---- */}
       {showPreview && (
-        <div className="hidden lg:block flex-1 border-l border-card-border bg-space-900 overflow-hidden">
-          <div className="sticky top-0 z-10 px-4 py-2 border-b border-card-border bg-space-800 flex items-center justify-between">
+        <div className="hidden lg:block flex-1 border-l border-card-border bg-space-900 overflow-hidden relative">
+          <div className="sticky top-0 z-20 px-4 py-2 border-b border-card-border bg-space-800/95 backdrop-blur-sm flex items-center justify-between">
             <span className="text-xs text-text-muted">Live Preview</span>
-            <span className="text-xs text-text-muted">{TEMPLATE_INFO[template].name} Template</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-text-muted">{TEMPLATE_INFO[template].name} Template</span>
+              <a href={`/p/${slug}`} target="_blank" rel="noopener noreferrer"
+                className="text-xs text-brand-light hover:underline">
+                Open Full →
+              </a>
+            </div>
           </div>
-          <div className="overflow-y-auto" style={{ height: "calc(100vh - 40px)" }}>
-            <div style={{ transform: "scale(0.5)", transformOrigin: "top left", width: "200%" }}>
+          <div className="overflow-y-auto overflow-x-hidden" style={{ height: "calc(100vh - 40px)" }}>
+            <div className="relative" style={{ transform: "scale(0.38)", transformOrigin: "top center", width: "263%", marginLeft: "-81.5%" }}>
               <PortfolioRenderer data={previewData} />
             </div>
           </div>
