@@ -29,7 +29,7 @@ export function SoftwareAppJsonLd() {
       },
       {
         "@type": "Offer",
-        price: "9.99",
+        price: "29",
         priceCurrency: "GBP",
         name: "Pro Plan",
         description: "Unlimited AI actions, unlimited resumes, priority support",
