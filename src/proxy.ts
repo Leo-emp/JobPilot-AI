@@ -89,6 +89,7 @@ export function proxy(req: NextRequest) {
   const isPublicApi = (
     pathname.startsWith("/api/auth/") ||
     pathname === "/api/health" ||
+    pathname === "/api/newsletter" ||
     pathname.startsWith("/api/extension/")
   );
 
@@ -134,6 +135,7 @@ export function proxy(req: NextRequest) {
       pathname.startsWith("/api/auth") ||
       pathname.startsWith("/api/stripe/webhook") ||
       pathname.startsWith("/api/portfolio/public/") ||
+      pathname === "/api/newsletter" ||
       pathname === "/api/health";
 
     if (!isPublic) {

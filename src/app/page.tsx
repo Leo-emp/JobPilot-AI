@@ -20,6 +20,7 @@ import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
 const StarField = dynamic(() => import("@/components/StarField"));
 const FeatureShowcase = dynamic(() => import("@/components/FeatureShowcase"));
@@ -47,6 +48,7 @@ export default function Home() {
         <Testimonials />
         <Pricing />
         <CTA />
+        <NewsletterSignup />
       </main>
       <Footer />
     </>

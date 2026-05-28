@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { headers } from "next/headers";
 import dynamic from "next/dynamic";
+import { SoftwareAppJsonLd, OrganizationJsonLd } from "@/components/JsonLd";
 import "./globals.css";
 
 /* Lazy-load the cookie consent banner — only renders on first visit */
@@ -42,7 +43,10 @@ const spaceGrotesk = Space_Grotesk({
 /* This populates the <title> and <meta> tags in the HTML <head> */
 /* Search engines and social media use these when displaying links */
 export const metadata: Metadata = {
-  title: "JobPilot AI — Your Career Co-Pilot",
+  title: {
+    default: "JobPilot AI — Your Career Co-Pilot",
+    template: "%s | JobPilot AI",
+  },
   description:
     "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
   keywords: [
@@ -52,7 +56,28 @@ export const metadata: Metadata = {
     "ATS optimization",
     "cover letter generator",
     "interview prep",
+    "portfolio builder",
+    "career co-pilot",
   ],
+  metadataBase: new URL("https://jobpilotai.co"),
+  openGraph: {
+    type: "website",
+    locale: "en_GB",
+    url: "https://jobpilotai.co",
+    siteName: "JobPilot AI",
+    title: "JobPilot AI — Your Career Co-Pilot",
+    description:
+      "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "JobPilot AI — Your Career Co-Pilot",
+    description:
+      "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
+  },
+  alternates: {
+    canonical: "https://jobpilotai.co",
+  },
 };
 
 /* ---- Root Layout Component ---- */
@@ -73,6 +98,8 @@ export default async function RootLayout({
       style={{ colorScheme: "dark", backgroundColor: "#09090b" }}
     >
       <body className="min-h-screen flex flex-col" style={{ backgroundColor: "#09090b" }} nonce={nonce}>
+        <SoftwareAppJsonLd />
+        <OrganizationJsonLd />
         {children}
         <CookieConsent />
       </body>

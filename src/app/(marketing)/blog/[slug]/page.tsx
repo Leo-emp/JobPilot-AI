@@ -8,12 +8,14 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArticleJsonLd } from "@/components/JsonLd";
 
 /* ---- Full blog post data with article content ---- */
 const posts: Record<string, {
   title: string;
   category: string;
   date: string;
+  dateISO: string;
   readTime: string;
   color: string;
   content: string;
@@ -22,6 +24,7 @@ const posts: Record<string, {
     title: "How to Beat ATS Systems in 2026",
     category: "Resume Tips",
     date: "May 2, 2026",
+    dateISO: "2026-05-02",
     readTime: "5 min read",
     color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     content: `
@@ -77,6 +80,7 @@ Beating the ATS isn't about gaming the system — it's about presenting your rea
     title: "7 LinkedIn Profile Mistakes That Cost You Interviews",
     category: "LinkedIn",
     date: "Apr 28, 2026",
+    dateISO: "2026-04-28",
     readTime: "4 min read",
     color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
     content: `
@@ -138,6 +142,7 @@ LinkedIn rewards active users. If you never post, comment, or share, you're invi
     title: "How to Write a Cover Letter That Actually Gets Read",
     category: "Cover Letters",
     date: "Apr 21, 2026",
+    dateISO: "2026-04-21",
     readTime: "6 min read",
     color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     content: `
@@ -194,6 +199,7 @@ Tools like JobPilot AI can generate a tailored cover letter based on your resume
     title: "The Complete Guide to Career Change Resumes",
     category: "Career Change",
     date: "Apr 15, 2026",
+    dateISO: "2026-04-15",
     readTime: "7 min read",
     color: "bg-sky-500/10 text-sky-400 border-sky-500/20",
     content: `
@@ -261,6 +267,7 @@ JobPilot AI's Career Pivot Mode is specifically designed for career changers. It
     title: "The 20 Interview Questions You Will Be Asked (And How to Answer Them)",
     category: "Interview Prep",
     date: "Apr 8, 2026",
+    dateISO: "2026-04-08",
     readTime: "8 min read",
     color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     content: `
@@ -357,6 +364,7 @@ Asking thoughtful questions shows genuine interest and helps you evaluate if the
     title: "How to Land a Remote Job: A Step-by-Step Strategy",
     category: "Job Search",
     date: "Apr 1, 2026",
+    dateISO: "2026-04-01",
     readTime: "6 min read",
     color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
     content: `
@@ -450,9 +458,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: "Post Not Found — JobPilot AI" };
   }
 
+  const description = post.content.slice(0, 160).replace(/[#*\n]/g, "").trim();
   return {
     title: `${post.title} — JobPilot AI Blog`,
-    description: post.content.slice(0, 160).replace(/[#*\n]/g, "").trim(),
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      publishedTime: post.dateISO,
+      url: `https://jobpilotai.co/blog/${slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+    },
   };
 }
 
@@ -511,6 +532,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 sm:py-24">
+      {/* ---- Structured data for Google rich results ---- */}
+      <ArticleJsonLd
+        title={post.title}
+        description={post.content.slice(0, 160).replace(/[#*\n]/g, "").trim()}
+        slug={slug}
+        datePublished={post.dateISO}
+      />
       {/* ---- Back link ---- */}
       <Link
         href="/blog"
