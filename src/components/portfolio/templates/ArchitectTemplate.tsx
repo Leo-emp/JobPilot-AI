@@ -8,6 +8,8 @@ import type { PortfolioData, PortfolioSection, GalleryEntry } from "@/lib/portfo
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
 import { SocialIcons } from "../shared/SocialIcons";
 import { VideoEmbed, hasVideo } from "../shared/VideoEmbed";
+import { StatsBar } from "../shared/StatsBar";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const c = {
   bg: "#0c1220",
@@ -328,13 +330,14 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
-    case "skills":
-      if (section.groups.length === 0) return null;
+    case "skills": {
+      const groups = autoCategorizeSkills(section.groups);
+      if (groups.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
+        <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Technical Skills" label="Expertise" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {section.groups.map((g, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {groups.map((g, i) => (
               <BlueprintCard key={i}>
                 <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-4" style={{ color: c.teal }}>{g.category}</h3>
                 <div className="flex flex-wrap gap-2">
@@ -364,11 +367,12 @@ function renderSection(section: PortfolioSection) {
           </div>
         </SectionWrapper>
       );
+    }
 
     case "education":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
+        <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Education" label="Academic" />
           <div className="space-y-4">
             {section.entries.map((e, i) => (
@@ -590,13 +594,17 @@ export default function ArchitectTemplate({ data }: { data: PortfolioData }) {
     <div className="min-h-screen" style={{ backgroundColor: c.bg, color: c.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Hero data={data} />
 
+      <StatsBar data={data} variant="minimal" colors={{
+        bg: c.bg, text: c.text, accent: c.teal, muted: c.muted, border: c.border,
+      }} />
+
       {data.sections
         .filter((s) => s.visible && s.type !== "about")
         .map((section, i) => (
           <div key={`${section.type}-${i}`}>{renderSection(section)}</div>
         ))}
 
-      <footer className="py-10 text-center text-xs" style={{ color: c.muted }}>
+      <footer className="py-16 text-center text-xs" style={{ color: c.muted, borderTop: `1px solid ${c.border}` }}>
         Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.teal }}>JobPilot AI</a>
       </footer>
     </div>

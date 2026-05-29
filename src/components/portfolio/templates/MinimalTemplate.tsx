@@ -6,6 +6,9 @@ import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
 import { SocialIcons } from "../shared/SocialIcons";
+import { StatsBar } from "../shared/StatsBar";
+import { SectionDivider } from "../shared/SectionDivider";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const defaultColors = {
   bg: "#fafafa",
@@ -178,13 +181,17 @@ function EducationSection({ section, colors }: { section: PortfolioSection; colo
 
 function SkillsSection({ section, colors }: { section: PortfolioSection; colors: typeof defaultColors }) {
   if (section.type !== "skills" || section.groups.length === 0) return null;
+  const groups = autoCategorizeSkills(section.groups);
   return (
-    <SectionWrapper className="py-20 px-6 md:px-12 max-w-5xl mx-auto">
+    <SectionWrapper className="py-28 px-6 md:px-12 max-w-5xl mx-auto">
       <SectionHeading title="Skills" colors={colors} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {section.groups.map((g, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {groups.map((g, i) => (
           <Card key={i} colors={colors}>
-            <h3 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: colors.accent }}>{g.category}</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-6 rounded-full" style={{ backgroundColor: colors.accent }} />
+              <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.accent }}>{g.category}</h3>
+            </div>
             <div className="flex flex-wrap gap-2">
               {g.skills.map((s, j) => (
                 <motion.span key={j}
@@ -470,20 +477,26 @@ export default function MinimalTemplate({ data }: { data: PortfolioData }) {
 
       <Hero data={data} colors={colors} />
 
-      {/* # Elegant divider */}
-      <div className="max-w-5xl mx-auto px-6 md:px-12">
-        <div className="h-px" style={{ background: `linear-gradient(90deg, transparent, ${colors.border}, transparent)` }} />
-      </div>
+      <StatsBar data={data} variant="minimal" colors={{
+        bg: colors.bg, text: colors.text, accent: colors.accent, muted: colors.muted, border: colors.border,
+      }} />
+
+      <SectionDivider variant="gradient" color={colors.accent} />
 
       {data.sections
         .filter((s) => s.visible && s.type !== "about")
         .map((section, i) => {
           const Renderer = SECTION_RENDERERS[section.type];
           if (!Renderer) return null;
-          return <Renderer key={`${section.type}-${i}`} section={section} colors={colors} />;
+          return (
+            <div key={`${section.type}-${i}`}>
+              {i > 0 && <SectionDivider variant="gradient" color={colors.accent} />}
+              <Renderer section={section} colors={colors} />
+            </div>
+          );
         })}
 
-      <footer className="py-10 text-center">
+      <footer className="py-16 text-center" style={{ borderTop: `1px solid ${colors.border}` }}>
         <p className="text-xs" style={{ color: colors.muted }}>
           Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: colors.accent }}>JobPilot AI</a>
         </p>

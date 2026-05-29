@@ -6,6 +6,9 @@ import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
 import { SocialIcons } from "../shared/SocialIcons";
+import { StatsBar } from "../shared/StatsBar";
+import { SectionDivider } from "../shared/SectionDivider";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const c = {
   bg: "#faf8f4",
@@ -156,13 +159,14 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
-    case "skills":
-      if (section.groups.length === 0) return null;
+    case "skills": {
+      const groups = autoCategorizeSkills(section.groups);
+      if (groups.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
+        <SectionWrapper className="py-28 px-6 md:px-12 max-w-5xl mx-auto">
           <SectionHeading>Core Competencies</SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {section.groups.map((g, i) => (
+            {groups.map((g, i) => (
               <PremiumCard key={i}>
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
@@ -181,11 +185,12 @@ function renderSection(section: PortfolioSection) {
           </div>
         </SectionWrapper>
       );
+    }
 
     case "projects":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
+        <SectionWrapper className="py-28 px-6 md:px-12 max-w-5xl mx-auto">
           <SectionHeading>Key Projects</SectionHeading>
           <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             {/* # Featured first project — editorial full-width */}
@@ -439,15 +444,25 @@ function renderSection(section: PortfolioSection) {
 }
 
 export default function CorporateTemplate({ data }: { data: PortfolioData }) {
+  const visibleSections = data.sections.filter((s) => s.visible && s.type !== "about");
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: c.bg, color: c.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Hero data={data} />
-      {data.sections
-        .filter((s) => s.visible && s.type !== "about")
-        .map((section, i) => (
-          <div key={`${section.type}-${i}`}>{renderSection(section)}</div>
-        ))}
-      <footer className="py-10 text-center text-xs" style={{ color: c.muted }}>
+
+      <StatsBar data={data} variant="editorial" colors={{
+        bg: c.cream, text: c.navy, accent: c.gold, muted: c.muted, border: c.border,
+      }} />
+
+      {visibleSections.map((section, i) => (
+        <div key={`${section.type}-${i}`}>
+          <SectionDivider variant="diamond" color={c.gold} />
+          {renderSection(section)}
+        </div>
+      ))}
+
+      <SectionDivider variant="diamond" color={c.gold} />
+      <footer className="py-16 text-center text-xs" style={{ color: c.muted }}>
         Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.gold }}>JobPilot AI</a>
       </footer>
     </div>

@@ -6,6 +6,9 @@ import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
 import { SocialIcons } from "../shared/SocialIcons";
+import { StatsBar } from "../shared/StatsBar";
+import { SectionDivider } from "../shared/SectionDivider";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const c = {
   bg: "#070714",
@@ -172,16 +175,17 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
-    case "skills":
-      if (section.groups.length === 0) return null;
+    case "skills": {
+      const groups = autoCategorizeSkills(section.groups);
+      if (groups.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
+        <SectionWrapper className="py-28 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeading title="Skills & Tools" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {section.groups.map((g, gi) => {
+            {groups.map((g, gi) => {
               const accents = [c.pink, c.purple, c.blue, c.cyan, "#f59e0b"];
               const accent = accents[gi % accents.length];
-              const isLarge = gi === 0 && section.groups.length > 2;
+              const isLarge = gi === 0 && groups.length > 2;
               return (
                 <GlassPanel key={gi} className={isLarge ? "md:col-span-2" : ""}>
                   <div className="flex items-center gap-2 mb-4">
@@ -212,6 +216,7 @@ function renderSection(section: PortfolioSection) {
           </div>
         </SectionWrapper>
       );
+    }
 
     case "projects":
       if (section.entries.length === 0) return null;
@@ -433,20 +438,24 @@ function renderSection(section: PortfolioSection) {
 }
 
 export default function CreativeTemplate({ data }: { data: PortfolioData }) {
+  const visibleSections = data.sections.filter((s) => s.visible && s.type !== "about");
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: c.bg, color: c.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Hero data={data} />
 
-      {data.sections
-        .filter((s) => s.visible && s.type !== "about")
-        .map((section, i, arr) => (
-          <div key={`${section.type}-${i}`}>
-            {i > 0 && <div className="h-px max-w-6xl mx-auto" style={{ background: `linear-gradient(90deg, transparent, ${c.border}, transparent)` }} />}
-            {renderSection(section)}
-          </div>
-        ))}
+      <StatsBar data={data} variant="glass" colors={{
+        bg: "rgba(255,255,255,0.02)", text: c.text, accent: c.pink, muted: c.muted, border: c.border,
+      }} />
 
-      <footer className="py-10 text-center text-xs" style={{ color: c.muted }}>
+      {visibleSections.map((section, i) => (
+        <div key={`${section.type}-${i}`}>
+          <SectionDivider variant="wave" color={c.purple} />
+          {renderSection(section)}
+        </div>
+      ))}
+
+      <footer className="py-16 text-center text-xs" style={{ color: c.muted, borderTop: `1px solid ${c.border}` }}>
         Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.pink }}>JobPilot AI</a>
       </footer>
     </div>

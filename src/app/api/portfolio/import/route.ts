@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { PortfolioSection, ExperienceEntry, EducationEntry, SkillGroup, CertificationEntry } from "@/lib/portfolio-types";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 /* # Parse "Title | Company · Location | Date" format used by resume builder */
 function parseExperienceBlock(text: string): ExperienceEntry[] {
@@ -193,20 +194,20 @@ export async function POST() {
     sections.push({ type: "education", visible: true, entries: [] });
   }
 
-  /* # Skills section */
+  /* # Skills section — auto-categorize flat skill lists into meaningful groups */
   const skillsText = parsed.skills || parsed.coreSkills || "";
   const topSkills = user?.topSkills ? JSON.parse(user.topSkills) : [];
   if (skillsText) {
     sections.push({
       type: "skills",
       visible: true,
-      groups: parseSkillGroups(skillsText),
+      groups: autoCategorizeSkills(parseSkillGroups(skillsText)),
     });
   } else if (topSkills.length > 0) {
     sections.push({
       type: "skills",
       visible: true,
-      groups: [{ category: "Top Skills", skills: topSkills.map((s: string) => ({ name: s })) }],
+      groups: autoCategorizeSkills([{ category: "Top Skills", skills: topSkills.map((s: string) => ({ name: s })) }]),
     });
   } else {
     sections.push({ type: "skills", visible: true, groups: [] });

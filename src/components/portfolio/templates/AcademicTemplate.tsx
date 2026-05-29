@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
 import { SocialIcons } from "../shared/SocialIcons";
+import { StatsBar } from "../shared/StatsBar";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const c = {
   bg: "#fefcf7",
@@ -190,18 +192,19 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
-    case "skills":
-      if (section.groups.length === 0) return null;
+    case "skills": {
+      const groups = autoCategorizeSkills(section.groups);
+      if (groups.length === 0) return null;
       return (
-        <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
+        <SectionWrapper className="py-28 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Research Interests & Skills</SectionHeading>
-          <div className="space-y-6">
-            {section.groups.map((g, i) => (
-              <div key={i} className="p-5 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: c.accent }}>{g.category}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {groups.map((g, i) => (
+              <div key={i} className="p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
+                <h3 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: c.accent }}>{g.category}</h3>
                 <div className="flex flex-wrap gap-2">
                   {g.skills.map((s, j) => (
-                    <span key={j} className="text-sm px-3 py-1 rounded-lg" style={{ backgroundColor: c.accentSoft, color: c.accent }}>
+                    <span key={j} className="text-sm px-3 py-1.5 rounded-lg" style={{ backgroundColor: c.accentSoft, color: c.accent }}>
                       {s.name}
                     </span>
                   ))}
@@ -211,6 +214,7 @@ function renderSection(section: PortfolioSection) {
           </div>
         </SectionWrapper>
       );
+    }
 
     case "projects":
       if (section.entries.length === 0) return null;
@@ -337,12 +341,17 @@ export default function AcademicTemplate({ data }: { data: PortfolioData }) {
   return (
     <div className="min-h-screen" style={{ backgroundColor: c.bg, color: c.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Hero data={data} />
+
+      <StatsBar data={data} variant="serif" colors={{
+        bg: c.bg, text: c.text, accent: c.accent, muted: c.muted, border: c.border,
+      }} />
+
       {data.sections
         .filter((s) => s.visible && s.type !== "about")
         .map((section, i) => (
           <div key={`${section.type}-${i}`}>{renderSection(section)}</div>
         ))}
-      <footer className="py-10 text-center text-xs" style={{ color: c.muted, borderTop: `1px solid ${c.border}` }}>
+      <footer className="py-16 text-center text-xs" style={{ color: c.muted, borderTop: `1px solid ${c.border}` }}>
         Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.accent }}>JobPilot AI</a>
       </footer>
     </div>
