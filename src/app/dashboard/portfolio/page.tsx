@@ -21,6 +21,7 @@ import type {
   TestimonialEntry,
 } from "@/lib/portfolio-types";
 import { TEMPLATES, TEMPLATE_INFO, SECTION_TYPES, SECTION_INFO, getDefaultSections } from "@/lib/portfolio-types";
+import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 /* ---- Tabs for the editor sidebar ---- */
 const editorTabs = [
@@ -967,8 +968,30 @@ function SkillsForm({ section, onUpdate }: { section: PortfolioSection & { type:
     onUpdate({ ...section, groups: section.groups.filter((_, i) => i !== gi) });
   };
 
+  /* # Auto-categorize: splits a flat skill list into smart categories */
+  const handleAutoCategorize = () => {
+    const totalSkills = section.groups.reduce((sum, g) => sum + g.skills.length, 0);
+    if (totalSkills === 0) return;
+    onUpdate({ ...section, groups: autoCategorizeSkills(section.groups) });
+  };
+
+  const totalSkills = section.groups.reduce((sum, g) => sum + g.skills.length, 0);
+
   return (
     <div>
+      {/* # Auto-categorize button — shown when skills exist */}
+      {totalSkills > 0 && (
+        <button
+          onClick={handleAutoCategorize}
+          className="mb-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-brand-indigo/15 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/25 hover:border-brand-indigo/50 transition-all"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          Auto-Categorize Skills
+        </button>
+      )}
+
       {section.groups.map((group, gi) => (
         <div key={gi} className="mb-4 p-4 rounded-xl bg-space-700 border border-card-border">
           <div className="flex justify-between mb-3">
