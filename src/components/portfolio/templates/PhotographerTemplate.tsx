@@ -1,6 +1,7 @@
 "use client";
 
 /* # Photographer Template — Full-bleed gallery, masonry grid, image-forward with category filters & lightbox */
+/* # PREMIUM LANDING PAGE — no section should look like a resume, all text sections have visual treatments */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +22,16 @@ const c = {
   border: "rgba(255,255,255,0.07)",
   shadow: "0 8px 40px rgba(0,0,0,0.5)",
 };
+
+/* # Elegant monochrome gradient accents for category differentiation */
+const categoryGradients = [
+  { from: "#ffffff", to: "#a0a0a0" },
+  { from: "#d4d4d4", to: "#737373" },
+  { from: "#e5e5e5", to: "#8a8a8a" },
+  { from: "#fafafa", to: "#b0b0b0" },
+  { from: "#c8c8c8", to: "#606060" },
+  { from: "#f0f0f0", to: "#999999" },
+];
 
 /* # Lightbox for full-screen image viewing */
 function Lightbox({ entry, onClose }: { entry: GalleryEntry; onClose: () => void }) {
@@ -214,9 +225,9 @@ function GallerySection({ section }: { section: PortfolioSection & { type: "gall
                 <img src={g.imageUrl} alt={g.title} className="w-full transition-all duration-700 group-hover:brightness-75" />
               )}
 
-              {/* # Hover overlay with title */}
+              {/* # Hover overlay with gradient and title */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300"
-                style={{ background: `linear-gradient(180deg, transparent 50%, ${c.bg}ee)` }}>
+                style={{ background: `linear-gradient(180deg, transparent 40%, rgba(255,255,255,0.03) 60%, ${c.bg}ee)` }}>
                 <div className="absolute bottom-4 left-4 right-4">
                   <h3 className="text-white font-bold">{g.title}</h3>
                   {g.description && <p className="text-white/60 text-sm mt-1">{g.description}</p>}
@@ -279,8 +290,12 @@ function renderSection(section: PortfolioSection) {
                   {p.techStack.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {p.techStack.map((t, j) => (
-                        <span key={j} className="text-xs px-3 py-1 rounded-full"
-                          style={{ backgroundColor: c.surface, color: c.muted, border: `1px solid ${c.border}` }}>
+                        <span key={j} className="text-xs px-3 py-1 rounded-full transition-all duration-200"
+                          style={{
+                            background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                            color: c.text,
+                            border: `1px solid ${c.border}`,
+                          }}>
                           {t}
                         </span>
                       ))}
@@ -289,8 +304,11 @@ function renderSection(section: PortfolioSection) {
                   <div className="mt-5 flex gap-4">
                     {p.liveUrl && (
                       <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
-                        className="text-sm font-semibold px-5 py-2 rounded-lg text-black transition-all hover:opacity-90"
-                        style={{ backgroundColor: c.accent }}>
+                        className="text-sm font-semibold px-5 py-2 rounded-lg text-black transition-all hover:opacity-90 hover:shadow-lg"
+                        style={{
+                          background: `linear-gradient(135deg, ${c.accent}, #d4d4d4)`,
+                          boxShadow: "0 4px 20px rgba(255,255,255,0.15)",
+                        }}>
                         View Project →
                       </a>
                     )}
@@ -307,32 +325,82 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Experience" />
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="space-y-8">
-            {section.entries.map((e, i) => (
-              <motion.div key={i} variants={staggerItem} className="pb-8" style={{ borderBottom: `1px solid ${c.border}` }}>
-                <div className="flex flex-col md:flex-row md:justify-between gap-2">
-                  <div>
-                    <h3 className="text-xl font-bold" style={{ color: c.text }}>{e.title}</h3>
-                    <p className="text-sm mt-0.5" style={{ color: c.muted }}>{e.company}{e.location ? ` · ${e.location}` : ""}</p>
-                  </div>
-                  <span className="text-xs tracking-wider uppercase shrink-0" style={{ color: c.muted }}>
-                    {e.startDate} — {e.endDate || "Present"}
-                  </span>
-                </div>
-                {e.achievements.length > 0 && (
-                  <ul className="mt-4 space-y-2">
-                    {e.achievements.map((a, j) => (
-                      <li key={j} className="text-sm flex items-start gap-2" style={{ color: c.muted }}>
-                        <span className="shrink-0 mt-1.5 w-1 h-1 rounded-full bg-white/40" />
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
+          {/* # Elegant dark container for the experience section */}
+          <div className="relative rounded-2xl overflow-hidden" style={{
+            background: `linear-gradient(135deg, ${c.surface}, ${c.card})`,
+            border: `1px solid ${c.border}`,
+          }}>
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+              {section.entries.map((e, i) => {
+                const gradient = categoryGradients[i % categoryGradients.length];
+                return (
+                  <motion.div key={i} variants={staggerItem}>
+                    <motion.div
+                      className="relative p-8 group"
+                      style={{
+                        borderBottom: i < section.entries.length - 1 ? `1px solid ${c.border}` : "none",
+                      }}
+                      whileHover={{ backgroundColor: "rgba(255,255,255,0.02)" }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {/* # Subtle white left accent border — unique opacity per entry */}
+                      <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full"
+                        style={{ background: `linear-gradient(180deg, ${gradient.from}40, ${gradient.to}15)` }} />
+
+                      <div className="flex flex-col md:flex-row md:items-start gap-5 pl-4">
+                        {/* # Company initial badge with subtle gradient */}
+                        <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold"
+                          style={{
+                            background: `linear-gradient(135deg, ${gradient.from}12, ${gradient.to}06)`,
+                            border: `1px solid ${gradient.from}15`,
+                            color: gradient.from,
+                          }}>
+                          {e.company?.charAt(0)?.toUpperCase() || "C"}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div>
+                              <h3 className="text-xl font-bold" style={{ color: c.text }}>{e.title}</h3>
+                              <p className="text-sm font-medium mt-1" style={{ color: c.accent, opacity: 0.7 }}>
+                                {e.company}{e.location ? ` · ${e.location}` : ""}
+                              </p>
+                            </div>
+                            {/* # Date in styled pill */}
+                            <span className="inline-flex items-center self-start text-xs font-medium uppercase tracking-wider px-4 py-1.5 rounded-full shrink-0"
+                              style={{
+                                background: `linear-gradient(135deg, ${gradient.from}10, ${gradient.to}05)`,
+                                color: gradient.from,
+                                opacity: 0.8,
+                                border: `1px solid ${gradient.from}12`,
+                              }}>
+                              {e.startDate} — {e.endDate || "Present"}
+                            </span>
+                          </div>
+
+                          {/* # Achievements with elegant accent markers */}
+                          {e.achievements.length > 0 && (
+                            <ul className="mt-5 space-y-3">
+                              {e.achievements.map((a, j) => (
+                                <li key={j} className="text-sm flex items-start gap-3" style={{ color: c.muted }}>
+                                  <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full transition-all duration-200"
+                                    style={{
+                                      background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})`,
+                                      boxShadow: `0 0 4px ${gradient.from}20`,
+                                    }} />
+                                  <span className="leading-relaxed">{a}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
         </SectionWrapper>
       );
 
@@ -343,19 +411,52 @@ function renderSection(section: PortfolioSection) {
         <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Equipment & Skills" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {groups.map((g, i) => (
-              <div key={i} className="p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-4" style={{ color: c.muted }}>{g.category}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {g.skills.map((s, j) => (
-                    <span key={j} className="text-sm px-3.5 py-1.5 rounded-lg"
-                      style={{ backgroundColor: c.card, color: c.text, border: `1px solid ${c.border}` }}>
-                      {s.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+            {groups.map((g, i) => {
+              /* # Each category card gets a unique gradient accent */
+              const gradient = categoryGradients[i % categoryGradients.length];
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden"
+                  style={{
+                    backgroundColor: c.surface,
+                    border: `1px solid ${c.border}`,
+                  }}
+                  whileHover={{ y: -4, boxShadow: `0 12px 40px rgba(255,255,255,0.03)` }}
+                  transition={{ duration: 0.25 }}
+                >
+                  {/* # Gradient top accent — unique per category */}
+                  <div className="h-0.5" style={{ background: `linear-gradient(90deg, ${gradient.from}60, ${gradient.to}30, transparent)` }} />
+
+                  <div className="p-6">
+                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-4" style={{
+                      background: `linear-gradient(90deg, ${gradient.from}, ${gradient.to})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}>
+                      {g.category}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {g.skills.map((s, j) => (
+                        <motion.span key={j}
+                          className="text-sm px-3.5 py-1.5 rounded-lg cursor-default transition-all duration-200"
+                          style={{
+                            background: `linear-gradient(135deg, ${gradient.from}06, ${gradient.to}03)`,
+                            color: c.text,
+                            border: `1px solid ${gradient.from}10`,
+                          }}
+                          whileHover={{
+                            scale: 1.05,
+                            boxShadow: `0 0 10px ${gradient.from}10`,
+                          }}
+                        >
+                          {s.name}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
@@ -366,13 +467,66 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Awards" />
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {section.entries.map((a, i) => (
-              <div key={i} className="p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <h3 className="font-bold" style={{ color: c.text }}>{a.title}</h3>
-                <p className="text-sm mt-0.5" style={{ color: c.muted }}>{a.issuer}{a.date ? ` · ${a.date}` : ""}</p>
-                {a.description && <p className="text-sm mt-2" style={{ color: c.muted }}>{a.description}</p>}
-              </div>
+              <motion.div key={i}
+                className="relative rounded-xl overflow-hidden group"
+                style={{
+                  backgroundColor: c.surface,
+                  border: `1px solid rgba(212, 168, 83, 0.12)`,
+                }}
+                whileHover={{ y: -3, boxShadow: "0 8px 30px rgba(212,168,83,0.06)" }}
+                transition={{ duration: 0.25 }}
+              >
+                {/* # Gold/amber gradient accent strip */}
+                <div className="h-0.5" style={{
+                  background: "linear-gradient(90deg, #d4a853, #f0d78c, #d4a853)",
+                }} />
+
+                <div className="p-7">
+                  <div className="flex items-start gap-4">
+                    {/* # Trophy-style icon with gold gradient */}
+                    <div className="shrink-0 w-11 h-11 rounded-lg flex items-center justify-center relative"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(212,168,83,0.15), rgba(240,215,140,0.08))",
+                        border: "1px solid rgba(212,168,83,0.2)",
+                      }}>
+                      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ boxShadow: "0 0 15px rgba(212,168,83,0.15)" }} />
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: "relative", zIndex: 1 }}>
+                        <path d="M8 21h8m-4-4v4m-5-8a5 5 0 0 1-3-4.5V4h16v4.5A5 5 0 0 1 13 13h-2z"
+                          stroke="#d4a853" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3"
+                          stroke="#d4a853" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg" style={{ color: c.text }}>{a.title}</h3>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="text-sm font-medium" style={{
+                          background: "linear-gradient(90deg, #d4a853, #f0d78c)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}>
+                          {a.issuer}
+                        </span>
+                        {a.date && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                            style={{
+                              background: "rgba(212,168,83,0.1)",
+                              color: "#d4a853",
+                              border: "1px solid rgba(212,168,83,0.15)",
+                            }}>
+                            {a.date}
+                          </span>
+                        )}
+                      </div>
+                      {a.description && <p className="text-sm mt-3 leading-relaxed" style={{ color: c.muted }}>{a.description}</p>}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </SectionWrapper>
@@ -384,15 +538,54 @@ function renderSection(section: PortfolioSection) {
         <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Client Words" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {section.entries.map((t, i) => (
-              <div key={i} className="p-7 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <p className="text-sm italic leading-relaxed" style={{ color: c.muted }}>&ldquo;{t.quote}&rdquo;</p>
-                <div className="mt-5 pt-4" style={{ borderTop: `1px solid ${c.border}` }}>
-                  <p className="font-bold text-sm" style={{ color: c.text }}>{t.author}</p>
-                  <p className="text-xs" style={{ color: c.muted }}>{t.role}{t.company ? ` · ${t.company}` : ""}</p>
-                </div>
-              </div>
-            ))}
+            {section.entries.map((t, i) => {
+              const gradient = categoryGradients[i % categoryGradients.length];
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden group"
+                  style={{
+                    background: `linear-gradient(145deg, ${c.surface}, ${c.card})`,
+                    border: `1px solid ${gradient.from}08`,
+                  }}
+                  whileHover={{ y: -3, boxShadow: `0 8px 30px rgba(255,255,255,0.03)` }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* # Subtle gradient side accent */}
+                  <div className="absolute left-0 top-6 bottom-6 w-0.5 rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${gradient.from}30, transparent)` }} />
+
+                  <div className="p-8 pl-5">
+                    {/* # Large decorative gradient quote marks */}
+                    <div className="text-5xl font-serif leading-none mb-4 select-none" style={{
+                      background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      opacity: 0.3,
+                    }}>
+                      &ldquo;
+                    </div>
+
+                    <p className="text-sm italic leading-relaxed" style={{ color: c.muted }}>{t.quote}</p>
+
+                    {/* # Author with monochrome avatar badge */}
+                    <div className="mt-6 pt-4 flex items-center gap-3" style={{ borderTop: `1px solid ${c.border}` }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                        style={{
+                          background: `linear-gradient(135deg, ${gradient.from}15, ${gradient.to}08)`,
+                          color: gradient.from,
+                          border: `1px solid ${gradient.from}15`,
+                        }}>
+                        {t.author?.charAt(0)?.toUpperCase() || "?"}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm" style={{ color: c.text }}>{t.author}</p>
+                        <p className="text-xs" style={{ color: c.muted }}>{t.role}{t.company ? ` · ${t.company}` : ""}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
@@ -402,14 +595,111 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Education" />
-          <div className="space-y-4">
-            {section.entries.map((e, i) => (
-              <div key={i} className="p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <h3 className="font-bold" style={{ color: c.text }}>{e.degree}</h3>
-                <p className="text-sm mt-0.5" style={{ color: c.muted }}>{e.school}</p>
-                {e.startDate && <p className="text-xs mt-1" style={{ color: c.muted }}>{e.startDate} — {e.endDate}</p>}
-              </div>
-            ))}
+          <div className="space-y-5">
+            {section.entries.map((e, i) => {
+              const gradient = categoryGradients[i % categoryGradients.length];
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden group"
+                  style={{
+                    backgroundColor: c.surface,
+                    border: `1px solid ${c.border}`,
+                  }}
+                  whileHover={{ y: -3, boxShadow: `0 8px 25px rgba(255,255,255,0.02)` }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* # Gradient top border */}
+                  <div className="h-0.5" style={{
+                    background: `linear-gradient(90deg, ${gradient.from}50, ${gradient.to}25, transparent)`,
+                  }} />
+
+                  <div className="p-7">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                      <div className="flex-1">
+                        {/* # Degree name — large and prominent */}
+                        <h3 className="text-xl font-bold" style={{ color: c.text }}>{e.degree}</h3>
+                        {/* # School in accent color */}
+                        <p className="text-sm font-medium mt-1" style={{ color: c.accent, opacity: 0.7 }}>{e.school}</p>
+                      </div>
+                      {/* # Year in gradient badge */}
+                      {e.startDate && (
+                        <span className="inline-flex items-center self-start text-xs font-medium uppercase tracking-wider px-3.5 py-1 rounded-full shrink-0"
+                          style={{
+                            background: `linear-gradient(135deg, ${gradient.from}10, ${gradient.to}05)`,
+                            color: gradient.from,
+                            opacity: 0.8,
+                            border: `1px solid ${gradient.from}10`,
+                          }}>
+                          {e.startDate} — {e.endDate || "Present"}
+                        </span>
+                      )}
+                    </div>
+                    {e.description && (
+                      <p className="text-sm mt-4 leading-relaxed" style={{ color: c.muted }}>{e.description}</p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </SectionWrapper>
+      );
+
+    case "certifications":
+      if (section.entries.length === 0) return null;
+      return (
+        <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
+          <SectionHeading title="Certifications" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {section.entries.map((cert, i) => {
+              const gradient = categoryGradients[i % categoryGradients.length];
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden group"
+                  style={{
+                    background: `linear-gradient(135deg, ${gradient.from}04, ${c.surface})`,
+                    border: `1px solid ${gradient.from}08`,
+                  }}
+                  whileHover={{ y: -2, boxShadow: `0 6px 20px rgba(255,255,255,0.02)` }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="p-6 flex items-center gap-4">
+                    {/* # Badge/shield-style icon */}
+                    <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center relative"
+                      style={{
+                        background: `linear-gradient(135deg, ${gradient.from}12, ${gradient.to}06)`,
+                        border: `1px solid ${gradient.from}15`,
+                      }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 12l2 2 4-4" stroke={gradient.from} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"
+                          fill={`${gradient.from}10`} stroke={gradient.from} strokeWidth="1" strokeOpacity="0.3" />
+                      </svg>
+                      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ boxShadow: `0 0 12px ${gradient.from}10` }} />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm" style={{ color: c.text }}>{cert.name}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <p className="text-xs font-medium" style={{ color: gradient.from, opacity: 0.7 }}>{cert.issuer}</p>
+                        {cert.date && (
+                          <span className="text-xs px-2 py-0.5 rounded-full"
+                            style={{
+                              background: `${gradient.from}08`,
+                              color: gradient.from,
+                              opacity: 0.7,
+                              border: `1px solid ${gradient.from}08`,
+                            }}>
+                            {cert.date}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
@@ -418,25 +708,96 @@ function renderSection(section: PortfolioSection) {
       const hasContent = section.email || section.phone || section.location;
       if (!hasContent) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
-          <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-            <h2 className="text-3xl font-bold mb-3" style={{ color: c.text }}>Let&apos;s Capture Something Beautiful</h2>
-            <p className="text-sm mb-10" style={{ color: c.muted }}>Available for bookings, collaborations, and creative projects.</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              {section.email && (
-                <a href={`mailto:${section.email}`}
-                  className="px-8 py-3 rounded-lg font-bold text-sm transition-all hover:opacity-90"
-                  style={{ backgroundColor: c.accent, color: c.bg }}>
-                  Get in Touch
-                </a>
-              )}
-              {section.calendarLink && (
-                <a href={section.calendarLink} target="_blank" rel="noopener noreferrer"
-                  className="px-8 py-3 rounded-lg font-bold text-sm transition-all hover:opacity-80"
-                  style={{ color: c.text, border: `1px solid ${c.border}` }}>
-                  Book a Session
-                </a>
-              )}
+        <SectionWrapper className="py-24 px-6 md:px-16">
+          {/* # Full-width dark background CTA with clean white accents */}
+          <div className="relative max-w-6xl mx-auto rounded-2xl overflow-hidden">
+            {/* # Background with subtle gradient */}
+            <div className="absolute inset-0" style={{
+              background: `linear-gradient(135deg, ${c.surface} 0%, #1a1a1a 50%, ${c.surface} 100%)`,
+            }} />
+            {/* # Subtle decorative white glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[1px]"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)" }} />
+
+            <div className="relative z-10 py-20 px-8 md:px-16 text-center" style={{ border: `1px solid ${c.border}` }}>
+              {/* # Section label */}
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="w-8 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3))" }} />
+                <span className="text-xs uppercase tracking-[0.3em] font-medium" style={{ color: c.accent, opacity: 0.5 }}>Contact</span>
+                <div className="w-8 h-px" style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.3), transparent)" }} />
+              </div>
+
+              {/* # Large heading */}
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4" style={{ color: c.text }}>
+                Let&apos;s Capture Something Beautiful
+              </h2>
+              <p className="text-base mb-10 max-w-lg mx-auto" style={{ color: c.muted }}>
+                Available for bookings, collaborations, and creative projects.
+              </p>
+
+              {/* # Contact info in styled cards */}
+              <div className="flex flex-wrap justify-center gap-4 mb-10">
+                {section.email && (
+                  <div className="px-5 py-3 rounded-xl flex items-center gap-3"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                      border: `1px solid ${c.border}`,
+                    }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth="1.5" strokeOpacity="0.5">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    <span className="text-sm" style={{ color: c.text }}>{section.email}</span>
+                  </div>
+                )}
+                {section.phone && (
+                  <div className="px-5 py-3 rounded-xl flex items-center gap-3"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                      border: `1px solid ${c.border}`,
+                    }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth="1.5" strokeOpacity="0.5">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                    <span className="text-sm" style={{ color: c.text }}>{section.phone}</span>
+                  </div>
+                )}
+                {section.location && (
+                  <div className="px-5 py-3 rounded-xl flex items-center gap-3"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                      border: `1px solid ${c.border}`,
+                    }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth="1.5" strokeOpacity="0.5">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <span className="text-sm" style={{ color: c.text }}>{section.location}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* # CTA buttons */}
+              <div className="flex flex-wrap justify-center gap-4">
+                {section.email && (
+                  <a href={`mailto:${section.email}`}
+                    className="px-10 py-3.5 rounded-xl font-bold text-sm transition-all hover:scale-105 hover:shadow-xl"
+                    style={{
+                      background: `linear-gradient(135deg, ${c.accent}, #d4d4d4)`,
+                      color: c.bg,
+                      boxShadow: "0 4px 25px rgba(255,255,255,0.1)",
+                    }}>
+                    Get in Touch
+                  </a>
+                )}
+                {section.calendarLink && (
+                  <a href={section.calendarLink} target="_blank" rel="noopener noreferrer"
+                    className="px-10 py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-80"
+                    style={{ color: c.text, border: `1px solid ${c.border}` }}>
+                    Book a Session
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </SectionWrapper>

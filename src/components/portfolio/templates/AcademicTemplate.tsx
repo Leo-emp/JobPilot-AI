@@ -1,6 +1,6 @@
 "use client";
 
-/* # Academic Template — Scholarly paper with elegant citations, warm typography, refined layout */
+/* # Academic Template — Scholarly landing page with modern visual cards, warm typography */
 
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
@@ -22,6 +22,15 @@ const c = {
   heading: "#1c1008",
   gold: "#b8945e",
 };
+
+/* # Gradient colors for experience entry left borders */
+const ACADEMIC_GRADIENTS = [
+  `linear-gradient(180deg, #4a6fa5, #7c9ec7)`,
+  `linear-gradient(180deg, #365280, #5b82b5)`,
+  `linear-gradient(180deg, #5c83b8, #8ba8d0)`,
+  `linear-gradient(180deg, #3a6090, #6a90c0)`,
+  `linear-gradient(180deg, #4878a8, #82aad0)`,
+];
 
 function SectionHeading({ children, number }: { children: React.ReactNode; number?: number }) {
   return (
@@ -118,165 +127,522 @@ function renderSection(section: PortfolioSection) {
   const num = sectionCounter;
 
   switch (section.type) {
+
+    /* # ─── EXPERIENCE — Visual cards with gradient left border, NOT plain text ─── */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
-          <SectionHeading number={num}>Academic & Professional Experience</SectionHeading>
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-            {section.entries.map((e, i) => (
-              <motion.div key={i} variants={staggerItem} className="mb-10 relative pl-6"
-                style={{ borderLeft: `2px solid ${c.border}` }}>
-                <div className="absolute -left-[5px] top-2 w-2 h-2 rounded-full" style={{ backgroundColor: c.accent }} />
-                <div className="flex flex-col md:flex-row md:justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{e.title}</h3>
-                    <p className="text-sm font-medium mt-0.5" style={{ color: c.accent }}>{e.company}{e.location ? `, ${e.location}` : ""}</p>
-                  </div>
-                  <span className="text-sm italic shrink-0 mt-1 md:mt-0" style={{ color: c.muted }}>{e.startDate} – {e.endDate || "Present"}</span>
-                </div>
-                {e.achievements.length > 0 && (
-                  <ul className="mt-4 space-y-2 pl-4">
-                    {e.achievements.map((a, j) => (
-                      <li key={j} className="text-sm leading-relaxed" style={{ color: c.text, listStyleType: "disc" }}>{a}</li>
-                    ))}
-                  </ul>
-                )}
-              </motion.div>
-            ))}
+          <SectionHeading number={num}>Academic &amp; Professional Experience</SectionHeading>
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            className="space-y-6">
+            {section.entries.map((e, i) => {
+              /* # Unique gradient for each card's left border */
+              const grad = ACADEMIC_GRADIENTS[i % ACADEMIC_GRADIENTS.length];
+              return (
+                <motion.div key={i} variants={staggerItem}>
+                  <motion.div
+                    className="relative rounded-xl overflow-hidden"
+                    style={{
+                      backgroundColor: c.card,
+                      border: `1px solid ${c.border}`,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                    }}
+                    whileHover={{
+                      y: -4,
+                      boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+                      transition: { duration: 0.2 },
+                    }}
+                  >
+                    {/* # Gradient left border accent */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                      style={{ background: grad }} />
+
+                    {/* # Subtle warm gradient background fill */}
+                    <div className="absolute inset-0 opacity-[0.03]"
+                      style={{ background: `linear-gradient(135deg, ${c.accent}, transparent 50%)` }} />
+
+                    <div className="relative p-6 pl-7">
+                      {/* # Top row: company badge + date pill */}
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
+                        <div className="flex items-start gap-3">
+                          {/* # Gradient institution icon badge */}
+                          <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-sm shadow-md"
+                            style={{ background: grad }}>
+                            {e.company ? e.company.charAt(0).toUpperCase() : "I"}
+                          </div>
+                          <div>
+                            {/* # Large company/institution name */}
+                            <p className="text-lg font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
+                              {e.company}
+                            </p>
+                            <h3 className="text-sm font-semibold mt-0.5" style={{ color: c.accent }}>
+                              {e.title}{e.location ? `, ${e.location}` : ""}
+                            </h3>
+                          </div>
+                        </div>
+                        {/* # Date range in a colored pill badge */}
+                        {(e.startDate || e.endDate) && (
+                          <span className="text-xs font-semibold shrink-0 px-4 py-1.5 rounded-full"
+                            style={{
+                              background: `linear-gradient(135deg, ${c.accent}15, ${c.accent}08)`,
+                              color: c.accent,
+                              border: `1px solid ${c.accent}20`,
+                            }}>
+                            {e.startDate} {"–"} {e.endDate || "Present"}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* # Description in a subtle tinted box */}
+                      {e.description && (
+                        <div className="mt-4 px-4 py-3 rounded-lg" style={{ backgroundColor: c.surface }}>
+                          <p className="text-sm leading-relaxed" style={{ color: c.text }}>{e.description}</p>
+                        </div>
+                      )}
+
+                      {/* # Achievements with colored accent markers */}
+                      {e.achievements.length > 0 && (
+                        <ul className="mt-4 space-y-2.5">
+                          {e.achievements.map((a, j) => (
+                            <li key={j} className="text-sm flex items-start gap-3" style={{ color: c.text }}>
+                              {/* # Colored numbered accent marker */}
+                              <span className="shrink-0 mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] text-white font-bold"
+                                style={{ background: grad }}>
+                                {j + 1}
+                              </span>
+                              <span className="leading-relaxed">{a}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </SectionWrapper>
       );
 
+    /* # ─── PUBLICATIONS — Premium numbered badge cards with journal pills ─── */
     case "publications":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Publications</SectionHeading>
-          <ol className="space-y-5">
+          <div className="space-y-5">
             {section.entries.map((pub, i) => (
-              <li key={i} className="flex gap-4 text-sm p-5 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <span className="shrink-0 font-mono text-xs w-8 h-8 rounded-lg flex items-center justify-center font-bold"
-                  style={{ backgroundColor: c.accentSoft, color: c.accent }}>
-                  [{i + 1}]
-                </span>
-                <div>
-                  <span className="font-bold leading-relaxed" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{pub.title}</span>
-                  {pub.venue && <span className="italic" style={{ color: c.muted }}> — {pub.venue}</span>}
-                  {pub.date && <span style={{ color: c.muted }}>, {pub.date}</span>}
-                  {pub.link && (
-                    <a href={pub.link} target="_blank" rel="noopener noreferrer"
-                      className="ml-2 px-2 py-0.5 rounded text-xs font-medium hover:underline"
-                      style={{ backgroundColor: c.accentSoft, color: c.accent }}>[PDF]</a>
-                  )}
+              <motion.div key={i}
+                className="rounded-xl overflow-hidden relative"
+                style={{
+                  backgroundColor: c.card,
+                  border: `1px solid ${c.border}`,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                }}
+                whileHover={{
+                  y: -3,
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+                  transition: { duration: 0.2 },
+                }}
+              >
+                {/* # Gradient accent left border */}
+                <div className="absolute left-0 top-0 bottom-0 w-1"
+                  style={{ background: `linear-gradient(180deg, ${c.accent}, ${c.accent}50)` }} />
+
+                {/* # Subtle background tint */}
+                <div className="absolute inset-0 opacity-[0.02]"
+                  style={{ background: `linear-gradient(135deg, ${c.accent}, transparent)` }} />
+
+                <div className="relative p-6 pl-7 flex items-start gap-4">
+                  {/* # Large colored number badge */}
+                  <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-base shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})`,
+                      boxShadow: `0 4px 12px ${c.accent}30`,
+                    }}>
+                    {i + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold leading-snug" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
+                      {pub.title}
+                    </h3>
+                    {/* # Venue in a colored tag/pill + date pill */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {pub.venue && (
+                        <span className="text-xs px-3 py-1 rounded-full font-semibold"
+                          style={{
+                            background: `linear-gradient(135deg, ${c.accent}15, ${c.accent}08)`,
+                            color: c.accent,
+                            border: `1px solid ${c.accent}20`,
+                          }}>
+                          {pub.venue}
+                        </span>
+                      )}
+                      {pub.date && (
+                        <span className="text-xs px-2.5 py-0.5 rounded-full"
+                          style={{ backgroundColor: `${c.gold}15`, color: c.gold }}>
+                          {pub.date}
+                        </span>
+                      )}
+                    </div>
+                    {pub.link && (
+                      <a href={pub.link} target="_blank" rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold hover:shadow-md transition-shadow"
+                        style={{
+                          background: `linear-gradient(135deg, ${c.accent}12, ${c.accent}06)`,
+                          color: c.accent,
+                          border: `1px solid ${c.accent}20`,
+                        }}>
+                        [PDF] View Publication →
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </li>
+              </motion.div>
             ))}
-          </ol>
+          </div>
         </SectionWrapper>
       );
 
+    /* # ─── EDUCATION — Cards with gradient header strip ─── */
     case "education":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Education</SectionHeading>
-          {section.entries.map((e, i) => (
-            <div key={i} className="mb-8 p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-              <h3 className="text-lg font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{e.degree}</h3>
-              <p className="text-sm font-medium mt-0.5" style={{ color: c.accent }}>{e.school}</p>
-              {e.startDate && <p className="text-xs italic mt-1" style={{ color: c.muted }}>{e.startDate} – {e.endDate}</p>}
-              {e.description && <p className="text-sm mt-3 leading-relaxed" style={{ color: c.text }}>{e.description}</p>}
-            </div>
-          ))}
+          <div className="space-y-5">
+            {section.entries.map((e, i) => (
+              <motion.div key={i}
+                className="rounded-xl overflow-hidden"
+                style={{
+                  backgroundColor: c.card,
+                  border: `1px solid ${c.border}`,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                }}
+                whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)", transition: { duration: 0.2 } }}
+              >
+                {/* # Gradient header strip — blue to gold */}
+                <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${c.accent}, ${c.gold}, ${c.accent}30)` }} />
+
+                <div className="p-6">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                    <div>
+                      {/* # Degree name large */}
+                      <h3 className="text-xl font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
+                        {e.degree}
+                      </h3>
+                      {/* # School in accent color */}
+                      <p className="text-sm font-semibold mt-1" style={{ color: c.accent }}>
+                        {e.school}{e.location ? ` · ${e.location}` : ""}
+                      </p>
+                    </div>
+                    {/* # Year in a gradient badge */}
+                    {(e.startDate || e.endDate) && (
+                      <span className="text-xs font-semibold shrink-0 px-4 py-1.5 rounded-full"
+                        style={{
+                          background: `linear-gradient(135deg, ${c.accent}15, ${c.gold}12)`,
+                          color: c.accent,
+                          border: `1px solid ${c.accent}20`,
+                        }}>
+                        {e.startDate}{e.endDate ? ` {"–"} ${e.endDate}` : ""}
+                      </span>
+                    )}
+                  </div>
+                  {e.description && (
+                    <div className="mt-4 px-4 py-3 rounded-lg" style={{ backgroundColor: c.surface }}>
+                      <p className="text-sm leading-relaxed" style={{ color: c.text }}>{e.description}</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </SectionWrapper>
       );
 
+    /* # ─── SKILLS — Unchanged premium layout ─── */
     case "skills": {
       const groups = autoCategorizeSkills(section.groups);
       if (groups.length === 0) return null;
       return (
         <SectionWrapper className="py-28 px-6 md:px-12 max-w-4xl mx-auto">
-          <SectionHeading number={num}>Research Interests & Skills</SectionHeading>
+          <SectionHeading number={num}>Research Interests &amp; Skills</SectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {groups.map((g, i) => (
-              <div key={i} className="p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
+              <motion.div key={i} className="p-6 rounded-xl"
+                style={{ backgroundColor: c.card, border: `1px solid ${c.border}`, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+                whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)", transition: { duration: 0.2 } }}>
                 <h3 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: c.accent }}>{g.category}</h3>
                 <div className="flex flex-wrap gap-2">
                   {g.skills.map((s, j) => (
-                    <span key={j} className="text-sm px-3 py-1.5 rounded-lg" style={{ backgroundColor: c.accentSoft, color: c.accent }}>
+                    <span key={j} className="text-sm px-3 py-1.5 rounded-lg font-medium"
+                      style={{
+                        background: `linear-gradient(135deg, ${c.accent}10, ${c.accent}05)`,
+                        color: c.accent,
+                        border: `1px solid ${c.accent}15`,
+                      }}>
                       {s.name}
                     </span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </SectionWrapper>
       );
     }
 
+    /* # ─── PROJECTS — Featured first (full-width) + gradient-bordered cards ─── */
     case "projects":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Research Projects</SectionHeading>
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="space-y-5">
-            {section.entries.map((p, i) => (
-              <motion.div key={i} variants={staggerItem}
-                className="p-6 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <h3 className="font-bold text-lg" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{p.title}</h3>
-                <p className="text-sm mt-2 leading-relaxed" style={{ color: c.text }}>{p.description}</p>
-                {p.techStack.length > 0 && (
-                  <p className="text-xs mt-3" style={{ color: c.muted }}>
-                    <span className="font-bold" style={{ color: c.accent }}>Methods:</span> {p.techStack.join(", ")}
-                  </p>
-                )}
-                <div className="mt-4 flex gap-4 text-sm">
-                  {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.accent }}>View Project →</a>}
-                  {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.accent }}>Repository</a>}
-                </div>
-              </motion.div>
-            ))}
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            {/* # Featured first project — full-width with image + text */}
+            {section.entries.length > 0 && (() => {
+              const p = section.entries[0];
+              return (
+                <motion.div variants={staggerItem} className="mb-8">
+                  <motion.div className="rounded-xl overflow-hidden"
+                    style={{
+                      backgroundColor: c.card,
+                      border: `1px solid ${c.border}`,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                    }}
+                    whileHover={{ y: -4, boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }}>
+                    <div className="flex flex-col lg:flex-row">
+                      {p.imageUrl && (
+                        <div className="lg:w-1/2 overflow-hidden relative group">
+                          <img src={p.imageUrl} alt={p.title}
+                            className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            style={{ background: `linear-gradient(135deg, ${c.accent}20, transparent)` }} />
+                        </div>
+                      )}
+                      <div className={`p-8 flex flex-col justify-center ${p.imageUrl ? "lg:w-1/2" : "w-full"}`}>
+                        {/* # Featured label */}
+                        <span className="inline-flex items-center self-start text-xs font-bold px-3 py-1 rounded-full mb-4 text-white"
+                          style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})` }}>
+                          Featured Research
+                        </span>
+                        <h3 className="text-2xl font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{p.title}</h3>
+                        <p className="mt-3 text-sm leading-relaxed" style={{ color: c.text }}>{p.description}</p>
+                        {/* # Tech stack as accent pills */}
+                        {p.techStack.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {p.techStack.map((t, j) => (
+                              <span key={j} className="text-xs px-3 py-1 rounded-full font-semibold"
+                                style={{
+                                  background: `linear-gradient(135deg, ${c.accent}12, ${c.accent}06)`,
+                                  color: c.accent,
+                                  border: `1px solid ${c.accent}18`,
+                                }}>
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {/* # Gradient CTA buttons */}
+                        <div className="mt-6 flex gap-3">
+                          {p.liveUrl && (
+                            <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-sm font-bold px-5 py-2.5 rounded-lg text-white transition-all hover:shadow-lg"
+                              style={{
+                                background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})`,
+                                boxShadow: `0 3px 12px ${c.accent}30`,
+                              }}>
+                              View Project →
+                            </a>
+                          )}
+                          {p.repoUrl && (
+                            <a href={p.repoUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-sm font-bold px-5 py-2.5 rounded-lg transition-all hover:opacity-80"
+                              style={{ color: c.accent, border: `1px solid ${c.accent}30` }}>
+                              Repository
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            })()}
+
+            {/* # Remaining projects in gradient-bordered cards */}
+            {section.entries.length > 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {section.entries.slice(1).map((p, i) => (
+                  <motion.div key={i} variants={staggerItem}>
+                    <motion.div className="rounded-xl overflow-hidden h-full relative"
+                      style={{
+                        backgroundColor: c.card,
+                        border: `1px solid ${c.border}`,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                      }}
+                      whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)" }}>
+                      {/* # Gradient top border */}
+                      <div className="h-1" style={{ background: `linear-gradient(90deg, ${c.accent}, ${c.gold}60, transparent)` }} />
+                      {p.imageUrl && (
+                        <div className="overflow-hidden h-44 relative group">
+                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <h3 className="font-bold text-base" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{p.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed line-clamp-2" style={{ color: c.text }}>{p.description}</p>
+                        {p.techStack.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {p.techStack.slice(0, 4).map((t, j) => (
+                              <span key={j} className="text-[11px] px-2.5 py-0.5 rounded-full font-medium"
+                                style={{ background: `${c.accent}10`, color: c.accent }}>
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-4 flex gap-3 text-sm">
+                          {p.liveUrl && (
+                            <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
+                              className="font-bold px-4 py-1.5 rounded-lg text-white transition-all hover:shadow-md"
+                              style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})` }}>
+                              View →
+                            </a>
+                          )}
+                          {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="font-bold px-4 py-1.5 hover:underline" style={{ color: c.accent }}>Repo</a>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </SectionWrapper>
       );
 
+    /* # ─── CERTIFICATIONS — Badge/shield-style cards with gradient fills ─── */
     case "certifications":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Certifications</SectionHeading>
-          <ul className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {section.entries.map((cert, i) => (
-              <li key={i} className="flex gap-3 p-4 rounded-xl text-sm"
-                style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <span className="shrink-0 mt-0.5" style={{ color: c.accent }}>•</span>
-                <span><strong style={{ color: c.heading }}>{cert.name}</strong> — {cert.issuer}{cert.date ? `, ${cert.date}` : ""}</span>
-              </li>
+              <motion.div key={i}
+                className="rounded-xl overflow-hidden relative"
+                style={{
+                  backgroundColor: c.card,
+                  border: `1px solid ${c.border}`,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                }}
+                whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)", transition: { duration: 0.2 } }}
+              >
+                {/* # Subtle gradient fill */}
+                <div className="absolute inset-0 opacity-[0.02]"
+                  style={{ background: `linear-gradient(135deg, ${c.accent}, transparent)` }} />
+
+                <div className="relative p-5 flex items-center gap-4">
+                  {/* # Shield badge with gradient and glowing checkmark */}
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})`,
+                      boxShadow: `0 4px 15px ${c.accent}30`,
+                    }}>
+                    <span className="text-lg text-white font-bold"
+                      style={{ textShadow: "0 0 8px rgba(255,255,255,0.5)" }}>
+                      ✓
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
+                      {cert.link ? (
+                        <a href={cert.link} target="_blank" rel="noopener noreferrer" className="hover:underline">{cert.name}</a>
+                      ) : cert.name}
+                    </h3>
+                    {/* # Issuer and date as separate pill elements */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                        style={{ background: `${c.accent}12`, color: c.accent }}>
+                        {cert.issuer}
+                      </span>
+                      {cert.date && (
+                        <span className="text-xs px-2.5 py-0.5 rounded-full"
+                          style={{ backgroundColor: `${c.gold}12`, color: c.gold }}>
+                          {cert.date}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             ))}
-          </ul>
+          </div>
         </SectionWrapper>
       );
 
+    /* # ─── AWARDS — Cards with amber/gold gradient accent ─── */
     case "awards":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
-          <SectionHeading number={num}>Awards & Fellowships</SectionHeading>
-          <ul className="space-y-4">
+          <SectionHeading number={num}>Awards &amp; Fellowships</SectionHeading>
+          <div className="space-y-5">
             {section.entries.map((a, i) => (
-              <li key={i} className="p-5 rounded-xl" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                <h3 className="font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{a.title}</h3>
-                <p className="text-sm mt-0.5" style={{ color: c.accent }}>{a.issuer}{a.date ? ` · ${a.date}` : ""}</p>
-                {a.description && <p className="text-sm mt-2" style={{ color: c.text }}>{a.description}</p>}
-              </li>
+              <motion.div key={i}
+                className="rounded-xl overflow-hidden relative"
+                style={{
+                  backgroundColor: c.card,
+                  border: `1px solid ${c.border}`,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                }}
+                whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)", transition: { duration: 0.2 } }}
+              >
+                {/* # Gold/amber gradient accent left border */}
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl"
+                  style={{ background: `linear-gradient(180deg, ${c.gold}, #d4a84a)` }} />
+
+                {/* # Subtle gold gradient fill */}
+                <div className="absolute inset-0 opacity-[0.03]"
+                  style={{ background: `linear-gradient(135deg, ${c.gold}, transparent 50%)` }} />
+
+                <div className="relative p-6 pl-7">
+                  <div className="flex items-start gap-4">
+                    {/* # Gold trophy badge */}
+                    <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 shadow-md"
+                      style={{
+                        background: `linear-gradient(135deg, ${c.gold}, #d4a84a)`,
+                        boxShadow: `0 4px 12px ${c.gold}30`,
+                      }}>
+                      <span className="text-white text-lg">★</span>
+                    </div>
+                    <div className="flex-1">
+                      {/* # Award title prominent */}
+                      <h3 className="text-lg font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
+                        {a.title}
+                      </h3>
+                      {/* # Issuer as colored subtitle */}
+                      <p className="text-sm font-semibold mt-0.5" style={{ color: c.gold }}>
+                        {a.issuer}{a.date ? ` · ${a.date}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  {/* # Description in a tinted box */}
+                  {a.description && (
+                    <div className="mt-4 px-4 py-3 rounded-lg" style={{ backgroundColor: `${c.gold}08` }}>
+                      <p className="text-sm leading-relaxed" style={{ color: c.text }}>{a.description}</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             ))}
-          </ul>
+          </div>
         </SectionWrapper>
       );
 
+    /* # ─── GALLERY — Grid with hover zoom, gradient overlay, first featured ─── */
     case "gallery":
       if (section.entries.length === 0) return null;
       return (
@@ -284,48 +650,224 @@ function renderSection(section: PortfolioSection) {
           <SectionHeading number={num}>Gallery</SectionHeading>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {section.entries.map((g, i) => (
-              <a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer" className="block group">
-                <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${c.border}` }}>
-                  <img src={g.imageUrl} alt={g.title} className="w-full aspect-square object-cover transition-opacity group-hover:opacity-80" />
+              <motion.a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
+                className={`block group relative rounded-xl overflow-hidden ${i === 0 ? "col-span-2 row-span-2" : ""}`}
+                style={{ border: `1px solid ${c.border}` }}
+                whileHover={{ y: -4, boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }}>
+                <img src={g.imageUrl} alt={g.title}
+                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-110 ${i === 0 ? "aspect-[4/3]" : "aspect-square"}`} />
+                {/* # Gradient overlay on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4"
+                  style={{ background: `linear-gradient(to top, ${c.accent}cc, ${c.accent}40 40%, transparent 70%)` }}>
+                  <div>
+                    <h3 className="text-white font-bold text-sm">{g.title}</h3>
+                    {g.description && <p className="text-white/70 text-xs mt-1">{g.description}</p>}
+                  </div>
                 </div>
-                <p className="text-xs mt-2 text-center italic" style={{ color: c.muted }}>{g.title}</p>
-              </a>
+              </motion.a>
             ))}
           </div>
         </SectionWrapper>
       );
 
+    /* # ─── TESTIMONIALS — Frosted cards with large gradient quote marks ─── */
     case "testimonials":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Recommendations</SectionHeading>
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {section.entries.map((t, i) => (
-              <blockquote key={i} className="pl-5 py-4 pr-5 rounded-xl"
-                style={{ borderLeft: `3px solid ${c.accent}`, backgroundColor: c.surface }}>
-                <p className="text-sm italic leading-relaxed" style={{ color: c.text }}>"{t.quote}"</p>
-                <footer className="mt-3 text-sm">
-                  <span className="font-bold" style={{ color: c.heading }}>{t.author}</span>
-                  <span style={{ color: c.muted }}> — {t.role}{t.company ? `, ${t.company}` : ""}</span>
-                </footer>
-              </blockquote>
+              <motion.div key={i}
+                className="rounded-xl overflow-hidden relative"
+                style={{
+                  backgroundColor: c.card,
+                  border: `1px solid ${c.border}`,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                }}
+                whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)", transition: { duration: 0.2 } }}
+              >
+                {/* # Gradient border at top */}
+                <div className="h-1" style={{ background: `linear-gradient(90deg, ${c.accent}, ${c.gold}, transparent)` }} />
+
+                {/* # Subtle frosted background tint */}
+                <div className="absolute inset-0 opacity-[0.02]"
+                  style={{ background: `linear-gradient(135deg, ${c.accent}, transparent)` }} />
+
+                <div className="relative p-6">
+                  {/* # Large decorative gradient quote marks */}
+                  <div className="text-6xl font-bold leading-none mb-3"
+                    style={{
+                      fontFamily: "'Lora', Georgia, serif",
+                      background: `linear-gradient(135deg, ${c.accent}, ${c.gold})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      opacity: 0.3,
+                    }}>
+                    {"“"}
+                  </div>
+
+                  {/* # Quote in a frosted tinted card */}
+                  <div className="px-4 py-3 rounded-lg mb-5" style={{ backgroundColor: c.surface }}>
+                    <p className="text-sm italic leading-relaxed" style={{ color: c.text }}>
+                      {"“"}{t.quote}{"”"}
+                    </p>
+                  </div>
+
+                  {/* # Author with colored avatar circle and accent separator */}
+                  <div className="flex items-center gap-3 pt-4" style={{ borderTop: `2px solid ${c.accent}15` }}>
+                    <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md"
+                      style={{
+                        background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark})`,
+                        boxShadow: `0 3px 10px ${c.accent}30`,
+                      }}>
+                      {t.author.charAt(0)}
+                    </div>
+                    {/* # Accent separator line */}
+                    <div className="w-0.5 h-8 rounded-full" style={{ backgroundColor: `${c.accent}20` }} />
+                    <div>
+                      <p className="font-bold text-sm" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>{t.author}</p>
+                      <p className="text-xs" style={{ color: c.accent }}>{t.role}{t.company ? `, ${t.company}` : ""}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </SectionWrapper>
       );
 
+    /* # ─── CONTACT — Full-width blue gradient background CTA ─── */
     case "contact": {
       const hasContent = section.email || section.phone || section.location;
       if (!hasContent) return null;
       return (
-        <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
-          <SectionHeading number={num}>Contact</SectionHeading>
-          <div className="p-6 rounded-xl text-sm space-y-3" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}`, color: c.text }}>
-            {section.email && <p>Email: <a href={`mailto:${section.email}`} className="font-medium hover:underline" style={{ color: c.accent }}>{section.email}</a></p>}
-            {section.phone && <p>Phone: {section.phone}</p>}
-            {section.location && <p>Location: {section.location}</p>}
-            {section.calendarLink && <p>Office Hours: <a href={section.calendarLink} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.accent }}>Schedule a meeting →</a></p>}
+        <SectionWrapper className="py-0">
+          {/* # Full-width blue gradient background */}
+          <div className="py-20 px-6 md:px-12 relative overflow-hidden"
+            style={{ background: `linear-gradient(135deg, ${c.accent}, ${c.accentDark}, #2a4a75)` }}>
+            {/* # Subtle paper texture on blue */}
+            <div className="absolute inset-0 opacity-[0.03]"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
+
+            {/* # Warm ambient glow */}
+            <div className="absolute top-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[200px] opacity-[0.12]"
+              style={{ background: c.gold }} />
+
+            <div className="relative z-10 max-w-4xl mx-auto">
+              {/* # Large heading */}
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold mb-3" style={{ fontFamily: "'Lora', Georgia, serif", color: "#ffffff" }}>
+                  Let&apos;s Connect
+                </h2>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+                  Open for collaboration, research partnerships, and academic inquiries.
+                </p>
+                <div className="mt-4 h-px w-16 mx-auto" style={{ background: `linear-gradient(90deg, transparent, ${c.gold}, transparent)` }} />
+              </div>
+
+              {/* # Contact items in warm-toned cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+                {section.email && (
+                  <motion.a href={`mailto:${section.email}`}
+                    className="flex items-center gap-4 p-5 rounded-xl group"
+                    style={{
+                      backgroundColor: "rgba(254,252,247,0.08)",
+                      border: "1px solid rgba(254,252,247,0.12)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                    whileHover={{ backgroundColor: "rgba(254,252,247,0.12)", borderColor: `${c.gold}40` }}>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${c.gold}40, ${c.gold}20)` }}>
+                      <span className="text-lg" style={{ color: c.gold }}>✉</span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: c.gold }}>Email</p>
+                      <p className="text-sm font-bold mt-0.5 text-white">{section.email}</p>
+                    </div>
+                  </motion.a>
+                )}
+                {section.phone && (
+                  <motion.a href={`tel:${section.phone}`}
+                    className="flex items-center gap-4 p-5 rounded-xl group"
+                    style={{
+                      backgroundColor: "rgba(254,252,247,0.08)",
+                      border: "1px solid rgba(254,252,247,0.12)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                    whileHover={{ backgroundColor: "rgba(254,252,247,0.12)", borderColor: `${c.gold}40` }}>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${c.gold}40, ${c.gold}20)` }}>
+                      <span className="text-lg" style={{ color: c.gold }}>☎</span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: c.gold }}>Phone</p>
+                      <p className="text-sm font-bold mt-0.5 text-white">{section.phone}</p>
+                    </div>
+                  </motion.a>
+                )}
+                {section.location && (
+                  <motion.div
+                    className="flex items-center gap-4 p-5 rounded-xl"
+                    style={{
+                      backgroundColor: "rgba(254,252,247,0.08)",
+                      border: "1px solid rgba(254,252,247,0.12)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                    whileHover={{ backgroundColor: "rgba(254,252,247,0.12)", borderColor: `${c.gold}40` }}>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${c.gold}40, ${c.gold}20)` }}>
+                      <span className="text-lg" style={{ color: c.gold }}>⌘</span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: c.gold }}>Location</p>
+                      <p className="text-sm font-bold mt-0.5 text-white">{section.location}</p>
+                    </div>
+                  </motion.div>
+                )}
+                {section.calendarLink && (
+                  <motion.a href={section.calendarLink} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-5 rounded-xl group"
+                    style={{
+                      backgroundColor: "rgba(254,252,247,0.08)",
+                      border: "1px solid rgba(254,252,247,0.12)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                    whileHover={{ backgroundColor: "rgba(254,252,247,0.12)", borderColor: `${c.gold}40` }}>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${c.gold}40, ${c.gold}20)` }}>
+                      <span className="text-lg" style={{ color: c.gold }}>{"📅"}</span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: c.gold }}>Office Hours</p>
+                      <p className="text-sm font-bold mt-0.5" style={{ color: c.gold }}>Schedule a meeting →</p>
+                    </div>
+                  </motion.a>
+                )}
+              </div>
+
+              {/* # Prominent gradient CTA button */}
+              <div className="text-center mb-6">
+                {section.email && (
+                  <a href={`mailto:${section.email}`}
+                    className="inline-flex items-center px-10 py-3.5 rounded-lg font-bold text-sm tracking-wide transition-all hover:shadow-xl"
+                    style={{
+                      background: `linear-gradient(135deg, ${c.gold}, #d4a84a)`,
+                      color: c.heading,
+                      boxShadow: `0 4px 20px ${c.gold}40`,
+                    }}>
+                    Get In Touch →
+                  </a>
+                )}
+              </div>
+
+              {/* # Social links with colored hover */}
+              {section.socialLinks && Object.keys(section.socialLinks).length > 0 && (
+                <div className="text-center pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                  <SocialIcons links={section.socialLinks} color={c.gold} />
+                </div>
+              )}
+            </div>
           </div>
         </SectionWrapper>
       );
