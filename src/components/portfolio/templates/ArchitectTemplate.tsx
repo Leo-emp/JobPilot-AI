@@ -337,22 +337,26 @@ function renderSection(section: PortfolioSection) {
             {section.groups.map((g, i) => (
               <BlueprintCard key={i}>
                 <h3 className="text-xs uppercase tracking-[0.2em] font-bold mb-4" style={{ color: c.teal }}>{g.category}</h3>
-                <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
                   {g.skills.map((s, j) => (
-                    <div key={j}>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm" style={{ color: c.text }}>{s.name}</span>
-                        {s.proficiency && <span className="text-xs" style={{ color: c.muted }}>{s.proficiency}%</span>}
-                      </div>
-                      <div className="w-full h-1 rounded-full overflow-hidden" style={{ backgroundColor: `${c.teal}10` }}>
-                        <motion.div className="h-full rounded-full"
-                          style={{ backgroundColor: c.teal }}
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${s.proficiency || 80}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 1, ease: "easeOut", delay: 0.1 * j }} />
-                      </div>
-                    </div>
+                    <motion.span key={j}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm"
+                      style={{
+                        backgroundColor: `${c.teal}08`,
+                        border: `1px solid ${c.teal}20`,
+                        color: c.text,
+                      }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: j * 0.03 }}
+                      whileHover={{ scale: 1.05, backgroundColor: `${c.teal}15` }}
+                    >
+                      {s.name}
+                      {s.proficiency && s.proficiency >= 90 && (
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.teal }} />
+                      )}
+                    </motion.span>
                   ))}
                 </div>
               </BlueprintCard>

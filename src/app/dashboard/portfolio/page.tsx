@@ -43,70 +43,312 @@ const EMPTY_AWARD: AwardEntry = { title: "", issuer: "", date: "", description: 
 const EMPTY_GALLERY: GalleryEntry = { title: "", description: "", imageUrl: "", videoUrl: "", category: "", link: "" };
 const EMPTY_TESTIMONIAL: TestimonialEntry = { quote: "", author: "", role: "", company: "" };
 
-/* # Template thumbnail previews — styled mini-mockups showing each template's personality */
-const TEMPLATE_THUMBNAILS: Record<TemplateName, { bg: string; fg: string; headerBg: string; pattern?: string }> = {
-  minimal:      { bg: "#f8fafc", fg: "#1e293b", headerBg: "#3b82f6" },
-  developer:    { bg: "#050510", fg: "#00ff88", headerBg: "#0a0a1a", pattern: "grid" },
-  creative:     { bg: "#0f0f23", fg: "#ec4899", headerBg: "linear-gradient(135deg, #ec4899, #8b5cf6)" },
-  corporate:    { bg: "#1a1a3e", fg: "#c8a96e", headerBg: "#0d0d2b" },
-  academic:     { bg: "#fefcf7", fg: "#2c5282", headerBg: "#2c5282" },
-  modern:       { bg: "#0a0a0f", fg: "#8b5cf6", headerBg: "linear-gradient(135deg, #7c3aed, #06b6d4)" },
-  videographer: { bg: "#0a0a0a", fg: "#e50914", headerBg: "#1a1a1a" },
-  photographer: { bg: "#111111", fg: "#f5f5f5", headerBg: "#222222" },
-  architect:    { bg: "#f0fdf9", fg: "#2dd4bf", headerBg: "#042f2e", pattern: "blueprint" },
-};
+/* # Template thumbnail previews — rich mini-mockups showing each template's actual personality */
 
 function TemplateThumbnail({ name, accent, isActive }: { name: TemplateName; accent: string; isActive: boolean }) {
-  const t = TEMPLATE_THUMBNAILS[name];
   return (
-    <div className="relative h-32 overflow-hidden" style={{ background: t.bg }}>
-      {/* # Grid pattern for developer/architect */}
-      {t.pattern === "grid" && (
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `linear-gradient(${t.fg}40 1px, transparent 1px), linear-gradient(90deg, ${t.fg}40 1px, transparent 1px)`,
-          backgroundSize: "16px 16px",
-        }} />
-      )}
-      {t.pattern === "blueprint" && (
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `linear-gradient(${t.fg}30 1px, transparent 1px), linear-gradient(90deg, ${t.fg}30 1px, transparent 1px)`,
-          backgroundSize: "20px 20px",
-        }} />
-      )}
-
-      {/* # Fake hero section */}
-      <div className="absolute top-4 left-4 right-4">
-        {/* # Name placeholder */}
-        <div className="h-3 rounded-full mb-2" style={{ background: t.fg, width: "60%", opacity: 0.8 }} />
-        <div className="h-2 rounded-full mb-1" style={{ background: t.fg, width: "40%", opacity: 0.3 }} />
-        <div className="h-1.5 rounded-full" style={{ background: t.fg, width: "80%", opacity: 0.15 }} />
-      </div>
-
-      {/* # Fake content blocks */}
-      <div className="absolute bottom-3 left-4 right-4 flex gap-2">
-        <div className="flex-1 rounded-lg p-2" style={{ background: `${t.fg}10`, border: `1px solid ${t.fg}15` }}>
-          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "70%", opacity: 0.4 }} />
-          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "50%", opacity: 0.2 }} />
-          <div className="h-1 rounded-full" style={{ background: t.fg, width: "60%", opacity: 0.2 }} />
-        </div>
-        <div className="flex-1 rounded-lg p-2" style={{ background: `${t.fg}10`, border: `1px solid ${t.fg}15` }}>
-          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "60%", opacity: 0.4 }} />
-          <div className="h-1 rounded-full mb-1.5" style={{ background: t.fg, width: "80%", opacity: 0.2 }} />
-          <div className="h-1 rounded-full" style={{ background: t.fg, width: "45%", opacity: 0.2 }} />
-        </div>
-      </div>
-
-      {/* # Accent glow */}
-      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl" style={{ background: accent, opacity: 0.2 }} />
+    <div className="relative h-40 overflow-hidden select-none">
+      {/* # Per-template unique mockup */}
+      {name === "minimal" && <ThumbMinimal />}
+      {name === "developer" && <ThumbDeveloper />}
+      {name === "creative" && <ThumbCreative />}
+      {name === "corporate" && <ThumbCorporate />}
+      {name === "academic" && <ThumbAcademic />}
+      {name === "modern" && <ThumbModern />}
+      {name === "videographer" && <ThumbVideographer />}
+      {name === "photographer" && <ThumbPhotographer />}
+      {name === "architect" && <ThumbArchitect />}
 
       {/* # Active overlay */}
       {isActive && (
-        <div className="absolute inset-0 border-2 rounded-t-xl" style={{ borderColor: accent, background: `${accent}08` }}>
-          <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: accent }}>
+        <div className="absolute inset-0 border-2 rounded-t-xl z-20" style={{ borderColor: accent, background: `${accent}08` }}>
+          <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg" style={{ background: accent }}>
             ✓
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* # Minimal — clean white, blue accent, soft shadows, serif-like heading */
+function ThumbMinimal() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#fafafa" }}>
+      <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-10" style={{ background: "#2563eb" }} />
+      <div className="p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full" style={{ background: "linear-gradient(135deg, #e0e7ff, #bfdbfe)" }} />
+          <div>
+            <div className="h-2.5 w-20 rounded-full" style={{ background: "#1e293b", opacity: 0.8 }} />
+            <div className="h-1.5 w-14 rounded-full mt-1" style={{ background: "#64748b", opacity: 0.4 }} />
+          </div>
+        </div>
+        <div className="h-1.5 w-full rounded-full mb-1.5" style={{ background: "#1e293b", opacity: 0.06 }} />
+        <div className="h-1.5 w-3/4 rounded-full mb-3" style={{ background: "#1e293b", opacity: 0.06 }} />
+        <div className="flex gap-2">
+          <div className="flex-1 rounded-xl p-2.5" style={{ background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <div className="h-1.5 w-12 rounded-full mb-2" style={{ background: "#2563eb", opacity: 0.6 }} />
+            <div className="h-1 w-full rounded-full mb-1" style={{ background: "#94a3b8", opacity: 0.3 }} />
+            <div className="h-1 w-2/3 rounded-full" style={{ background: "#94a3b8", opacity: 0.2 }} />
+          </div>
+          <div className="flex-1 rounded-xl p-2.5" style={{ background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <div className="h-1.5 w-10 rounded-full mb-2" style={{ background: "#2563eb", opacity: 0.6 }} />
+            <div className="h-1 w-full rounded-full mb-1" style={{ background: "#94a3b8", opacity: 0.3 }} />
+            <div className="h-1 w-4/5 rounded-full" style={{ background: "#94a3b8", opacity: 0.2 }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Developer — dark bg, green terminal grid, neon glow, code aesthetic */
+function ThumbDeveloper() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#050510" }}>
+      <div className="absolute inset-0 opacity-[0.08]" style={{
+        backgroundImage: "linear-gradient(#00ff8840 1px, transparent 1px), linear-gradient(90deg, #00ff8840 1px, transparent 1px)",
+        backgroundSize: "14px 14px",
+      }} />
+      <div className="absolute top-6 right-6 w-20 h-20 rounded-full blur-2xl" style={{ background: "#00ff88", opacity: 0.15 }} />
+      <div className="p-4">
+        <div className="flex items-center gap-1.5 mb-2">
+          <div className="w-2 h-2 rounded-full" style={{ background: "#00ff88", boxShadow: "0 0 6px #00ff88" }} />
+          <div className="h-1 w-14 rounded-full" style={{ background: "#00ff88", opacity: 0.4 }} />
+        </div>
+        <div className="h-3 w-28 rounded mb-1.5" style={{ background: "#e4e4f0", opacity: 0.8, fontFamily: "monospace" }} />
+        <div className="flex items-center gap-1 mb-3">
+          <div className="h-1 w-2 rounded-sm" style={{ background: "#22d3ee", opacity: 0.6 }} />
+          <div className="h-1 w-6 rounded-sm" style={{ background: "#8888a8", opacity: 0.3 }} />
+          <div className="h-1 w-10 rounded-sm" style={{ background: "#00ff88", opacity: 0.4 }} />
+        </div>
+        {/* # Skill pills mockup */}
+        <div className="flex flex-wrap gap-1 mb-2.5">
+          {["w-8", "w-10", "w-7", "w-12", "w-6", "w-9"].map((w, i) => (
+            <div key={i} className={`${w} h-3 rounded-md`} style={{
+              background: ["#00ff8812", "#22d3ee12", "#a855f712", "#f59e0b12", "#ec489912"][i % 5],
+              border: `1px solid ${["#00ff8830", "#22d3ee30", "#a855f730", "#f59e0b30", "#ec489930"][i % 5]}`,
+            }} />
+          ))}
+        </div>
+        {/* # Project card mockup */}
+        <div className="rounded-lg p-2" style={{ background: "#0a0a1a", border: "1px solid rgba(0,255,136,0.12)" }}>
+          <div className="h-1.5 w-14 rounded mb-1.5" style={{ background: "#e4e4f0", opacity: 0.5 }} />
+          <div className="h-1 w-full rounded mb-1" style={{ background: "#8888a8", opacity: 0.2 }} />
+          <div className="flex gap-1 mt-1.5">
+            <div className="h-2 w-8 rounded-sm" style={{ background: "#00ff8815", border: "1px solid #00ff8820" }} />
+            <div className="h-2 w-6 rounded-sm" style={{ background: "#22d3ee15", border: "1px solid #22d3ee20" }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Creative — bold gradient bg, floating orbs, neon pink/purple */
+function ThumbCreative() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#070714" }}>
+      <div className="absolute top-4 right-2 w-24 h-24 rounded-full blur-2xl" style={{ background: "#f472b6", opacity: 0.15 }} />
+      <div className="absolute bottom-0 left-2 w-20 h-20 rounded-full blur-2xl" style={{ background: "#6366f1", opacity: 0.12 }} />
+      <div className="p-4 text-center">
+        <div className="w-10 h-10 rounded-full mx-auto mb-2" style={{
+          background: "linear-gradient(135deg, #f472b6, #a855f7, #6366f1)",
+          opacity: 0.8,
+        }} />
+        <div className="h-3 w-24 rounded-full mx-auto mb-1.5" style={{ background: "#f0f0f8", opacity: 0.8 }} />
+        <div className="h-1.5 w-16 rounded-full mx-auto mb-3" style={{
+          background: "linear-gradient(90deg, #f472b6, #a855f7)",
+          opacity: 0.5,
+        }} />
+        <div className="flex gap-1.5 justify-center">
+          <div className="w-14 h-12 rounded-xl" style={{ background: "rgba(244,114,182,0.08)", border: "1px solid rgba(244,114,182,0.15)" }}>
+            <div className="h-1 w-8 rounded-full mx-auto mt-3" style={{ background: "#f472b6", opacity: 0.4 }} />
+          </div>
+          <div className="w-14 h-12 rounded-xl" style={{ background: "rgba(168,85,247,0.08)", border: "1px solid rgba(168,85,247,0.15)" }}>
+            <div className="h-1 w-6 rounded-full mx-auto mt-3" style={{ background: "#a855f7", opacity: 0.4 }} />
+          </div>
+          <div className="w-14 h-12 rounded-xl" style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.15)" }}>
+            <div className="h-1 w-7 rounded-full mx-auto mt-3" style={{ background: "#6366f1", opacity: 0.4 }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Corporate — navy bg, gold accents, serif feel */
+function ThumbCorporate() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#0d0d2b" }}>
+      <div className="absolute top-0 left-0 right-0 h-16" style={{ background: "linear-gradient(180deg, #1a1a3e, transparent)" }} />
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 rounded-lg" style={{ background: "linear-gradient(135deg, #c8a96e, #a67c3d)", opacity: 0.7 }} />
+          <div>
+            <div className="h-2.5 w-20 rounded-sm" style={{ background: "#f8f6f0", opacity: 0.7 }} />
+            <div className="h-1 w-12 rounded-sm mt-1" style={{ background: "#c8a96e", opacity: 0.4 }} />
+          </div>
+        </div>
+        <div className="h-px w-full mb-3" style={{ background: "linear-gradient(90deg, transparent, #c8a96e40, transparent)" }} />
+        <div className="flex gap-2">
+          <div className="flex-1 rounded-lg p-2" style={{ background: "rgba(200,169,110,0.06)", border: "1px solid rgba(200,169,110,0.12)" }}>
+            <div className="h-1 w-10 rounded-full mb-1.5" style={{ background: "#c8a96e", opacity: 0.5 }} />
+            <div className="h-1 w-full rounded-full mb-1" style={{ background: "#f8f6f0", opacity: 0.15 }} />
+            <div className="h-1 w-3/4 rounded-full" style={{ background: "#f8f6f0", opacity: 0.1 }} />
+          </div>
+          <div className="flex-1 rounded-lg p-2" style={{ background: "rgba(200,169,110,0.06)", border: "1px solid rgba(200,169,110,0.12)" }}>
+            <div className="h-1 w-8 rounded-full mb-1.5" style={{ background: "#c8a96e", opacity: 0.5 }} />
+            <div className="h-1 w-full rounded-full mb-1" style={{ background: "#f8f6f0", opacity: 0.15 }} />
+            <div className="h-1 w-2/3 rounded-full" style={{ background: "#f8f6f0", opacity: 0.1 }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Academic — warm paper bg, blue accents, publication feel */
+function ThumbAcademic() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#fefcf7" }}>
+      <div className="p-4">
+        <div className="h-3 w-28 rounded-sm mb-1" style={{ background: "#2c5282", opacity: 0.7 }} />
+        <div className="h-px w-12 mb-2" style={{ background: "#2c5282", opacity: 0.4 }} />
+        <div className="h-1.5 w-full rounded-sm mb-1" style={{ background: "#2d3748", opacity: 0.08 }} />
+        <div className="h-1.5 w-11/12 rounded-sm mb-1" style={{ background: "#2d3748", opacity: 0.08 }} />
+        <div className="h-1.5 w-4/5 rounded-sm mb-3" style={{ background: "#2d3748", opacity: 0.08 }} />
+        <div className="border-l-2 pl-2 mb-2" style={{ borderColor: "rgba(44,82,130,0.3)" }}>
+          <div className="h-1 w-full rounded-sm mb-1" style={{ background: "#2d3748", opacity: 0.12 }} />
+          <div className="h-1 w-3/4 rounded-sm" style={{ background: "#2d3748", opacity: 0.12 }} />
+        </div>
+        <div className="flex gap-2 mt-2">
+          <div className="h-2 px-2 rounded-sm" style={{ background: "#2c528210", border: "1px solid #2c528218" }}>
+            <div className="h-1 w-8 rounded-sm mt-0.5" style={{ background: "#2c5282", opacity: 0.4 }} />
+          </div>
+          <div className="h-2 px-2 rounded-sm" style={{ background: "#2c528210", border: "1px solid #2c528218" }}>
+            <div className="h-1 w-6 rounded-sm mt-0.5" style={{ background: "#2c5282", opacity: 0.4 }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Modern — animated gradient, bento grid, vibrant violet/cyan */
+function ThumbModern() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#0a0a0f" }}>
+      <div className="absolute top-0 left-0 right-0 h-20" style={{
+        background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.15))",
+      }} />
+      <div className="p-4">
+        <div className="h-3 w-24 rounded mb-1" style={{ background: "#f0f0f8", opacity: 0.8 }} />
+        <div className="h-1.5 w-16 rounded mb-3" style={{
+          background: "linear-gradient(90deg, #7c3aed, #06b6d4)",
+          opacity: 0.6,
+        }} />
+        {/* # Bento grid */}
+        <div className="grid grid-cols-3 gap-1.5">
+          <div className="col-span-2 rounded-lg p-2 h-10" style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.15)" }}>
+            <div className="h-1 w-12 rounded-full mb-1" style={{ background: "#8b5cf6", opacity: 0.5 }} />
+            <div className="h-1 w-16 rounded-full" style={{ background: "#d1d5db", opacity: 0.15 }} />
+          </div>
+          <div className="rounded-lg p-2 h-10" style={{ background: "rgba(6,182,212,0.08)", border: "1px solid rgba(6,182,212,0.15)" }}>
+            <div className="h-1 w-6 rounded-full mb-1" style={{ background: "#06b6d4", opacity: 0.5 }} />
+          </div>
+          <div className="rounded-lg p-2 h-8" style={{ background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.12)" }} />
+          <div className="col-span-2 rounded-lg p-2 h-8" style={{ background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.12)" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Videographer — dark cinematic, red accent, widescreen bars */
+function ThumbVideographer() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#0a0a0a" }}>
+      {/* # Cinematic letterbox bars */}
+      <div className="absolute top-0 left-0 right-0 h-3" style={{ background: "#000" }} />
+      <div className="absolute bottom-0 left-0 right-0 h-3" style={{ background: "#000" }} />
+      <div className="absolute top-6 right-4 w-16 h-16 rounded-full blur-xl" style={{ background: "#e50914", opacity: 0.12 }} />
+      <div className="p-4 pt-5">
+        <div className="h-3.5 w-24 rounded mb-1.5" style={{ background: "#f0f0f0", opacity: 0.8 }} />
+        <div className="h-1 w-16 rounded mb-3" style={{ background: "#e50914", opacity: 0.5 }} />
+        {/* # Film strip mockup */}
+        <div className="flex gap-1.5 overflow-hidden">
+          {[0.7, 0.5, 0.6, 0.4].map((o, i) => (
+            <div key={i} className="w-16 h-10 rounded-lg shrink-0" style={{
+              background: `linear-gradient(180deg, rgba(255,255,255,${o * 0.06}), rgba(229,9,20,${o * 0.04}))`,
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}>
+              <div className="w-4 h-4 rounded-full mx-auto mt-2" style={{
+                border: "1.5px solid rgba(229,9,20,0.4)",
+                background: "rgba(229,9,20,0.08)",
+              }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Photographer — dark, full-bleed gallery grid */
+function ThumbPhotographer() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#111" }}>
+      <div className="p-3">
+        <div className="h-2.5 w-20 rounded mb-1" style={{ background: "#f5f5f5", opacity: 0.8 }} />
+        <div className="h-1 w-12 rounded mb-2.5" style={{ background: "#f5f5f5", opacity: 0.25 }} />
+        {/* # Photo grid */}
+        <div className="grid grid-cols-3 gap-1">
+          <div className="col-span-2 row-span-2 rounded-lg aspect-square" style={{
+            background: "linear-gradient(135deg, #222, #333)",
+            border: "1px solid rgba(255,255,255,0.04)",
+          }} />
+          <div className="rounded-lg aspect-square" style={{
+            background: "linear-gradient(135deg, #1a1a1a, #2a2a2a)",
+            border: "1px solid rgba(255,255,255,0.04)",
+          }} />
+          <div className="rounded-lg aspect-square" style={{
+            background: "linear-gradient(135deg, #252525, #1a1a1a)",
+            border: "1px solid rgba(255,255,255,0.04)",
+          }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Architect — light bg, teal grid, structural lines */
+function ThumbArchitect() {
+  return (
+    <div className="absolute inset-0" style={{ background: "#f0fdf9" }}>
+      <div className="absolute inset-0 opacity-[0.08]" style={{
+        backgroundImage: "linear-gradient(#2dd4bf30 1px, transparent 1px), linear-gradient(90deg, #2dd4bf30 1px, transparent 1px)",
+        backgroundSize: "16px 16px",
+      }} />
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-md" style={{ background: "#042f2e", opacity: 0.8 }} />
+          <div className="h-2.5 w-20 rounded" style={{ background: "#042f2e", opacity: 0.7 }} />
+        </div>
+        <div className="h-px w-full mb-3" style={{ background: "#2dd4bf", opacity: 0.3 }} />
+        {/* # Blueprint-style layout */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-lg p-2 h-12" style={{ border: "1px dashed rgba(45,212,191,0.25)" }}>
+            <div className="h-1 w-10 rounded-full mb-1.5" style={{ background: "#2dd4bf", opacity: 0.4 }} />
+            <div className="h-1 w-full rounded-full" style={{ background: "#042f2e", opacity: 0.1 }} />
+          </div>
+          <div className="rounded-lg p-2 h-12" style={{ border: "1px dashed rgba(45,212,191,0.25)" }}>
+            <div className="h-1 w-8 rounded-full mb-1.5" style={{ background: "#2dd4bf", opacity: 0.4 }} />
+            <div className="h-1 w-3/4 rounded-full" style={{ background: "#042f2e", opacity: 0.1 }} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -626,18 +868,38 @@ export default function PortfolioPage() {
       {/* ---- Right: Live Preview ---- */}
       {showPreview && (
         <div className="hidden lg:block flex-1 border-l border-card-border bg-space-900 overflow-hidden relative">
-          <div className="sticky top-0 z-20 px-4 py-2 border-b border-card-border bg-space-800/95 backdrop-blur-sm flex items-center justify-between">
-            <span className="text-xs text-text-muted">Live Preview</span>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-text-muted">{TEMPLATE_INFO[template].name} Template</span>
+          {/* # Browser-frame header */}
+          <div className="sticky top-0 z-20 border-b border-card-border bg-space-800/95 backdrop-blur-sm">
+            <div className="px-4 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                </div>
+                <div className="ml-2 px-3 py-1 rounded-md bg-space-700 text-[10px] text-text-muted font-mono">
+                  jobpilotai.co/p/{slug}
+                </div>
+              </div>
               <a href={`/p/${slug}`} target="_blank" rel="noopener noreferrer"
-                className="text-xs text-brand-light hover:underline">
-                Open Full →
+                className="px-3 py-1 rounded-lg text-xs font-medium text-brand-light hover:bg-space-700 transition-all">
+                Open Full Preview →
               </a>
             </div>
+            <div className="px-4 pb-2 flex items-center gap-2">
+              <span className="text-[10px] text-text-muted">Template:</span>
+              <span className="text-[10px] font-medium text-white">{TEMPLATE_INFO[template].name}</span>
+              <div className="w-2 h-2 rounded-full" style={{ background: TEMPLATE_INFO[template].accent }} />
+            </div>
           </div>
-          <div className="overflow-y-auto overflow-x-hidden" style={{ height: "calc(100vh - 40px)" }}>
-            <div className="relative" style={{ transform: "scale(0.38)", transformOrigin: "top center", width: "263%", marginLeft: "-81.5%" }}>
+          {/* # Scaled preview with proper centering — 55% scale for readability */}
+          <div className="overflow-y-auto overflow-x-hidden" style={{ height: "calc(100vh - 72px)" }}>
+            <div className="relative" style={{
+              transform: "scale(0.55)",
+              transformOrigin: "top center",
+              width: "181.8%",
+              marginLeft: "-40.9%",
+            }}>
               <PortfolioRenderer data={previewData} />
             </div>
           </div>

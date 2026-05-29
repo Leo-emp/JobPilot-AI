@@ -1,6 +1,6 @@
 "use client";
 
-/* # Developer Template — Cyberpunk neon terminal with glassmorphism and glow effects */
+/* # Developer Template — Bento grid layout, terminal aesthetic, neon accents, project-first design */
 
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
@@ -16,10 +16,20 @@ const c = {
   green: "#00ff88",
   cyan: "#22d3ee",
   purple: "#a855f7",
+  amber: "#f59e0b",
+  pink: "#ec4899",
   border: "rgba(0, 255, 136, 0.12)",
   glow: "0 0 30px rgba(0, 255, 136, 0.15)",
-  glowStrong: "0 0 60px rgba(0, 255, 136, 0.2), 0 0 120px rgba(0, 255, 136, 0.05)",
 };
+
+/* # Skill proficiency → color mapping for visual variety */
+const SKILL_COLORS = [
+  { bg: "rgba(0, 255, 136, 0.08)", border: "rgba(0, 255, 136, 0.25)", text: "#00ff88" },
+  { bg: "rgba(34, 211, 238, 0.08)", border: "rgba(34, 211, 238, 0.25)", text: "#22d3ee" },
+  { bg: "rgba(168, 85, 247, 0.08)", border: "rgba(168, 85, 247, 0.25)", text: "#a855f7" },
+  { bg: "rgba(245, 158, 11, 0.08)", border: "rgba(245, 158, 11, 0.25)", text: "#f59e0b" },
+  { bg: "rgba(236, 72, 153, 0.08)", border: "rgba(236, 72, 153, 0.25)", text: "#ec4899" },
+];
 
 /* # Blinking terminal cursor */
 function Cursor() {
@@ -33,14 +43,15 @@ function Cursor() {
   );
 }
 
-/* # Glass card wrapper with gradient border */
-function GlassCard({ children, className = "", hover = true }: { children: React.ReactNode; className?: string; hover?: boolean }) {
+/* # Glass card with gradient border — core building block */
+function GlassCard({ children, className = "", hover = true, span = "" }: {
+  children: React.ReactNode; className?: string; hover?: boolean; span?: string;
+}) {
   return (
     <motion.div
-      className={`relative rounded-2xl overflow-hidden ${className}`}
+      className={`relative rounded-2xl overflow-hidden ${span} ${className}`}
       whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
     >
-      {/* # Gradient border glow */}
       <div className="absolute inset-0 rounded-2xl p-px" style={{
         background: `linear-gradient(135deg, ${c.green}30, transparent 40%, ${c.cyan}20 60%, transparent 80%, ${c.purple}30)`,
       }}>
@@ -53,7 +64,7 @@ function GlassCard({ children, className = "", hover = true }: { children: React
   );
 }
 
-/* # Terminal window chrome with dots */
+/* # Terminal window chrome */
 function TerminalWindow({ children, title = "terminal" }: { children: React.ReactNode; title?: string }) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}`, boxShadow: c.glow }}>
@@ -74,7 +85,7 @@ function Hero({ data }: { data: PortfolioData }) {
 
   return (
     <motion.header
-      className="relative min-h-screen flex items-center px-6 md:px-12 overflow-hidden"
+      className="relative min-h-[90vh] flex items-center px-6 md:px-12 overflow-hidden"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
     >
       {/* # Animated grid background */}
@@ -92,19 +103,14 @@ function Hero({ data }: { data: PortfolioData }) {
         style={{ background: `radial-gradient(circle, ${c.cyan}10, transparent)` }}
         animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="absolute top-1/3 left-1/3 w-64 h-64 rounded-full blur-[100px]"
-        style={{ background: `radial-gradient(circle, ${c.purple}08, transparent)` }}
-        animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.3, 0.15] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} />
 
       {/* # Decorative code lines */}
       <div className="absolute top-20 left-8 opacity-[0.06] text-xs font-mono leading-loose hidden lg:block select-none" style={{ color: c.green }}>
-        {"const portfolio = {\n  name: 'developer',\n  type: 'full-stack',\n  passion: 'building',\n  status: 'open-to-work',\n  skills: [...],\n};"}
+        {"const portfolio = {\n  name: 'developer',\n  type: 'full-stack',\n  passion: 'building',\n  status: 'open-to-work',\n};"}
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row lg:items-center gap-12">
-          {/* # Avatar with glow ring */}
           {avatarUrl && (
             <motion.div className="relative shrink-0"
               initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -118,7 +124,6 @@ function Hero({ data }: { data: PortfolioData }) {
             </motion.div>
           )}
           <div>
-            {/* # Terminal-style tag */}
             <motion.div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono mb-6"
               style={{ backgroundColor: `${c.green}10`, border: `1px solid ${c.green}25`, color: c.green }}
               initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
@@ -131,7 +136,6 @@ function Hero({ data }: { data: PortfolioData }) {
               {data.title || data.userName}
             </h1>
 
-            {/* # Animated command line */}
             <div className="mt-6 font-mono text-base flex items-center gap-2">
               <span style={{ color: c.cyan }}>$</span>
               <span style={{ color: c.muted }}>npx</span>
@@ -184,36 +188,51 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeader title="Experience" tag="01" />
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="space-y-6">
-            {section.entries.map((e, i) => (
-              <motion.div key={i} variants={staggerItem}>
-                <GlassCard>
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                    <div>
-                      <h3 className="text-xl font-bold font-mono" style={{ color: c.text }}>{e.title}</h3>
-                      <p className="text-sm font-medium mt-1" style={{ color: c.cyan }}>{e.company}</p>
-                      {e.location && <p className="text-xs mt-0.5" style={{ color: c.muted }}>{e.location}</p>}
-                    </div>
-                    <span className="text-xs font-mono px-3 py-1.5 rounded-lg shrink-0"
-                      style={{ backgroundColor: `${c.green}08`, border: `1px solid ${c.green}15`, color: c.green }}>
-                      {e.startDate} → {e.endDate || "Present"}
-                    </span>
+          <div className="relative">
+            {/* # Timeline line */}
+            <div className="absolute left-[19px] top-4 bottom-4 w-px hidden md:block" style={{
+              background: `linear-gradient(180deg, ${c.green}40, ${c.green}10)`,
+            }} />
+            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
+              className="space-y-6">
+              {section.entries.map((e, i) => (
+                <motion.div key={i} variants={staggerItem} className="flex gap-6">
+                  {/* # Timeline dot */}
+                  <div className="hidden md:flex flex-col items-center pt-6 shrink-0">
+                    <div className="w-[10px] h-[10px] rounded-full z-10" style={{
+                      backgroundColor: c.green,
+                      boxShadow: `0 0 12px ${c.green}60`,
+                    }} />
                   </div>
-                  {e.achievements.length > 0 && (
-                    <ul className="mt-5 space-y-3">
-                      {e.achievements.map((a, j) => (
-                        <li key={j} className="text-sm flex items-start gap-3" style={{ color: c.muted }}>
-                          <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.green, boxShadow: `0 0 6px ${c.green}` }} />
-                          {a}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </GlassCard>
-              </motion.div>
-            ))}
-          </motion.div>
+                  <div className="flex-1">
+                    <GlassCard>
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
+                        <div>
+                          <h3 className="text-xl font-bold font-mono" style={{ color: c.text }}>{e.title}</h3>
+                          <p className="text-sm font-medium mt-1" style={{ color: c.cyan }}>{e.company}</p>
+                          {e.location && <p className="text-xs mt-0.5" style={{ color: c.muted }}>{e.location}</p>}
+                        </div>
+                        <span className="text-xs font-mono px-3 py-1.5 rounded-lg shrink-0"
+                          style={{ backgroundColor: `${c.green}08`, border: `1px solid ${c.green}15`, color: c.green }}>
+                          {e.startDate} → {e.endDate || "Present"}
+                        </span>
+                      </div>
+                      {e.achievements.length > 0 && (
+                        <ul className="mt-5 space-y-3">
+                          {e.achievements.map((a, j) => (
+                            <li key={j} className="text-sm flex items-start gap-3" style={{ color: c.muted }}>
+                              <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.green, boxShadow: `0 0 6px ${c.green}` }} />
+                              {a}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </GlassCard>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </SectionWrapper>
       );
 
@@ -222,32 +241,54 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeader title="Tech Stack" tag="02" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {section.groups.map((g, i) => (
-              <GlassCard key={i}>
-                <h3 className="text-xs font-mono uppercase tracking-widest mb-5" style={{ color: c.green }}>
-                  {"// "}{g.category}
-                </h3>
-                <div className="space-y-4">
-                  {g.skills.map((s, j) => (
-                    <div key={j}>
-                      <div className="flex justify-between mb-1.5">
-                        <span className="text-sm font-mono" style={{ color: c.text }}>{s.name}</span>
-                        <span className="text-xs font-mono" style={{ color: c.muted }}>{s.proficiency || 80}%</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: `${c.green}10` }}>
-                        <motion.div className="h-full rounded-full"
-                          style={{ background: `linear-gradient(90deg, ${c.green}, ${c.cyan})`, boxShadow: `0 0 10px ${c.green}40` }}
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${s.proficiency || 80}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 * j }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            ))}
+          {/* # Bento grid — each category gets its own card with pill badges */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {section.groups.map((g, gi) => {
+              const colorSet = SKILL_COLORS[gi % SKILL_COLORS.length];
+              /* # First group gets a larger featured card */
+              const isLarge = gi === 0 && section.groups.length > 2;
+              return (
+                <GlassCard key={gi} span={isLarge ? "md:col-span-2" : ""}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colorSet.text, boxShadow: `0 0 8px ${colorSet.text}40` }} />
+                    <h3 className="text-xs font-mono uppercase tracking-widest" style={{ color: colorSet.text }}>
+                      {g.category}
+                    </h3>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{
+                      backgroundColor: `${colorSet.text}10`, color: colorSet.text,
+                    }}>
+                      {g.skills.length}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {g.skills.map((s, si) => (
+                      <motion.span
+                        key={si}
+                        className="px-3 py-1.5 rounded-lg text-sm font-mono inline-flex items-center gap-2"
+                        style={{
+                          backgroundColor: colorSet.bg,
+                          border: `1px solid ${colorSet.border}`,
+                          color: colorSet.text,
+                        }}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: si * 0.03 }}
+                        whileHover={{ scale: 1.05, boxShadow: `0 0 16px ${colorSet.text}20` }}
+                      >
+                        {s.name}
+                        {s.proficiency && s.proficiency >= 90 && (
+                          <span className="w-1.5 h-1.5 rounded-full" style={{
+                            backgroundColor: colorSet.text,
+                            boxShadow: `0 0 4px ${colorSet.text}`,
+                          }} />
+                        )}
+                      </motion.span>
+                    ))}
+                  </div>
+                </GlassCard>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
@@ -257,55 +298,23 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeader title="Projects" tag="03" />
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {section.entries.map((p, i) => (
-              <motion.div key={i} variants={staggerItem}>
-                <div className="relative rounded-2xl overflow-hidden group" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
-                  {/* # Project number watermark */}
-                  <div className="absolute top-4 right-4 text-6xl font-extrabold font-mono opacity-[0.04] select-none" style={{ color: c.green }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </div>
-
-                  {p.imageUrl && (
-                    <div className="overflow-hidden h-48 relative">
-                      <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 50%, ${c.surface})` }} />
-                    </div>
-                  )}
-                  <div className="p-6 relative">
-                    <h3 className="text-lg font-bold font-mono" style={{ color: c.text }}>{p.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: c.muted }}>{p.description}</p>
-                    {p.techStack.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {p.techStack.map((t, j) => (
-                          <span key={j} className="text-xs font-mono px-2.5 py-1 rounded-lg"
-                            style={{ backgroundColor: `${c.green}08`, color: c.green, border: `1px solid ${c.green}15` }}>
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="mt-5 flex gap-4 font-mono text-sm">
-                      {p.liveUrl && (
-                        <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all hover:shadow-lg"
-                          style={{ backgroundColor: `${c.green}15`, color: c.green, border: `1px solid ${c.green}25` }}>
-                          demo →
-                        </a>
-                      )}
-                      {p.repoUrl && (
-                        <a href={p.repoUrl} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all hover:opacity-80"
-                          style={{ color: c.cyan, border: `1px solid ${c.cyan}25` }}>
-                          repo →
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            {/* # Featured first project — full width hero card */}
+            {section.entries.length > 0 && (
+              <motion.div variants={staggerItem} className="mb-6">
+                <FeaturedProject project={section.entries[0]} />
               </motion.div>
-            ))}
+            )}
+            {/* # Rest of projects in bento grid */}
+            {section.entries.length > 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {section.entries.slice(1).map((p, i) => (
+                  <motion.div key={i} variants={staggerItem}>
+                    <ProjectCard project={p} index={i + 1} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </SectionWrapper>
       );
@@ -379,12 +388,20 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeader title="Awards" tag="07" />
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {section.entries.map((a, i) => (
               <GlassCard key={i}>
-                <h3 className="font-bold" style={{ color: c.text }}>{a.title}</h3>
-                <p className="text-sm" style={{ color: c.cyan }}>{a.issuer}{a.date ? ` · ${a.date}` : ""}</p>
-                {a.description && <p className="text-sm mt-2" style={{ color: c.muted }}>{a.description}</p>}
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg"
+                    style={{ background: `linear-gradient(135deg, ${c.amber}15, ${c.green}15)` }}>
+                    🏆
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm" style={{ color: c.text }}>{a.title}</h3>
+                    <p className="text-xs" style={{ color: c.cyan }}>{a.issuer}{a.date ? ` · ${a.date}` : ""}</p>
+                    {a.description && <p className="text-xs mt-2" style={{ color: c.muted }}>{a.description}</p>}
+                  </div>
+                </div>
               </GlassCard>
             ))}
           </div>
@@ -396,10 +413,11 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeader title="Gallery" tag="08" />
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {/* # Masonry-style bento grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {section.entries.map((g, i) => (
               <a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
-                className="group relative rounded-2xl overflow-hidden aspect-square"
+                className={`group relative rounded-2xl overflow-hidden ${i === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
                 style={{ border: `1px solid ${c.border}` }}>
                 <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -474,6 +492,120 @@ function renderSection(section: PortfolioSection) {
     default:
       return null;
   }
+}
+
+/* # Featured project — full-width hero card with large image, gradient overlay, prominent CTA */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function FeaturedProject({ project }: { project: any }) {
+  const p = project;
+  return (
+    <div className="relative rounded-2xl overflow-hidden group" style={{
+      backgroundColor: c.surface,
+      border: `1px solid ${c.border}`,
+      boxShadow: `0 0 40px rgba(0, 255, 136, 0.08)`,
+    }}>
+      <div className="flex flex-col lg:flex-row">
+        {p.imageUrl && (
+          <div className="lg:w-1/2 relative overflow-hidden">
+            <img src={p.imageUrl} alt={p.title}
+              className="w-full h-64 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0" style={{
+              background: `linear-gradient(90deg, transparent 60%, ${c.surface})`,
+            }} />
+            {/* # "Featured" badge */}
+            <div className="absolute top-4 left-4 px-3 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider"
+              style={{ backgroundColor: `${c.green}15`, border: `1px solid ${c.green}30`, color: c.green }}>
+              Featured
+            </div>
+          </div>
+        )}
+        <div className={`p-8 flex flex-col justify-center ${p.imageUrl ? "lg:w-1/2" : "w-full"}`}>
+          <h3 className="text-2xl font-bold font-mono mb-3" style={{ color: c.text }}>{p.title}</h3>
+          <p className="text-sm leading-relaxed mb-5" style={{ color: c.muted }}>{p.description}</p>
+          {p.techStack.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {p.techStack.map((t: string, j: number) => (
+                <span key={j} className="text-xs font-mono px-2.5 py-1 rounded-lg"
+                  style={{ backgroundColor: `${c.green}08`, color: c.green, border: `1px solid ${c.green}15` }}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-3 font-mono text-sm">
+            {p.liveUrl && (
+              <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all hover:shadow-lg"
+                style={{ background: `linear-gradient(135deg, ${c.green}, ${c.cyan})`, color: c.bg, fontWeight: 600 }}>
+                Live Demo →
+              </a>
+            )}
+            {p.repoUrl && (
+              <a href={p.repoUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all hover:opacity-80"
+                style={{ color: c.cyan, border: `1px solid ${c.cyan}25` }}>
+                Source →
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* # Standard project card — compact bento tile */
+function ProjectCard({ project, index }: { project: any; index: number }) {
+  const p = project;
+  return (
+    <div className="relative rounded-2xl overflow-hidden group h-full" style={{
+      backgroundColor: c.surface,
+      border: `1px solid ${c.border}`,
+    }}>
+      <div className="absolute top-4 right-4 text-5xl font-extrabold font-mono opacity-[0.04] select-none" style={{ color: c.green }}>
+        {String(index + 1).padStart(2, "0")}
+      </div>
+      {p.imageUrl && (
+        <div className="overflow-hidden h-40 relative">
+          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 40%, ${c.surface})` }} />
+        </div>
+      )}
+      <div className="p-5 relative">
+        <h3 className="text-base font-bold font-mono" style={{ color: c.text }}>{p.title}</h3>
+        <p className="mt-2 text-sm leading-relaxed line-clamp-2" style={{ color: c.muted }}>{p.description}</p>
+        {p.techStack.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {p.techStack.slice(0, 4).map((t: string, j: number) => (
+              <span key={j} className="text-[11px] font-mono px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: `${c.green}08`, color: c.green, border: `1px solid ${c.green}12` }}>
+                {t}
+              </span>
+            ))}
+            {p.techStack.length > 4 && (
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-md" style={{ color: c.muted }}>
+                +{p.techStack.length - 4}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="mt-4 flex gap-3 font-mono text-xs">
+          {p.liveUrl && (
+            <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:underline" style={{ color: c.green }}>
+              demo →
+            </a>
+          )}
+          {p.repoUrl && (
+            <a href={p.repoUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:underline" style={{ color: c.cyan }}>
+              repo →
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function DeveloperTemplate({ data }: { data: PortfolioData }) {

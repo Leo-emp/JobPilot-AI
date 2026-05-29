@@ -177,16 +177,38 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeading title="Skills & Tools" />
-          <div className="flex flex-wrap justify-center gap-3">
-            {section.groups.flatMap((g) => g.skills).map((s, i) => (
-              <motion.span key={i}
-                className="px-5 py-2.5 rounded-2xl text-sm font-semibold cursor-default"
-                style={{ background: c.gradientSoft, color: c.text, border: `1px solid ${c.border}`, backdropFilter: "blur(10px)" }}
-                whileHover={{ scale: 1.08, boxShadow: `0 0 25px ${c.purple}25`, transition: { duration: 0.15 } }}
-              >
-                {s.name}
-              </motion.span>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {section.groups.map((g, gi) => {
+              const accents = [c.pink, c.purple, c.blue, c.cyan, "#f59e0b"];
+              const accent = accents[gi % accents.length];
+              const isLarge = gi === 0 && section.groups.length > 2;
+              return (
+                <GlassPanel key={gi} className={isLarge ? "md:col-span-2" : ""}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accent, boxShadow: `0 0 8px ${accent}60` }} />
+                    <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: accent }}>{g.category}</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full ml-auto" style={{ background: `${accent}15`, color: accent }}>
+                      {g.skills.length}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {g.skills.map((s, si) => (
+                      <motion.span key={si}
+                        className="px-3.5 py-1.5 rounded-xl text-sm font-semibold cursor-default"
+                        style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}20` }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: si * 0.03 }}
+                        whileHover={{ scale: 1.08, boxShadow: `0 0 20px ${accent}25` }}
+                      >
+                        {s.name}
+                      </motion.span>
+                    ))}
+                  </div>
+                </GlassPanel>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
@@ -196,52 +218,92 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
           <SectionHeading title="Projects" />
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {section.entries.map((p, i) => (
-              <motion.div key={i} variants={staggerItem}>
-                <div className="relative rounded-3xl overflow-hidden group"
-                  style={{ backgroundColor: "rgba(12,12,30,0.8)", border: `1px solid ${c.border}` }}>
-                  {p.imageUrl && (
-                    <div className="overflow-hidden h-52 relative">
-                      <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 40%, rgba(7,7,20,0.95))" }} />
-                    </div>
-                  )}
-                  <div className="p-7 relative">
-                    {/* # Project number */}
-                    <span className="absolute top-0 right-6 text-7xl font-extrabold opacity-[0.04] select-none" style={{ fontFamily: "'Space Grotesk', sans-serif", color: c.pink }}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <h3 className="text-xl font-bold" style={{ color: c.text }}>{p.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: c.muted }}>{p.description}</p>
-                    {p.techStack.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {p.techStack.map((t, j) => (
-                          <span key={j} className="text-xs px-3 py-1 rounded-full" style={{ background: `${c.purple}15`, color: c.purple }}>{t}</span>
-                        ))}
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            {/* # Featured first project — full-width showcase */}
+            {section.entries.length > 0 && (() => {
+              const p = section.entries[0];
+              return (
+                <motion.div variants={staggerItem} className="mb-6">
+                  <div className="relative rounded-3xl overflow-hidden group"
+                    style={{ backgroundColor: "rgba(12,12,30,0.8)", border: `1px solid ${c.border}`, boxShadow: `0 0 60px ${c.purple}08` }}>
+                    <div className="flex flex-col lg:flex-row">
+                      {p.imageUrl && (
+                        <div className="lg:w-1/2 overflow-hidden relative">
+                          <img src={p.imageUrl} alt={p.title}
+                            className="w-full h-64 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <div className="absolute inset-0 lg:hidden" style={{ background: "linear-gradient(180deg, transparent 50%, rgba(7,7,20,0.95))" }} />
+                          <div className="absolute inset-0 hidden lg:block" style={{ background: `linear-gradient(90deg, transparent 50%, rgba(12,12,30,0.95))` }} />
+                        </div>
+                      )}
+                      <div className={`p-8 flex flex-col justify-center ${p.imageUrl ? "lg:w-1/2" : "w-full"}`}>
+                        <span className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{
+                          background: c.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                        }}>Featured Project</span>
+                        <h3 className="text-2xl font-bold mb-3" style={{ color: c.text }}>{p.title}</h3>
+                        <p className="text-sm leading-relaxed mb-5" style={{ color: c.muted }}>{p.description}</p>
+                        {p.techStack.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {p.techStack.map((t, j) => (
+                              <span key={j} className="text-xs px-3 py-1 rounded-full" style={{ background: `${c.purple}15`, color: c.purple }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex gap-3">
+                          {p.liveUrl && (
+                            <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-sm font-semibold px-6 py-2.5 rounded-xl text-white transition-all hover:shadow-lg hover:scale-105"
+                              style={{ background: c.gradient }}>
+                              Live Demo →
+                            </a>
+                          )}
+                          {p.repoUrl && (
+                            <a href={p.repoUrl} target="_blank" rel="noopener noreferrer"
+                              className="text-sm font-semibold px-6 py-2.5 rounded-xl transition-all hover:opacity-80"
+                              style={{ color: c.purple, border: `1px solid ${c.purple}30` }}>
+                              Source
+                            </a>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="mt-5 flex gap-3">
-                      {p.liveUrl && (
-                        <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-sm font-semibold px-5 py-2 rounded-xl text-white transition-all hover:shadow-lg hover:scale-105"
-                          style={{ background: c.gradient }}>
-                          Live Demo →
-                        </a>
-                      )}
-                      {p.repoUrl && (
-                        <a href={p.repoUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-sm font-semibold px-5 py-2 rounded-xl transition-all hover:opacity-80"
-                          style={{ color: c.purple, border: `1px solid ${c.purple}30` }}>
-                          Source
-                        </a>
-                      )}
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })()}
+            {/* # Remaining projects in staggered grid */}
+            {section.entries.length > 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {section.entries.slice(1).map((p, i) => (
+                  <motion.div key={i} variants={staggerItem}>
+                    <div className="relative rounded-3xl overflow-hidden group h-full"
+                      style={{ backgroundColor: "rgba(12,12,30,0.8)", border: `1px solid ${c.border}` }}>
+                      {p.imageUrl && (
+                        <div className="overflow-hidden h-44 relative">
+                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 40%, rgba(7,7,20,0.95))" }} />
+                        </div>
+                      )}
+                      <div className="p-6 relative">
+                        <h3 className="text-lg font-bold" style={{ color: c.text }}>{p.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed line-clamp-2" style={{ color: c.muted }}>{p.description}</p>
+                        {p.techStack.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {p.techStack.slice(0, 4).map((t, j) => (
+                              <span key={j} className="text-[11px] px-2.5 py-0.5 rounded-full" style={{ background: `${c.purple}12`, color: c.purple }}>{t}</span>
+                            ))}
+                            {p.techStack.length > 4 && <span className="text-[11px] px-2 py-0.5" style={{ color: c.muted }}>+{p.techStack.length - 4}</span>}
+                          </div>
+                        )}
+                        <div className="mt-4 flex gap-3 text-sm font-medium">
+                          {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.pink }}>Demo →</a>}
+                          {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.purple }}>Source →</a>}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </SectionWrapper>
       );

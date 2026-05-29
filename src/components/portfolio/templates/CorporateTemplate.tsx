@@ -187,35 +187,82 @@ function renderSection(section: PortfolioSection) {
       return (
         <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
           <SectionHeading>Key Projects</SectionHeading>
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {section.entries.map((p, i) => (
-              <motion.div key={i} variants={staggerItem}>
-                <PremiumCard className="!p-0 overflow-hidden">
-                  {p.imageUrl && (
-                    <div className="overflow-hidden h-52 relative group">
-                      <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent opacity-40" />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>{p.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: c.muted }}>{p.description}</p>
-                    {p.techStack.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {p.techStack.map((t, j) => (
-                          <span key={j} className="text-xs px-2.5 py-0.5 rounded" style={{ backgroundColor: c.cream, color: c.navy }}>{t}</span>
-                        ))}
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            {/* # Featured first project — editorial full-width */}
+            {section.entries.length > 0 && (() => {
+              const p = section.entries[0];
+              return (
+                <motion.div variants={staggerItem} className="mb-10">
+                  <PremiumCard className="!p-0 overflow-hidden">
+                    <div className="flex flex-col lg:flex-row">
+                      {p.imageUrl && (
+                        <div className="lg:w-1/2 overflow-hidden relative group">
+                          <img src={p.imageUrl} alt={p.title}
+                            className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        </div>
+                      )}
+                      <div className={`p-8 flex flex-col justify-center ${p.imageUrl ? "lg:w-1/2" : "w-full"}`}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
+                          <span className="text-xs uppercase tracking-[0.15em] font-bold" style={{ color: c.gold }}>Featured</span>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>{p.title}</h3>
+                        <p className="text-sm leading-relaxed mb-5" style={{ color: c.muted }}>{p.description}</p>
+                        {p.techStack.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-5">
+                            {p.techStack.map((t, j) => (
+                              <span key={j} className="text-xs px-3 py-1 rounded-lg" style={{ backgroundColor: c.cream, color: c.navy, border: `1px solid ${c.border}` }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex gap-4 text-sm font-semibold">
+                          {p.liveUrl && (
+                            <a href={p.liveUrl} target="_blank" rel="noopener noreferrer"
+                              className="px-6 py-2.5 rounded-lg transition-all hover:opacity-90"
+                              style={{ backgroundColor: c.gold, color: c.navy }}>
+                              View Project →
+                            </a>
+                          )}
+                          {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 rounded-lg hover:underline" style={{ color: c.navy, border: `1px solid ${c.border}` }}>Repository</a>}
+                        </div>
                       </div>
-                    )}
-                    <div className="mt-5 flex gap-4 text-sm font-medium">
-                      {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.gold }}>View Project →</a>}
-                      {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.navy }}>Repository</a>}
                     </div>
-                  </div>
-                </PremiumCard>
-              </motion.div>
-            ))}
+                  </PremiumCard>
+                </motion.div>
+              );
+            })()}
+            {/* # Remaining projects in grid */}
+            {section.entries.length > 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {section.entries.slice(1).map((p, i) => (
+                  <motion.div key={i} variants={staggerItem}>
+                    <PremiumCard className="!p-0 overflow-hidden h-full">
+                      {p.imageUrl && (
+                        <div className="overflow-hidden h-44 relative group">
+                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent opacity-40" />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <h3 className="text-base font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>{p.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed line-clamp-2" style={{ color: c.muted }}>{p.description}</p>
+                        {p.techStack.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {p.techStack.slice(0, 4).map((t, j) => (
+                              <span key={j} className="text-[11px] px-2 py-0.5 rounded" style={{ backgroundColor: c.cream, color: c.navy }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-4 flex gap-4 text-sm font-medium">
+                          {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.gold }}>View →</a>}
+                          {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.navy }}>Repo</a>}
+                        </div>
+                      </div>
+                    </PremiumCard>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </motion.div>
         </SectionWrapper>
       );
