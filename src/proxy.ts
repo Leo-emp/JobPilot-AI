@@ -202,13 +202,13 @@ export function proxy(req: NextRequest) {
     /* Styles: unsafe-inline needed for Tailwind + template preview iframes */
     "style-src 'self' 'unsafe-inline'",
     /* Images: self + data URIs (base64) + blob (PDF previews) + common CDNs */
-    "img-src 'self' data: blob: https://*.googleusercontent.com https://*.licdn.com",
+    "img-src 'self' data: blob: https://*.googleusercontent.com https://*.licdn.com https://images.unsplash.com",
     /* Fonts: self + Google Fonts */
     "font-src 'self' https://fonts.gstatic.com",
     /* API calls: self + Stripe + Gemini + PostHog + Sentry */
     "connect-src 'self' https://api.stripe.com https://generativelanguage.googleapis.com https://us.i.posthog.com https://*.sentry.io",
     /* Frames: self (srcDoc iframes for template previews) + Stripe checkout */
-    "frame-src 'self' blob: https://js.stripe.com https://hooks.stripe.com",
+    "frame-src 'self' blob: https://js.stripe.com https://hooks.stripe.com https://player.vimeo.com",
     /* Block all other embeds */
     "object-src 'none'",
     "base-uri 'self'",

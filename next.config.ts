@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.googleusercontent.com" },
       { protocol: "https", hostname: "*.licdn.com" },
       { protocol: "https", hostname: "*.gravatar.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 };
