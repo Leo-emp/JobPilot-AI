@@ -14,17 +14,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
 import type {
-  PortfolioData, PortfolioSection, TemplateName, SectionType,
+  PortfolioSection, TemplateName, SectionType,
   ExperienceEntry, EducationEntry, SkillGroup, ProjectEntry,
   CertificationEntry, PublicationEntry, AwardEntry, GalleryEntry,
   TestimonialEntry,
 } from "@/lib/portfolio-types";
 import { TEMPLATES, TEMPLATE_INFO, SECTION_TYPES, SECTION_INFO, getDefaultSections } from "@/lib/portfolio-types";
-
-/* # Lazy-load the renderer so the editor bundle stays lean */
-const PortfolioRenderer = dynamic(() => import("@/components/portfolio/PortfolioRenderer").then(m => ({ default: m.PortfolioRenderer })), { ssr: false });
 
 /* ---- Tabs for the editor sidebar ---- */
 const editorTabs = [
@@ -375,7 +371,6 @@ export default function PortfolioPage() {
   /* ---- Editor state ---- */
   const [activeTab, setActiveTab] = useState("template");
   const [editingSection, setEditingSection] = useState<number | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const [slugError, setSlugError] = useState("");
   const [copied, setCopied] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
@@ -555,23 +550,6 @@ export default function PortfolioPage() {
     debouncedSave({ template: t });
   }, [debouncedSave]);
 
-  /* ---- Build preview data object ---- */
-  const previewData: PortfolioData = {
-    id: portfolioId,
-    slug,
-    title: title || session?.user?.name || "Your Name",
-    tagline: tagline || null,
-    bio: null,
-    template,
-    themeColors: null,
-    socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : null,
-    avatarUrl: avatarUrl || session?.user?.image || null,
-    published,
-    sections,
-    userName: session?.user?.name || "User",
-    userImage: session?.user?.image || null,
-  };
-
   /* ---- Loading state ---- */
   if (loading) {
     return (
@@ -645,9 +623,8 @@ export default function PortfolioPage() {
 
   /* ---- Main Editor ---- */
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen">
-      {/* ---- Left: Editor Panel ---- */}
-      <div className={`w-full ${showPreview ? "lg:w-1/2" : "lg:w-full"} max-w-3xl mx-auto lg:mx-0 px-4 py-6 overflow-y-auto`}>
+    <div className="min-h-screen">
+      <div className="max-w-3xl mx-auto px-4 py-6">
         {/* # Top bar */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -657,10 +634,14 @@ export default function PortfolioPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowPreview(!showPreview)}
-              className="px-4 py-2 rounded-xl text-sm font-medium border border-card-border text-text-secondary hover:text-white hover:bg-space-700 transition-all">
-              {showPreview ? "Hide Preview" : "Show Preview"}
-            </button>
+            <a href={`/p/${slug}`} target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2 rounded-xl text-sm font-medium border border-card-border text-text-secondary hover:text-white hover:bg-space-700 transition-all flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Preview
+            </a>
             <button onClick={togglePublish}
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
                 published
@@ -864,47 +845,6 @@ export default function PortfolioPage() {
           </div>
         )}
       </div>
-
-      {/* ---- Right: Live Preview ---- */}
-      {showPreview && (
-        <div className="hidden lg:block flex-1 border-l border-card-border bg-space-900 overflow-hidden relative">
-          {/* # Browser-frame header */}
-          <div className="sticky top-0 z-20 border-b border-card-border bg-space-800/95 backdrop-blur-sm">
-            <div className="px-4 py-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                </div>
-                <div className="ml-2 px-3 py-1 rounded-md bg-space-700 text-[10px] text-text-muted font-mono">
-                  jobpilotai.co/p/{slug}
-                </div>
-              </div>
-              <a href={`/p/${slug}`} target="_blank" rel="noopener noreferrer"
-                className="px-3 py-1 rounded-lg text-xs font-medium text-brand-light hover:bg-space-700 transition-all">
-                Open Full Preview →
-              </a>
-            </div>
-            <div className="px-4 pb-2 flex items-center gap-2">
-              <span className="text-[10px] text-text-muted">Template:</span>
-              <span className="text-[10px] font-medium text-white">{TEMPLATE_INFO[template].name}</span>
-              <div className="w-2 h-2 rounded-full" style={{ background: TEMPLATE_INFO[template].accent }} />
-            </div>
-          </div>
-          {/* # Scaled preview with proper centering — 55% scale for readability */}
-          <div className="overflow-y-auto overflow-x-hidden" style={{ height: "calc(100vh - 72px)" }}>
-            <div className="relative" style={{
-              transform: "scale(0.55)",
-              transformOrigin: "top center",
-              width: "181.8%",
-              marginLeft: "-40.9%",
-            }}>
-              <PortfolioRenderer data={previewData} />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
