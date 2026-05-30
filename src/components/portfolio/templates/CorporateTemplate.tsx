@@ -122,132 +122,76 @@ function Hero({ data }: { data: PortfolioData }) {
 function renderSection(section: PortfolioSection) {
   switch (section.type) {
 
-    /* # ─── EXPERIENCE — Full-width alternating case-study blocks, not resume cards ─── */
+    /* # ─── EXPERIENCE — Compact two-column editorial with side-by-side entries ─── */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
-        <div>
-          <div className="py-16 px-6 md:px-12 max-w-5xl mx-auto">
-            <SectionHeading>Professional Experience</SectionHeading>
-          </div>
-          {section.entries.map((e, i) => {
-            const isNavy = i % 2 === 0;
-            return (
-              <motion.div key={i}
-                className="relative overflow-hidden"
-                style={{ backgroundColor: isNavy ? c.navy : c.cream }}
-                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                {/* # Decorative diamond pattern for navy blocks */}
-                {isNavy && (
-                  <div className="absolute inset-0 opacity-[0.03]" style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23c8a96e' stroke-width='0.5'/%3E%3C/svg%3E")`,
-                    backgroundSize: "40px 40px",
-                  }} />
-                )}
+        <SectionWrapper className="py-20 px-6 md:px-12 max-w-5xl mx-auto">
+          <SectionHeading>Professional Experience</SectionHeading>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {section.entries.map((e, i) => {
+              const isNavy = i % 2 === 0;
+              const bg = isNavy ? c.navy : c.cream;
+              const textColor = isNavy ? "rgba(255,255,255,0.85)" : c.text;
+              const mutedColor = isNavy ? "rgba(255,255,255,0.55)" : c.muted;
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden"
+                  style={{ backgroundColor: bg }}
+                  whileHover={{ y: -3, boxShadow: "0 12px 40px rgba(0,0,0,0.12)" }}
+                  initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  {/* # Diamond pattern overlay for navy cards */}
+                  {isNavy && (
+                    <div className="absolute inset-0 opacity-[0.04]" style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23c8a96e' stroke-width='0.5'/%3E%3C/svg%3E")`,
+                      backgroundSize: "30px 30px",
+                    }} />
+                  )}
 
-                {/* # Ambient gold glow */}
-                <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[200px] opacity-[0.05]"
-                  style={{ background: c.gold }} />
+                  <div className="relative z-10 p-5">
+                    {/* # Gold decorative line + company */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-0.5" style={{ backgroundColor: c.gold }} />
+                      <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
+                    </div>
 
-                <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-20 md:py-28">
-                  <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
-                    {/* # Left column — Company & role as large editorial block */}
-                    <div className="lg:w-2/5 flex flex-col justify-center">
-                      {/* # Gold decorative line */}
-                      <div className="w-12 h-0.5 mb-6" style={{ backgroundColor: c.gold }} />
+                    <h3 className="text-xl font-bold leading-tight mb-1"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif", color: textColor }}>
+                      {e.company}
+                    </h3>
 
-                      {/* # Company as oversized serif heading */}
-                      <h3 className="text-4xl md:text-5xl font-bold leading-tight"
-                        style={{ fontFamily: "'Playfair Display', Georgia, serif", color: isNavy ? "#ffffff" : c.navy }}>
-                        {e.company}
-                      </h3>
-
-                      {/* # Role with gold diamond */}
-                      <div className="flex items-center gap-3 mt-4">
-                        <div className="w-2 h-2 rotate-45" style={{ backgroundColor: c.gold }} />
-                        <p className="text-base font-medium tracking-wide" style={{ color: c.gold }}>
-                          {e.title}
-                        </p>
-                      </div>
-
-                      {/* # Location & dates */}
-                      {e.location && (
-                        <p className="text-sm mt-3" style={{ color: isNavy ? "rgba(255,255,255,0.5)" : c.muted }}>
-                          {e.location}
-                        </p>
-                      )}
-
-                      {/* # Date as prominent gold-bordered block */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className="text-xs font-medium" style={{ color: c.gold }}>{e.title}</span>
+                      {e.location && <span className="text-[10px]" style={{ color: mutedColor }}>· {e.location}</span>}
                       {(e.startDate || e.endDate) && (
-                        <div className="mt-6 inline-flex items-center gap-3 px-5 py-3 rounded-lg"
-                          style={{
-                            border: `1px solid ${isNavy ? c.gold + "40" : c.gold + "30"}`,
-                            backgroundColor: isNavy ? "rgba(200,169,110,0.08)" : `${c.gold}08`,
-                          }}>
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.gold }} />
-                          <span className="text-sm font-semibold tracking-wider uppercase"
-                            style={{ color: c.gold, letterSpacing: "0.1em" }}>
-                            {e.startDate} — {e.endDate || "Present"}
-                          </span>
-                        </div>
+                        <span className="text-[10px] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-full ml-auto"
+                          style={{ border: `1px solid ${c.gold}30`, color: c.gold }}>
+                          {e.startDate} — {e.endDate || "Present"}
+                        </span>
                       )}
                     </div>
 
-                    {/* # Right column — Achievements as impact metric cards */}
-                    <div className="lg:w-3/5">
-                      {e.description && (
-                        <p className="text-base leading-relaxed mb-8"
-                          style={{ color: isNavy ? "rgba(255,255,255,0.7)" : c.text }}>
-                          {e.description}
-                        </p>
-                      )}
+                    {e.description && (
+                      <p className="text-xs leading-relaxed mb-3" style={{ color: mutedColor }}>{e.description}</p>
+                    )}
 
-                      {e.achievements.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {e.achievements.map((a, j) => (
-                            <motion.div key={j}
-                              className="rounded-xl p-5 relative overflow-hidden"
-                              style={{
-                                backgroundColor: isNavy ? "rgba(255,255,255,0.04)" : c.surface,
-                                border: `1px solid ${isNavy ? "rgba(200,169,110,0.15)" : c.border}`,
-                              }}
-                              whileHover={{
-                                y: -2,
-                                borderColor: `${c.gold}40`,
-                                backgroundColor: isNavy ? "rgba(255,255,255,0.07)" : `${c.gold}04`,
-                              }}
-                            >
-                              {/* # Gold accent top line */}
-                              <div className="absolute top-0 left-0 right-0 h-0.5"
-                                style={{ background: `linear-gradient(90deg, ${c.gold}${j % 2 === 0 ? "60" : "30"}, transparent)` }} />
-
-                              {/* # Gold numbered badge */}
-                              <div className="flex items-center gap-2 mb-3">
-                                <span className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold"
-                                  style={{
-                                    background: `linear-gradient(135deg, ${c.gold}, ${c.goldLight})`,
-                                    color: isNavy ? c.navy : "#ffffff",
-                                  }}>
-                                  {String(j + 1).padStart(2, "0")}
-                                </span>
-                              </div>
-                              <p className="text-sm leading-relaxed"
-                                style={{ color: isNavy ? "rgba(255,255,255,0.75)" : c.text }}>
-                                {a}
-                              </p>
-                            </motion.div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {e.achievements.length > 0 && (
+                      <div className="space-y-1.5 pt-3" style={{ borderTop: `1px solid ${isNavy ? `${c.gold}20` : c.border}` }}>
+                        {e.achievements.map((a, j) => (
+                          <div key={j} className="flex items-start gap-2">
+                            <div className="shrink-0 mt-1 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
+                            <p className="text-xs leading-relaxed" style={{ color: isNavy ? "rgba(255,255,255,0.7)" : c.text }}>{a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </SectionWrapper>
       );
 
     /* # ─── SKILLS — Unchanged premium layout ─── */

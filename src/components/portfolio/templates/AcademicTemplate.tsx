@@ -128,100 +128,68 @@ function renderSection(section: PortfolioSection) {
 
   switch (section.type) {
 
-    /* # ─── EXPERIENCE — Visual cards with gradient left border, NOT plain text ─── */
+    /* # ─── EXPERIENCE — Two-column grid of compact numbered journal cards ─── */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-20 px-6 md:px-12 max-w-4xl mx-auto">
           <SectionHeading number={num}>Academic &amp; Professional Experience</SectionHeading>
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {section.entries.map((e, i) => {
-              /* # Unique gradient for each card's left border */
               const grad = ACADEMIC_GRADIENTS[i % ACADEMIC_GRADIENTS.length];
               return (
-                <motion.div key={i} variants={staggerItem}>
-                  <motion.div
-                    className="relative rounded-xl overflow-hidden"
-                    style={{
-                      backgroundColor: c.card,
-                      border: `1px solid ${c.border}`,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                    }}
-                    whileHover={{
-                      y: -4,
-                      boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-                      transition: { duration: 0.2 },
-                    }}
-                  >
-                    {/* # Gradient left border accent */}
-                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
-                      style={{ background: grad }} />
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden"
+                  style={{ backgroundColor: c.card, border: `1px solid ${c.border}`, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+                  whileHover={{ y: -3, boxShadow: "0 8px 25px rgba(0,0,0,0.08)" }}
+                  initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  {/* # Gradient top strip */}
+                  <div className="h-1" style={{ background: grad }} />
 
-                    {/* # Subtle warm gradient background fill */}
-                    <div className="absolute inset-0 opacity-[0.03]"
-                      style={{ background: `linear-gradient(135deg, ${c.accent}, transparent 50%)` }} />
-
-                    <div className="relative p-6 pl-7">
-                      {/* # Top row: company badge + date pill */}
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                        <div className="flex items-start gap-3">
-                          {/* # Gradient institution icon badge */}
-                          <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 text-white font-bold text-sm shadow-md"
-                            style={{ background: grad }}>
-                            {e.company ? e.company.charAt(0).toUpperCase() : "I"}
-                          </div>
-                          <div>
-                            {/* # Large company/institution name */}
-                            <p className="text-lg font-bold" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
-                              {e.company}
-                            </p>
-                            <h3 className="text-sm font-semibold mt-0.5" style={{ color: c.accent }}>
-                              {e.title}{e.location ? `, ${e.location}` : ""}
-                            </h3>
-                          </div>
-                        </div>
-                        {/* # Date range in a colored pill badge */}
-                        {(e.startDate || e.endDate) && (
-                          <span className="text-xs font-semibold shrink-0 px-4 py-1.5 rounded-full"
-                            style={{
-                              background: `linear-gradient(135deg, ${c.accent}15, ${c.accent}08)`,
-                              color: c.accent,
-                              border: `1px solid ${c.accent}20`,
-                            }}>
-                            {e.startDate} {"–"} {e.endDate || "Present"}
-                          </span>
-                        )}
+                  <div className="p-4">
+                    {/* # Large faded number + title row */}
+                    <div className="flex items-start gap-3 mb-2">
+                      <span className="text-3xl font-bold leading-none shrink-0"
+                        style={{ fontFamily: "'Lora', Georgia, serif", color: `${c.accent}20` }}>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 pt-0.5">
+                        <h3 className="text-sm font-bold leading-tight" style={{ fontFamily: "'Lora', Georgia, serif", color: c.heading }}>
+                          {e.title}
+                        </h3>
+                        <p className="text-xs mt-0.5" style={{ color: c.accent }}>
+                          {e.company}{e.location ? ` · ${e.location}` : ""}
+                        </p>
                       </div>
-
-                      {/* # Description in a subtle tinted box */}
-                      {e.description && (
-                        <div className="mt-4 px-4 py-3 rounded-lg" style={{ backgroundColor: c.surface }}>
-                          <p className="text-sm leading-relaxed" style={{ color: c.text }}>{e.description}</p>
-                        </div>
-                      )}
-
-                      {/* # Achievements with colored accent markers */}
-                      {e.achievements.length > 0 && (
-                        <ul className="mt-4 space-y-2.5">
-                          {e.achievements.map((a, j) => (
-                            <li key={j} className="text-sm flex items-start gap-3" style={{ color: c.text }}>
-                              {/* # Colored numbered accent marker */}
-                              <span className="shrink-0 mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] text-white font-bold"
-                                style={{ background: grad }}>
-                                {j + 1}
-                              </span>
-                              <span className="leading-relaxed">{a}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                     </div>
-                  </motion.div>
+
+                    {(e.startDate || e.endDate) && (
+                      <span className="inline-block text-[10px] font-semibold px-2.5 py-0.5 rounded-full mb-2"
+                        style={{ background: `${c.accent}10`, color: c.accent }}>
+                        {e.startDate} – {e.endDate || "Present"}
+                      </span>
+                    )}
+
+                    {e.description && (
+                      <p className="text-xs leading-relaxed mb-2" style={{ color: c.muted }}>{e.description}</p>
+                    )}
+
+                    {e.achievements.length > 0 && (
+                      <ul className="space-y-1 border-t pt-2" style={{ borderColor: c.border }}>
+                        {e.achievements.map((a, j) => (
+                          <li key={j} className="text-xs flex items-start gap-1.5" style={{ color: c.text }}>
+                            <span className="shrink-0 mt-1 w-1 h-1 rounded-full" style={{ backgroundColor: c.accent }} />
+                            <span className="leading-relaxed">{a}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </motion.div>
               );
             })}
-          </motion.div>
+          </div>
         </SectionWrapper>
       );
 

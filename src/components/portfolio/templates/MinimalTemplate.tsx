@@ -109,99 +109,80 @@ function Hero({ data, colors }: { data: PortfolioData; colors: typeof defaultCol
   );
 }
 
-/* # ─── EXPERIENCE — Gradient-bordered visual cards with colored badges ─── */
+/* # ─── EXPERIENCE — Alternating timeline with compact cards ─── */
 function ExperienceSection({ section, colors }: { section: PortfolioSection; colors: typeof defaultColors }) {
   if (section.type !== "experience" || section.entries.length === 0) return null;
   return (
     <SectionWrapper className="py-20 px-6 md:px-12 max-w-5xl mx-auto">
       <SectionHeading title="Experience" colors={colors} />
-      <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-        className="space-y-6">
+      <div className="relative">
+        {/* # Center timeline line */}
+        <div className="absolute left-5 md:left-1/2 md:-translate-x-px top-0 bottom-0 w-0.5 rounded-full"
+          style={{ background: `linear-gradient(180deg, ${colors.accent}, ${colors.accent}30, transparent)` }} />
+
         {section.entries.map((e, i) => {
-          /* # Pick a unique gradient for each entry's left border */
           const grad = ENTRY_GRADIENTS[i % ENTRY_GRADIENTS.length];
+          const isLeft = i % 2 === 0;
           return (
-            <motion.div key={i} variants={staggerItem}>
-              <motion.div
-                className="relative rounded-2xl overflow-hidden"
-                style={{
-                  backgroundColor: colors.cardBg,
-                  boxShadow: colors.shadow,
-                  border: `1px solid ${colors.border}`,
-                }}
-                whileHover={{
-                  y: -4,
-                  boxShadow: colors.shadowHover,
-                  transition: { duration: 0.2 },
-                }}
-              >
-                {/* # Gradient left border accent */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
-                  style={{ background: grad }} />
+            <motion.div key={i}
+              className={`relative grid grid-cols-[40px_1fr] md:grid-cols-[1fr_40px_1fr] gap-0 mb-5`}
+              initial={{ opacity: 0, x: isLeft ? -20 : 20 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
 
-                {/* # Soft blue-to-transparent gradient background fill */}
-                <div className="absolute inset-0 opacity-[0.03] rounded-2xl"
-                  style={{ background: `linear-gradient(135deg, ${colors.accent}, transparent 60%)` }} />
-
-                <div className="relative p-6 pl-7">
-                  {/* # Top row: company badge + date pill */}
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                    <div className="flex items-start gap-3">
-                      {/* # Gradient company icon badge */}
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-sm shadow-md"
-                        style={{ background: grad }}>
-                        {e.company ? e.company.charAt(0).toUpperCase() : "W"}
+              {/* # Card — alternates sides on desktop */}
+              <div className={`col-start-2 md:col-start-auto ${!isLeft ? "md:order-3" : ""}`}>
+                <motion.div className="rounded-xl overflow-hidden relative"
+                  style={{ backgroundColor: colors.cardBg, boxShadow: colors.shadow, border: `1px solid ${colors.border}` }}
+                  whileHover={{ y: -3, boxShadow: colors.shadowHover }}>
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: grad }} />
+                  <div className="p-4 pl-4.5">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white text-xs font-bold"
+                          style={{ background: grad }}>
+                          {e.company?.charAt(0)?.toUpperCase() || "W"}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-bold truncate" style={{ color: colors.text }}>{e.title}</h3>
+                          <p className="text-xs truncate" style={{ color: colors.muted }}>{e.company}{e.location ? ` · ${e.location}` : ""}</p>
+                        </div>
                       </div>
-                      <div>
-                        {/* # Large company name */}
-                        <p className="text-lg font-bold" style={{ color: colors.text }}>{e.company}</p>
-                        <h3 className="text-sm font-semibold mt-0.5" style={{ color: colors.muted }}>
-                          {e.title}{e.location ? ` · ${e.location}` : ""}
-                        </h3>
-                      </div>
+                      {(e.startDate || e.endDate) && (
+                        <span className="text-[10px] font-semibold shrink-0 px-2.5 py-1 rounded-full"
+                          style={{ background: `${colors.accent}12`, color: colors.accent }}>
+                          {e.startDate} — {e.endDate || "Now"}
+                        </span>
+                      )}
                     </div>
-                    {/* # Date range in colored pill badge */}
-                    {(e.startDate || e.endDate) && (
-                      <span className="text-xs font-semibold shrink-0 px-4 py-1.5 rounded-full shadow-sm"
-                        style={{
-                          background: `linear-gradient(135deg, ${colors.accent}18, ${colors.accent}08)`,
-                          color: colors.accent,
-                          border: `1px solid ${colors.accent}20`,
-                        }}>
-                        {e.startDate}{e.endDate ? ` — ${e.endDate}` : " — Present"}
-                      </span>
+                    {e.description && (
+                      <p className="text-xs leading-relaxed mb-2" style={{ color: colors.muted }}>{e.description}</p>
+                    )}
+                    {e.achievements.length > 0 && (
+                      <ul className="space-y-1">
+                        {e.achievements.map((a, j) => (
+                          <li key={j} className="text-xs flex items-start gap-2" style={{ color: colors.text }}>
+                            <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full" style={{ background: grad }} />
+                            <span className="leading-relaxed">{a}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
+                </motion.div>
+              </div>
 
-                  {/* # Description in a subtle tinted box */}
-                  {e.description && (
-                    <div className="mt-4 px-4 py-3 rounded-xl"
-                      style={{ backgroundColor: `${colors.accent}06` }}>
-                      <p className="text-sm leading-relaxed" style={{ color: colors.muted }}>{e.description}</p>
-                    </div>
-                  )}
+              {/* # Timeline dot */}
+              <div className={`col-start-1 md:col-start-auto ${!isLeft ? "md:order-2" : "md:order-2"} flex justify-center pt-4`}>
+                <div className="w-3 h-3 rounded-full border-2 shrink-0"
+                  style={{ borderColor: colors.accent, backgroundColor: colors.bg }} />
+              </div>
 
-                  {/* # Achievements with colored accent markers */}
-                  {e.achievements.length > 0 && (
-                    <ul className="mt-4 space-y-2.5">
-                      {e.achievements.map((a, j) => (
-                        <li key={j} className="text-sm flex items-start gap-3" style={{ color: colors.text }}>
-                          {/* # Colored gradient accent marker instead of plain dot */}
-                          <span className="shrink-0 mt-1 w-5 h-5 rounded-md flex items-center justify-center text-[10px] text-white font-bold shadow-sm"
-                            style={{ background: grad }}>
-                            {j + 1}
-                          </span>
-                          <span className="leading-relaxed">{a}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </motion.div>
+              {/* # Empty spacer on opposite side */}
+              <div className={`hidden md:block ${!isLeft ? "md:order-1" : "md:order-3"}`} />
             </motion.div>
           );
         })}
-      </motion.div>
+      </div>
     </SectionWrapper>
   );
 }

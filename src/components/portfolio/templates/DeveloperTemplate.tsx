@@ -302,116 +302,67 @@ function renderSection(section: PortfolioSection, index: number) {
       );
     }
 
-    /* # Experience section — gradient-bordered cards with prominent company badges */
+    /* # Experience section — compact git-log style, inline terminal entries */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
         <SectionBg alt={isAlt}>
           <SectionDivider variant="terminal" color={c.green} />
-          <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
+          <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
             <SectionHeader title="Experience" tag={tag} />
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-              className="space-y-6">
+            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: c.surface, border: `1px solid ${c.border}` }}>
               {section.entries.map((e, i) => {
-                /* # Each entry gets a unique gradient accent from the palette */
                 const grad = ENTRY_GRADIENTS[i % ENTRY_GRADIENTS.length];
-                const accentColor = SKILL_COLORS[i % SKILL_COLORS.length].text;
                 return (
-                  <motion.div key={i} variants={staggerItem}>
-                    <motion.div
-                      className="relative rounded-2xl overflow-hidden"
-                      whileHover={{ y: -6, boxShadow: `0 20px 60px ${grad.from}15`, transition: { duration: 0.25 } }}
-                    >
-                      {/* # Gradient left border accent — unique color per entry */}
-                      <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl" style={{
-                        background: `linear-gradient(180deg, ${grad.from}, ${grad.to})`,
-                        boxShadow: `0 0 20px ${grad.from}30`,
-                      }} />
-                      {/* # Outer gradient border */}
-                      <div className="absolute inset-0 rounded-2xl p-px" style={{
-                        background: `linear-gradient(135deg, ${grad.from}25, transparent 40%, ${grad.to}15 70%, transparent)`,
-                      }}>
-                        <div className="w-full h-full rounded-2xl" style={{ backgroundColor: c.surface }} />
+                  <motion.div key={i}
+                    className="relative group"
+                    style={{ borderBottom: i < section.entries.length - 1 ? `1px solid ${c.border}` : "none" }}
+                    initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                    {/* # Colored left accent */}
+                    <div className="absolute left-0 top-0 bottom-0 w-0.5"
+                      style={{ background: `linear-gradient(180deg, ${grad.from}, ${grad.to}50)` }} />
+
+                    <motion.div className="p-4 pl-5"
+                      whileHover={{ backgroundColor: `${grad.from}04` }}>
+                      {/* # Git-log style header: hash + title + company + date */}
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded"
+                          style={{ backgroundColor: `${grad.from}15`, color: grad.from }}>
+                          {i.toString(16).padStart(7, "0")}
+                        </span>
+                        <h3 className="text-sm font-bold font-mono" style={{ color: c.text }}>{e.title}</h3>
+                        <span className="text-xs font-mono" style={{ color: grad.from }}>{e.company}</span>
+                        {e.location && <span className="text-xs font-mono" style={{ color: c.muted }}>@ {e.location}</span>}
+                        {(e.startDate || e.endDate) && (
+                          <span className="text-[10px] font-mono ml-auto shrink-0" style={{ color: c.muted }}>
+                            {e.startDate} → {e.endDate || "HEAD"}
+                          </span>
+                        )}
                       </div>
-                      {/* # Subtle gradient background wash */}
-                      <div className="absolute inset-0 rounded-2xl opacity-[0.03]" style={{
-                        background: `linear-gradient(135deg, ${grad.from}, transparent 60%)`,
-                      }} />
-                      <div className="relative z-10 p-7 pl-8">
-                        <div className="flex flex-col md:flex-row md:items-start gap-6">
-                          {/* # Large company initial badge with gradient background */}
-                          <div className="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 text-3xl font-black font-mono"
-                            style={{
-                              background: `linear-gradient(135deg, ${grad.from}20, ${grad.to}15)`,
-                              color: grad.from,
-                              border: `1px solid ${grad.from}25`,
-                              boxShadow: `0 0 30px ${grad.from}10`,
-                            }}>
-                            {e.company?.charAt(0) || "?"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                              <div>
-                                {/* # Job title — large and prominent */}
-                                <h3 className="text-2xl font-bold font-mono" style={{ color: c.text }}>{e.title}</h3>
-                                {/* # Company name as a gradient badge */}
-                                <div className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 rounded-lg"
-                                  style={{
-                                    background: `linear-gradient(135deg, ${grad.from}12, ${grad.to}08)`,
-                                    border: `1px solid ${grad.from}18`,
-                                  }}>
-                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: grad.from, boxShadow: `0 0 6px ${grad.from}` }} />
-                                  <span className="text-sm font-semibold" style={{ color: grad.from }}>{e.company}</span>
-                                </div>
-                                {e.location && (
-                                  <p className="text-xs mt-2 font-mono flex items-center gap-1.5" style={{ color: c.muted }}>
-                                    <span style={{ color: accentColor }}>@</span> {e.location}
-                                  </p>
-                                )}
-                              </div>
-                              {/* # Date range in a colored pill badge */}
-                              <span className="text-xs font-mono px-5 py-2.5 rounded-xl shrink-0 font-semibold"
-                                style={{
-                                  background: `linear-gradient(135deg, ${grad.from}10, ${grad.to}08)`,
-                                  border: `1px solid ${grad.from}20`,
-                                  color: grad.from,
-                                  boxShadow: `0 0 15px ${grad.from}08`,
-                                }}>
-                                {e.startDate} → {e.endDate || "Present"}
+
+                      {e.description && (
+                        <p className="text-xs leading-relaxed ml-[72px] md:ml-[76px] mb-1.5" style={{ color: c.muted }}>{e.description}</p>
+                      )}
+
+                      {/* # Achievements as compact tree output */}
+                      {e.achievements.length > 0 && (
+                        <div className="ml-4 border-l pl-3 space-y-0.5" style={{ borderColor: `${grad.from}25` }}>
+                          {e.achievements.map((a, j) => (
+                            <div key={j} className="flex items-start gap-2">
+                              <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: grad.from }}>
+                                {j === e.achievements.length - 1 ? "└" : "├"}
                               </span>
+                              <span className="text-xs leading-relaxed" style={{ color: c.muted }}>{a}</span>
                             </div>
-                            {e.description && (
-                              <div className="mt-5 p-4 rounded-xl" style={{
-                                background: `linear-gradient(135deg, ${grad.from}04, ${grad.to}03)`,
-                                border: `1px solid ${c.border}`,
-                              }}>
-                                <p className="text-sm leading-relaxed" style={{ color: c.muted }}>{e.description}</p>
-                              </div>
-                            )}
-                            {/* # Achievements as styled rows with colored accent markers */}
-                            {e.achievements.length > 0 && (
-                              <div className="mt-5 space-y-2">
-                                {e.achievements.map((a, j) => (
-                                  <div key={j} className="flex items-start gap-3 p-3 rounded-xl transition-colors"
-                                    style={{ background: j % 2 === 0 ? `${grad.from}03` : "transparent" }}>
-                                    {/* # Colored chevron icon with glow */}
-                                    <span className="shrink-0 mt-0.5 text-sm font-mono font-bold" style={{
-                                      color: grad.from,
-                                      textShadow: `0 0 10px ${grad.from}40`,
-                                    }}>{">"}</span>
-                                    <span className="text-sm leading-relaxed" style={{ color: c.muted, fontFamily: "'Inter', system-ui, sans-serif" }}>{a}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </motion.div>
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
           </SectionWrapper>
         </SectionBg>
       );

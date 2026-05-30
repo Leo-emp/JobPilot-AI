@@ -231,109 +231,80 @@ function renderSection(section: PortfolioSection, index: number) {
       );
     }
 
-    /* # Experience section — gradient-bordered cards with large company badges and colored achievements */
+    /* # Experience section — bento grid with featured first entry */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
         <SectionBg alt={isAlt}>
           <SectionDivider variant="gradient" color={c.violet} />
-          <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
+          <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
             <SectionHeading subtitle="Where I've made an impact">Experience</SectionHeading>
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-              className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {section.entries.map((e, i) => {
-                /* # Each entry gets a unique gradient accent */
                 const grad = ENTRY_GRADIENTS[i % ENTRY_GRADIENTS.length];
+                const isFeatured = i === 0;
                 return (
-                  <motion.div key={i} variants={staggerItem}>
-                    <motion.div
-                      className="relative rounded-2xl overflow-hidden"
-                      whileHover={{ y: -6, boxShadow: `0 20px 60px ${grad.from}12`, transition: { duration: 0.25 } }}
-                    >
-                      {/* # Gradient left border — unique color per entry */}
-                      <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl" style={{
-                        background: `linear-gradient(180deg, ${grad.from}, ${grad.to})`,
-                        boxShadow: `0 0 20px ${grad.from}25`,
-                      }} />
-                      {/* # Outer gradient border */}
-                      <div className="absolute inset-0 rounded-2xl" style={{
-                        backgroundColor: "rgba(255,255,255,0.03)",
-                        border: `1px solid ${grad.from}15`,
-                        backdropFilter: "blur(12px)",
-                      }} />
-                      {/* # Subtle gradient wash */}
-                      <div className="absolute inset-0 rounded-2xl opacity-[0.04]" style={{
-                        background: `linear-gradient(135deg, ${grad.from}, transparent 50%)`,
-                      }} />
-                      <div className="relative z-10 p-7 pl-8">
-                        <div className="flex flex-col md:flex-row gap-6">
-                          {/* # Large company initial badge with gradient */}
-                          <div className="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 text-3xl font-black text-white"
-                            style={{
-                              background: `linear-gradient(135deg, ${grad.from}, ${grad.to})`,
-                              boxShadow: `0 4px 20px ${grad.from}30`,
-                            }}>
-                            {e.company?.charAt(0) || "?"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                              <div>
-                                {/* # Job title — large and bold */}
-                                <h3 className="text-2xl font-bold" style={{ color: c.text }}>{e.title}</h3>
-                                {/* # Company name as gradient badge */}
-                                <div className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 rounded-lg"
-                                  style={{
-                                    background: `linear-gradient(135deg, ${grad.from}12, ${grad.to}08)`,
-                                    border: `1px solid ${grad.from}18`,
-                                  }}>
-                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: grad.from, boxShadow: `0 0 6px ${grad.from}` }} />
-                                  <span className="text-sm font-semibold" style={{ color: grad.from }}>{e.company}</span>
-                                  {e.location && <span className="text-xs" style={{ color: c.muted }}> · {e.location}</span>}
-                                </div>
-                              </div>
-                              {/* # Date range in colored pill badge */}
-                              <span className="text-xs px-5 py-2.5 rounded-xl shrink-0 self-start font-semibold"
-                                style={{
-                                  background: `linear-gradient(135deg, ${grad.from}12, ${grad.to}08)`,
-                                  color: grad.from,
-                                  border: `1px solid ${grad.from}20`,
-                                  boxShadow: `0 0 12px ${grad.from}08`,
-                                }}>
-                                {e.startDate} — {e.endDate || "Present"}
-                              </span>
-                            </div>
-                            {e.description && (
-                              <div className="mt-4 p-4 rounded-xl" style={{
-                                background: `linear-gradient(135deg, ${grad.from}04, ${grad.to}02)`,
-                                border: `1px solid ${c.border}`,
-                              }}>
-                                <p className="text-sm leading-relaxed" style={{ color: c.muted }}>{e.description}</p>
-                              </div>
-                            )}
-                            {/* # Achievements as styled rows with colored accent icons */}
-                            {e.achievements.length > 0 && (
-                              <div className="mt-5 space-y-2">
-                                {e.achievements.map((a, j) => (
-                                  <div key={j} className="flex items-start gap-3 p-3 rounded-xl transition-colors"
-                                    style={{ background: j % 2 === 0 ? `${grad.from}04` : "transparent" }}>
-                                    {/* # Gradient dot accent */}
-                                    <span className="shrink-0 mt-1.5 w-2 h-2 rounded-full" style={{
-                                      background: `linear-gradient(135deg, ${grad.from}, ${grad.to})`,
-                                      boxShadow: `0 0 8px ${grad.from}40`,
-                                    }} />
-                                    <span className="text-sm leading-relaxed" style={{ color: c.muted }}>{a}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                  <motion.div key={i}
+                    className={`relative rounded-2xl overflow-hidden ${isFeatured ? "md:col-span-2" : ""}`}
+                    whileHover={{ y: -4, boxShadow: `0 16px 40px ${grad.from}12` }}
+                    initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                    {/* # Glass card background */}
+                    <div className="absolute inset-0 rounded-2xl" style={{
+                      backgroundColor: "rgba(255,255,255,0.03)",
+                      border: `1px solid ${grad.from}15`,
+                      backdropFilter: "blur(12px)",
+                    }} />
+                    <div className="absolute top-0 left-0 right-0 h-0.5" style={{
+                      background: `linear-gradient(90deg, ${grad.from}, ${grad.to}, transparent)`,
+                    }} />
+
+                    <div className={`relative z-10 ${isFeatured ? "p-5 md:flex md:gap-6" : "p-4"}`}>
+                      {/* # Company badge */}
+                      <div className={`${isFeatured ? "w-12 h-12 text-lg mb-3 md:mb-0" : "w-9 h-9 text-sm mb-3"} rounded-xl flex items-center justify-center shrink-0 font-black text-white`}
+                        style={{ background: `linear-gradient(135deg, ${grad.from}, ${grad.to})`, boxShadow: `0 4px 15px ${grad.from}25` }}>
+                        {e.company?.charAt(0) || "?"}
                       </div>
-                    </motion.div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                          <div className="min-w-0">
+                            <h3 className={`${isFeatured ? "text-lg" : "text-sm"} font-bold`} style={{ color: c.text }}>{e.title}</h3>
+                            <p className="text-xs mt-0.5" style={{ color: grad.from }}>
+                              {e.company}{e.location ? ` · ${e.location}` : ""}
+                            </p>
+                          </div>
+                          {(e.startDate || e.endDate) && (
+                            <span className="text-[10px] font-semibold shrink-0 px-2.5 py-1 rounded-lg"
+                              style={{ background: `${grad.from}12`, color: grad.from, border: `1px solid ${grad.from}18` }}>
+                              {e.startDate} — {e.endDate || "Now"}
+                            </span>
+                          )}
+                        </div>
+
+                        {e.description && (
+                          <p className="text-xs leading-relaxed mb-2" style={{ color: c.muted }}>{e.description}</p>
+                        )}
+
+                        {e.achievements.length > 0 && (
+                          <div className={`${isFeatured ? "grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1" : "space-y-1"}`}>
+                            {e.achievements.map((a, j) => (
+                              <div key={j} className="flex items-start gap-2">
+                                <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{
+                                  background: `linear-gradient(135deg, ${grad.from}, ${grad.to})`,
+                                  boxShadow: `0 0 6px ${grad.from}40`,
+                                }} />
+                                <span className="text-xs leading-relaxed" style={{ color: c.muted }}>{a}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
           </SectionWrapper>
         </SectionBg>
       );

@@ -163,117 +163,73 @@ function SectionHeading({ title }: { title: string }) {
 /* # Main section renderer — handles all portfolio section types */
 function renderSection(section: PortfolioSection) {
   switch (section.type) {
-    /* # Experience section — gradient-bordered floating glass cards with bold typography */
+    /* # Experience section — staggered zigzag cards with alternating offsets */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
+        <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
           <SectionHeading title="Experience" />
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="space-y-6">
+          <div className="space-y-4">
             {section.entries.map((e, i) => {
-              /* # Each entry gets unique gradient accent */
               const grad = ENTRY_GRADIENTS[i % ENTRY_GRADIENTS.length];
+              const isEven = i % 2 === 0;
               return (
-                <motion.div key={i} variants={staggerItem}>
+                <motion.div key={i}
+                  className={`${isEven ? "md:mr-16" : "md:ml-16"}`}
+                  initial={{ opacity: 0, x: isEven ? -30 : 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}>
                   <motion.div
-                    className="relative rounded-3xl overflow-hidden"
-                    whileHover={{ y: -6, rotate: 0.3, boxShadow: `0 24px 60px ${grad.from}15`, transition: { duration: 0.3 } }}
-                  >
-                    {/* # Gradient left border — unique color per entry */}
-                    <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-3xl" style={{
-                      background: `linear-gradient(180deg, ${grad.from}, ${grad.to})`,
-                      boxShadow: `0 0 25px ${grad.from}30`,
-                    }} />
-                    {/* # Outer gradient border */}
-                    <div className="absolute inset-0 rounded-3xl p-px" style={{
-                      background: `linear-gradient(135deg, ${grad.from}35, transparent 40%, ${grad.to}20)`,
+                    className="relative rounded-2xl overflow-hidden"
+                    whileHover={{ y: -4, rotate: isEven ? 0.3 : -0.3, boxShadow: `0 16px 40px ${grad.from}15` }}>
+                    {/* # Gradient border glow */}
+                    <div className="absolute inset-0 rounded-2xl p-px" style={{
+                      background: `linear-gradient(${isEven ? "135deg" : "225deg"}, ${grad.from}30, transparent 50%, ${grad.to}20)`,
                     }}>
-                      <div className="w-full h-full rounded-3xl" style={{ backgroundColor: "rgba(12, 12, 30, 0.85)", backdropFilter: "blur(40px)" }} />
+                      <div className="w-full h-full rounded-2xl" style={{ backgroundColor: "rgba(12, 12, 30, 0.85)", backdropFilter: "blur(40px)" }} />
                     </div>
-                    {/* # Subtle gradient mesh background */}
-                    <div className="absolute inset-0 rounded-3xl opacity-[0.05]" style={{
-                      background: `radial-gradient(ellipse at top left, ${grad.from}, transparent 50%), radial-gradient(ellipse at bottom right, ${grad.to}, transparent 50%)`,
-                    }} />
-                    <div className="relative z-10 p-8 pl-9">
-                      <div className="flex flex-col md:flex-row md:items-start gap-6">
-                        {/* # Large company initial badge with gradient fill */}
-                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 text-3xl font-black text-white"
-                          style={{
-                            background: `linear-gradient(135deg, ${grad.from}, ${grad.to})`,
-                            boxShadow: `0 8px 30px ${grad.from}30`,
-                          }}>
-                          {e.company?.charAt(0) || "?"}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                            <div>
-                              {/* # Job title — large bold oversized */}
-                              <h3 className="text-2xl font-extrabold tracking-tight" style={{
-                                fontFamily: "'Space Grotesk', sans-serif",
-                                color: c.text,
-                              }}>{e.title}</h3>
-                              {/* # Company name as a gradient badge */}
-                              <div className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 rounded-xl"
-                                style={{
-                                  background: `linear-gradient(135deg, ${grad.from}15, ${grad.to}10)`,
-                                  border: `1px solid ${grad.from}20`,
-                                }}>
-                                <div className="w-2.5 h-2.5 rounded-full" style={{
-                                  backgroundColor: grad.from,
-                                  boxShadow: `0 0 8px ${grad.from}60`,
-                                }} />
-                                <span className="text-sm font-bold" style={{ color: grad.from }}>{e.company}</span>
-                              </div>
-                              {e.location && (
-                                <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: c.muted }}>
-                                  <span style={{ color: grad.to }}>@</span> {e.location}
-                                </p>
-                              )}
-                            </div>
-                            {/* # Date range in a colored pill/badge */}
-                            <span className="text-sm shrink-0 px-5 py-2.5 rounded-2xl self-start font-bold"
-                              style={{
-                                background: `linear-gradient(135deg, ${grad.from}12, ${grad.to}08)`,
-                                color: grad.from,
-                                border: `1px solid ${grad.from}20`,
-                                boxShadow: `0 0 15px ${grad.from}08`,
-                              }}>
-                              {e.startDate} — {e.endDate || "Present"}
+
+                    <div className="relative z-10 p-4 flex gap-4">
+                      {/* # Compact badge */}
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-base font-black text-white"
+                        style={{ background: `linear-gradient(135deg, ${grad.from}, ${grad.to})`, boxShadow: `0 4px 15px ${grad.from}25` }}>
+                        {e.company?.charAt(0) || "?"}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1">
+                          <h3 className="text-sm font-extrabold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", color: c.text }}>{e.title}</h3>
+                          <span className="text-xs font-bold" style={{ color: grad.from }}>{e.company}</span>
+                          {e.location && <span className="text-[10px]" style={{ color: c.muted }}>· {e.location}</span>}
+                          {(e.startDate || e.endDate) && (
+                            <span className="text-[10px] font-bold ml-auto shrink-0 px-2 py-0.5 rounded-lg"
+                              style={{ background: `${grad.from}12`, color: grad.from }}>
+                              {e.startDate} — {e.endDate || "Now"}
                             </span>
-                          </div>
-                          {e.description && (
-                            <div className="mt-5 p-4 rounded-2xl" style={{
-                              background: `linear-gradient(135deg, ${grad.from}05, ${grad.to}03)`,
-                              border: `1px solid ${c.border}`,
-                            }}>
-                              <p className="text-sm leading-relaxed" style={{ color: c.muted }}>{e.description}</p>
-                            </div>
-                          )}
-                          {/* # Achievements in styled rows with colored accent icons */}
-                          {e.achievements.length > 0 && (
-                            <div className="mt-5 space-y-2">
-                              {e.achievements.map((a, j) => (
-                                <div key={j} className="flex items-start gap-3 p-3 rounded-xl transition-colors"
-                                  style={{ background: j % 2 === 0 ? `${grad.from}04` : "transparent" }}>
-                                  {/* # Colored star accent icon */}
-                                  <span className="shrink-0 mt-0.5 text-sm" style={{
-                                    color: grad.from,
-                                    textShadow: `0 0 10px ${grad.from}50`,
-                                  }}>✦</span>
-                                  <span className="text-sm leading-relaxed" style={{ color: c.muted }}>{a}</span>
-                                </div>
-                              ))}
-                            </div>
                           )}
                         </div>
+
+                        {e.description && (
+                          <p className="text-xs leading-relaxed mb-2" style={{ color: c.muted }}>{e.description}</p>
+                        )}
+
+                        {e.achievements.length > 0 && (
+                          <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            {e.achievements.map((a, j) => (
+                              <div key={j} className="flex items-start gap-1.5">
+                                <span className="shrink-0 mt-1 text-[10px]" style={{ color: grad.from }}>✦</span>
+                                <span className="text-xs leading-relaxed" style={{ color: c.muted }}>{a}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
                 </motion.div>
               );
             })}
-          </motion.div>
+          </div>
         </SectionWrapper>
       );
 

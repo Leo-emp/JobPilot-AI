@@ -397,90 +397,62 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
+    /* # ─── EXPERIENCE — Cinematic credits layout: role ··· company ─── */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
+        <SectionWrapper className="py-20 px-6 md:px-16 max-w-5xl mx-auto">
           <SectionHeading title="Production Credits" subtitle="Career" />
-          {/* # Full-width cinematic background panel for the experience section */}
-          <div className="relative rounded-2xl overflow-hidden p-1" style={{
-            background: `linear-gradient(135deg, ${c.red}10, ${c.gold}08, ${c.red}05)`,
-          }}>
-            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: c.bg }}>
-              <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                className="divide-y" style={{ borderColor: c.border }}>
-                {section.entries.map((e, i) => {
-                  /* # Each entry gets a unique gradient accent from the palette */
-                  const gradient = categoryGradients[i % categoryGradients.length];
-                  return (
-                    <motion.div key={i} variants={staggerItem}>
-                      <motion.div
-                        className="relative p-8 group"
-                        style={{ borderBottom: `1px solid ${c.border}` }}
-                        whileHover={{ backgroundColor: `${c.red}05` }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {/* # Gradient left accent bar — unique color per entry */}
-                        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
-                          style={{ background: `linear-gradient(180deg, ${gradient.from}, ${gradient.to})` }} />
+          <div className="space-y-3">
+            {section.entries.map((e, i) => {
+              const gradient = categoryGradients[i % categoryGradients.length];
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden"
+                  style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+                  whileHover={{ y: -2, boxShadow: `0 8px 25px rgba(0,0,0,0.3)`, borderColor: `${gradient.from}30` }}
+                  initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5"
+                    style={{ background: `linear-gradient(180deg, ${gradient.from}, ${gradient.to})` }} />
 
-                        <div className="flex flex-col md:flex-row md:items-start gap-5">
-                          {/* # Company badge with gradient background */}
-                          <div className="shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black"
-                            style={{
-                              background: `linear-gradient(135deg, ${gradient.from}20, ${gradient.to}10)`,
-                              border: `1px solid ${gradient.from}25`,
-                              color: gradient.from,
-                            }}>
-                            {e.company?.charAt(0)?.toUpperCase() || "C"}
+                  <div className="p-4 pl-4.5">
+                    {/* # Credits-style header: Title ········ Company */}
+                    <div className="flex items-baseline gap-2 mb-1.5">
+                      <h3 className="text-sm font-bold shrink-0" style={{ color: c.text }}>{e.title}</h3>
+                      <div className="flex-1 border-b border-dotted mx-1" style={{ borderColor: `${c.muted}30` }} />
+                      <span className="text-sm font-semibold shrink-0" style={{
+                        background: `linear-gradient(90deg, ${gradient.from}, ${gradient.to})`,
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}>{e.company}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                      {e.location && <span className="text-[10px]" style={{ color: c.muted }}>{e.location}</span>}
+                      {(e.startDate || e.endDate) && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                          style={{ background: `${gradient.from}15`, color: gradient.from }}>
+                          {e.startDate} — {e.endDate || "Present"}
+                        </span>
+                      )}
+                    </div>
+
+                    {e.achievements.length > 0 && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        {e.achievements.map((a, j) => (
+                          <div key={j} className="flex items-start gap-1.5">
+                            <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-sm rotate-45"
+                              style={{ background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})` }} />
+                            <span className="text-xs leading-relaxed" style={{ color: c.muted }}>{a}</span>
                           </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                              <div>
-                                <h3 className="text-xl font-bold" style={{ color: c.text }}>{e.title}</h3>
-                                <p className="text-sm font-semibold mt-1" style={{
-                                  background: `linear-gradient(90deg, ${gradient.from}, ${gradient.to})`,
-                                  WebkitBackgroundClip: "text",
-                                  WebkitTextFillColor: "transparent",
-                                }}>
-                                  {e.company}{e.location ? ` · ${e.location}` : ""}
-                                </p>
-                              </div>
-                              {/* # Date in colored pill */}
-                              <span className="inline-flex items-center self-start text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full shrink-0"
-                                style={{
-                                  background: `linear-gradient(135deg, ${gradient.from}18, ${gradient.to}10)`,
-                                  color: gradient.from,
-                                  border: `1px solid ${gradient.from}20`,
-                                }}>
-                                {e.startDate} — {e.endDate || "Present"}
-                              </span>
-                            </div>
-
-                            {/* # Achievements with colored accent markers */}
-                            {e.achievements.length > 0 && (
-                              <ul className="mt-5 space-y-3">
-                                {e.achievements.map((a, j) => (
-                                  <li key={j} className="text-sm flex items-start gap-3 group/item" style={{ color: c.muted }}>
-                                    <span className="shrink-0 mt-1 w-2 h-2 rounded-sm rotate-45 transition-all duration-200 group-hover/item:scale-125"
-                                      style={{
-                                        background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})`,
-                                        boxShadow: `0 0 6px ${gradient.from}30`,
-                                      }} />
-                                    <span className="leading-relaxed">{a}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </SectionWrapper>
       );

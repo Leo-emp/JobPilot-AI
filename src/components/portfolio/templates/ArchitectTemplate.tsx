@@ -313,104 +313,73 @@ function renderSection(section: PortfolioSection) {
       if (section.entries.length === 0) return null;
       return <DesignGallery section={section} />;
 
+    /* # ─── EXPERIENCE — Two-column blueprint spec grid with corner markers ─── */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-16 max-w-6xl mx-auto">
+        <SectionWrapper className="py-20 px-6 md:px-16 max-w-6xl mx-auto">
           <SectionHeading title="Professional Experience" label="Career" />
-          {/* # Blueprint-style container with grid lines background */}
-          <div className="relative rounded-2xl overflow-hidden" style={{
-            background: `linear-gradient(135deg, ${c.card}, ${c.surface})`,
-            border: `1px solid ${c.border}`,
-          }}>
-            {/* # Subtle blueprint grid overlay */}
-            <div className="absolute inset-0 opacity-[0.03]" style={{
-              backgroundImage: `linear-gradient(${c.teal} 1px, transparent 1px), linear-gradient(90deg, ${c.teal} 1px, transparent 1px)`,
-              backgroundSize: "40px 40px",
-            }} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {section.entries.map((e, i) => {
+              const gradient = categoryGradients[i % categoryGradients.length];
+              return (
+                <motion.div key={i}
+                  className="relative rounded-xl overflow-hidden"
+                  style={{ background: `linear-gradient(135deg, ${c.card}, ${c.surface})`, border: `1px solid ${c.border}` }}
+                  whileHover={{ y: -3, borderColor: `${gradient.from}30`, boxShadow: `0 8px 25px rgba(0,0,0,0.3)` }}
+                  initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  {/* # Blueprint grid overlay */}
+                  <div className="absolute inset-0 opacity-[0.03]" style={{
+                    backgroundImage: `linear-gradient(${c.teal} 1px, transparent 1px), linear-gradient(90deg, ${c.teal} 1px, transparent 1px)`,
+                    backgroundSize: "30px 30px",
+                  }} />
 
-            <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-              className="relative z-10">
-              {section.entries.map((e, i) => {
-                /* # Each entry gets a unique gradient accent */
-                const gradient = categoryGradients[i % categoryGradients.length];
-                return (
-                  <motion.div key={i} variants={staggerItem}>
-                    <motion.div
-                      className="relative p-8 group"
-                      style={{
-                        borderBottom: i < section.entries.length - 1 ? `1px solid ${c.border}` : "none",
-                      }}
-                      whileHover={{ backgroundColor: `${c.teal}04` }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {/* # Gradient left accent bar — teal-blue unique per entry */}
-                      <div className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
-                        style={{ background: `linear-gradient(180deg, ${gradient.from}, ${gradient.to})` }} />
+                  {/* # Corner markers */}
+                  <div className="absolute top-1.5 left-1.5 w-2.5 h-2.5 border-t border-l" style={{ borderColor: `${gradient.from}25` }} />
+                  <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 border-t border-r" style={{ borderColor: `${gradient.from}25` }} />
+                  <div className="absolute bottom-1.5 left-1.5 w-2.5 h-2.5 border-b border-l" style={{ borderColor: `${gradient.from}25` }} />
+                  <div className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 border-b border-r" style={{ borderColor: `${gradient.from}25` }} />
 
-                      {/* # Blueprint corner markers on this card */}
-                      <div className="absolute top-2 left-2 w-3 h-3 border-t border-l" style={{ borderColor: `${gradient.from}20` }} />
-                      <div className="absolute top-2 right-2 w-3 h-3 border-t border-r" style={{ borderColor: `${gradient.from}20` }} />
-
-                      <div className="flex flex-col md:flex-row md:items-start gap-5 pl-4">
-                        {/* # Company badge with gradient background */}
-                        <div className="shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-lg font-black relative"
-                          style={{
-                            background: `linear-gradient(135deg, ${gradient.from}18, ${gradient.to}10)`,
-                            border: `1px solid ${gradient.from}20`,
-                            color: gradient.from,
-                          }}>
-                          {/* # Decorative measurement tick marks */}
-                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-px h-1.5" style={{ backgroundColor: `${gradient.from}30` }} />
-                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-px h-1.5" style={{ backgroundColor: `${gradient.from}30` }} />
-                          {e.company?.charAt(0)?.toUpperCase() || "C"}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                            <div>
-                              <h3 className="text-xl font-bold" style={{ color: c.text }}>{e.title}</h3>
-                              <p className="text-sm font-semibold mt-1" style={{
-                                background: `linear-gradient(90deg, ${gradient.from}, ${gradient.to})`,
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                              }}>
-                                {e.company}{e.location ? ` · ${e.location}` : ""}
-                              </p>
-                            </div>
-                            {/* # Date in colored pill */}
-                            <span className="inline-flex items-center self-start text-xs font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-md shrink-0"
-                              style={{
-                                background: `linear-gradient(135deg, ${gradient.from}15, ${gradient.to}08)`,
-                                color: gradient.from,
-                                border: `1px solid ${gradient.from}18`,
-                              }}>
-                              {e.startDate} — {e.endDate || "Present"}
-                            </span>
-                          </div>
-
-                          {/* # Achievements with colored accent markers */}
-                          {e.achievements.length > 0 && (
-                            <ul className="mt-5 space-y-3">
-                              {e.achievements.map((a, j) => (
-                                <li key={j} className="text-sm flex items-start gap-3 group/item" style={{ color: c.muted }}>
-                                  <span className="shrink-0 mt-1 w-2 h-2 rotate-45 transition-all duration-200 group-hover/item:scale-125"
-                                    style={{
-                                      background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})`,
-                                      boxShadow: `0 0 6px ${gradient.from}25`,
-                                    }} />
-                                  <span className="leading-relaxed">{a}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
+                  <div className="relative z-10 p-4">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold" style={{ color: c.text }}>{e.title}</h3>
+                        <p className="text-xs font-semibold mt-0.5" style={{
+                          background: `linear-gradient(90deg, ${gradient.from}, ${gradient.to})`,
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}>
+                          {e.company}{e.location ? ` · ${e.location}` : ""}
+                        </p>
                       </div>
-                    </motion.div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+                      {(e.startDate || e.endDate) && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider shrink-0 px-2 py-0.5 rounded-md"
+                          style={{ background: `${gradient.from}12`, color: gradient.from, border: `1px solid ${gradient.from}15` }}>
+                          {e.startDate} — {e.endDate || "Now"}
+                        </span>
+                      )}
+                    </div>
+
+                    {e.description && (
+                      <p className="text-xs leading-relaxed mb-2" style={{ color: c.muted }}>{e.description}</p>
+                    )}
+
+                    {e.achievements.length > 0 && (
+                      <ul className="space-y-1 pt-2" style={{ borderTop: `1px solid ${c.border}` }}>
+                        {e.achievements.map((a, j) => (
+                          <li key={j} className="text-xs flex items-start gap-2" style={{ color: c.muted }}>
+                            <span className="shrink-0 mt-1 w-1.5 h-1.5 rotate-45"
+                              style={{ background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})` }} />
+                            <span className="leading-relaxed">{a}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
