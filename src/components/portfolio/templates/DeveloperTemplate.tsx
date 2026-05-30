@@ -740,7 +740,7 @@ function renderSection(section: PortfolioSection, index: number) {
         </SectionBg>
       );
 
-    /* # Gallery section — bento grid with hover zoom and gradient overlay */
+    /* # Gallery section — bento grid with varying sizes, video support, terminal aesthetic */
     case "gallery":
       if (section.entries.length === 0) return null;
       return (
@@ -748,31 +748,70 @@ function renderSection(section: PortfolioSection, index: number) {
           <SectionDivider variant="terminal" color={c.green} />
           <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
             <SectionHeader title="Gallery" tag={tag} />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {section.entries.map((g, i) => (
-                <motion.a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
-                  /* # First item is featured — spans two rows */
-                  className={`group relative rounded-2xl overflow-hidden ${i === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
-                  style={{ border: `1px solid ${c.border}` }}
-                  whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}>
-                  <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  {/* # Gradient overlay on hover showing title */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: `linear-gradient(180deg, transparent 20%, ${c.bg}cc 70%, ${c.bg}ee)` }}>
-                    <div className="absolute bottom-5 left-5 right-5">
-                      <h3 className="text-white font-mono font-bold text-sm">{g.title}</h3>
-                      {g.description && <p className="text-white/60 text-xs mt-1.5">{g.description}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 auto-rows-[180px] md:auto-rows-[210px] gap-4">
+              {section.entries.map((g, i) => {
+                const isVideo = Boolean(g.videoUrl && g.videoUrl.trim().length > 0);
+                /* # Bento layout pattern */
+                const bentoClass = (() => {
+                  const total = section.entries.length;
+                  if (total <= 2) return i === 0 ? "md:col-span-2 md:row-span-2" : "md:col-span-2";
+                  const pattern = [
+                    "md:col-span-2 md:row-span-2",
+                    "",
+                    "md:row-span-2",
+                    "",
+                    "",
+                    "md:col-span-2",
+                  ];
+                  return pattern[i % pattern.length] || "";
+                })();
+
+                return (
+                  <motion.a key={i} href={g.link || g.videoUrl || g.imageUrl} target="_blank" rel="noopener noreferrer"
+                    className={`group relative rounded-2xl overflow-hidden ${bentoClass}`}
+                    style={{ border: `1px solid ${c.border}` }}
+                    whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
+                    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+
+                    {/* # Video play overlay */}
+                    {isVideo && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-md transition-transform group-hover:scale-110"
+                          style={{ backgroundColor: `${c.green}cc`, boxShadow: `0 0 25px ${c.green}30` }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="8,5 20,12 8,19" /></svg>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* # Featured badge on first item */}
+                    {i === 0 && (
+                      <div className="absolute top-3 left-3 px-3 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider"
+                        style={{ backgroundColor: `${c.green}15`, border: `1px solid ${c.green}25`, color: c.green }}>
+                        Featured
+                      </div>
+                    )}
+
+                    {/* # Category badge */}
+                    {g.category && i !== 0 && (
+                      <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider backdrop-blur-md"
+                        style={{ backgroundColor: "rgba(0,0,0,0.5)", color: c.green }}>
+                        {g.category}
+                      </div>
+                    )}
+
+                    {/* # Gradient overlay on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: `linear-gradient(180deg, transparent 20%, ${c.bg}cc 70%, ${c.bg}ee)` }}>
+                      <div className="absolute bottom-5 left-5 right-5">
+                        <h3 className="text-white font-mono font-bold text-sm">{g.title}</h3>
+                        {g.description && <p className="text-white/60 text-xs mt-1.5">{g.description}</p>}
+                      </div>
                     </div>
-                  </div>
-                  {/* # Featured badge on first item */}
-                  {i === 0 && (
-                    <div className="absolute top-3 left-3 px-3 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider"
-                      style={{ backgroundColor: `${c.green}15`, border: `1px solid ${c.green}25`, color: c.green }}>
-                      Featured
-                    </div>
-                  )}
-                </motion.a>
-              ))}
+                  </motion.a>
+                );
+              })}
             </div>
           </SectionWrapper>
         </SectionBg>

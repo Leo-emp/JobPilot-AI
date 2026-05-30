@@ -906,55 +906,80 @@ function DesignGallery({ section }: { section: PortfolioSection & { type: "galle
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[180px] md:auto-rows-[210px] gap-4">
         <AnimatePresence>
-          {filtered.map((g, i) => (
-            <motion.div key={g.title + i}
-              className="group relative rounded-xl overflow-hidden cursor-pointer"
-              style={{ border: `1px solid ${c.border}` }}
-              layout
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ delay: i * 0.05 }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => setLightboxIndex(i)}>
+          {filtered.map((g, i) => {
+            /* # Bento pattern for varying item sizes */
+            const bentoClass = (() => {
+              const total = filtered.length;
+              if (total <= 2) return i === 0 ? "lg:col-span-2 lg:row-span-2" : "lg:col-span-2";
+              const pattern = [
+                "lg:col-span-2 lg:row-span-2",
+                "",
+                "lg:row-span-2",
+                "",
+                "",
+                "lg:col-span-2",
+              ];
+              return pattern[i % pattern.length] || "";
+            })();
 
-              {hasVideo(g) ? (
-                <div className="relative aspect-[4/3]">
-                  {g.imageUrl ? (
-                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-80" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: c.surface }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill={c.muted}><polygon points="8,5 20,12 8,19" /></svg>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-                      style={{ backgroundColor: `${c.teal}40` }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="8,5 20,12 8,19" /></svg>
+            return (
+              <motion.div key={g.title + i}
+                className={`group relative rounded-xl overflow-hidden cursor-pointer ${bentoClass}`}
+                style={{ border: `1px solid ${c.border}` }}
+                layout
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: i * 0.05 }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setLightboxIndex(i)}>
+
+                {hasVideo(g) ? (
+                  <div className="relative w-full h-full">
+                    {g.imageUrl ? (
+                      <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-80" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: c.surface }}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill={c.muted}><polygon points="8,5 20,12 8,19" /></svg>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: `${c.teal}50`, boxShadow: `0 0 25px ${c.teal}30` }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="8,5 20,12 8,19" /></svg>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-80" />
-                </div>
-              )}
+                ) : (
+                  <div className="w-full h-full overflow-hidden">
+                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-80" />
+                  </div>
+                )}
 
-              {/* # Gradient overlay on hover with teal tint */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{ background: `linear-gradient(180deg, transparent 40%, ${c.teal}08 60%, ${c.bg}ee)` }}>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-white font-bold text-sm">{g.title}</h3>
-                  {g.description && <p className="text-white/60 text-xs mt-1">{g.description}</p>}
-                  {g.category && (
-                    <span className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: `${c.teal}30`, color: c.teal }}>{g.category}</span>
-                  )}
+                {/* # Featured badge on first item */}
+                {i === 0 && (
+                  <div className="absolute top-3 left-3 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+                    style={{ backgroundColor: `${c.teal}20`, border: `1px solid ${c.teal}30`, color: c.teal }}>
+                    Featured
+                  </div>
+                )}
+
+                {/* # Gradient overlay on hover with teal tint */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: `linear-gradient(180deg, transparent 40%, ${c.teal}08 60%, ${c.bg}ee)` }}>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-white font-bold text-sm">{g.title}</h3>
+                    {g.description && <p className="text-white/60 text-xs mt-1">{g.description}</p>}
+                    {g.category && (
+                      <span className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: `${c.teal}30`, color: c.teal }}>{g.category}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 

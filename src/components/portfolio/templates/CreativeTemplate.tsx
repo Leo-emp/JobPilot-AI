@@ -948,9 +948,9 @@ function renderSection(section: PortfolioSection) {
                       <a href={`mailto:${section.email}`}
                         className="px-8 py-4 rounded-2xl font-extrabold text-base transition-all hover:scale-105"
                         style={{
-                          backgroundColor: "#fff",
-                          color: c.purple,
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                          background: `linear-gradient(135deg, ${c.pink}, ${c.purple})`,
+                          color: "#0c0c1e",
+                          boxShadow: `0 4px 20px ${c.pink}40`,
                         }}>
                         Say Hello →
                       </a>

@@ -270,55 +270,128 @@ function renderSection(section: PortfolioSection) {
         <SectionWrapper className="py-24 px-6 md:px-16 max-w-7xl mx-auto">
           <SectionHeading title="Visual Reel" subtitle="Stills & Frames" />
 
-          {/* # Video gallery — larger cards with embeds */}
+          {/* # Video gallery — featured hero + bento grid for remaining */}
           {videos.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {videos.map((g, i) => (
-                <motion.div key={`v-${i}`} className="rounded-xl overflow-hidden"
-                  style={{ border: `1px solid ${c.border}` }}
-                  initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+            <div className="mb-10">
+              {/* # First video hero — full width cinematic */}
+              <motion.div className="rounded-xl overflow-hidden mb-6"
+                style={{ border: `1px solid ${c.border}` }}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}>
+                <div className="relative">
                   <VideoEmbed
-                    videoUrl={g.videoUrl}
-                    thumbnailUrl={g.imageUrl || undefined}
-                    title={g.title}
+                    videoUrl={videos[0].videoUrl}
+                    thumbnailUrl={videos[0].imageUrl || undefined}
+                    title={videos[0].title}
                     accentColor={c.red}
+                    aspectRatio="21/9"
                   />
-                  {(g.title || g.description) && (
-                    <div className="p-4" style={{ backgroundColor: c.card }}>
-                      {g.title && <p className="font-bold text-sm" style={{ color: c.text }}>{g.title}</p>}
-                      {g.description && <p className="text-xs mt-1" style={{ color: c.muted }}>{g.description}</p>}
-                      {g.category && (
-                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: c.redSoft, color: c.red }}>{g.category}</span>
+                  {/* # Featured badge */}
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-lg backdrop-blur-md"
+                    style={{ backgroundColor: `${c.red}30`, border: `1px solid ${c.red}40` }}>
+                    <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: c.red }} />
+                    <span className="text-[10px] uppercase tracking-[0.15em] font-bold" style={{ color: c.red }}>Featured</span>
+                  </div>
+                </div>
+                {(videos[0].title || videos[0].description) && (
+                  <div className="p-5" style={{ backgroundColor: c.card }}>
+                    {videos[0].title && <p className="font-bold text-base" style={{ color: c.text }}>{videos[0].title}</p>}
+                    {videos[0].description && <p className="text-sm mt-1.5" style={{ color: c.muted }}>{videos[0].description}</p>}
+                    {videos[0].category && (
+                      <span className="inline-block mt-2 text-xs px-3 py-1 rounded-full"
+                        style={{ backgroundColor: c.redSoft, color: c.red }}>{videos[0].category}</span>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* # Remaining videos in a responsive grid with varying sizes */}
+              {videos.length > 1 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {videos.slice(1).map((g, i) => (
+                    <motion.div key={`v-${i}`}
+                      className={`rounded-xl overflow-hidden ${i === 0 && videos.length > 3 ? "sm:col-span-2 lg:col-span-1" : ""}`}
+                      style={{ border: `1px solid ${c.border}` }}
+                      initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                      whileHover={{ y: -4, boxShadow: `0 12px 30px rgba(0,0,0,0.3)` }}>
+                      <VideoEmbed
+                        videoUrl={g.videoUrl}
+                        thumbnailUrl={g.imageUrl || undefined}
+                        title={g.title}
+                        accentColor={c.red}
+                      />
+                      {(g.title || g.description) && (
+                        <div className="p-4" style={{ backgroundColor: c.card }}>
+                          {g.title && <p className="font-bold text-sm" style={{ color: c.text }}>{g.title}</p>}
+                          {g.description && <p className="text-xs mt-1" style={{ color: c.muted }}>{g.description}</p>}
+                          {g.category && (
+                            <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: c.redSoft, color: c.red }}>{g.category}</span>
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
-          {/* # Still frames grid */}
+          {/* # Still frames — bento grid with varying sizes */}
           {stills.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {stills.map((g, i) => (
-                <motion.a key={`s-${i}`} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
-                  className="group relative rounded-lg overflow-hidden aspect-video"
-                  whileHover={{ scale: 1.02 }}
-                  initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-75" />
-                  {/* # Gradient overlay on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: `linear-gradient(180deg, transparent 40%, ${c.red}15 70%, ${c.bg}ee)` }}>
-                    <div className="absolute bottom-3 left-4 right-4">
-                      <p className="text-white font-bold text-sm">{g.title}</p>
-                      {g.description && <p className="text-white/60 text-xs mt-0.5">{g.description}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 auto-rows-[160px] md:auto-rows-[200px] gap-3">
+              {stills.map((g, i) => {
+                /* # Bento pattern for visual variety */
+                const bentoClass = (() => {
+                  const total = stills.length;
+                  if (total <= 2) return i === 0 ? "md:col-span-2 md:row-span-2" : "md:col-span-2";
+                  const pattern = [
+                    "md:col-span-2 md:row-span-2",
+                    "",
+                    "md:row-span-2",
+                    "",
+                    "",
+                    "md:col-span-2",
+                  ];
+                  return pattern[i % pattern.length] || "";
+                })();
+
+                return (
+                  <motion.a key={`s-${i}`} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
+                    className={`group relative rounded-lg overflow-hidden ${bentoClass}`}
+                    whileHover={{ scale: 1.02 }}
+                    initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-700 group-hover:brightness-75" />
+
+                    {/* # Featured badge on first still */}
+                    {i === 0 && (
+                      <div className="absolute top-3 left-3 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+                        style={{ backgroundColor: `${c.gold}25`, border: `1px solid ${c.gold}35`, color: c.gold }}>
+                        Featured
+                      </div>
+                    )}
+
+                    {/* # Category badge */}
+                    {g.category && i !== 0 && (
+                      <div className="absolute top-3 right-3 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md"
+                        style={{ backgroundColor: "rgba(0,0,0,0.5)", color: c.gold }}>
+                        {g.category}
+                      </div>
+                    )}
+
+                    {/* # Gradient overlay on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: `linear-gradient(180deg, transparent 40%, ${c.red}15 70%, ${c.bg}ee)` }}>
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <p className="text-white font-bold text-sm">{g.title}</p>
+                        {g.description && <p className="text-white/60 text-xs mt-1">{g.description}</p>}
+                      </div>
                     </div>
-                  </div>
-                </motion.a>
-              ))}
+                  </motion.a>
+                );
+              })}
             </div>
           )}
         </SectionWrapper>

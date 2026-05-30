@@ -759,7 +759,7 @@ function renderSection(section: PortfolioSection, index: number) {
         </SectionBg>
       );
 
-    /* # Gallery section — bento grid with hover zoom and gradient overlay */
+    /* # Gallery section — bento grid with varying sizes, video support, gradient overlays */
     case "gallery":
       if (section.entries.length === 0) return null;
       return (
@@ -767,33 +767,72 @@ function renderSection(section: PortfolioSection, index: number) {
           <SectionDivider variant="gradient" color={c.violet} />
           <SectionWrapper className="py-28 px-6 md:px-16 max-w-6xl mx-auto">
             <SectionHeading>Gallery</SectionHeading>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {section.entries.map((g, i) => (
-                <motion.a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
-                  /* # First item is featured — spans two rows */
-                  className={`block rounded-2xl overflow-hidden group ${i === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
-                  style={{ border: `1px solid ${c.border}` }}
-                  whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}>
-                  <div className="relative w-full h-full">
-                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    {/* # Gradient overlay on hover showing title */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{ background: `linear-gradient(180deg, transparent 30%, ${c.bg}cc 70%, ${c.bg}ee)` }}>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white font-bold text-sm">{g.title}</p>
-                        {g.description && <p className="text-white/60 text-xs mt-1">{g.description}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 auto-rows-[180px] md:auto-rows-[210px] gap-4">
+              {section.entries.map((g, i) => {
+                const isVideo = Boolean(g.videoUrl && g.videoUrl.trim().length > 0);
+                /* # Bento layout pattern for visual variety */
+                const bentoClass = (() => {
+                  const total = section.entries.length;
+                  if (total <= 2) return i === 0 ? "md:col-span-2 md:row-span-2" : "md:col-span-2";
+                  const pattern = [
+                    "md:col-span-2 md:row-span-2",
+                    "",
+                    "md:row-span-2",
+                    "",
+                    "",
+                    "md:col-span-2",
+                  ];
+                  return pattern[i % pattern.length] || "";
+                })();
+
+                return (
+                  <motion.a key={i} href={g.link || g.videoUrl || g.imageUrl} target="_blank" rel="noopener noreferrer"
+                    className={`block rounded-2xl overflow-hidden group relative ${bentoClass}`}
+                    style={{ border: `1px solid ${c.border}` }}
+                    whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
+                    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                    <div className="relative w-full h-full">
+                      <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+
+                      {/* # Video play overlay */}
+                      {isVideo && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md transition-transform group-hover:scale-110"
+                            style={{ backgroundColor: `${c.violet}cc`, boxShadow: `0 0 30px ${c.violet}40` }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><polygon points="8,5 20,12 8,19" /></svg>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* # Featured badge on first item */}
+                      {i === 0 && (
+                        <div className="absolute top-3 left-3 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                          style={{ backgroundColor: `${c.violet}20`, border: `1px solid ${c.violet}30`, color: c.violet, backdropFilter: "blur(10px)" }}>
+                          Featured
+                        </div>
+                      )}
+
+                      {/* # Category badge */}
+                      {g.category && i !== 0 && (
+                        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md"
+                          style={{ backgroundColor: "rgba(0,0,0,0.4)", color: "rgba(255,255,255,0.85)" }}>
+                          {g.category}
+                        </div>
+                      )}
+
+                      {/* # Gradient overlay on hover */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background: `linear-gradient(180deg, transparent 30%, ${c.bg}cc 70%, ${c.bg}ee)` }}>
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <p className="text-white font-bold text-sm">{g.title}</p>
+                          {g.description && <p className="text-white/60 text-xs mt-1">{g.description}</p>}
+                        </div>
                       </div>
                     </div>
-                    {/* # Featured badge on first item */}
-                    {i === 0 && (
-                      <div className="absolute top-3 left-3 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider"
-                        style={{ backgroundColor: `${c.violet}20`, border: `1px solid ${c.violet}30`, color: c.violet, backdropFilter: "blur(10px)" }}>
-                        Featured
-                      </div>
-                    )}
-                  </div>
-                </motion.a>
-              ))}
+                  </motion.a>
+                );
+              })}
             </div>
           </SectionWrapper>
         </SectionBg>
@@ -929,7 +968,7 @@ function renderSection(section: PortfolioSection, index: number) {
                   {section.email && (
                     <a href={`mailto:${section.email}`}
                       className="px-8 py-4 rounded-2xl font-bold text-base transition-all hover:scale-105"
-                      style={{ backgroundColor: "#fff", color: c.violet }}>
+                      style={{ background: `linear-gradient(135deg, ${c.cyan}, ${c.violet})`, color: "#0a0a12" }}>
                       Email Me →
                     </a>
                   )}

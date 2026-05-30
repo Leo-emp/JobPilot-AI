@@ -11,13 +11,13 @@ import { SectionDivider } from "../shared/SectionDivider";
 import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const defaultColors = {
-  bg: "#fafafa",
-  surface: "#ffffff",
+  bg: "#f4f4f8",
+  surface: "#eeeef3",
   text: "#0f0f0f",
   muted: "#6b7280",
   accent: "#2563eb",
   accentSoft: "#2563eb12",
-  cardBg: "#ffffff",
+  cardBg: "#eaeaf0",
   border: "#00000008",
   shadow: "0 1px 3px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04)",
   shadowHover: "0 4px 12px rgba(0,0,0,0.06), 0 16px 48px rgba(0,0,0,0.08)",
@@ -77,7 +77,7 @@ function Hero({ data, colors }: { data: PortfolioData; colors: typeof defaultCol
               transition={{ delay: 0.2, type: "spring" as const }}>
               <div className="absolute -inset-1 rounded-full opacity-20 blur-md" style={{ background: colors.accent }} />
               <img src={avatarUrl} alt={data.userName}
-                className="relative w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-xl" />
+                className="relative w-32 h-32 rounded-full object-cover ring-4 ring-gray-200 shadow-xl" />
             </motion.div>
           )}
           <div>
@@ -618,30 +618,78 @@ function AwardsSection({ section, colors }: { section: PortfolioSection; colors:
   );
 }
 
-/* # ─── GALLERY — Grid with hover zoom and gradient overlay, first featured ─── */
+/* # ─── GALLERY — Bento grid with varying sizes, video support, hover zoom ─── */
 function GallerySection({ section, colors }: { section: PortfolioSection; colors: typeof defaultColors }) {
   if (section.type !== "gallery" || section.entries.length === 0) return null;
+
+  /* # Bento layout pattern — assigns grid span classes based on position */
+  const bentoLayout = (i: number, total: number): string => {
+    if (total <= 2) return i === 0 ? "md:col-span-2 md:row-span-2 aspect-[16/10]" : "md:col-span-2 aspect-[21/9]";
+    if (total <= 4) {
+      return ["md:col-span-2 md:row-span-2 aspect-[4/3]", "aspect-square", "aspect-[4/5]", "md:col-span-2 aspect-[21/9]"][i] || "aspect-square";
+    }
+    const pattern = [
+      "md:col-span-2 md:row-span-2 aspect-[4/3]",
+      "aspect-square",
+      "md:row-span-2 aspect-[3/5]",
+      "aspect-[4/3]",
+      "aspect-square",
+      "md:col-span-2 aspect-[21/9]",
+    ];
+    return pattern[i % pattern.length];
+  };
+
   return (
     <SectionWrapper className="py-20 px-6 md:px-12 max-w-5xl mx-auto">
       <SectionHeading title="Gallery" colors={colors} />
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {section.entries.map((g, i) => (
-          <motion.a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
-            className={`group relative rounded-2xl overflow-hidden ${i === 0 ? "col-span-2 row-span-2 aspect-[4/3]" : "aspect-square"}`}
-            style={{ boxShadow: colors.shadow }}
-            whileHover={{ y: -4, boxShadow: colors.shadowHover }}>
-            <img src={g.imageUrl} alt={g.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            {/* # Gradient overlay on hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5"
-              style={{ background: `linear-gradient(to top, ${colors.accent}cc, ${colors.accent}40 40%, transparent 70%)` }}>
-              <div>
-                <h3 className="text-white font-bold text-sm">{g.title}</h3>
-                {g.description && <p className="text-white/70 text-xs mt-1">{g.description}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 auto-rows-[180px] md:auto-rows-[200px] gap-4">
+        {section.entries.map((g, i) => {
+          const isVideo = Boolean(g.videoUrl && g.videoUrl.trim().length > 0);
+          return (
+            <motion.a key={i} href={g.link || g.videoUrl || g.imageUrl} target="_blank" rel="noopener noreferrer"
+              className={`group relative rounded-2xl overflow-hidden ${bentoLayout(i, section.entries.length)}`}
+              style={{ boxShadow: colors.shadow, border: `1px solid ${colors.border}` }}
+              whileHover={{ y: -4, boxShadow: colors.shadowHover }}>
+              <img src={g.imageUrl} alt={g.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+
+              {/* # Video play button overlay */}
+              {isVideo && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md transition-transform group-hover:scale-110"
+                    style={{ backgroundColor: `${colors.accent}cc`, boxShadow: `0 0 30px ${colors.accent}40` }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><polygon points="8,5 20,12 8,19" /></svg>
+                  </div>
+                </div>
+              )}
+
+              {/* # Featured badge on first item */}
+              {i === 0 && (
+                <div className="absolute top-3 left-3 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+                  style={{ backgroundColor: `${colors.accent}25`, border: `1px solid ${colors.accent}30`, color: colors.accent }}>
+                  Featured
+                </div>
+              )}
+
+              {/* # Category badge */}
+              {g.category && i !== 0 && (
+                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md"
+                  style={{ backgroundColor: "rgba(0,0,0,0.4)", color: "rgba(255,255,255,0.85)" }}>
+                  {g.category}
+                </div>
+              )}
+
+              {/* # Gradient overlay on hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5"
+                style={{ background: `linear-gradient(to top, ${colors.accent}cc, ${colors.accent}40 40%, transparent 70%)` }}>
+                <div>
+                  <h3 className="text-white font-bold text-sm">{g.title}</h3>
+                  {g.description && <p className="text-white/70 text-xs mt-1">{g.description}</p>}
+                </div>
               </div>
-            </div>
-          </motion.a>
-        ))}
+            </motion.a>
+          );
+        })}
       </div>
     </SectionWrapper>
   );
@@ -737,14 +785,14 @@ function ContactSection({ section, colors }: { section: PortfolioSection; colors
               viewport={{ once: true }} transition={{ duration: 0.6 }} />
           </div>
 
-          {/* # Contact items in styled white cards */}
+          {/* # Contact items in styled cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
             {section.email && (
               <motion.a href={`mailto:${section.email}`}
                 className="flex items-center gap-4 p-5 rounded-2xl group"
                 style={{
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                  backgroundColor: colors.cardBg,
+                  boxShadow: colors.shadow,
                   border: `1px solid ${colors.accent}10`,
                 }}
                 whileHover={{ y: -2, boxShadow: `0 8px 25px ${colors.accent}15` }}>
@@ -762,8 +810,8 @@ function ContactSection({ section, colors }: { section: PortfolioSection; colors
               <motion.a href={`tel:${section.phone}`}
                 className="flex items-center gap-4 p-5 rounded-2xl group"
                 style={{
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                  backgroundColor: colors.cardBg,
+                  boxShadow: colors.shadow,
                   border: `1px solid ${colors.accent}10`,
                 }}
                 whileHover={{ y: -2, boxShadow: `0 8px 25px ${colors.accent}15` }}>
@@ -781,8 +829,8 @@ function ContactSection({ section, colors }: { section: PortfolioSection; colors
               <motion.div
                 className="flex items-center gap-4 p-5 rounded-2xl"
                 style={{
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                  backgroundColor: colors.cardBg,
+                  boxShadow: colors.shadow,
                   border: `1px solid ${colors.accent}10`,
                 }}
                 whileHover={{ y: -2, boxShadow: `0 8px 25px ${colors.accent}15` }}>
@@ -800,8 +848,8 @@ function ContactSection({ section, colors }: { section: PortfolioSection; colors
               <motion.a href={section.calendarLink} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-4 p-5 rounded-2xl group"
                 style={{
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                  backgroundColor: colors.cardBg,
+                  boxShadow: colors.shadow,
                   border: `1px solid ${colors.accent}10`,
                 }}
                 whileHover={{ y: -2, boxShadow: `0 8px 25px ${colors.accent}15` }}>

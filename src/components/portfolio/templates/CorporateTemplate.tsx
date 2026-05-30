@@ -11,8 +11,8 @@ import { SectionDivider } from "../shared/SectionDivider";
 import { autoCategorizeSkills } from "@/lib/skill-categories";
 
 const c = {
-  bg: "#faf8f4",
-  surface: "#ffffff",
+  bg: "#f5f1ea",
+  surface: "#eee9df",
   navy: "#0f1b3d",
   navyLight: "#1a2850",
   gold: "#c8a96e",
@@ -21,7 +21,7 @@ const c = {
   text: "#2d2d3a",
   muted: "#6b6b7b",
   border: "#e8e4dc",
-  cream: "#f5f1ea",
+  cream: "#ebe5da",
 };
 
 /* # Section heading with gold accent and diamond */
@@ -122,98 +122,132 @@ function Hero({ data }: { data: PortfolioData }) {
 function renderSection(section: PortfolioSection) {
   switch (section.type) {
 
-    /* # ─── EXPERIENCE — Premium cards with navy gradient left border, gold badges ─── */
+    /* # ─── EXPERIENCE — Full-width alternating case-study blocks, not resume cards ─── */
     case "experience":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
-          <SectionHeading>Professional Experience</SectionHeading>
-          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="space-y-6">
-            {section.entries.map((e, i) => {
-              /* # Unique navy gradient for each card's left border */
-              const grad = NAVY_GRADIENTS[i % NAVY_GRADIENTS.length];
-              return (
-                <motion.div key={i} variants={staggerItem}>
-                  <motion.div
-                    className="relative rounded-xl overflow-hidden"
-                    style={{
-                      backgroundColor: c.surface,
-                      border: `1px solid ${c.border}`,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                    }}
-                    whileHover={{
-                      y: -4,
-                      boxShadow: `0 8px 30px rgba(0,0,0,0.08)`,
-                      borderColor: `${c.gold}40`,
-                      transition: { duration: 0.2 },
-                    }}
-                  >
-                    {/* # Navy gradient left border */}
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl"
-                      style={{ background: grad }} />
+        <div>
+          <div className="py-16 px-6 md:px-12 max-w-5xl mx-auto">
+            <SectionHeading>Professional Experience</SectionHeading>
+          </div>
+          {section.entries.map((e, i) => {
+            const isNavy = i % 2 === 0;
+            return (
+              <motion.div key={i}
+                className="relative overflow-hidden"
+                style={{ backgroundColor: isNavy ? c.navy : c.cream }}
+                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                {/* # Decorative diamond pattern for navy blocks */}
+                {isNavy && (
+                  <div className="absolute inset-0 opacity-[0.03]" style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23c8a96e' stroke-width='0.5'/%3E%3C/svg%3E")`,
+                    backgroundSize: "40px 40px",
+                  }} />
+                )}
 
-                    {/* # Subtle cream gradient fill */}
-                    <div className="absolute inset-0 opacity-[0.4]"
-                      style={{ background: `linear-gradient(135deg, ${c.cream}80, transparent 40%)` }} />
+                {/* # Ambient gold glow */}
+                <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[200px] opacity-[0.05]"
+                  style={{ background: c.gold }} />
 
-                    <div className="relative p-7 pl-8">
-                      {/* # Company badge + gold date pill */}
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                        <div className="flex items-start gap-4">
-                          {/* # Gradient company icon with gold diamond */}
-                          <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 shadow-md"
-                            style={{ background: `linear-gradient(135deg, ${c.navy}, ${c.navyLight})` }}>
-                            <span className="text-sm" style={{ color: c.gold }}>◆</span>
-                          </div>
-                          <div>
-                            {/* # Large company name */}
-                            <p className="text-xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>
-                              {e.company}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
-                              <h3 className="text-sm font-medium" style={{ color: c.gold }}>
-                                {e.title}{e.location ? ` — ${e.location}` : ""}
-                              </h3>
-                            </div>
-                          </div>
-                        </div>
-                        {/* # Date range in gold pill badge */}
-                        {(e.startDate || e.endDate) && (
-                          <span className="text-xs font-semibold shrink-0 px-4 py-1.5 rounded-full"
-                            style={{
-                              background: `linear-gradient(135deg, ${c.gold}20, ${c.gold}10)`,
-                              color: c.gold,
-                              border: `1px solid ${c.gold}30`,
-                            }}>
-                            {e.startDate} — {e.endDate || "Present"}
-                          </span>
-                        )}
+                <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-20 md:py-28">
+                  <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
+                    {/* # Left column — Company & role as large editorial block */}
+                    <div className="lg:w-2/5 flex flex-col justify-center">
+                      {/* # Gold decorative line */}
+                      <div className="w-12 h-0.5 mb-6" style={{ backgroundColor: c.gold }} />
+
+                      {/* # Company as oversized serif heading */}
+                      <h3 className="text-4xl md:text-5xl font-bold leading-tight"
+                        style={{ fontFamily: "'Playfair Display', Georgia, serif", color: isNavy ? "#ffffff" : c.navy }}>
+                        {e.company}
+                      </h3>
+
+                      {/* # Role with gold diamond */}
+                      <div className="flex items-center gap-3 mt-4">
+                        <div className="w-2 h-2 rotate-45" style={{ backgroundColor: c.gold }} />
+                        <p className="text-base font-medium tracking-wide" style={{ color: c.gold }}>
+                          {e.title}
+                        </p>
                       </div>
 
-                      {/* # Achievements with gold accent markers */}
-                      {e.achievements.length > 0 && (
-                        <ul className="mt-5 space-y-3 ml-16">
-                          {e.achievements.map((a, j) => (
-                            <li key={j} className="text-sm flex items-start gap-3" style={{ color: c.text }}>
-                              {/* # Gold diamond accent marker */}
-                              <span className="shrink-0 mt-1 w-5 h-5 rounded flex items-center justify-center"
-                                style={{ background: `linear-gradient(135deg, ${c.gold}20, ${c.gold}08)` }}>
-                                <span className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
-                              </span>
-                              <span className="leading-relaxed">{a}</span>
-                            </li>
-                          ))}
-                        </ul>
+                      {/* # Location & dates */}
+                      {e.location && (
+                        <p className="text-sm mt-3" style={{ color: isNavy ? "rgba(255,255,255,0.5)" : c.muted }}>
+                          {e.location}
+                        </p>
+                      )}
+
+                      {/* # Date as prominent gold-bordered block */}
+                      {(e.startDate || e.endDate) && (
+                        <div className="mt-6 inline-flex items-center gap-3 px-5 py-3 rounded-lg"
+                          style={{
+                            border: `1px solid ${isNavy ? c.gold + "40" : c.gold + "30"}`,
+                            backgroundColor: isNavy ? "rgba(200,169,110,0.08)" : `${c.gold}08`,
+                          }}>
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.gold }} />
+                          <span className="text-sm font-semibold tracking-wider uppercase"
+                            style={{ color: c.gold, letterSpacing: "0.1em" }}>
+                            {e.startDate} — {e.endDate || "Present"}
+                          </span>
+                        </div>
                       )}
                     </div>
-                  </motion.div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </SectionWrapper>
+
+                    {/* # Right column — Achievements as impact metric cards */}
+                    <div className="lg:w-3/5">
+                      {e.description && (
+                        <p className="text-base leading-relaxed mb-8"
+                          style={{ color: isNavy ? "rgba(255,255,255,0.7)" : c.text }}>
+                          {e.description}
+                        </p>
+                      )}
+
+                      {e.achievements.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {e.achievements.map((a, j) => (
+                            <motion.div key={j}
+                              className="rounded-xl p-5 relative overflow-hidden"
+                              style={{
+                                backgroundColor: isNavy ? "rgba(255,255,255,0.04)" : c.surface,
+                                border: `1px solid ${isNavy ? "rgba(200,169,110,0.15)" : c.border}`,
+                              }}
+                              whileHover={{
+                                y: -2,
+                                borderColor: `${c.gold}40`,
+                                backgroundColor: isNavy ? "rgba(255,255,255,0.07)" : `${c.gold}04`,
+                              }}
+                            >
+                              {/* # Gold accent top line */}
+                              <div className="absolute top-0 left-0 right-0 h-0.5"
+                                style={{ background: `linear-gradient(90deg, ${c.gold}${j % 2 === 0 ? "60" : "30"}, transparent)` }} />
+
+                              {/* # Gold numbered badge */}
+                              <div className="flex items-center gap-2 mb-3">
+                                <span className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${c.gold}, ${c.goldLight})`,
+                                    color: isNavy ? c.navy : "#ffffff",
+                                  }}>
+                                  {String(j + 1).padStart(2, "0")}
+                                </span>
+                              </div>
+                              <p className="text-sm leading-relaxed"
+                                style={{ color: isNavy ? "rgba(255,255,255,0.75)" : c.text }}>
+                                {a}
+                              </p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       );
 
     /* # ─── SKILLS — Unchanged premium layout ─── */
@@ -332,7 +366,7 @@ function renderSection(section: PortfolioSection) {
                       {p.imageUrl && (
                         <div className="overflow-hidden h-44 relative group">
                           <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent opacity-40" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#eee9df] via-transparent opacity-40" />
                         </div>
                       )}
                       <div className="p-6">
@@ -368,118 +402,181 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
-    /* # ─── EDUCATION — Cards with gold-accented gradient header strip ─── */
+    /* # ─── EDUCATION — Side-by-side premium institution showcase on navy ─── */
     case "education":
       if (section.entries.length === 0) return null;
       return (
-        <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
-          <SectionHeading>Education</SectionHeading>
-          <div className="space-y-6">
-            {section.entries.map((e, i) => (
-              <motion.div key={i}
-                className="rounded-xl overflow-hidden"
-                style={{
-                  backgroundColor: c.surface,
-                  border: `1px solid ${c.border}`,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                }}
-                whileHover={{ y: -3, boxShadow: "0 8px 30px rgba(0,0,0,0.06)", borderColor: `${c.gold}40`, transition: { duration: 0.2 } }}
-              >
-                {/* # Gold-accented gradient header strip */}
-                <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${c.gold}, ${c.goldLight}, ${c.gold}30)` }} />
+        <div className="relative overflow-hidden" style={{ backgroundColor: c.navy }}>
+          {/* # Diamond pattern */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='none' stroke='%23c8a96e' stroke-width='0.5'/%3E%3C/svg%3E")`,
+            backgroundSize: "40px 40px",
+          }} />
+          <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] rounded-full blur-[200px] opacity-[0.05]"
+            style={{ background: c.gold }} />
 
-                <div className="p-7">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
-                    <div>
-                      {/* # Degree name large */}
-                      <h3 className="text-xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>
-                        {e.degree}
-                      </h3>
-                      {/* # School in accent color with diamond */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
-                        <p className="text-sm font-medium" style={{ color: c.gold }}>{e.school}{e.location ? ` · ${e.location}` : ""}</p>
+          <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-24">
+            <div className="text-center mb-14">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="h-px flex-1 max-w-[80px]" style={{ background: `linear-gradient(90deg, transparent, ${c.gold})` }} />
+                <div className="w-2 h-2 rotate-45" style={{ backgroundColor: c.gold }} />
+                <div className="h-px flex-1 max-w-[80px]" style={{ background: `linear-gradient(90deg, ${c.gold}, transparent)` }} />
+              </div>
+              <h2 className="text-3xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: "#ffffff" }}>
+                Education
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {section.entries.map((e, i) => (
+                <motion.div key={i}
+                  className="relative rounded-2xl overflow-hidden"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    border: `1px solid ${c.gold}20`,
+                  }}
+                  whileHover={{ y: -4, borderColor: `${c.gold}50`, transition: { duration: 0.25 } }}
+                  initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.15 }}
+                >
+                  {/* # Large gold gradient header area with year */}
+                  <div className="relative px-8 pt-10 pb-8 text-center"
+                    style={{ background: `linear-gradient(180deg, rgba(200,169,110,0.12), transparent)` }}>
+                    {/* # Oversized year display */}
+                    {e.endDate && (
+                      <div className="text-7xl font-bold opacity-[0.12] absolute top-4 right-6"
+                        style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.gold }}>
+                        {e.endDate.slice(-4)}
                       </div>
-                    </div>
-                    {/* # Year in a gradient gold badge */}
-                    {(e.startDate || e.endDate) && (
-                      <span className="text-xs font-semibold shrink-0 px-4 py-1.5 rounded-full"
-                        style={{
-                          background: `linear-gradient(135deg, ${c.gold}20, ${c.gold}10)`,
-                          color: c.gold,
-                          border: `1px solid ${c.gold}30`,
-                        }}>
-                        {e.startDate}{e.endDate ? ` — ${e.endDate}` : ""}
+                    )}
+                    {/* # Shield/crest icon area */}
+                    <div className="w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center"
+                      style={{
+                        background: `linear-gradient(135deg, ${c.gold}, ${c.goldLight})`,
+                        boxShadow: `0 8px 25px ${c.gold}30`,
+                      }}>
+                      <span className="text-2xl font-bold" style={{ color: c.navy }}>
+                        {e.school?.charAt(0) || "U"}
                       </span>
+                    </div>
+
+                    {/* # Institution name large */}
+                    <h3 className="text-2xl font-bold leading-tight"
+                      style={{ fontFamily: "'Playfair Display', Georgia, serif", color: "#ffffff" }}>
+                      {e.school}
+                    </h3>
+                    {e.location && (
+                      <p className="text-xs mt-2 tracking-wider uppercase" style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.15em" }}>
+                        {e.location}
+                      </p>
                     )}
                   </div>
-                  {/* # Description in a subtle tinted box */}
-                  {e.description && (
-                    <div className="mt-4 px-4 py-3 rounded-lg" style={{ backgroundColor: c.cream }}>
-                      <p className="text-sm leading-relaxed" style={{ color: c.muted }}>{e.description}</p>
+
+                  {/* # Degree and details below */}
+                  <div className="px-8 pb-8">
+                    {/* # Gold divider */}
+                    <div className="w-full h-px mb-6" style={{ background: `linear-gradient(90deg, transparent, ${c.gold}30, transparent)` }} />
+
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
+                      <p className="text-base font-semibold" style={{ color: c.gold }}>{e.degree}</p>
                     </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+
+                    {(e.startDate || e.endDate) && (
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                        style={{ backgroundColor: `${c.gold}10`, border: `1px solid ${c.gold}20` }}>
+                        <span className="text-xs font-semibold" style={{ color: c.gold }}>
+                          {e.startDate}{e.endDate ? ` — ${e.endDate}` : ""}
+                        </span>
+                      </div>
+                    )}
+
+                    {e.description && (
+                      <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+                        {e.description}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </SectionWrapper>
+        </div>
       );
 
-    /* # ─── CERTIFICATIONS — Badge/shield-style cards with gradient fills ─── */
+    /* # ─── CERTIFICATIONS — Premium certificate-style cards with gold seal visuals ─── */
     case "certifications":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
-          <SectionHeading>Certifications &amp; Licenses</SectionHeading>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <SectionHeading>Certifications &amp; Credentials</SectionHeading>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {section.entries.map((cert, i) => (
               <motion.div key={i}
-                className="rounded-xl overflow-hidden relative"
+                className="relative rounded-2xl overflow-hidden text-center"
                 style={{
                   backgroundColor: c.surface,
                   border: `1px solid ${c.border}`,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
                 }}
-                whileHover={{ y: -3, boxShadow: "0 8px 30px rgba(0,0,0,0.06)", borderColor: `${c.gold}40`, transition: { duration: 0.2 } }}
+                whileHover={{ y: -5, boxShadow: `0 12px 40px rgba(0,0,0,0.08), 0 0 0 1px ${c.gold}30`, transition: { duration: 0.25 } }}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1 }}
               >
-                {/* # Subtle gradient fill */}
-                <div className="absolute inset-0 opacity-[0.03]"
-                  style={{ background: `linear-gradient(135deg, ${c.navy}, transparent)` }} />
+                {/* # Decorative gold border top */}
+                <div className="h-1.5" style={{ background: `linear-gradient(90deg, transparent, ${c.gold}, transparent)` }} />
 
-                <div className="relative p-6 flex items-center gap-4">
-                  {/* # Shield badge with gradient and gold checkmark glow */}
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
+                {/* # Subtle radial gold glow background */}
+                <div className="absolute inset-0 opacity-[0.04]"
+                  style={{ background: `radial-gradient(circle at center top, ${c.gold}, transparent 60%)` }} />
+
+                <div className="relative px-8 py-10">
+                  {/* # Large gold seal/badge icon */}
+                  <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center relative"
                     style={{
-                      background: `linear-gradient(135deg, ${c.navy}, ${c.navyLight})`,
-                      boxShadow: `0 4px 15px ${c.navy}30`,
+                      background: `linear-gradient(135deg, ${c.gold}, ${c.goldLight})`,
+                      boxShadow: `0 8px 30px ${c.gold}25`,
                     }}>
-                    <span className="text-lg font-bold"
-                      style={{ color: c.gold, textShadow: `0 0 10px ${c.gold}60` }}>
-                      ✓
-                    </span>
+                    {/* # Inner ring */}
+                    <div className="absolute inset-1.5 rounded-full"
+                      style={{ border: `2px solid ${c.navy}30` }} />
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke={c.navy} strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>
-                      {cert.link ? (
-                        <a href={cert.link} target="_blank" rel="noopener noreferrer" className="hover:underline">{cert.name}</a>
-                      ) : cert.name}
-                    </p>
-                    {/* # Issuer and date as separate pill elements */}
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <span className="text-xs px-2.5 py-0.5 rounded-full font-medium"
-                        style={{ background: `${c.gold}15`, color: c.gold }}>
-                        {cert.issuer}
+
+                  {/* # Certification name — large serif */}
+                  <h3 className="text-lg font-bold leading-snug mb-3"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.navy }}>
+                    {cert.link ? (
+                      <a href={cert.link} target="_blank" rel="noopener noreferrer" className="hover:underline">{cert.name}</a>
+                    ) : cert.name}
+                  </h3>
+
+                  {/* # Gold divider */}
+                  <div className="w-10 h-px mx-auto my-4" style={{ backgroundColor: c.gold }} />
+
+                  {/* # Issuer as prominent text */}
+                  <p className="text-sm font-semibold tracking-wide" style={{ color: c.gold }}>
+                    {cert.issuer}
+                  </p>
+
+                  {/* # Date as styled badge */}
+                  {cert.date && (
+                    <div className="mt-4 inline-flex items-center px-5 py-2 rounded-full"
+                      style={{
+                        backgroundColor: `${c.gold}08`,
+                        border: `1px solid ${c.gold}20`,
+                      }}>
+                      <span className="text-xs font-semibold tracking-wider uppercase" style={{ color: c.gold, letterSpacing: "0.12em" }}>
+                        Issued {cert.date}
                       </span>
-                      {cert.date && (
-                        <span className="text-xs px-2.5 py-0.5 rounded-full"
-                          style={{ backgroundColor: c.cream, color: c.muted }}>
-                          {cert.date}
-                        </span>
-                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
+
+                {/* # Bottom decorative gold border */}
+                <div className="h-1" style={{ background: `linear-gradient(90deg, transparent, ${c.gold}40, transparent)` }} />
               </motion.div>
             ))}
           </div>
@@ -610,32 +707,80 @@ function renderSection(section: PortfolioSection) {
         </SectionWrapper>
       );
 
-    /* # ─── GALLERY — Grid with hover zoom, gradient overlay, first featured ─── */
+    /* # ─── GALLERY — Editorial bento grid with varying sizes and video support ─── */
     case "gallery":
       if (section.entries.length === 0) return null;
       return (
         <SectionWrapper className="py-24 px-6 md:px-12 max-w-5xl mx-auto">
           <SectionHeading>Portfolio Gallery</SectionHeading>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {section.entries.map((g, i) => (
-              <motion.a key={i} href={g.link || g.imageUrl} target="_blank" rel="noopener noreferrer"
-                className={`block rounded-xl overflow-hidden group relative ${i === 0 ? "col-span-2 row-span-2" : ""}`}
-                style={{ border: `1px solid ${c.border}` }}
-                whileHover={{ y: -4, boxShadow: `0 8px 30px rgba(0,0,0,0.08)` }}>
-                <div className="relative overflow-hidden">
-                  <img src={g.imageUrl} alt={g.title}
-                    className={`w-full object-cover transition-transform duration-500 group-hover:scale-110 ${i === 0 ? "aspect-[4/3]" : "aspect-square"}`} />
-                  {/* # Gradient overlay on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4"
-                    style={{ background: `linear-gradient(to top, ${c.navy}cc, ${c.navy}40 40%, transparent 70%)` }}>
-                    <div>
-                      <p className="text-white text-sm font-bold">{g.title}</p>
-                      {g.description && <p className="text-white/60 text-xs mt-1">{g.description}</p>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 auto-rows-[180px] md:auto-rows-[200px] gap-4">
+            {section.entries.map((g, i) => {
+              const isVideo = Boolean(g.videoUrl && g.videoUrl.trim().length > 0);
+              /* # Bento layout: hero → square → tall → wide → square → wide panorama */
+              const bentoClass = (() => {
+                const total = section.entries.length;
+                if (total <= 2) return i === 0 ? "md:col-span-2 md:row-span-2" : "md:col-span-2";
+                const pattern = [
+                  "md:col-span-2 md:row-span-2",
+                  "",
+                  "md:row-span-2",
+                  "",
+                  "",
+                  "md:col-span-2",
+                ];
+                return pattern[i % pattern.length] || "";
+              })();
+
+              return (
+                <motion.a key={i} href={g.link || g.videoUrl || g.imageUrl} target="_blank" rel="noopener noreferrer"
+                  className={`block rounded-xl overflow-hidden group relative ${bentoClass}`}
+                  style={{ border: `1px solid ${c.border}` }}
+                  whileHover={{ y: -4, boxShadow: `0 8px 30px rgba(0,0,0,0.08)` }}
+                  initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  <div className="relative overflow-hidden w-full h-full">
+                    <img src={g.imageUrl} alt={g.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+
+                    {/* # Video play button */}
+                    {isVideo && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md transition-transform group-hover:scale-110"
+                          style={{ backgroundColor: `${c.navy}cc`, boxShadow: `0 0 30px ${c.gold}30` }}>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill={c.gold}><polygon points="8,5 20,12 8,19" /></svg>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* # Featured badge */}
+                    {i === 0 && (
+                      <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg backdrop-blur-md"
+                        style={{ backgroundColor: `${c.navy}80`, border: `1px solid ${c.gold}40` }}>
+                        <div className="w-1.5 h-1.5 rotate-45" style={{ backgroundColor: c.gold }} />
+                        <span className="text-[10px] uppercase tracking-[0.15em] font-bold" style={{ color: c.gold }}>Featured</span>
+                      </div>
+                    )}
+
+                    {/* # Category badge */}
+                    {g.category && i !== 0 && (
+                      <div className="absolute top-3 right-3 px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md"
+                        style={{ backgroundColor: `${c.navy}60`, color: c.gold }}>
+                        {g.category}
+                      </div>
+                    )}
+
+                    {/* # Navy gradient overlay on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5"
+                      style={{ background: `linear-gradient(to top, ${c.navy}ee, ${c.navy}50 40%, transparent 70%)` }}>
+                      <div>
+                        <p className="text-sm font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: c.gold }}>{g.title}</p>
+                        {g.description && <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>{g.description}</p>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.a>
-            ))}
+                </motion.a>
+              );
+            })}
           </div>
         </SectionWrapper>
       );
