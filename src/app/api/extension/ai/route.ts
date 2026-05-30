@@ -11,8 +11,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { extensionAiSchema, formatZodError } from "@/lib/validations";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
+import { checkGlobalDailyCap } from "@/lib/redis";
 
 /* ---- OPTIONS: Handle CORS preflight ---- */
 export async function OPTIONS(req: NextRequest) {
@@ -23,6 +25,10 @@ export async function OPTIONS(req: NextRequest) {
   });
 }
 
+/* ---- Max input size ---- */
+const MAX_PAYLOAD_SIZE = 50_000;
+const AI_TIMEOUT_MS = 30_000;
+
 /* ---- Gemini Model Fallback List ---- */
 const GEMINI_MODELS = [
   "gemini-2.5-flash",
@@ -30,7 +36,7 @@ const GEMINI_MODELS = [
   "gemini-2.0-flash-lite",
 ];
 
-/* ---- Call Gemini with automatic fallback ---- */
+/* ---- Call Gemini with automatic fallback and timeout ---- */
 async function callGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -39,6 +45,9 @@ async function callGemini(prompt: string): Promise<string> {
 
   for (const model of GEMINI_MODELS) {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
         {
@@ -48,8 +57,11 @@ async function callGemini(prompt: string): Promise<string> {
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
           }),
+          signal: controller.signal,
         }
       );
+
+      clearTimeout(timeout);
 
       if (response.status === 429) {
         await new Promise((r) => setTimeout(r, 2000));
@@ -88,6 +100,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  /* ---- Burst Rate Limiting ---- */
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ipCheck = await ipPerMinute.check(ip);
+  if (!ipCheck.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment." },
+      { status: 429, headers: corsHeaders(origin) }
+    );
+  }
+
+  const minuteCheck = await userPerMinute.check(session.user.id);
+  if (!minuteCheck.allowed) {
+    return NextResponse.json(
+      { error: "Slow down! 6 requests per minute max." },
+      { status: 429, headers: corsHeaders(origin) }
+    );
+  }
+
+  const hourCheck = await userPerHour.check(session.user.id);
+  if (!hourCheck.allowed) {
+    return NextResponse.json(
+      { error: "Hourly limit reached. Try again soon." },
+      { status: 429, headers: corsHeaders(origin) }
+    );
+  }
+
   const body = await req.json();
   const parsed = extensionAiSchema.safeParse(body);
 
@@ -100,6 +138,15 @@ export async function POST(req: NextRequest) {
 
   const { action, description, jobTitle, company } = parsed.data;
 
+  /* ---- Input size validation ---- */
+  const payloadSize = JSON.stringify(body).length;
+  if (payloadSize > MAX_PAYLOAD_SIZE) {
+    return NextResponse.json(
+      { error: "Input too large. Please shorten the job description." },
+      { status: 413, headers: corsHeaders(origin) }
+    );
+  }
+
   /* Fetch the user's most recent resume for AI context */
   const latestResume = await prisma.resume.findFirst({
     where: { userId: session.user.id },
@@ -108,6 +155,15 @@ export async function POST(req: NextRequest) {
   });
 
   const resumeText = latestResume?.content || "No resume uploaded yet.";
+
+  /* ---- Global Daily Cap ---- */
+  const globalCheck = await checkGlobalDailyCap();
+  if (!globalCheck.allowed) {
+    return NextResponse.json(
+      { error: "AI service has reached its daily capacity. Please try again tomorrow." },
+      { status: 503, headers: corsHeaders(origin) }
+    );
+  }
 
   /* ---- Check usage limits ---- */
   const user = await prisma.user.findUnique({

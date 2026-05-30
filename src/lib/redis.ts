@@ -79,3 +79,42 @@ export async function cacheDel(key: string): Promise<void> {
     /* Cache delete failure is non-fatal */
   }
 }
+
+/* ============================================================
+   GLOBAL DAILY CAP - Platform-wide circuit breaker
+   ============================================================
+   Hard ceiling on total AI calls across ALL users per day.
+   Prevents runaway costs even if every other limit fails.
+   Falls back to in-memory counter when Redis isn't available.
+   ============================================================ */
+
+const GLOBAL_DAILY_CAP = parseInt(process.env.GLOBAL_AI_DAILY_CAP || "5000", 10);
+let inMemoryDailyCount = 0;
+let inMemoryDailyResetAt = 0;
+
+export async function checkGlobalDailyCap(): Promise<{ allowed: boolean; used: number; cap: number }> {
+  const r = getRedis();
+
+  if (r) {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `global:ai:daily:${today}`;
+      const count = await r.incr(key);
+      if (count === 1) await r.expire(key, 86400);
+      return { allowed: count <= GLOBAL_DAILY_CAP, used: count, cap: GLOBAL_DAILY_CAP };
+    } catch {
+      return { allowed: false, used: 0, cap: GLOBAL_DAILY_CAP };
+    }
+  }
+
+  /* # In-memory fallback */
+  const now = Date.now();
+  if (now > inMemoryDailyResetAt) {
+    inMemoryDailyCount = 0;
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0);
+    inMemoryDailyResetAt = tomorrow.getTime();
+  }
+  inMemoryDailyCount++;
+  return { allowed: inMemoryDailyCount <= GLOBAL_DAILY_CAP, used: inMemoryDailyCount, cap: GLOBAL_DAILY_CAP };
+}

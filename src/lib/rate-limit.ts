@@ -105,8 +105,8 @@ function createRedisLimiter(config: RateLimiterConfig) {
           resetIn: Math.max(0, result.reset - Date.now()),
         };
       } catch {
-        /* # Redis failure — allow the request (fail open) */
-        return { allowed: true, remaining: config.maxRequests, resetIn: config.windowMs };
+        /* # Redis failure — deny the request (fail closed to prevent runaway costs) */
+        return { allowed: false, remaining: 0, resetIn: 30_000 };
       }
     },
   };

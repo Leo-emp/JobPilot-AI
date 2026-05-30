@@ -14,7 +14,7 @@ import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { aiSchema, formatZodError } from "@/lib/validations";
 import { streamGemini, streamGeminiMultimodal } from "@/lib/gemini-stream";
 import { buildPrompt } from "@/lib/prompts";
-import { cacheDel } from "@/lib/redis";
+import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 import * as Sentry from "@sentry/nextjs";
 
@@ -76,6 +76,12 @@ export async function POST(req: NextRequest) {
 
       const hourCheck = await userPerHour.check(session.user.id);
       if (!hourCheck.allowed) return jsonError("Hourly limit reached. Try again soon.", 429);
+    }
+
+    /* ---- Global Daily Cap ---- */
+    const globalCheck = await checkGlobalDailyCap();
+    if (!globalCheck.allowed) {
+      return jsonError("AI service has reached its daily capacity. Please try again tomorrow.", 503);
     }
 
     /* Usage limit check */
