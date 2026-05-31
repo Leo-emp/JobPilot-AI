@@ -18,7 +18,7 @@ export default function CookiesPage() {
       <h1 className="font-[family-name:var(--font-space-grotesk)] text-4xl sm:text-5xl font-bold mb-4 glow-text-strong">
         Cookie Policy
       </h1>
-      <p className="text-text-muted mb-12">Last updated: May 5, 2026</p>
+      <p className="text-text-muted mb-12">Last updated: June 1, 2026</p>
 
       <div className="space-y-10 text-text-secondary leading-relaxed">
         {/* Section 1 */}
@@ -117,8 +117,8 @@ export default function CookiesPage() {
           <h2 className="text-xl font-bold text-white mb-4">7. Contact</h2>
           <p>
             Questions about our cookie usage? Contact us at{" "}
-            <a href="mailto:privacy@jobpilotai.com" className="text-brand-light hover:text-white transition-colors">
-              privacy@jobpilotai.com
+            <a href="mailto:privacy@jobpilotai.co" className="text-brand-light hover:text-white transition-colors">
+              privacy@jobpilotai.co
             </a>
           </p>
         </section>

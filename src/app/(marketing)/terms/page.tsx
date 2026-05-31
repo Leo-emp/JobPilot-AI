@@ -24,7 +24,7 @@ export default function TermsPage() {
       <h1 className="font-[family-name:var(--font-space-grotesk)] text-4xl sm:text-5xl font-bold mb-4 glow-text-strong">
         Terms of Service
       </h1>
-      <p className="text-text-muted mb-12">Last updated: May 5, 2026</p>
+      <p className="text-text-muted mb-12">Last updated: June 1, 2026</p>
 
       <div className="space-y-10 text-text-secondary leading-relaxed">
         {/* Section 1 */}
@@ -45,12 +45,15 @@ export default function TermsPage() {
             JobPilot AI provides AI-powered career assistance tools, including but not limited to:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
-            <li>Resume analysis, optimization, and rebuilding</li>
-            <li>Cover letter generation</li>
-            <li>Interview question prediction and answer coaching</li>
-            <li>LinkedIn profile auditing and optimization</li>
-            <li>Job match scoring</li>
-            <li>Application tracking</li>
+            <li>Resume analysis, optimization, rebuilding, and career pivot reframing</li>
+            <li>Cover letter generation tailored to specific job descriptions</li>
+            <li>Interview question prediction, answer coaching, and live AI mock interviews</li>
+            <li>LinkedIn profile auditing, rewriting, and content strategy planning</li>
+            <li>Job match scoring with skill gap analysis</li>
+            <li>Application tracking and networking CRM</li>
+            <li>AI portfolio builder with shareable public pages</li>
+            <li>Networking outreach message generation</li>
+            <li>Chrome browser extension for job saving (when available)</li>
           </ul>
           <p className="mt-3">
             The Service uses third-party AI models (Google Gemini) to generate content.
@@ -268,8 +271,8 @@ export default function TermsPage() {
           <h2 className="text-xl font-bold text-white mb-4">15. Contact</h2>
           <p>
             For questions about these Terms, contact us at:{" "}
-            <a href="mailto:legal@jobpilotai.com" className="text-brand-light hover:text-white transition-colors">
-              legal@jobpilotai.com
+            <a href="mailto:legal@jobpilotai.co" className="text-brand-light hover:text-white transition-colors">
+              legal@jobpilotai.co
             </a>
           </p>
         </section>
