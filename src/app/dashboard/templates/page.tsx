@@ -1464,11 +1464,10 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* Two-phase approach: slice page 1 first to measure its bottom
-         whitespace, then use that exact value as the FIXED margin for
-         every edge on every subsequent page. */
-      let FIXED_MARGIN = 0;
-      let marginSet = false;
+      /* # Fixed margin: ~20mm top and bottom on every page, every template */
+      const MARGIN_MM = 20;
+      const FIXED_MARGIN = Math.floor(MARGIN_MM * canvas.width / imgWidth);
+      const marginSet = true;
 
       /* Scan only the right 55% of the canvas for white gaps.
          This ensures two-column templates with dark sidebars still
@@ -1543,10 +1542,7 @@ export default function TemplatesPage() {
 
         const sliceH = sliceBottom - yOffset;
 
-        if (!marginSet) {
-          FIXED_MARGIN = pageHeightPx - sliceH;
-          marginSet = true;
-        }
+        /* # Margin is fixed at MARGIN_MM for all pages — no auto-detection */
 
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
