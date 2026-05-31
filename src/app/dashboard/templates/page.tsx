@@ -1464,8 +1464,8 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* # Fixed margin: ~20mm top and bottom on every page, every template */
-      const MARGIN_MM = 20;
+      /* # Fixed margin: ~12mm top and bottom on every page, every template */
+      const MARGIN_MM = 12;
       const FIXED_MARGIN = Math.floor(MARGIN_MM * canvas.width / imgWidth);
       const marginSet = true;
 
