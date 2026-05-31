@@ -206,17 +206,24 @@ RULES:
 - NO company address or recipient address block. Just: name, contact line, date, then "Dear Hiring Manager,"
 - Reference SPECIFIC achievements and numbers from the resume — no vague generalities.
 
+JOB DESCRIPTION ALIGNMENT (CRITICAL):
+- Read the job description FIRST. Identify the top 3-4 requirements, skills, or responsibilities the employer emphasizes most.
+- Then scan the resume for the candidate's MOST RELEVANT experience that directly addresses those requirements.
+- Every paragraph must connect back to what the JD asks for. If the JD says "stakeholder management", the letter must show the candidate doing stakeholder management — with a specific example from their resume.
+- Do NOT write a generic letter that could apply to any job. The reader should be able to guess which job this letter is for without seeing the JD.
+- Prioritize MATCHING skills and experience over impressive-but-irrelevant achievements. A mid-level project that directly matches the JD beats a senior achievement in an unrelated area.
+
 STRUCTURE (exactly 4 body paragraphs like the reference):
 
 1. **Contact header** — Full name on its own line. Then email | phone | location on one line. Then the date. Then "Dear Hiring Manager,"
 
-2. **Paragraph 1 — Hook (3 sentences)** — Open by connecting something specific about the COMPANY to your background. Name the role. State your eagerness to contribute. This paragraph bridges what THEY do with what YOU bring.
+2. **Paragraph 1 — Hook (3 sentences)** — Open by connecting a specific JD requirement or company initiative to your most relevant background. Name the role. Show you understand what THEY need and that YOUR experience addresses it directly.
 
-3. **Paragraph 2 — Key achievement (4 sentences)** — Your single strongest experience that matches the job. Tell a mini-story: what you did, what it required, what result it delivered (with a number), and how it directly prepared you for THIS role.
+3. **Paragraph 2 — Key achievement (4 sentences)** — Pick the ONE experience from the resume that best matches the JD's top requirement. Tell a mini-story: what you did, what it required, what result it delivered (with a number), and how it directly prepared you for THIS specific role's responsibilities.
 
-4. **Paragraph 3 — Differentiator (3-4 sentences)** — Complementary skills, tools, or certifications that add extra value. Show depth — don't just list skills, explain how you USE them in a way that matters for this role. One punchy line that shows personality.
+4. **Paragraph 3 — Differentiator (3-4 sentences)** — Address 2-3 MORE requirements from the JD with complementary skills, tools, or certifications from the resume. Show depth — don't just list skills, explain how you USE them in ways that matter for what the JD describes. One punchy line that shows personality.
 
-5. **Paragraph 4 — Close (2 sentences)** — Professional and energetic. Restate your core value in one phrase, then express enthusiasm to discuss how your specific bridge of skills supports the company's goals. Warm, forward-leaning, never cocky.
+5. **Paragraph 4 — Close (2 sentences)** — Professional and energetic. Restate your core value in one phrase tied to the role's key responsibility, then express enthusiasm to discuss how your specific skills support the company's goals. Warm, forward-leaning, never cocky.
 
 6. **Sign-off** — "Sincerely," then full name
 
