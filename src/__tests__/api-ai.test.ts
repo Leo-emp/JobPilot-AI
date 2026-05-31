@@ -40,13 +40,15 @@ vi.mock("@/lib/redis", () => ({
   cacheSet: vi.fn(async () => {}),
   getRedis: vi.fn(() => null),
   isRedisConfigured: vi.fn(() => false),
+  checkGlobalDailyCap: vi.fn(async () => ({ allowed: true, used: 1, cap: 5000 })),
 }));
 
 /* Mock Gemini AI client */
 const mockCallGemini = vi.fn();
 vi.mock("@/lib/gemini", () => ({
   callGemini: (...args: unknown[]) => mockCallGemini(...args),
-  callGeminiMultimodal: vi.fn(async () => "multimodal response"),
+  callGeminiMultimodal: vi.fn(async () => ({ text: "multimodal response", model: "gemini-2.5-flash" })),
+  GeminiResult: {},
 }));
 
 /* Mock prompts — passthrough */
@@ -162,7 +164,7 @@ describe("POST /api/ai", () => {
     } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
-    mockCallGemini.mockResolvedValueOnce("AI generated response");
+    mockCallGemini.mockResolvedValueOnce({ text: "AI generated response", model: "gemini-2.5-flash" });
 
     const res = await POST(makeRequest({
       action: "analyze_resume",
@@ -176,7 +178,7 @@ describe("POST /api/ai", () => {
   });
 
   it("skips rate limiting for admin users", async () => {
-    mockAuth.mockResolvedValue({ user: { id: "admin-1", email: "admin@test.com" } });
+    mockAuth.mockResolvedValue({ user: { id: "admin-1", email: "admin@test.com", isAdmin: true } });
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       plan: "free",
       aiUsageCount: 999,
@@ -185,7 +187,7 @@ describe("POST /api/ai", () => {
     } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
-    mockCallGemini.mockResolvedValueOnce("Admin response");
+    mockCallGemini.mockResolvedValueOnce({ text: "Admin response", model: "gemini-2.5-flash" });
 
     const res = await POST(makeRequest({
       action: "analyze_resume",
@@ -219,7 +221,7 @@ describe("POST /api/ai", () => {
     } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
 
-    mockCallGemini.mockResolvedValueOnce("Response after reset");
+    mockCallGemini.mockResolvedValueOnce({ text: "Response after reset", model: "gemini-2.5-flash" });
 
     const res = await POST(makeRequest({
       action: "analyze_resume",
