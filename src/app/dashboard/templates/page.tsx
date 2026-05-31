@@ -1495,7 +1495,7 @@ export default function TemplatesPage() {
             consecutive++;
             if (gapTopRow === -1) gapTopRow = row;
           } else {
-            if (consecutive >= 20 && consecutive > bestSize) {
+            if (consecutive >= 36 && consecutive > bestSize) {
               bestSize = consecutive;
               bestRow = gapTopRow - consecutive + 1;
             }
@@ -1503,7 +1503,7 @@ export default function TemplatesPage() {
             gapTopRow = -1;
           }
         }
-        if (consecutive >= 20 && consecutive > bestSize) {
+        if (consecutive >= 36 && consecutive > bestSize) {
           bestRow = gapTopRow - consecutive + 1;
         }
         return bestRow;
