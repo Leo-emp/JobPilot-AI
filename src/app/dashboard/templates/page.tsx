@@ -1528,8 +1528,9 @@ export default function TemplatesPage() {
       };
 
       while (yOffset < canvas.height) {
-        const topPad = marginSet ? FIXED_MARGIN : 0;
-        const bottomReserve = marginSet ? FIXED_MARGIN : 0;
+        /* # Page 1: template CSS padding handles top margin, only reserve bottom */
+        const topPad = isFirstPage ? 0 : FIXED_MARGIN;
+        const bottomReserve = FIXED_MARGIN;
         const availableH = pageHeightPx - topPad - bottomReserve;
         let sliceBottom = Math.min(yOffset + availableH, canvas.height);
         const isLastSlice = sliceBottom >= canvas.height;
