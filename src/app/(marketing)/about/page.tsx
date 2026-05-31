@@ -9,7 +9,7 @@ export const revalidate = 3600;
 
 export const metadata = {
   title: "About — JobPilot AI",
-  description: "Learn about JobPilot AI — our mission to make job hunting smarter with AI-powered career tools.",
+  description: "Learn about JobPilot AI — helping job seekers get to interviews faster with every career tool in one place.",
 };
 
 export default function AboutPage() {
@@ -20,8 +20,8 @@ export default function AboutPage() {
         About JobPilot AI
       </h1>
       <p className="text-text-secondary text-lg mb-16 max-w-2xl">
-        We&apos;re on a mission to make job hunting smarter, faster, and less stressful
-        — powered by AI that actually understands your career.
+        We help job seekers get to interviews faster and land their dream roles
+        — with every tool they need in one place.
       </p>
 
       <div className="space-y-16">
@@ -57,10 +57,48 @@ export default function AboutPage() {
           </h2>
           <div className="glass-card p-6 sm:p-8">
             <p className="text-lg text-text-secondary leading-relaxed">
-              To democratize career success by giving every job seeker access to
-              AI-powered tools that were previously only available to those who could
-              afford expensive career coaches and consultants.
+              Help job seekers get to interviews faster and land their dream roles
+              — with every tool they need in one place. No jumping between platforms,
+              no piecing together five different apps. One career co-pilot from resume to offer.
             </p>
+          </div>
+        </section>
+
+        {/* ---- Our Values ---- */}
+        <section>
+          <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold mb-6 glow-text">
+            Our Values
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              {
+                title: "Convenience",
+                desc: "Save your time and ease the grind. Every feature is built to remove friction from the job search, not add more.",
+              },
+              {
+                title: "Transparency",
+                desc: "See the reasoning behind every score, evaluation, and recommendation. No black-box outputs, no unexplained numbers.",
+              },
+              {
+                title: "Continuous Growth",
+                desc: "Improve every day through learning, actionable feedback, and clear guidance on what to fix and why.",
+              },
+              {
+                title: "Simplicity",
+                desc: "We simplify the job search process instead of overcomplicating it. Clean tools that do what they say.",
+              },
+              {
+                title: "Quality",
+                desc: "We focus on generating outputs that actually work. Resumes that pass ATS, cover letters worth sending, answers that hold up.",
+              },
+            ].map((value) => (
+              <div key={value.title} className="glass-card p-5">
+                <h3 className="font-bold text-white mb-2">{value.title}</h3>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  {value.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -70,31 +108,46 @@ export default function AboutPage() {
             What We Offer
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Feature cards */}
             {[
               {
                 title: "Resume Intelligence",
-                desc: "AI-powered resume analysis, optimization, full rebuilds, and career pivot suggestions.",
-              },
-              {
-                title: "Smart Job Matching",
-                desc: "Find jobs that match your skills and get an AI-calculated match score with gap analysis.",
+                desc: "AI-powered resume analysis with ATS scoring, optimization tailored to specific jobs, full rebuilds, and career pivot reframing.",
               },
               {
                 title: "Cover Letter Generator",
-                desc: "Personalized, job-specific cover letters generated in seconds — not generic templates.",
+                desc: "Professional cover letters matched to specific roles and companies — using your real achievements, not generic templates.",
               },
               {
-                title: "Interview Prep",
-                desc: "AI predicts likely interview questions and coaches you on crafting strong answers.",
+                title: "Mock Interview Studio",
+                desc: "Live AI mock interviews that adapt to your role, experience level, and target company. Full scoring and feedback after each session.",
+              },
+              {
+                title: "Interview Question Predictor",
+                desc: "Role-specific interview questions with AI-coached answers based on your actual resume experience.",
+              },
+              {
+                title: "LinkedIn Optimizer",
+                desc: "Profile audit scored out of 100, AI-rewritten headline and about section, plus a 30-day content strategy.",
+              },
+              {
+                title: "Smart Job Matching",
+                desc: "AI-calculated match scores between your resume and any job description, with skill gap analysis and action plans.",
+              },
+              {
+                title: "Portfolio Builder",
+                desc: "9 premium templates for developers, designers, photographers, and professionals. Shareable live web pages, not static PDFs.",
+              },
+              {
+                title: "Networking & Outreach",
+                desc: "AI-crafted connection requests, cold outreach, recruiter pitches, and follow-ups — three versions per message, platform-aware.",
               },
               {
                 title: "Application Tracker",
-                desc: "Track every application from saved to offer with a clean, organized dashboard.",
+                desc: "Track every application from saved to offer. Notes, follow-up reminders, and skill gap insights across your saved jobs.",
               },
               {
                 title: "Career Pivot Mode",
-                desc: "Thinking of switching industries? Our AI maps your transferable skills to new career paths.",
+                desc: "Switching industries? Our AI reframes your existing experience with transferable skills and target-industry language.",
               },
             ].map((feature) => (
               <div key={feature.title} className="glass-card p-5">
@@ -116,18 +169,22 @@ export default function AboutPage() {
             <ul className="space-y-4 text-text-secondary">
               <li className="flex items-start gap-3">
                 <span className="text-brand-light font-bold mt-0.5">01</span>
-                <span><strong className="text-white">All-in-One Platform</strong> — Resume, cover letters, job search, interview prep, and tracking in a single app. No more juggling 5 different tools.</span>
+                <span><strong className="text-white">Everything in One Place</strong> — Resume, cover letters, mock interviews, LinkedIn, portfolios, job tracking, and networking — in a single app. No juggling five different tools.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-brand-light font-bold mt-0.5">02</span>
-                <span><strong className="text-white">Powered by Advanced AI</strong> — We use Google Gemini to deliver intelligent, context-aware career guidance tailored to your unique profile.</span>
+                <span><strong className="text-white">Outputs That Actually Work</strong> — Every resume passes ATS checks, every cover letter is role-specific, every interview answer is grounded in your real experience.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-brand-light font-bold mt-0.5">03</span>
-                <span><strong className="text-white">Free to Start</strong> — Our free tier gives you real access to every feature. Upgrade when you&apos;re ready for unlimited power.</span>
+                <span><strong className="text-white">Transparent AI</strong> — You see the reasoning behind every score and recommendation. No unexplained numbers, no black boxes.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-brand-light font-bold mt-0.5">04</span>
+                <span><strong className="text-white">Free to Start</strong> — Our free tier gives you real access to every feature. No crippled demo — optimize a resume today without paying.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-brand-light font-bold mt-0.5">05</span>
                 <span><strong className="text-white">Privacy First</strong> — Your resume data is yours. We never sell your information or share it with recruiters without your consent.</span>
               </li>
             </ul>
