@@ -26,7 +26,12 @@ const DEAD_MODEL_TTL_MS = 60 * 60 * 1000;
 const MAX_RETRY_PASSES = 2;
 const AI_TIMEOUT_MS = 30_000;
 
-async function callGeminiCore(parts: any[]): Promise<string> {
+export interface GeminiResult {
+  text: string;
+  model: string;
+}
+
+async function callGeminiCore(parts: any[]): Promise<GeminiResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -96,7 +101,7 @@ async function callGeminiCore(parts: any[]): Promise<string> {
           continue;
         }
 
-        return text;
+        return { text, model };
       } catch (error: unknown) {
         lastError = error instanceof Error ? error.message : "Network error";
         continue;
@@ -107,11 +112,11 @@ async function callGeminiCore(parts: any[]): Promise<string> {
   throw new Error("AI is temporarily unavailable. Please try again in a moment.");
 }
 
-export async function callGemini(prompt: string): Promise<string> {
+export async function callGemini(prompt: string): Promise<GeminiResult> {
   return callGeminiCore([{ text: prompt }]);
 }
 
-export async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<string> {
+export async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<GeminiResult> {
   const parts: any[] = [{ text: prompt }];
   for (const img of images) {
     const base64Data = img.data.includes(",") ? img.data.split(",")[1] : img.data;

@@ -48,8 +48,8 @@ ${text.slice(0, 3000)}
 </resume>`;
 
   try {
-    const result = await callGemini(prompt);
-    const match = result.match(/\[[\s\S]*?\]/);
+    const gemini = await callGemini(prompt);
+    const match = gemini.text.match(/\[[\s\S]*?\]/);
     if (!match) return [];
     return JSON.parse(match[0]).filter((s: unknown) => typeof s === "string" && s.length > 0);
   } catch {

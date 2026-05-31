@@ -13,7 +13,8 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { aiSchema, formatZodError } from "@/lib/validations";
-import { callGemini, callGeminiMultimodal } from "@/lib/gemini";
+import { callGemini, callGeminiMultimodal, type GeminiResult } from "@/lib/gemini";
+import { scrubPlaceholders } from "@/lib/ai-post-process";
 import { buildPrompt } from "@/lib/prompts";
 import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
@@ -184,9 +185,11 @@ export async function POST(req: NextRequest) {
 
     /* Build the prompt and call Gemini */
     const prompt = buildPrompt(action, payload);
-    const result = isMultimodal
+    const gemini: GeminiResult = isMultimodal
       ? await callGeminiMultimodal(prompt, payload.images)
       : await callGemini(prompt);
+
+    const result = scrubPlaceholders(gemini.text);
 
     /* Increment usage counter and invalidate plan cache */
     await dbRetry(() =>
@@ -197,17 +200,17 @@ export async function POST(req: NextRequest) {
     );
     await cacheDel(`plan:${session.user.id}`);
 
-    /* Save to AI history (non-blocking — failure shouldn't break the response) */
+    /* Save to AI history with model info (non-blocking) */
     const title = buildHistoryTitle(action, payload);
     prisma.aiResult.create({
-      data: { userId: session.user.id, action, title, result },
+      data: { userId: session.user.id, action, title, result, model: gemini.model },
     }).catch(() => {});
 
     /* Calculate remaining calls */
     const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
     const remaining = admin ? "unlimited" : Math.max(0, limit - user.aiUsageCount - 1);
 
-    return NextResponse.json({ result, remaining });
+    return NextResponse.json({ result, remaining, model: gemini.model });
   } catch (error: unknown) {
     Sentry.captureException(error, {
       tags: { component: "ai_route" },

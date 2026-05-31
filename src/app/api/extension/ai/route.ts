@@ -15,6 +15,7 @@ import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { extensionAiSchema, formatZodError } from "@/lib/validations";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 import { checkGlobalDailyCap } from "@/lib/redis";
+import { scrubPlaceholders } from "@/lib/ai-post-process";
 
 /* ---- OPTIONS: Handle CORS preflight ---- */
 export async function OPTIONS(req: NextRequest) {
@@ -239,7 +240,8 @@ Job Description: ${description}`;
   }
 
   try {
-    const result = await callGemini(prompt);
+    const raw = await callGemini(prompt);
+    const result = scrubPlaceholders(raw);
 
     /* Increment usage counter */
     await prisma.user.update({

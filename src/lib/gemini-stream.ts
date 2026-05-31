@@ -22,7 +22,12 @@ const deadModels = new Map<string, number>();
 const DEAD_MODEL_TTL_MS = 60 * 60 * 1000;
 const AI_TIMEOUT_MS = 30_000;
 
-export async function streamGemini(prompt: string): Promise<ReadableStream<Uint8Array>> {
+export interface StreamResult {
+  stream: ReadableStream<Uint8Array>;
+  model: string;
+}
+
+export async function streamGemini(prompt: string): Promise<StreamResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -82,41 +87,44 @@ export async function streamGemini(prompt: string): Promise<ReadableStream<Uint8
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      return new ReadableStream({
-        async pull(ctrl) {
-          try {
-            const { done, value } = await reader.read();
-            if (done) {
-              ctrl.close();
-              return;
-            }
-
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
-
-            for (const line of lines) {
-              if (!line.startsWith("data: ")) continue;
-              const jsonStr = line.slice(6).trim();
-              if (!jsonStr || jsonStr === "[DONE]") continue;
-
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) {
-                  ctrl.enqueue(encoder.encode(text));
-                }
-              } catch {
-                /* Skip malformed JSON chunks */
+      return {
+        model,
+        stream: new ReadableStream({
+          async pull(ctrl) {
+            try {
+              const { done, value } = await reader.read();
+              if (done) {
+                ctrl.close();
+                return;
               }
+
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = chunk.split("\n");
+
+              for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const jsonStr = line.slice(6).trim();
+                if (!jsonStr || jsonStr === "[DONE]") continue;
+
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (text) {
+                    ctrl.enqueue(encoder.encode(text));
+                  }
+                } catch {
+                  /* Skip malformed JSON chunks */
+                }
+              }
+            } catch {
+              ctrl.close();
             }
-          } catch {
-            ctrl.close();
-          }
-        },
-        cancel() {
-          reader.cancel();
-        },
-      });
+          },
+          cancel() {
+            reader.cancel();
+          },
+        }),
+      };
     } catch (error: unknown) {
       lastError = error instanceof Error ? error.message : "Network error";
       continue;
@@ -126,7 +134,7 @@ export async function streamGemini(prompt: string): Promise<ReadableStream<Uint8
   throw new Error(lastError || "AI is temporarily unavailable. Please try again in a moment.");
 }
 
-export async function streamGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<ReadableStream<Uint8Array>> {
+export async function streamGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<StreamResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -175,27 +183,30 @@ export async function streamGeminiMultimodal(prompt: string, images: { data: str
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      return new ReadableStream({
-        async pull(ctrl) {
-          try {
-            const { done, value } = await reader.read();
-            if (done) { ctrl.close(); return; }
+      return {
+        model,
+        stream: new ReadableStream({
+          async pull(ctrl) {
+            try {
+              const { done, value } = await reader.read();
+              if (done) { ctrl.close(); return; }
 
-            const chunk = decoder.decode(value, { stream: true });
-            for (const line of chunk.split("\n")) {
-              if (!line.startsWith("data: ")) continue;
-              const jsonStr = line.slice(6).trim();
-              if (!jsonStr || jsonStr === "[DONE]") continue;
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) ctrl.enqueue(encoder.encode(text));
-              } catch {}
-            }
-          } catch { ctrl.close(); }
-        },
-        cancel() { reader.cancel(); },
-      });
+              const chunk = decoder.decode(value, { stream: true });
+              for (const line of chunk.split("\n")) {
+                if (!line.startsWith("data: ")) continue;
+                const jsonStr = line.slice(6).trim();
+                if (!jsonStr || jsonStr === "[DONE]") continue;
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (text) ctrl.enqueue(encoder.encode(text));
+                } catch {}
+              }
+            } catch { ctrl.close(); }
+          },
+          cancel() { reader.cancel(); },
+        }),
+      };
     } catch (error: unknown) {
       lastError = error instanceof Error ? error.message : "Network error";
       continue;

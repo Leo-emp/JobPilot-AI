@@ -12,7 +12,8 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { aiSchema, formatZodError } from "@/lib/validations";
-import { streamGemini, streamGeminiMultimodal } from "@/lib/gemini-stream";
+import { streamGemini, streamGeminiMultimodal, type StreamResult } from "@/lib/gemini-stream";
+import { scrubPlaceholders } from "@/lib/ai-post-process";
 import { buildPrompt } from "@/lib/prompts";
 import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
 
     /* Build prompt and get stream */
     const prompt = buildPrompt(action, payload);
-    const stream = isMultimodal
+    const gemini: StreamResult = isMultimodal
       ? await streamGeminiMultimodal(prompt, payload.images as { data: string; mimeType: string }[])
       : await streamGemini(prompt);
 
@@ -160,17 +161,18 @@ export async function POST(req: NextRequest) {
 
     /* Collect full text for history saving, while streaming to client */
     const encoder = new TextEncoder();
-    const reader = stream.getReader();
+    const reader = gemini.stream.getReader();
     let fullText = "";
 
     const outputStream = new ReadableStream({
       async pull(ctrl) {
         const { done, value } = await reader.read();
         if (done) {
-          /* Save to AI history after stream completes */
+          /* Save to AI history with model info after stream completes */
           const title = buildHistoryTitle(action, payload);
+          const cleaned = scrubPlaceholders(fullText);
           prisma.aiResult.create({
-            data: { userId: session.user.id, action, title, result: fullText },
+            data: { userId: session.user.id, action, title, result: cleaned, model: gemini.model },
           }).catch(() => {});
 
           ctrl.close();

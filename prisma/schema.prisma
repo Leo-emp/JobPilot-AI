@@ -201,6 +201,8 @@ model AiResult {
   action    String                           // Action type: analyze_resume, optimize_resume, etc.
   title     String                           // Human-readable label (e.g. "Resume for Google SWE")
   result    String                           // The AI output (markdown)
+  model     String?                          // Which Gemini model served this request
+  rating    Boolean?                         // User feedback: true = thumbs up, false = thumbs down
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

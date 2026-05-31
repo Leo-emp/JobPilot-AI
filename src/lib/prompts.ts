@@ -12,6 +12,58 @@ function wrapUserInput(label: string, text: string): string {
   return `<${label}>\n${text}\n</${label}>`;
 }
 
+/* ---- Score calibration block — anchors AI scoring for consistency ---- */
+const SCORE_CALIBRATION = `
+SCORE CALIBRATION (use these anchors for consistency):
+90-100: Exceptional — top 5%, ready for FAANG/Fortune 500
+75-89: Strong — competitive candidate, minor improvements needed
+60-74: Average — meets basics but won't stand out
+40-59: Below average — significant gaps to address
+Below 40: Needs major rework`;
+
+/* ---- Shared formatting rules for all resume-output prompts ---- */
+const RESUME_RULES = `CRITICAL RULES:
+- Use the candidate's REAL name, contact info, experience, and education — NEVER invent or fabricate
+- NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data only
+- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
+- If the resume contains a number or metric, ALWAYS preserve and highlight it
+- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
+- Prioritize bullets by impact: lead with the most impressive achievement for each role
+- NEVER claim the candidate already holds the target job title — state their ACTUAL current role
+
+WRITING QUALITY:
+- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
+- Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
+
+FORMATTING RULES:
+- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
+- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers
+- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
+- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
+- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
+- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names. Use "Current" for ongoing roles.
+- Do NOT use ### headings — use **bold** inline text only where specified above
+- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
+
+STRUCTURE (follow this EXACT order):
+1. # Name (from resume)
+   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username
+2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns. NEVER start with "I am". START with a strong adjective + their actual role title. Use "I" sparingly mid-sentence only. NEVER claim they already hold the target title.)
+3. ## Core Skills
+   Bullet points grouped by category:
+   - Category Name: Skill, Skill, Skill
+   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has — never invent. Each category MUST fit on a single line.)
+4. ## Work Experience (if the resume has work experience)
+   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
+   Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
+   If NO work experience, replace with ## Projects or ## Relevant Experience using academic/volunteer/freelance projects.
+5. ## Education
+   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
+6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY**
+7. ## Languages (each with proficiency level)
+
+Return the COMPLETE resume in clean markdown format.`;
+
 function analyzeResume(payload: Record<string, any>): string {
   return `You are a senior career coach and ATS expert with 15 years of experience in hiring. Analyze this resume thoroughly.
 
@@ -19,6 +71,7 @@ IMPORTANT RULES:
 - Use the ACTUAL content from the resume below — reference specific job titles, companies, skills, and achievements the candidate listed
 - Never use generic placeholders like [Your Name] or [Company] — use what's in the resume
 - Be specific and actionable in your feedback
+${SCORE_CALIBRATION}
 
 Provide this EXACT structure:
 
@@ -47,53 +100,18 @@ ${wrapUserInput("resume", payload.resume)}`;
 
 function optimizeResume(payload: Record<string, any>): string {
   const hasJD = payload.jobDescription?.trim();
-  return `You are a world-class resume writer who has helped candidates land roles at Google, McKinsey, and Fortune 500 companies. ${hasJD ? "Optimize this resume for the job description below." : "Optimize this resume for maximum impact and ATS readability across industries."}
+  return `You are a world-class resume writer. ${hasJD ? "Optimize this resume for the job description below." : "Optimize this resume for maximum impact and ATS readability across industries."}
 
-CRITICAL RULES:
-- Use the candidate's REAL name, contact info, experience, and education — NEVER invent or fabricate
-- NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data only
-${hasJD ? "- Extract EXACT keywords and phrases from the job description and weave them naturally into bullet points" : "- Use strong, industry-standard keywords and ATS-friendly language throughout"}
-- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
-- If the resume contains a number or metric, ALWAYS preserve and highlight it (e.g., "by 10%", "50+ customers", "30 calls/day")
-- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
-- Prioritize bullets by impact: lead with the most impressive achievement for each role
-${hasJD ? "- Mirror the job description's language — if they say \"stakeholder management\", use that exact phrase, not a synonym" : "- Use widely recognized industry terminology that ATS systems scan for"}
-- NEVER claim the candidate already holds the target job title — state their ACTUAL current role and frame relevant experience as qualification for the target role
+${RESUME_RULES}
 
-WRITING QUALITY STANDARDS:
-- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
-- Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
-- Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
-- Professional Summary must ${hasJD ? "directly address the target role and mention 2-3 key requirements from the job description" : "showcase the candidate's strongest value proposition and core expertise"}
-
-FORMATTING RULES:
-- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
-- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
-- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY** (the entire line including dates must be wrapped in **)
-- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
-- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names (not "July 2024", not "Jul 2024"). Use "Current" for ongoing roles.
-- Do NOT use ### headings — use **bold** inline text only where specified above
-- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
-
-STRUCTURE (follow this EXACT order):
-1. # Name (from resume)
-   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username (full URL)
-2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
-3. ## Core Skills
-   Bullet points grouped by category:
-   - Category Name: Skill, Skill, Skill
-   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. ${hasJD ? "From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning." : "Organize by strength and relevance to their field."} Each category MUST fit on a single line — never exceed 4 skills per category.)
-4. ## Work Experience (if the resume has work experience)
-   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
-   Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
-   If the resume has NO work experience, replace this section with ## Projects or ## Relevant Experience using academic projects, volunteer work, freelance, or personal projects from the resume. Use the same format: **Project/Role Name, Organization/Context — MM/YYYY – MM/YYYY** with 3-4 bullet points each.
-5. ## Education
-   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY**
-7. ## Languages (each with proficiency level, e.g., English - Fluent, Burmese - Native)
-
-Return the COMPLETE optimized resume in clean markdown format.
+${hasJD ? `JD-SPECIFIC RULES:
+- Extract EXACT keywords from the job description and weave them naturally into bullet points
+- Mirror the job description's language — if they say "stakeholder management", use that exact phrase
+- Professional Summary must directly address the target role and mention 2-3 key requirements from the JD
+- Core Skills: from the candidate's real skills, pick only the ones most relevant to the JD` : `GENERAL RULES:
+- Use strong, industry-standard keywords and ATS-friendly language throughout
+- Professional Summary must showcase the candidate's strongest value proposition
+- Core Skills: organize by strength and relevance to their field`}
 
 Resume:
 ${payload.resume}
@@ -101,55 +119,15 @@ ${hasJD ? `\nJob Description:\n${payload.jobDescription}` : ""}${payload.careerC
 }
 
 function rebuildResume(payload: Record<string, any>): string {
-  return `You are a world-class resume writer who has helped candidates land roles at Google, McKinsey, and Fortune 500 companies. Rebuild this resume from scratch for the specific job below.
+  return `You are a world-class resume writer. Rebuild this resume from scratch for the specific job below.
 
-CRITICAL RULES:
-- Use the candidate's REAL name, contact info, education, and work history — NEVER invent or fabricate
-- NEVER use placeholders like [Your Name], [Company Name], [City, State], [X years], or [quantify, e.g., 15-20%]
-- Extract EXACT keywords and phrases from the job description and weave them naturally into bullet points
-- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
-- If the resume contains a number or metric, ALWAYS preserve and highlight it (e.g., "by 10%", "50+ customers", "30 calls/day")
-- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
-- Prioritize bullets by impact: lead with the most impressive achievement for each role
-- Mirror the job description's language — if they say "stakeholder management", use that exact phrase, not a synonym
-- NEVER claim the candidate already holds the target job title — state their ACTUAL current role and frame relevant experience as qualification for the target role
+${RESUME_RULES}
 
-WRITING QUALITY STANDARDS:
-- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated
-- Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
-- Be specific: "Managed store inventory" becomes "Managed inventory across 200+ SKUs using RFID tracking, maintaining 98% stock accuracy"
-- Professional Summary must directly address the target role and mention 2-3 key requirements from the job description
-
-FORMATTING RULES:
-- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
-- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
-- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY** (the entire line including dates must be wrapped in **)
-- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
-- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names (not "July 2024", not "Jul 2024"). Use "Current" for ongoing roles.
-- Do NOT use ### headings — use **bold** inline text only where specified above
-- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
-
-STRUCTURE (follow this EXACT order):
-1. # Name (from resume)
-   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username (full URL)
-2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly analytical Business Operations Executive currently..." or "Results-driven Software Engineer with 5+ years...". Then describe what they bring and what they're seeking. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target job title. If transitioning, frame as "seeking to leverage X experience into Y role")
-3. ## Core Skills
-   Bullet points grouped by category:
-   - Category Name: Skill, Skill, Skill
-   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
-4. ## Work Experience (if the resume has work experience)
-   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
-   Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
-   If the resume has NO work experience, replace this section with ## Projects or ## Relevant Experience using academic projects, volunteer work, freelance, or personal projects from the resume. Use the same format: **Project/Role Name, Organization/Context — MM/YYYY – MM/YYYY** with 3-4 bullet points each.
-5. ## Education
-   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-6. ## Certifications and Trainings
-   Certification Name, Institution — **MM/YYYY – MM/YYYY**
-7. ## Languages
-   List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
-
-Return the COMPLETE rebuilt resume in clean markdown — ready to copy and use.
+JD-SPECIFIC RULES:
+- Extract EXACT keywords from the job description and weave them naturally into bullet points
+- Mirror the job description's language — if they say "stakeholder management", use that exact phrase
+- Professional Summary must directly address the target role and mention 2-3 key requirements from the JD
+- Core Skills: from the candidate's real skills, pick only the ones most relevant to the JD
 
 Original Resume:
 ${payload.resume}
@@ -168,6 +146,7 @@ IMPORTANT RULES:
 - Compare against SPECIFIC requirements from the job description — not generic advice
 - Be honest about gaps — don't sugarcoat a weak match
 - Every recommendation must be actionable and specific
+${SCORE_CALIBRATION}
 
 Provide this EXACT structure:
 
@@ -410,55 +389,16 @@ ${payload.jobDescription}`;
 }
 
 function careerPivot(payload: Record<string, any>): string {
-  return `You are a world-class career transition specialist who has helped hundreds of professionals successfully switch industries. This person wants to change careers.
+  return `You are a world-class career transition specialist. This person wants to change careers. Rebuild their resume for the target industry.
 
-CRITICAL RULES:
-- Use the candidate's REAL name, contact info, and background — NEVER invent or fabricate
-- NEVER use placeholders like [Your Name], [Company], [X years] — use actual data only
+${RESUME_RULES}
+
+CAREER PIVOT RULES:
 - Do NOT invent experience — only reframe what actually exists for the target industry
-- Extract EXACT keywords from the target job description and weave them into reframed bullets
-- Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
-- If the resume contains a number or metric, ALWAYS preserve and highlight it
-- If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers
-
-WRITING QUALITY STANDARDS:
-- Every bullet starts with a different power verb — never repeat: Led, Spearheaded, Orchestrated, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Cultivated
-- Remove filler words: "responsible for", "helped with", "assisted in" — replace with direct action
 - Reframe each achievement using the TARGET INDUSTRY's language, not the source industry
 - Professional Summary must directly address the career change — why their background is an ASSET, not a gap
-
-FORMATTING RULES:
-- NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
-- NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers around the category name
-- Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY** (the entire line including dates must be wrapped in **)
-- For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
-- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names (not "July 2024", not "Jul 2024"). Use "Current" for ongoing roles.
-- Do NOT use ### headings — use **bold** inline text only where specified above
-- LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
-
-STRUCTURE (follow this EXACT order):
-1. # Name (from resume)
-   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username (full URL)
-2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns (he/she/they/him/her). NEVER start with "I am". START with a strong skill-highlighting adjective + their actual role title, e.g. "Highly adaptable Business Operations Executive seeking to transition..." or "Resourceful Marketing Specialist with transferable expertise in...". Then show how their background uniquely positions them for the target role. Use "I" sparingly mid-sentence only when needed. NEVER claim they already hold the target title. Mention specific transferable strengths.)
-3. ## Core Skills
-   Bullet points grouped by category:
-   - Transferable Skills: Skill, Skill, Skill
-   - Target Industry: Skill, Skill, Skill
-   - Technical: Tool, Tool, Tool
-   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has from their resume — never invent skills. From those real skills, pick only the ones most relevant to the job description. Prioritize skills that match JD keywords for ATS scanning. Each category MUST fit on a single line — never exceed 4 skills per category.)
-4. ## Work Experience (if the resume has work experience)
-   For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
-   Exactly 4 bullet points — reframed for the target industry, emphasizing transferable value. ALL bullet text must be plain text.
-   If the resume has NO work experience, replace this section with ## Projects or ## Relevant Experience using academic projects, volunteer work, freelance, or personal projects from the resume. Use the same format: **Project/Role Name, Organization/Context — MM/YYYY – MM/YYYY** with 3-4 bullet points each.
-5. ## Education
-   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-6. ## Certifications and Trainings
-   Certification Name, Institution — **MM/YYYY – MM/YYYY**
-7. ## Languages
-   List each language with proficiency level (e.g., English - Fluent, Burmese - Native)
-
-Return the COMPLETE rebuilt resume in clean markdown — ready to use, no placeholders.
+- Core Skills categories should include: Transferable Skills, Target Industry, Technical
+- Extract EXACT keywords from the target job description and weave them into reframed bullets
 
 Original Resume:
 ${payload.resume}
@@ -478,6 +418,7 @@ IMPORTANT RULES:
 - Score each section honestly, not generously
 ${hasPostImages ? "- For post screenshots: analyze the ACTUAL content visible in each image — text, formatting, engagement metrics, visuals" : ""}
 ${payload.postContext ? `\nADDITIONAL CONTEXT FROM USER: ${payload.postContext}` : ""}
+${SCORE_CALIBRATION}
 
 Provide this EXACT structure:
 
