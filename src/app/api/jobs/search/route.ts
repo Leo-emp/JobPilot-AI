@@ -400,11 +400,23 @@ async function fetchFindwork(query: string): Promise<Job[]> {
    SOURCE 11: INTERNSHIPS — Aggregates multiple internship-specific feeds
    when the user selects "Internship" job type
    ============================================================ */
+/* # Country-specific internship terminology */
+const INTERNSHIP_KEYWORDS: Record<string, string> = {
+  au: "intern internship vacation program cadetship graduate program work placement traineeship summer analyst",
+  gb: "intern internship placement graduate scheme trainee work experience industrial placement year in industry",
+  us: "intern internship co-op fellowship summer analyst rotational program",
+  ca: "intern internship co-op work placement summer student",
+  nz: "intern internship graduate programme cadetship summer placement",
+  de: "intern internship praktikum werkstudent working student trainee",
+};
+const DEFAULT_INTERN_KEYWORDS = "intern internship placement trainee graduate scheme work experience co-op";
+
 async function fetchInternships(query: string, country: string): Promise<Job[]> {
   const countryName = COUNTRY_NAMES[country] || "";
+  const keywords = INTERNSHIP_KEYWORDS[country] || DEFAULT_INTERN_KEYWORDS;
   const allResults: Job[] = [];
 
-  /* # Adzuna with internship-specific params */
+  /* # Adzuna with country-specific internship keywords */
   const appId = process.env.ADZUNA_APP_ID;
   const appKey = process.env.ADZUNA_APP_KEY;
   if (appId && appKey) {
@@ -412,9 +424,9 @@ async function fetchInternships(query: string, country: string): Promise<Job[]> 
       const params = new URLSearchParams({
         app_id: appId,
         app_key: appKey,
-        results_per_page: "20",
+        results_per_page: "25",
         what: `internship ${query}`,
-        what_or: "intern placement trainee graduate scheme work experience",
+        what_or: keywords,
       });
       const res = await fetch(`https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params.toString()}`);
       if (res.ok) {
@@ -449,7 +461,7 @@ async function fetchInternships(query: string, country: string): Promise<Job[]> 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          keywords: `internship ${query}`,
+          keywords: `${keywords.split(" ").slice(0, 3).join(" OR ")} ${query}`,
           location: countryName,
         }),
       });
@@ -468,6 +480,37 @@ async function fetchInternships(query: string, country: string): Promise<Job[]> 
           contractTime: "Internship",
           postedDate: j.updated || "",
           source: "Jooble",
+        }));
+        allResults.push(...jobs);
+      }
+    } catch { /* fail silently */ }
+  }
+
+  /* # JSearch broadened internship search */
+  const jsearchKey = process.env.JSEARCH_API_KEY;
+  if (jsearchKey) {
+    try {
+      const topTerms = keywords.split(" ").slice(0, 4).join(" OR ");
+      const searchQ = `(${topTerms}) ${query} in ${countryName}`;
+      const params = new URLSearchParams({ query: searchQ, page: "1", num_pages: "1" });
+      const res = await fetch(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
+        headers: { "X-RapidAPI-Key": jsearchKey, "X-RapidAPI-Host": "jsearch.p.rapidapi.com" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jobs = (data.data || []).map((j: any) => ({
+          id: `jsearch-intern-${j.job_id || Math.random().toString(36).slice(2)}`,
+          title: j.job_title || "",
+          company: j.employer_name || "Unknown",
+          location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(", ") || "Remote",
+          description: (j.job_description || "").slice(0, 500),
+          url: j.job_apply_link || j.job_google_link || "",
+          salary: j.job_min_salary && j.job_max_salary ? formatSalary(j.job_min_salary, j.job_max_salary) : "",
+          category: "Internship",
+          contractTime: "Internship",
+          postedDate: j.job_posted_at_datetime_utc || "",
+          source: j.job_publisher || "JSearch",
         }));
         allResults.push(...jobs);
       }
