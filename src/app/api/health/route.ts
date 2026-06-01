@@ -11,6 +11,7 @@ import { dbRetry } from "@/lib/db-retry";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getRedis, isRedisConfigured } from "@/lib/redis";
+import * as Sentry from "@sentry/nextjs";
 
 /* # Track when the server started (persists across requests in the same instance) */
 const startedAt = new Date().toISOString();
@@ -50,7 +51,34 @@ export async function GET(req: NextRequest) {
     redisLatencyMs = Date.now() - redisStart;
   }
 
-  const status = dbOk ? "healthy" : "degraded";
+  /* Check Gemini API reachability */
+  let geminiOk = false;
+  let geminiLatencyMs = 0;
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    const geminiStart = Date.now();
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
+      geminiOk = res.ok;
+    } catch { /* Gemini unreachable */ }
+    geminiLatencyMs = Date.now() - geminiStart;
+  }
+
+  const status = dbOk && geminiOk ? "healthy" : dbOk ? "degraded" : "unhealthy";
+
+  /* Alert Sentry on critical failures */
+  if (!dbOk) {
+    Sentry.captureMessage("Health check: database unreachable", { level: "fatal", tags: { component: "health" } });
+  }
+  if (!geminiOk && geminiKey) {
+    Sentry.captureMessage("Health check: Gemini API unreachable", { level: "error", tags: { component: "health" } });
+  }
+  if (redisConfigured && !redisOk) {
+    Sentry.captureMessage("Health check: Redis unreachable", { level: "warning", tags: { component: "health" } });
+  }
 
   /* # Memory usage for monitoring (Node.js process) */
   const mem = process.memoryUsage();
@@ -70,6 +98,11 @@ export async function GET(req: NextRequest) {
         connected: redisOk,
         ...(redisConfigured && { latencyMs: redisLatencyMs }),
       },
+      gemini: {
+        configured: !!geminiKey,
+        reachable: geminiOk,
+        latencyMs: geminiLatencyMs,
+      },
       /* Memory stats only for admin — prevents leaking server internals */
       ...(isAdmin && {
         memory: {
@@ -82,7 +115,7 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
     },
     {
-      status: dbOk ? 200 : 503,
+      status: status === "healthy" ? 200 : 503,
       headers: { "Cache-Control": "no-store, max-age=0" },
     }
   );
