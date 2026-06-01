@@ -447,14 +447,19 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q") || "";
+  const rawQuery = searchParams.get("q") || "";
   const location = searchParams.get("location") || "";
   const page = parseInt(searchParams.get("page") || "1");
   const country = searchParams.get("country") || "us";
   const sponsorship = searchParams.get("sponsorship") === "true";
+  const jobType = searchParams.get("jobType") || "";
+
+  /* # When a job type is selected, prepend it to the search query
+     so all sources return filtered results */
+  const query = jobType ? `${jobType} ${rawQuery}`.trim() : rawQuery;
 
   /* Cache key based on normalized search params (15 min TTL) */
-  const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}:${sponsorship}`;
+  const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}:${sponsorship}:${jobType}`;
 
   try {
     /* Check cache first — avoids hitting external APIs for repeated searches */

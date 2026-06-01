@@ -45,6 +45,7 @@ export default function JobsPage() {
   const [searchPage, setSearchPage] = useState(1);
   const [hasSearched, setHasSearched] = useState(false);
   const [sponsorshipFilter, setSponsorshipFilter] = useState(false);
+  const [jobTypeFilter, setJobTypeFilter] = useState("");
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
 
   /* ---- Expanded job description tracking ---- */
@@ -127,6 +128,7 @@ export default function JobsPage() {
       });
       if (searchLocation) params.set("location", searchLocation);
       if (sponsorshipFilter) params.set("sponsorship", "true");
+      if (jobTypeFilter) params.set("jobType", jobTypeFilter);
 
       const res = await fetch(`/api/jobs/search?${params.toString()}`);
       const data = await res.json();
@@ -367,6 +369,27 @@ export default function JobsPage() {
                 >
                   {searchLoading ? "Searching..." : "Search Jobs"}
                 </button>
+              </div>
+            </div>
+
+            {/* Job type filter + Visa sponsorship filter */}
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              {/* Job Type dropdown */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-text-muted uppercase tracking-wide">Type</label>
+                <select
+                  value={jobTypeFilter}
+                  onChange={(e) => setJobTypeFilter(e.target.value)}
+                  className="px-3 py-2 rounded-lg bg-space-700 border border-card-border text-white text-sm focus:outline-none focus:border-brand-indigo appearance-none cursor-pointer"
+                >
+                  <option value="">All Jobs</option>
+                  <option value="internship">Internship</option>
+                  <option value="graduate">Graduate</option>
+                  <option value="entry level">Entry Level</option>
+                  <option value="part time">Part Time</option>
+                  <option value="contract">Contract</option>
+                  <option value="remote">Remote</option>
+                </select>
               </div>
             </div>
 
