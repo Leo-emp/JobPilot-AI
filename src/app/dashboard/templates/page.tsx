@@ -1464,10 +1464,9 @@ export default function TemplatesPage() {
       let yOffset = 0;
       let isFirstPage = true;
 
-      /* # Fixed margin: ~12mm top and bottom on every page, every template */
-      const MARGIN_MM = 12;
+      /* # Margin for pages 2+: ~14mm — used as minimum when centering content */
+      const MARGIN_MM = 14;
       const FIXED_MARGIN = Math.floor(MARGIN_MM * canvas.width / imgWidth);
-      const marginSet = true;
 
       /* Scan only the right 55% of the canvas for white gaps.
          This ensures two-column templates with dark sidebars still
@@ -1495,7 +1494,7 @@ export default function TemplatesPage() {
             consecutive++;
             if (gapTopRow === -1) gapTopRow = row;
           } else {
-            if (consecutive >= 36 && consecutive > bestSize) {
+            if (consecutive >= 24 && consecutive > bestSize) {
               bestSize = consecutive;
               bestRow = gapTopRow - consecutive + 1;
             }
@@ -1503,7 +1502,7 @@ export default function TemplatesPage() {
             gapTopRow = -1;
           }
         }
-        if (consecutive >= 36 && consecutive > bestSize) {
+        if (consecutive >= 24 && consecutive > bestSize) {
           bestRow = gapTopRow - consecutive + 1;
         }
         return bestRow;
@@ -1528,10 +1527,10 @@ export default function TemplatesPage() {
       };
 
       while (yOffset < canvas.height) {
-        /* # Page 1: template CSS padding handles top margin, only reserve bottom */
-        const topPad = isFirstPage ? 0 : FIXED_MARGIN;
-        const bottomReserve = FIXED_MARGIN;
-        const availableH = pageHeightPx - topPad - bottomReserve;
+        /* # Page 1: no reserved margins (CSS padding handles top, maximize content)
+           # Pages 2+: reserve minimum margin for break scanning */
+        const reserveForScan = isFirstPage ? 0 : FIXED_MARGIN;
+        const availableH = pageHeightPx - reserveForScan;
         let sliceBottom = Math.min(yOffset + availableH, canvas.height);
         const isLastSlice = sliceBottom >= canvas.height;
 
@@ -1543,7 +1542,16 @@ export default function TemplatesPage() {
 
         const sliceH = sliceBottom - yOffset;
 
-        /* # Margin is fixed at MARGIN_MM for all pages — no auto-detection */
+        /* # Calculate where to place content on the page canvas:
+           # Page 1: top=0 (CSS padding is baked into the canvas content)
+           # Pages 2+: center the slice vertically for equal top/bottom margins */
+        let drawY: number;
+        if (isFirstPage) {
+          drawY = 0;
+        } else {
+          const totalSpace = pageHeightPx - sliceH;
+          drawY = Math.max(FIXED_MARGIN, Math.floor(totalSpace / 2));
+        }
 
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
@@ -1551,7 +1559,7 @@ export default function TemplatesPage() {
         const pctx = pageCanvas.getContext("2d")!;
         pctx.fillStyle = "#ffffff";
         pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, topPad, canvas.width, sliceH);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, drawY, canvas.width, sliceH);
 
         if (!isFirstPage) pdf.addPage();
         pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
