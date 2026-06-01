@@ -233,6 +233,142 @@ async function fetchJooble(query: string, location: string, page: number): Promi
 }
 
 /* ============================================================
+   SOURCE 6: JSEARCH (RapidAPI — aggregates LinkedIn, Indeed, Glassdoor)
+   ============================================================ */
+async function fetchJSearch(query: string, location: string, page: number, country: string): Promise<Job[]> {
+  const apiKey = process.env.JSEARCH_API_KEY;
+  if (!apiKey) return [];
+
+  const countryName = COUNTRY_NAMES[country] || "";
+  const searchQuery = location ? `${query} in ${location}, ${countryName}` : `${query} in ${countryName}`;
+
+  const params = new URLSearchParams({
+    query: searchQuery,
+    page: String(page),
+    num_pages: "1",
+  });
+
+  const res = await fetch(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
+    headers: {
+      "X-RapidAPI-Key": apiKey,
+      "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+    },
+  });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.data || []).map((j: any) => ({
+    id: `jsearch-${j.job_id || Math.random().toString(36).slice(2)}`,
+    title: j.job_title || "",
+    company: j.employer_name || "Unknown",
+    location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(", ") || "Remote",
+    description: (j.job_description || "").slice(0, 500),
+    url: j.job_apply_link || j.job_google_link || "",
+    salary: j.job_min_salary && j.job_max_salary
+      ? formatSalary(j.job_min_salary, j.job_max_salary)
+      : "",
+    category: j.job_employment_type || "",
+    contractTime: j.job_employment_type || "",
+    postedDate: j.job_posted_at_datetime_utc || "",
+    source: j.job_publisher || "JSearch",
+  }));
+}
+
+/* ============================================================
+   SOURCE 7: REED (UK jobs — requires REED_API_KEY)
+   ============================================================ */
+async function fetchReed(query: string, location: string): Promise<Job[]> {
+  const apiKey = process.env.REED_API_KEY;
+  if (!apiKey) return [];
+
+  const params = new URLSearchParams({ keywords: query, resultsToTake: "20" });
+  if (location) params.set("locationName", location);
+
+  const res = await fetch(`https://www.reed.co.uk/api/1.0/search?${params.toString()}`, {
+    headers: { Authorization: `Basic ${btoa(apiKey + ":")}` },
+  });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.results || []).map((j: any) => ({
+    id: `reed-${j.jobId}`,
+    title: j.jobTitle || "",
+    company: j.employerName || "Unknown",
+    location: j.locationName || "",
+    description: stripHTML(j.jobDescription || ""),
+    url: j.jobUrl || "",
+    salary: formatSalary(j.minimumSalary, j.maximumSalary),
+    category: "",
+    contractTime: j.contractType || "",
+    postedDate: j.date || "",
+    source: "Reed",
+  }));
+}
+
+/* ============================================================
+   SOURCE 8: THE MUSE (free, no key, curated jobs)
+   ============================================================ */
+async function fetchTheMuse(query: string, page: number): Promise<Job[]> {
+  const params = new URLSearchParams({ page: String(page - 1) });
+  if (query) params.set("category", query);
+
+  const res = await fetch(`https://www.themuse.com/api/public/jobs?${params.toString()}`);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  const q = query.toLowerCase();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.results || []).slice(0, 15).filter((j: any) => {
+    if (!q) return true;
+    return (j.name || "").toLowerCase().includes(q) ||
+      (j.company?.name || "").toLowerCase().includes(q) ||
+      (j.contents || "").toLowerCase().includes(q);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }).map((j: any) => ({
+    id: `muse-${j.id}`,
+    title: j.name || "",
+    company: j.company?.name || "Unknown",
+    location: (j.locations || []).map((l: { name: string }) => l.name).join(", ") || "Remote",
+    description: stripHTML((j.contents || "").slice(0, 500)),
+    url: j.refs?.landing_page || "",
+    salary: "",
+    category: (j.categories || []).map((c: { name: string }) => c.name).join(", "),
+    contractTime: j.type || "",
+    postedDate: j.publication_date || "",
+    source: "The Muse",
+  }));
+}
+
+/* ============================================================
+   SOURCE 9: ARBEITNOW (free, no key, EU + remote)
+   ============================================================ */
+async function fetchArbeitnow(query: string): Promise<Job[]> {
+  const params = new URLSearchParams();
+  if (query) params.set("search", query);
+
+  const res = await fetch(`https://arbeitnow.com/api/job-board-api?${params.toString()}`);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.data || []).slice(0, 15).map((j: any) => ({
+    id: `arbeitnow-${j.slug || Math.random().toString(36).slice(2)}`,
+    title: j.title || "",
+    company: j.company_name || "Unknown",
+    location: j.location || "Remote",
+    description: stripHTML((j.description || "").slice(0, 500)),
+    url: j.url || "",
+    salary: "",
+    category: (j.tags || []).slice(0, 3).join(", "),
+    contractTime: j.remote ? "Remote" : "",
+    postedDate: j.created_at ? new Date(j.created_at * 1000).toISOString() : "",
+    source: "Arbeitnow",
+  }));
+}
+
+/* ============================================================
    HELPERS
    ============================================================ */
 function formatSalary(min?: number, max?: number): string {
@@ -341,21 +477,30 @@ export async function GET(req: NextRequest) {
       : countryName;
 
     /* Fetch all sources in parallel — each one fails gracefully */
-    const [adzunaJobs, joobleJobs, remotiveJobs, remoteOKJobs, wwrJobs] = await Promise.all([
+    const isUK = country === "gb";
+    const [adzunaJobs, joobleJobs, jsearchJobs, reedJobs, museJobs, remotiveJobs, remoteOKJobs, wwrJobs, arbeitnowJobs] = await Promise.all([
       fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
       fetchJooble(query, joobleLocation, page).catch(() => [] as Job[]),
+      fetchJSearch(query, location, page, country).catch(() => [] as Job[]),
+      isUK ? fetchReed(query, location).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
+      fetchTheMuse(query, page).catch(() => [] as Job[]),
       isRemoteSearch ? fetchRemotive(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchRemoteOK(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchWWR(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
+      isRemoteSearch ? fetchArbeitnow(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
     ]);
 
     /* Merge all results and deduplicate */
     let allJobs = deduplicateJobs([
+      ...jsearchJobs,
       ...adzunaJobs,
       ...joobleJobs,
+      ...reedJobs,
+      ...museJobs,
       ...remotiveJobs,
       ...remoteOKJobs,
       ...wwrJobs,
+      ...arbeitnowJobs,
     ]);
 
     /* # Filter out jobs that don't match the selected country.
@@ -382,11 +527,15 @@ export async function GET(req: NextRequest) {
 
     /* Build source summary */
     const sources = [
+      jsearchJobs.length > 0 && "LinkedIn/Indeed/Glassdoor",
       adzunaJobs.length > 0 && "Adzuna",
       joobleJobs.length > 0 && "Jooble",
+      reedJobs.length > 0 && "Reed",
+      museJobs.length > 0 && "The Muse",
       remotiveJobs.length > 0 && "Remotive",
       remoteOKJobs.length > 0 && "RemoteOK",
       wwrJobs.length > 0 && "WeWorkRemotely",
+      arbeitnowJobs.length > 0 && "Arbeitnow",
     ].filter(Boolean);
 
     const response = {
