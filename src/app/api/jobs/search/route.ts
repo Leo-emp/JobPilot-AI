@@ -369,6 +369,115 @@ async function fetchArbeitnow(query: string): Promise<Job[]> {
 }
 
 /* ============================================================
+   SOURCE 10: GITHUB JOBS (via findwork.dev — free, no key, tech internships)
+   ============================================================ */
+async function fetchFindwork(query: string): Promise<Job[]> {
+  const params = new URLSearchParams({ search: query });
+
+  const res = await fetch(`https://findwork.dev/api/jobs/?${params.toString()}`, {
+    headers: { "Accept": "application/json" },
+  });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.results || []).slice(0, 15).map((j: any) => ({
+    id: `findwork-${j.id || Math.random().toString(36).slice(2)}`,
+    title: j.role || "",
+    company: j.company_name || "Unknown",
+    location: j.location || "Remote",
+    description: stripHTML((j.text || "").slice(0, 500)),
+    url: j.url || "",
+    salary: "",
+    category: (j.keywords || []).slice(0, 3).join(", "),
+    contractTime: j.employment_type || "",
+    postedDate: j.date_posted || "",
+    source: "Findwork",
+  }));
+}
+
+/* ============================================================
+   SOURCE 11: INTERNSHIPS — Aggregates multiple internship-specific feeds
+   when the user selects "Internship" job type
+   ============================================================ */
+async function fetchInternships(query: string, country: string): Promise<Job[]> {
+  const countryName = COUNTRY_NAMES[country] || "";
+  const allResults: Job[] = [];
+
+  /* # Adzuna with internship-specific params */
+  const appId = process.env.ADZUNA_APP_ID;
+  const appKey = process.env.ADZUNA_APP_KEY;
+  if (appId && appKey) {
+    try {
+      const params = new URLSearchParams({
+        app_id: appId,
+        app_key: appKey,
+        results_per_page: "20",
+        what: `internship ${query}`,
+        what_or: "intern placement trainee graduate scheme work experience",
+      });
+      const res = await fetch(`https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params.toString()}`);
+      if (res.ok) {
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const data = await res.json();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const jobs = (data.results || []).map((j: any) => ({
+            id: `adzuna-intern-${j.id}`,
+            title: j.title || "",
+            company: j.company?.display_name || "Unknown",
+            location: j.location?.display_name || "Remote",
+            description: j.description || "",
+            url: j.redirect_url || "",
+            salary: formatSalary(j.salary_min, j.salary_max),
+            category: j.category?.label || "",
+            contractTime: "Internship",
+            postedDate: j.created || "",
+            source: "Adzuna",
+          }));
+          allResults.push(...jobs);
+        }
+      }
+    } catch { /* fail silently */ }
+  }
+
+  /* # Jooble internship-specific search */
+  const joobleKey = process.env.JOOBLE_API_KEY;
+  if (joobleKey) {
+    try {
+      const res = await fetch(`https://jooble.org/api/${joobleKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keywords: `internship ${query}`,
+          location: countryName,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jobs = (data.jobs || []).map((j: any) => ({
+          id: `jooble-intern-${j.id || Math.random().toString(36).slice(2)}`,
+          title: j.title || "",
+          company: j.company || "Unknown",
+          location: j.location || "",
+          description: stripHTML(j.snippet || ""),
+          url: j.link || "",
+          salary: j.salary || "",
+          category: "Internship",
+          contractTime: "Internship",
+          postedDate: j.updated || "",
+          source: "Jooble",
+        }));
+        allResults.push(...jobs);
+      }
+    } catch { /* fail silently */ }
+  }
+
+  return allResults;
+}
+
+/* ============================================================
    HELPERS
    ============================================================ */
 function formatSalary(min?: number, max?: number): string {
@@ -483,12 +592,16 @@ export async function GET(req: NextRequest) {
 
     /* Fetch all sources in parallel — each one fails gracefully */
     const isUK = country === "gb";
-    const [adzunaJobs, joobleJobs, jsearchJobs, reedJobs, museJobs, remotiveJobs, remoteOKJobs, wwrJobs, arbeitnowJobs] = await Promise.all([
+    const isInternship = jobType === "internship";
+
+    const [adzunaJobs, joobleJobs, jsearchJobs, reedJobs, museJobs, findworkJobs, internshipJobs, remotiveJobs, remoteOKJobs, wwrJobs, arbeitnowJobs] = await Promise.all([
       fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
       fetchJooble(query, joobleLocation, page).catch(() => [] as Job[]),
       fetchJSearch(query, location, page, country).catch(() => [] as Job[]),
       isUK ? fetchReed(query, location).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       fetchTheMuse(query, page).catch(() => [] as Job[]),
+      fetchFindwork(query).catch(() => [] as Job[]),
+      isInternship ? fetchInternships(rawQuery, country).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchRemotive(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchRemoteOK(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchWWR(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
@@ -497,11 +610,13 @@ export async function GET(req: NextRequest) {
 
     /* Merge all results and deduplicate */
     let allJobs = deduplicateJobs([
+      ...internshipJobs,
       ...jsearchJobs,
       ...adzunaJobs,
       ...joobleJobs,
       ...reedJobs,
       ...museJobs,
+      ...findworkJobs,
       ...remotiveJobs,
       ...remoteOKJobs,
       ...wwrJobs,
@@ -537,6 +652,8 @@ export async function GET(req: NextRequest) {
       joobleJobs.length > 0 && "Jooble",
       reedJobs.length > 0 && "Reed",
       museJobs.length > 0 && "The Muse",
+      findworkJobs.length > 0 && "Findwork",
+      internshipJobs.length > 0 && "Internship Search",
       remotiveJobs.length > 0 && "Remotive",
       remoteOKJobs.length > 0 && "RemoteOK",
       wwrJobs.length > 0 && "WeWorkRemotely",
