@@ -6,12 +6,15 @@ interface LogoProps {
 }
 
 export default function Logo({ size = 28, className = "" }: LogoProps) {
+  /* # Height from 76:159 aspect ratio */
+  const height = Math.round(size * 2.09);
+
   return (
     <Image
-      src="/logo.svg"
+      src="/logo.png"
       alt="JobPilot AI"
       width={size}
-      height={Math.round(size * 1.33)}
+      height={height}
       className={className}
       priority
     />

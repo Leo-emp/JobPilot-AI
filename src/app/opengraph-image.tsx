@@ -8,6 +8,8 @@
    ============================================================ */
 
 import { ImageResponse } from "next/og";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export const runtime = "nodejs";
 export const alt = "JobPilot AI — Your Career Co-Pilot";
@@ -15,6 +17,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  /* # Embed the logo as base64 so it renders in the OG image */
+  const logoData = readFileSync(join(process.cwd(), "public", "logo.png"));
+  const logoBase64 = `data:image/png;base64,${logoData.toString("base64")}`;
   return new ImageResponse(
     (
       <div
@@ -63,21 +68,13 @@ export default async function Image() {
             marginBottom: "24px",
           }}
         >
-          {/* # Rocket icon */}
-          <div
-            style={{
-              width: "64px",
-              height: "64px",
-              borderRadius: "16px",
-              background: "linear-gradient(135deg, #6366f1, #38bdf8)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "36px",
-            }}
-          >
-            🚀
-          </div>
+          {/* # Gold rocket logo */}
+          <img
+            src={logoBase64}
+            width="40"
+            height="84"
+            style={{ objectFit: "contain" }}
+          />
           <span
             style={{
               fontSize: "48px",
