@@ -10,9 +10,9 @@ interface RocketIconProps {
 }
 
 export default function RocketIcon({ size = 80, className = "" }: RocketIconProps) {
-  /* # Match old rocket height (size * 1.2), derive width from 76:159 aspect ratio */
+  /* # Match old rocket height (size * 1.2), derive width from 225:451 aspect ratio */
   const height = Math.round(size * 1.2);
-  const width = Math.round(height / 2.09);
+  const width = Math.round(height / 2.0);
 
   return (
     <Image
