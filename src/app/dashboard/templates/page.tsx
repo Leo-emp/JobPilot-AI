@@ -1293,9 +1293,8 @@ function MiniPreview({ template, data }: { template: Template; data: ResumeData 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const measure = () => setComputedScale(el.offsetWidth / 800);
-    measure();
-    const ro = new ResizeObserver(measure);
+    /* # ResizeObserver fires immediately on observe, so no separate initial call needed */
+    const ro = new ResizeObserver(() => setComputedScale(el.offsetWidth / 800));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -1825,7 +1824,7 @@ export default function TemplatesPage() {
                       </div>
                       <span className="text-sm text-green-400 font-medium">{uploadedFileName} — fields auto-filled!</span>
                       <button
-                        onClick={() => { setUploadStatus("idle"); setUploadedFileName(""); fileInputRef.current && (fileInputRef.current.value = ""); }}
+                        onClick={() => { setUploadStatus("idle"); setUploadedFileName(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                         className="text-xs text-text-muted hover:text-white ml-2"
                       >
                         Upload different
@@ -1842,7 +1841,7 @@ export default function TemplatesPage() {
                         <span className="text-sm text-red-400">{uploadError}</span>
                       </div>
                       <button
-                        onClick={() => { setUploadStatus("idle"); setUploadError(""); fileInputRef.current && (fileInputRef.current.value = ""); }}
+                        onClick={() => { setUploadStatus("idle"); setUploadError(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                         className="text-xs text-brand-light hover:text-white"
                       >
                         Try again

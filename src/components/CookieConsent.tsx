@@ -9,21 +9,18 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 /* localStorage key for persisting the user's consent */
 const CONSENT_KEY = "jobpilot-cookie-consent";
 
 export default function CookieConsent() {
-  /* null = still checking localStorage, true = accepted, false = not yet */
-  const [accepted, setAccepted] = useState<boolean | null>(null);
-
-  /* On mount, check if the user has already accepted */
-  useEffect(() => {
-    const stored = localStorage.getItem(CONSENT_KEY);
-    setAccepted(stored === "true");
-  }, []);
+  /* # Lazy-init from localStorage — avoids setState-in-useEffect */
+  const [accepted, setAccepted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem(CONSENT_KEY) === "true";
+  });
 
   /* Handle the "Accept" button click */
   const handleAccept = () => {
@@ -31,9 +28,8 @@ export default function CookieConsent() {
     setAccepted(true);
   };
 
-  /* Don't render anything while checking localStorage (avoids flash) */
   /* Don't render if already accepted */
-  if (accepted === null || accepted === true) return null;
+  if (accepted) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6">

@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 
 interface HistoryItem {
@@ -45,23 +45,25 @@ export default function HistoryPage() {
   const [resultLoading, setResultLoading] = useState(false);
   const [filter, setFilter] = useState("");
 
-  const fetchItems = useCallback(async () => {
-    try {
-      const url = filter ? `/api/ai-history?action=${filter}&limit=50` : "/api/ai-history?limit=50";
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.data);
-      }
-    } catch {
-    } finally {
-      setLoading(false);
-    }
-  }, [filter]);
-
+  /* # Fetch items when filter changes — async IIFE with cancellation for lint compliance */
   useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const url = filter ? `/api/ai-history?action=${filter}&limit=50` : "/api/ai-history?limit=50";
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled) setItems(data.data);
+        }
+      } catch {
+        /* Network error — ignore */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [filter]);
 
   const viewResult = async (id: string) => {
     setSelectedId(id);

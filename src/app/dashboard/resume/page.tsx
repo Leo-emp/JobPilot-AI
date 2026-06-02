@@ -13,7 +13,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
@@ -42,14 +42,16 @@ export default function ResumePage() {
   /* File upload error (separate from AI error) */
   const [uploadError, setUploadError] = useState("");
 
-  /* Auto-load user's most recent saved resume */
+  /* Auto-load user's most recent saved resume (render-time state adjustment) */
   const { defaultResume } = useDefaultResume();
-  useEffect(() => {
-    if (defaultResume && !resumeText) {
+  const [prevDefaultResume, setPrevDefaultResume] = useState(defaultResume);
+  if (defaultResume && defaultResume !== prevDefaultResume) {
+    setPrevDefaultResume(defaultResume);
+    if (!resumeText) {
       setResumeText(defaultResume.content);
       setFileName(defaultResume.fileName);
     }
-  }, [defaultResume]);
+  }
 
   /* Job-specific fields for optimize/rebuild/pivot */
   const [jobTitle, setJobTitle] = useState("");

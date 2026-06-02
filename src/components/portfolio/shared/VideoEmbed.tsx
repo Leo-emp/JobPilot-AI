@@ -3,6 +3,7 @@
 /* # Shared video embed component — parses YouTube/Vimeo URLs into responsive iframes */
 
 import { useState } from "react";
+import Image from "next/image";
 
 /* # Extract YouTube video ID from various URL formats */
 function getYouTubeId(url: string): string | null {
@@ -49,7 +50,7 @@ export function VideoEmbed({ videoUrl, thumbnailUrl, title, aspectRatio = "16/9"
   if (thumbnailUrl && !playing) {
     return (
       <div className="relative w-full cursor-pointer group" style={{ aspectRatio }} onClick={() => setPlaying(true)}>
-        <img src={thumbnailUrl} alt={title || "Video thumbnail"} className="w-full h-full object-cover" />
+        <Image src={thumbnailUrl} alt={title || "Video thumbnail"} className="w-full h-full object-cover" fill unoptimized />
         <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-20 h-20 rounded-full flex items-center justify-center backdrop-blur-md transition-transform group-hover:scale-110"

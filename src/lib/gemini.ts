@@ -9,8 +9,6 @@
    - Two passes: immediate, then 2s delay retry
    ============================================================ */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 const GEMINI_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.5-flash-lite",
@@ -31,13 +29,13 @@ export interface GeminiResult {
   model: string;
 }
 
-async function callGeminiCore(parts: any[]): Promise<GeminiResult> {
+async function callGeminiCore(parts: Record<string, unknown>[]): Promise<GeminiResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }
 
-  let lastError = "";
+  let _lastError = "";
 
   for (let pass = 0; pass < MAX_RETRY_PASSES; pass++) {
     if (pass > 0) {
@@ -77,19 +75,19 @@ async function callGeminiCore(parts: any[]): Promise<GeminiResult> {
         }
 
         if (response.status === 429 || response.status === 503) {
-          lastError = `Model ${model} rate-limited`;
+          _lastError = `Model ${model} rate-limited`;
           continue;
         }
 
         if (response.status === 500) {
-          lastError = `Model ${model} server error`;
+          _lastError = `Model ${model} server error`;
           continue;
         }
 
         if (!response.ok) {
           const errorData = await response.json();
           const msg = errorData.error?.message || "Gemini API error";
-          lastError = msg;
+          _lastError = msg;
           continue;
         }
 
@@ -97,13 +95,13 @@ async function callGeminiCore(parts: any[]): Promise<GeminiResult> {
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!text) {
-          lastError = "Empty response from AI model";
+          _lastError = "Empty response from AI model";
           continue;
         }
 
         return { text, model };
       } catch (error: unknown) {
-        lastError = error instanceof Error ? error.message : "Network error";
+        _lastError = error instanceof Error ? error.message : "Network error";
         continue;
       }
     }
@@ -117,7 +115,7 @@ export async function callGemini(prompt: string): Promise<GeminiResult> {
 }
 
 export async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<GeminiResult> {
-  const parts: any[] = [{ text: prompt }];
+  const parts: Record<string, unknown>[] = [{ text: prompt }];
   for (const img of images) {
     const base64Data = img.data.includes(",") ? img.data.split(",")[1] : img.data;
     parts.push({

@@ -2,8 +2,9 @@
 
 /* # Developer Template — IDE/terminal theme with neon green, cyan, purple accents on dark backgrounds */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
-import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
+import type { PortfolioData, PortfolioSection, ProjectEntry } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
 import { SocialIcons } from "../shared/SocialIcons";
 import { StatsBar } from "../shared/StatsBar";
@@ -58,7 +59,7 @@ function Cursor() {
 }
 
 /* # Reusable glass card with gradient border and hover lift */
-function GlassCard({ children, className = "", hover = true, span = "" }: {
+function _GlassCard({ children, className = "", hover = true, span = "" }: {
   children: React.ReactNode; className?: string; hover?: boolean; span?: string;
 }) {
   return (
@@ -160,8 +161,8 @@ function Hero({ data }: { data: PortfolioData }) {
                 background: `linear-gradient(135deg, ${c.green}, ${c.cyan}, ${c.purple})`,
                 filter: "blur(12px)",
               }} />
-              <img src={avatarUrl} alt={data.userName}
-                className="relative w-40 h-40 rounded-3xl object-cover" style={{ boxShadow: `0 0 0 2px ${c.green}40` }} />
+              <Image src={avatarUrl} alt={data.userName}
+                className="relative w-40 h-40 rounded-3xl object-cover" style={{ boxShadow: `0 0 0 2px ${c.green}40` }} width={160} height={160} unoptimized />
             </motion.div>
           )}
           <div>
@@ -724,7 +725,7 @@ function renderSection(section: PortfolioSection, index: number) {
                     whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
-                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <Image src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fill unoptimized />
 
                     {/* # Video play overlay */}
                     {isVideo && (
@@ -963,8 +964,7 @@ function renderSection(section: PortfolioSection, index: number) {
 }
 
 /* # Featured project component — full-width showcase with image side layout */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function FeaturedProject({ project }: { project: any }) {
+function FeaturedProject({ project }: { project: ProjectEntry }) {
   const p = project;
   return (
     <motion.div className="relative rounded-2xl overflow-hidden group"
@@ -978,8 +978,8 @@ function FeaturedProject({ project }: { project: any }) {
       <div className="flex flex-col lg:flex-row">
         {p.imageUrl && (
           <div className="lg:w-1/2 relative overflow-hidden">
-            <img src={p.imageUrl} alt={p.title}
-              className="w-full h-72 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <Image src={p.imageUrl} alt={p.title}
+              className="w-full h-72 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" fill unoptimized />
             <div className="absolute inset-0" style={{
               background: `linear-gradient(90deg, transparent 50%, ${c.surface})`,
             }} />
@@ -1039,8 +1039,7 @@ function FeaturedProject({ project }: { project: any }) {
 }
 
 /* # Project card component — gradient-bordered with image header and tech pills */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ProjectCard({ project, index }: { project: any; index: number }) {
+function ProjectCard({ project, index }: { project: ProjectEntry; index: number }) {
   const p = project;
   const grad = ENTRY_GRADIENTS[index % ENTRY_GRADIENTS.length];
   return (
@@ -1061,7 +1060,7 @@ function ProjectCard({ project, index }: { project: any; index: number }) {
       {/* # Image header with gradient overlay */}
       {p.imageUrl && (
         <div className="overflow-hidden h-44 relative">
-          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" fill unoptimized />
           <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 40%, ${c.surface})` }} />
         </div>
       )}

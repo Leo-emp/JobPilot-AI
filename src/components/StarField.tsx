@@ -11,8 +11,6 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-
 interface Star {
   id: number;
   x: number;
@@ -22,23 +20,26 @@ interface Star {
   duration: number;
 }
 
-export default function StarField() {
-  const [stars, setStars] = useState<Star[]>([]);
+/* # Generate stars at module load — avoids impure Math.random() calls during render */
+function seedStars(count: number): Star[] {
+  const result: Star[] = [];
+  for (let i = 0; i < count; i++) {
+    result.push({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2 + 0.5,
+      delay: Math.random() * 5,
+      duration: Math.random() * 3 + 3,
+    });
+  }
+  return result;
+}
 
-  useEffect(() => {
-    const generated: Star[] = [];
-    for (let i = 0; i < 120; i++) {
-      generated.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 2 + 0.5,
-        delay: Math.random() * 5,
-        duration: Math.random() * 3 + 3,
-      });
-    }
-    setStars(generated);
-  }, []);
+const STARS = seedStars(120);
+
+export default function StarField() {
+  const stars = STARS;
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">

@@ -4,6 +4,7 @@
 /* # PREMIUM LANDING PAGE — no section should look like a resume, all text sections have visual treatments */
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PortfolioData, PortfolioSection, GalleryEntry } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -57,8 +58,8 @@ function Lightbox({ entry, onClose }: { entry: GalleryEntry; onClose: () => void
             <VideoEmbed videoUrl={entry.videoUrl} thumbnailUrl={entry.imageUrl || undefined} title={entry.title} />
           </div>
         ) : (
-          <img src={entry.imageUrl} alt={entry.title}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg" />
+          <Image src={entry.imageUrl} alt={entry.title}
+            className="max-w-full max-h-[85vh] object-contain rounded-lg" width={1200} height={800} unoptimized />
         )}
 
         {/* # Caption overlay */}
@@ -208,7 +209,7 @@ function GallerySection({ section }: { section: PortfolioSection & { type: "gall
               {hasVideo(g) ? (
                 <div className="relative aspect-video">
                   {g.imageUrl ? (
-                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-75" />
+                    <Image src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-75" fill unoptimized />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: c.surface }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill={c.muted}><polygon points="8,5 20,12 8,19" /></svg>
@@ -222,7 +223,7 @@ function GallerySection({ section }: { section: PortfolioSection & { type: "gall
                   </div>
                 </div>
               ) : (
-                <img src={g.imageUrl} alt={g.title} className="w-full transition-all duration-700 group-hover:brightness-75" />
+                <Image src={g.imageUrl} alt={g.title} className="w-full transition-all duration-700 group-hover:brightness-75" width={800} height={600} unoptimized />
               )}
 
               {/* # Hover overlay with gradient and title */}
@@ -273,7 +274,7 @@ function renderSection(section: PortfolioSection) {
                     <VideoEmbed videoUrl={p.videoUrl} thumbnailUrl={p.imageUrl || undefined} title={p.title} accentColor="#ffffff" />
                   ) : p.imageUrl ? (
                     <div className="aspect-[4/3] overflow-hidden">
-                      <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" fill unoptimized />
                     </div>
                   ) : (
                     <div className="aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: c.surface }}>

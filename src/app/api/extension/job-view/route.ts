@@ -11,7 +11,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
-import { extractSkillsFromJD, extractAndStoreJobSkills } from "@/lib/career-intelligence";
+/* # Career intelligence functions — will be wired in when skill tracking is enabled */
+import { extractSkillsFromJD as _extractSkillsFromJD, extractAndStoreJobSkills as _extractAndStoreJobSkills } from "@/lib/career-intelligence";
 
 /* ---- OPTIONS: CORS preflight ---- */
 export async function OPTIONS(req: NextRequest) {

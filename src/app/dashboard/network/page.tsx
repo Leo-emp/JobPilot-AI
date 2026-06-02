@@ -17,7 +17,7 @@
 
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { usePlan } from "@/hooks/usePlan";
 import { useDefaultResume } from "@/hooks/useDefaultResume";
@@ -127,16 +127,16 @@ export default function OutreachHubPage() {
   const [resumeError, setResumeError] = useState("");
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
-  /* Auto-load user's most recent saved resume */
+  /* Auto-load user's most recent saved resume (render-time sync) */
   const { defaultResume } = useDefaultResume();
-  useEffect(() => {
-    if (defaultResume && !resumeText) {
-      setResumeText(defaultResume.content);
-    }
-  }, [defaultResume]);
+  const [prevDefault, setPrevDefault] = useState(defaultResume);
+  if (defaultResume && defaultResume !== prevDefault) {
+    setPrevDefault(defaultResume);
+    setResumeText(defaultResume.content);
+  }
 
   /* ---- Result state ---- */
-  const [generatedMessage, setGeneratedMessage] = useState(""); /* raw AI response */
+  const [, setGeneratedMessage] = useState(""); /* raw AI response */
   const [messageVersions, setMessageVersions] = useState<{ title: string; text: string }[]>([]); /* parsed 3 versions */
   const [selectedVersion, setSelectedVersion] = useState(0); /* which version is currently selected */
   const [editedText, setEditedText] = useState(""); /* user-editable text of the selected version */

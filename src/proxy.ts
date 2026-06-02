@@ -98,7 +98,7 @@ export function proxy(req: NextRequest) {
                req.headers.get("x-real-ip") ||
                "unknown";
 
-    const { allowed, remaining } = checkIpLimit(ip);
+    const { allowed, remaining: _remaining } = checkIpLimit(ip);
 
     if (!allowed) {
       return NextResponse.json(
@@ -135,6 +135,7 @@ export function proxy(req: NextRequest) {
       pathname.startsWith("/api/auth") ||
       pathname.startsWith("/api/stripe/webhook") ||
       pathname.startsWith("/api/portfolio/public/") ||
+      pathname.startsWith("/api/cron/") ||
       pathname === "/api/newsletter" ||
       pathname === "/api/health";
 

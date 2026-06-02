@@ -60,7 +60,7 @@ export default function JobsPage() {
   const [resumeFileName, setResumeFileName] = useState("");
   const [resumeUploading, setResumeUploading] = useState(false);
   const [savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; content: string }[]>([]);
-  const [resumesLoading, setResumesLoading] = useState(false);
+  const [resumesLoading, setResumesLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [result, setResult] = useState("");
@@ -70,7 +70,6 @@ export default function JobsPage() {
 
   /* ---- Fetch saved resumes on mount ---- */
   useEffect(() => {
-    setResumesLoading(true);
     fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
       .then(r => r.ok ? r.json() : { data: [] })
       .then(d => setSavedResumes(d.data || []))
@@ -224,8 +223,9 @@ export default function JobsPage() {
   };
 
   /* Format posted date to relative time */
+  const [now] = useState(() => Date.now());
   const formatDate = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
+    const diff = now - new Date(dateStr).getTime();
     const days = Math.floor(diff / 86400000);
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";

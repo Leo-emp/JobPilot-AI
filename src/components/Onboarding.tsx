@@ -11,7 +11,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
@@ -174,7 +174,11 @@ const paths: Record<string, { headline: string; steps: { title: string; desc: st
 
 export default function Onboarding({ hasActivity }: OnboardingProps) {
   const { data: session } = useSession();
-  const [show, setShow] = useState(false);
+  /* # Lazy-init: check localStorage once to decide whether to show onboarding */
+  const [show, setShow] = useState(() => {
+    if (typeof window === "undefined" || hasActivity) return false;
+    return !localStorage.getItem("onboarding_complete");
+  });
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState<string | null>(null);
   const [source, setSource] = useState<string | null>(null);
@@ -185,13 +189,6 @@ export default function Onboarding({ hasActivity }: OnboardingProps) {
   const [resumeUploaded, setResumeUploaded] = useState(false);
   const [resumeError, setResumeError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  /* Show onboarding only if user has zero activity and hasn't dismissed */
-  useEffect(() => {
-    if (hasActivity) return;
-    const done = localStorage.getItem("onboarding_complete");
-    if (!done) setShow(true);
-  }, [hasActivity]);
 
   if (!show || hasActivity) return null;
 

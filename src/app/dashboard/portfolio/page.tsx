@@ -16,7 +16,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import type {
   PortfolioSection, TemplateName, SectionType,
-  ExperienceEntry, EducationEntry, SkillGroup, ProjectEntry,
+  ExperienceEntry, EducationEntry, ProjectEntry,
   CertificationEntry, PublicationEntry, AwardEntry, GalleryEntry,
   TestimonialEntry,
 } from "@/lib/portfolio-types";
@@ -357,7 +357,7 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasPortfolio, setHasPortfolio] = useState(false);
-  const [portfolioId, setPortfolioId] = useState("");
+  const [_portfolioId, setPortfolioId] = useState("");
 
   /* ---- Portfolio data ---- */
   const [slug, setSlug] = useState("");
@@ -1028,10 +1028,10 @@ function SkillsForm({ section, onUpdate }: { section: PortfolioSection & { type:
 }
 
 /* ---- Generic entries form (experience, education, projects, etc.) ---- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function EntriesForm({ section, onUpdate, emptyEntry, label }: {
   section: PortfolioSection;
   onUpdate: (s: PortfolioSection) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emptyEntry: any;
   label: string;
 }) {

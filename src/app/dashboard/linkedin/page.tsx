@@ -19,6 +19,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { useAIStream } from "@/hooks/useAIStream";
@@ -492,10 +493,13 @@ export default function LinkedInPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {postScreenshots.map((screenshot, index) => (
                 <div key={index} className="relative group rounded-xl overflow-hidden border border-card-border bg-space-700/50">
-                  <img
+                  <Image
                     src={screenshot.preview}
                     alt={`Post screenshot ${index + 1}`}
                     className="w-full aspect-[3/4] object-cover object-top"
+                    width={300}
+                    height={400}
+                    unoptimized
                   />
                   <button
                     onClick={() => removeScreenshot(index)}

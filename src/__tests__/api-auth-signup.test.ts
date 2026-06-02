@@ -11,6 +11,18 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+/* Mock Resend so lazy-init doesn't throw without API key */
+vi.mock("resend", () => {
+  const mockSend = vi.fn(() => Promise.resolve());
+  return { Resend: class { emails = { send: mockSend }; } };
+});
+
+/* Mock audit to avoid Sentry dependency in tests */
+vi.mock("@/lib/audit", () => ({
+  audit: vi.fn(),
+  getClientIp: vi.fn(() => "127.0.0.1"),
+}));
+
 /* Mock rate limiter to allow all requests by default (async) */
 vi.mock("@/lib/rate-limit", () => ({
   authPerMinute: { check: vi.fn(async () => ({ allowed: true, remaining: 4, resetIn: 60000 })) },

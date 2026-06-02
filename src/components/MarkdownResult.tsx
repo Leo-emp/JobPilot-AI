@@ -9,7 +9,7 @@
 
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import type { jsPDF } from "jspdf";
 import AiDisclosure from "./AiDisclosure";
@@ -544,10 +544,11 @@ export default function MarkdownResult({ result, showDownload = true, editable =
   const cleaned = stripCodeFences(result);
   const html = parseMarkdown(cleaned);
 
-  const getEditedMarkdown = useCallback((): string => {
+  /* # No useCallback needed — React Compiler handles memoization automatically */
+  const getEditedMarkdown = (): string => {
     if (!contentRef.current) return cleaned;
     return domToMarkdown(contentRef.current);
-  }, [cleaned]);
+  };
 
   /* Download as PDF — matches reference resume layout exactly */
   const downloadPDF = async () => {

@@ -16,7 +16,7 @@ import * as Sentry from "@sentry/nextjs";
 /* # Track when the server started (persists across requests in the same instance) */
 const startedAt = new Date().toISOString();
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   /* Only admin sees technical error details */
   const session = await auth().catch(() => null);
   const isAdmin = session?.user?.isAdmin ?? false;

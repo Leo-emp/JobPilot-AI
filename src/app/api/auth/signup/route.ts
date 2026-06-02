@@ -15,7 +15,12 @@ import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 import { audit, getClientIp } from "@/lib/audit";
 import { buildWelcomeEmail } from "@/lib/welcome-email";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/* # Lazy-init so missing env var doesn't crash the module on import */
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -79,7 +84,7 @@ export async function POST(req: NextRequest) {
     audit("auth.signup", { userId: user.id, email: user.email, ip });
 
     /* Send welcome email (fire-and-forget — don't block signup on email delivery) */
-    resend.emails.send({
+    getResend().emails.send({
       from: "JobPilot AI <noreply@jobpilotai.co>",
       to: email,
       subject: "Welcome to JobPilot AI",

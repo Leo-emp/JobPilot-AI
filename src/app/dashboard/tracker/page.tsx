@@ -58,8 +58,19 @@ export default function TrackerPage() {
   }, []);
 
   useEffect(() => {
-    fetchApps();
-  }, [fetchApps]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/applications");
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled) setApps(data.data);
+        }
+      } catch { /* Silently fail */ }
+      finally { if (!cancelled) setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   /* ---- Add New Application ---- */
   const handleAdd = async () => {

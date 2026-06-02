@@ -2,6 +2,7 @@
 
 /* # Corporate Template — Luxury serif landing page with navy/gold, premium visual cards */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -41,7 +42,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 /* # Navy gradient border colors for each experience entry */
-const NAVY_GRADIENTS = [
+const _NAVY_GRADIENTS = [
   `linear-gradient(180deg, ${c.navy}, #2a3f6f)`,
   `linear-gradient(180deg, #1a2850, #3a5080)`,
   `linear-gradient(180deg, #0f1b3d, #2e4a7a)`,
@@ -82,7 +83,7 @@ function Hero({ data }: { data: PortfolioData }) {
             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring" as const }}>
             <div className="absolute -inset-1 rounded-full" style={{ background: `linear-gradient(135deg, ${c.gold}, ${c.goldLight})`, opacity: 0.5 }} />
-            <img src={avatarUrl} alt={data.userName} className="relative w-full h-full rounded-full object-cover" />
+            <Image src={avatarUrl} alt={data.userName} className="relative w-full h-full rounded-full object-cover" fill unoptimized />
           </motion.div>
         )}
 
@@ -245,8 +246,8 @@ function renderSection(section: PortfolioSection) {
                     <div className="flex flex-col lg:flex-row">
                       {p.imageUrl && (
                         <div className="lg:w-1/2 overflow-hidden relative group">
-                          <img src={p.imageUrl} alt={p.title}
-                            className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <Image src={p.imageUrl} alt={p.title}
+                            className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                           {/* # Gold gradient overlay on hover */}
                           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                             style={{ background: `linear-gradient(135deg, ${c.gold}20, transparent)` }} />
@@ -309,7 +310,7 @@ function renderSection(section: PortfolioSection) {
                       <div className="h-1" style={{ background: `linear-gradient(90deg, ${c.gold}, ${c.goldLight}, transparent)` }} />
                       {p.imageUrl && (
                         <div className="overflow-hidden h-44 relative group">
-                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#eee9df] via-transparent opacity-40" />
                         </div>
                       )}
@@ -683,8 +684,8 @@ function renderSection(section: PortfolioSection) {
                   initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
                   <div className="relative overflow-hidden w-full h-full">
-                    <img src={g.imageUrl} alt={g.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <Image src={g.imageUrl} alt={g.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fill unoptimized />
 
                     {/* # Video play button */}
                     {isVideo && (

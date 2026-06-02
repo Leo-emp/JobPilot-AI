@@ -204,12 +204,12 @@ export default function MockInterviewPage() {
 
   /* Auto-load user's default resume */
   const { defaultResume } = useDefaultResume();
-  useEffect(() => {
-    if (defaultResume && !resume) {
-      setResume(defaultResume.content);
-      setResumeFileName(defaultResume.fileName);
-    }
-  }, [defaultResume]);
+  const [prevDefault, setPrevDefault] = useState(defaultResume);
+  if (defaultResume && defaultResume !== prevDefault) {
+    setPrevDefault(defaultResume);
+    setResume(defaultResume.content);
+    setResumeFileName(defaultResume.fileName);
+  }
 
   /* ---- Interview conversation state ---- */
   const [messages, setMessages] = useState<ChatMessage[]>([]);          /* full conversation log */
@@ -326,7 +326,7 @@ export default function MockInterviewPage() {
       const recognition = new SR();
       recognition.continuous = true;
       recognition.interimResults = true;
-      (recognition as any).maxAlternatives = 1;
+      (recognition as unknown as Record<string, unknown>).maxAlternatives = 1;
       recognition.lang = "en-US";
       let finalTranscript = "";
 
@@ -348,6 +348,10 @@ export default function MockInterviewPage() {
         setIsListening(false);
       };
 
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
       recognition.onend = () => {
         if (recognitionRef.current === recognition) {
           try { recognition.start(); } catch { setIsListening(false); }
@@ -357,7 +361,6 @@ export default function MockInterviewPage() {
       try {
         recognition.start();
         recognitionRef.current = recognition;
-        setIsListening(true);
       } catch {
         /* Silent fail — mic button is still available */
       }
@@ -431,7 +434,7 @@ export default function MockInterviewPage() {
     const recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
-    (recognition as any).maxAlternatives = 1;
+    (recognition as unknown as Record<string, unknown>).maxAlternatives = 1;
     recognition.lang = "en-US";
     let finalTranscript = "";
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -540,7 +543,6 @@ export default function MockInterviewPage() {
     } catch {
       return { message: result, isComplete: false };
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions, feedProgressiveTTS]);
 
   /* ---- Start the interview: instant greeting, no AI wait ---- */
@@ -635,7 +637,7 @@ export default function MockInterviewPage() {
       } else {
         setWaitingForUser(true);
       }
-    } catch (e) {
+    } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
       window.speechSynthesis.cancel();
@@ -695,7 +697,7 @@ export default function MockInterviewPage() {
       } else {
         setWaitingForUser(true);
       }
-    } catch (e) {
+    } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
       window.speechSynthesis.cancel();

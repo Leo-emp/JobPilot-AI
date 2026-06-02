@@ -15,6 +15,18 @@ import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
 import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
 
+/* ---- Minimal SpeechRecognition interface (avoids `any` for vendor-prefixed API) ---- */
+interface MinimalSpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((e: unknown) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 /* ---- Types for parsed questions ---- */
 interface ParsedQuestion {
   id: number;
@@ -91,7 +103,7 @@ export default function InterviewPage() {
   const [parsedQuestions, setParsedQuestions] = useState<ParsedQuestion[]>([]);
   const [resumeText, setResumeText] = useState("");
   const [savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; content: string }[]>([]);
-  const [resumesLoading, setResumesLoading] = useState(false);
+  const [resumesLoading, setResumesLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [feedbackMap, setFeedbackMap] = useState<Record<number, string>>({});
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -100,27 +112,35 @@ export default function InterviewPage() {
 
   /* ---- Speech recognition ---- */
   const [listeningId, setListeningId] = useState<number | null>(null);
-  const recognitionRef = useRef<any>(null);
+  /* # SpeechRecognition ref — typed as minimal interface to avoid `any` */
+  const recognitionRef = useRef<MinimalSpeechRecognition | null>(null);
 
   /* ---- AI streaming hook ---- */
   const { result: streamResult, loading, streaming, error, callAI: streamAI, reset: resetAI } = useAIStream();
 
   /* ---- Fetch saved resumes on mount and auto-select the latest ---- */
   useEffect(() => {
-    setResumesLoading(true);
-    fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
-      .then(r => r.ok ? r.json() : { data: [] })
-      .then(d => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/resumes?limit=20&sort=createdAt&order=desc");
+        const d = r.ok ? await r.json() : { data: [] };
         const list = d.data || [];
-        setSavedResumes(list);
-        /* Auto-select the most recent resume so it's ready for feedback */
-        if (list.length > 0 && !resumeText) {
-          setResumeText(list[0].content);
+        if (!cancelled) {
+          setSavedResumes(list);
+          /* Auto-select the most recent resume so it's ready for feedback */
+          if (list.length > 0 && !resumeText) {
+            setResumeText(list[0].content);
+          }
         }
-      })
-      .catch(() => {})
-      .finally(() => setResumesLoading(false));
-  }, []);
+      } catch {
+        /* Network error — ignore */
+      } finally {
+        if (!cancelled) setResumesLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [resumeText]);
 
   /* ---- Generate interview questions ---- */
   const handlePredict = async () => {
@@ -153,7 +173,7 @@ export default function InterviewPage() {
       setFeedbackMap(prev => ({ ...prev, [q.id]: fullResult }));
     }
     setFeedbackQId(null);
-  }, [userAnswers, resumeText, jobDescription, streamAI]);
+  }, [userAnswers, resumeText, jobDescription, streamAI, company, companyPromptBlock]);
 
   /* ---- Speech recognition toggle ---- */
   const toggleMic = useCallback((questionId: number) => {
@@ -167,27 +187,31 @@ export default function InterviewPage() {
       recognitionRef.current?.stop();
     }
 
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
+    /* # Access SpeechRecognition from window (vendor-prefixed in some browsers) */
+    const w = window as unknown as Record<string, unknown>;
+    const SRConstructor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SRConstructor) {
       alert("Speech recognition is not supported in your browser. Try Chrome or Edge.");
       return;
     }
 
-    const recognition = new SR();
+    const recognition = new (SRConstructor as { new(): MinimalSpeechRecognition })();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
     let finalTranscript = userAnswers[questionId] || "";
-    const baseLength = finalTranscript.length;
+    const _baseLength = finalTranscript.length;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: unknown) => {
+      /* # Cast event to SpeechRecognitionEvent-like shape for type safety */
+      const e = event as { resultIndex: number; results: { length: number; [index: number]: { isFinal: boolean; 0: { transcript: string } } } };
       let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + " ";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript + " ";
         } else {
-          interim += event.results[i][0].transcript;
+          interim += e.results[i][0].transcript;
         }
       }
       setUserAnswers(prev => ({ ...prev, [questionId]: finalTranscript + interim }));
@@ -553,7 +577,7 @@ export default function InterviewPage() {
                                     <div className="mt-2 space-y-2">
                                       {q.lookingFor && (
                                         <div className="pl-4 py-2 border-l-2 border-brand-indigo/40 bg-brand-indigo/5 rounded-r-lg">
-                                          <p className="text-[13px] text-gray-400"><span className="text-gray-300 font-medium">What they're looking for:</span> {q.lookingFor}</p>
+                                          <p className="text-[13px] text-gray-400"><span className="text-gray-300 font-medium">What they&apos;re looking for:</span> {q.lookingFor}</p>
                                         </div>
                                       )}
                                       {q.howToPrepare && (

@@ -60,7 +60,7 @@ export const MockScreen: React.FC<MockScreenProps> = ({ delay = 0, children }) =
       </div>
       {/* Content area */}
       <div style={{ padding: 32 }}>
-        {children as any}
+        {children as React.ReactNode}
       </div>
     </div>
   );

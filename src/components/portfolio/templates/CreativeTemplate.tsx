@@ -2,6 +2,7 @@
 
 /* # Creative Template — Bold gradients, floating glass panels, neon accents, dramatic layouts */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -98,8 +99,8 @@ function Hero({ data }: { data: PortfolioData }) {
               initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3, type: "spring" as const, bounce: 0.3 }}>
               <div className="absolute -inset-2 rounded-full" style={{ background: c.gradient, filter: "blur(15px)", opacity: 0.4 }} />
-              <img src={avatarUrl} alt={data.userName}
-                className="relative w-40 h-40 rounded-full object-cover ring-2 ring-white/10 shadow-2xl" />
+              <Image src={avatarUrl} alt={data.userName}
+                className="relative w-40 h-40 rounded-full object-cover ring-2 ring-white/10 shadow-2xl" width={160} height={160} unoptimized />
             </motion.div>
           )}
 
@@ -308,8 +309,8 @@ function renderSection(section: PortfolioSection) {
                     <div className="flex flex-col lg:flex-row relative z-10">
                       {p.imageUrl && (
                         <div className="lg:w-1/2 overflow-hidden relative">
-                          <img src={p.imageUrl} alt={p.title}
-                            className="w-full h-64 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <Image src={p.imageUrl} alt={p.title}
+                            className="w-full h-64 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" fill unoptimized />
                           <div className="absolute inset-0 lg:hidden" style={{ background: "linear-gradient(180deg, transparent 50%, rgba(7,7,20,0.95))" }} />
                           <div className="absolute inset-0 hidden lg:block" style={{ background: `linear-gradient(90deg, transparent 50%, rgba(12,12,30,0.95))` }} />
                         </div>
@@ -379,7 +380,7 @@ function renderSection(section: PortfolioSection) {
                         {/* # Image header */}
                         {p.imageUrl && (
                           <div className="overflow-hidden h-44 relative">
-                            <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fill unoptimized />
                             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 40%, rgba(7,7,20,0.95))" }} />
                           </div>
                         )}
@@ -521,7 +522,7 @@ function renderSection(section: PortfolioSection) {
                   style={{ border: `1px solid ${c.border}` }}
                   whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}>
                   <div className="relative">
-                    <img src={g.imageUrl} alt={g.title} className="w-full transition-transform duration-500 group-hover:scale-110" />
+                    <Image src={g.imageUrl} alt={g.title} className="w-full transition-transform duration-500 group-hover:scale-110" width={800} height={600} unoptimized />
                     {/* # Gradient overlay on hover showing title */}
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       style={{ background: `linear-gradient(180deg, transparent 20%, ${accent}15 60%, ${c.bg}dd 90%)` }}>

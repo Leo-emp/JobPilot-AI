@@ -54,13 +54,13 @@ export default function CoverLetterPage() {
   /* Saved cover letters history */
   const [savedLetters, setSavedLetters] = useState<SavedLetter[]>([]);
 
-  /* ---- Pre-fill resume from saved default ---- */
-  useEffect(() => {
-    if (defaultResume && !resumeText) {
-      setResumeText(defaultResume.content);
-      setFileName(defaultResume.fileName);
-    }
-  }, [defaultResume]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* ---- Pre-fill resume from saved default (render-time sync) ---- */
+  const [prevDefault, setPrevDefault] = useState(defaultResume);
+  if (defaultResume && defaultResume !== prevDefault) {
+    setPrevDefault(defaultResume);
+    setResumeText(defaultResume.content);
+    setFileName(defaultResume.fileName);
+  }
 
   /* ---- Load previously saved cover letters ---- */
   useEffect(() => {

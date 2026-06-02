@@ -2,6 +2,7 @@
 
 /* # Academic Template — Scholarly landing page with modern visual cards, warm typography */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -86,9 +87,9 @@ function Hero({ data }: { data: PortfolioData }) {
           {avatarUrl && (
             <motion.div className="shrink-0"
               initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-              <img src={avatarUrl} alt={data.userName}
+              <Image src={avatarUrl} alt={data.userName}
                 className="w-32 h-32 rounded-xl object-cover shadow-md"
-                style={{ border: `2px solid ${c.border}` }} />
+                style={{ border: `2px solid ${c.border}` }} width={128} height={128} unoptimized />
             </motion.div>
           )}
           <div className="flex-1">
@@ -120,11 +121,8 @@ function Hero({ data }: { data: PortfolioData }) {
   );
 }
 
-let sectionCounter = 0;
-
-function renderSection(section: PortfolioSection) {
-  sectionCounter++;
-  const num = sectionCounter;
+/* # Section number is passed in from the parent to avoid module-level mutable state */
+function renderSection(section: PortfolioSection, num: number) {
 
   switch (section.type) {
 
@@ -383,8 +381,8 @@ function renderSection(section: PortfolioSection) {
                     <div className="flex flex-col lg:flex-row">
                       {p.imageUrl && (
                         <div className="lg:w-1/2 overflow-hidden relative group">
-                          <img src={p.imageUrl} alt={p.title}
-                            className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <Image src={p.imageUrl} alt={p.title}
+                            className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                             style={{ background: `linear-gradient(135deg, ${c.accent}20, transparent)` }} />
                         </div>
@@ -455,7 +453,7 @@ function renderSection(section: PortfolioSection) {
                       <div className="h-1" style={{ background: `linear-gradient(90deg, ${c.accent}, ${c.gold}60, transparent)` }} />
                       {p.imageUrl && (
                         <div className="overflow-hidden h-44 relative group">
-                          <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                         </div>
                       )}
                       <div className="p-6">
@@ -641,8 +639,8 @@ function renderSection(section: PortfolioSection) {
                   whileHover={{ y: -4, boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }}
                   initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
-                  <img src={g.imageUrl} alt={g.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <Image src={g.imageUrl} alt={g.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fill unoptimized />
 
                   {/* # Video play button */}
                   {isVideo && (
@@ -893,8 +891,6 @@ function renderSection(section: PortfolioSection) {
 }
 
 export default function AcademicTemplate({ data }: { data: PortfolioData }) {
-  sectionCounter = 0;
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: c.bg, color: c.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Hero data={data} />
@@ -906,7 +902,7 @@ export default function AcademicTemplate({ data }: { data: PortfolioData }) {
       {data.sections
         .filter((s) => s.visible && s.type !== "about")
         .map((section, i) => (
-          <div key={`${section.type}-${i}`}>{renderSection(section)}</div>
+          <div key={`${section.type}-${i}`}>{renderSection(section, i + 1)}</div>
         ))}
       <footer className="py-16 text-center text-xs" style={{ color: c.muted, borderTop: `1px solid ${c.border}` }}>
         Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: c.accent }}>JobPilot AI</a>

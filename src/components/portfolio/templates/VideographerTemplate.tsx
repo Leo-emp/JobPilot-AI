@@ -3,6 +3,7 @@
 /* # Videographer Template — Cinematic widescreen with actual video embeds, showreel hero, film aesthetic */
 /* # PREMIUM LANDING PAGE — no section should look like a resume, all text sections have visual treatments */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -188,8 +189,8 @@ function renderSection(section: PortfolioSection) {
                       />
                     ) : p.imageUrl ? (
                       <div className="aspect-video overflow-hidden">
-                        <img src={p.imageUrl} alt={p.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <Image src={p.imageUrl} alt={p.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" fill unoptimized />
                         {/* # Cinematic overlay */}
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                           style={{ background: `linear-gradient(180deg, transparent 60%, ${c.bg}cc)` }} />
@@ -363,7 +364,7 @@ function renderSection(section: PortfolioSection) {
                     whileHover={{ scale: 1.02 }}
                     initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-700 group-hover:brightness-75" />
+                    <Image src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-700 group-hover:brightness-75" fill unoptimized />
 
                     {/* # Featured badge on first still */}
                     {i === 0 && (

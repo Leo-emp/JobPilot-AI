@@ -158,7 +158,7 @@ export async function POST() {
 
   /* # Build sections from whatever data we have */
   const sections: PortfolioSection[] = [];
-  const content = resume.content || "";
+  const _content = resume.content || "";
 
   /* # About section */
   sections.push({

@@ -2,6 +2,7 @@
 
 /* # Minimal Template — Premium landing page with clean luxury, visual depth, gradient cards */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -76,8 +77,8 @@ function Hero({ data, colors }: { data: PortfolioData; colors: typeof defaultCol
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring" as const }}>
               <div className="absolute -inset-1 rounded-full opacity-20 blur-md" style={{ background: colors.accent }} />
-              <img src={avatarUrl} alt={data.userName}
-                className="relative w-32 h-32 rounded-full object-cover ring-4 ring-gray-200 shadow-xl" />
+              <Image src={avatarUrl} alt={data.userName}
+                className="relative w-32 h-32 rounded-full object-cover ring-4 ring-gray-200 shadow-xl" width={128} height={128} unoptimized />
             </motion.div>
           )}
           <div>
@@ -299,8 +300,8 @@ function ProjectsSection({ section, colors }: { section: PortfolioSection; color
                 <div className="flex flex-col lg:flex-row">
                   {p.imageUrl && (
                     <div className="lg:w-1/2 overflow-hidden relative group">
-                      <img src={p.imageUrl} alt={p.title}
-                        className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image src={p.imageUrl} alt={p.title}
+                        className="w-full h-64 lg:h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                       {/* # Gradient overlay on hover */}
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         style={{ background: `linear-gradient(135deg, ${colors.accent}30, transparent)` }} />
@@ -369,7 +370,7 @@ function ProjectsSection({ section, colors }: { section: PortfolioSection; color
                   <div className="h-1" style={{ background: `linear-gradient(90deg, ${colors.accent}, ${colors.accent}40)` }} />
                   {p.imageUrl && (
                     <div className="overflow-hidden h-48 relative">
-                      <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                       {/* # Gradient overlay on image hover */}
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         style={{ background: `linear-gradient(to top, ${colors.accent}20, transparent)` }} />
@@ -631,8 +632,8 @@ function GallerySection({ section, colors }: { section: PortfolioSection; colors
               className={`group relative rounded-2xl overflow-hidden ${bentoLayout(i, section.entries.length)}`}
               style={{ boxShadow: colors.shadow, border: `1px solid ${colors.border}` }}
               whileHover={{ y: -4, boxShadow: colors.shadowHover }}>
-              <img src={g.imageUrl} alt={g.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image src={g.imageUrl} alt={g.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fill unoptimized />
 
               {/* # Video play button overlay */}
               {isVideo && (

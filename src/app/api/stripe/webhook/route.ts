@@ -11,12 +11,21 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { getStripe } from "@/lib/stripe";
 import { audit } from "@/lib/audit";
 import { cacheDel } from "@/lib/redis";
+import { buildCancellationEmail } from "@/lib/cancellation-email";
 import Stripe from "stripe";
+
+/* # Lazy-init so missing env var doesn't crash the module on import */
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -98,6 +107,16 @@ export async function POST(req: NextRequest) {
           );
           audit("payment.cancelled", { userId: user.id, detail: `subscription:${subscription.id}` });
           await cacheDel(`plan:${user.id}`);
+
+          /* Send cancellation email (fire-and-forget — don't block webhook response) */
+          if (user.email) {
+            getResend().emails.send({
+              from: "JobPilot AI <noreply@jobpilotai.co>",
+              to: user.email,
+              subject: "Your JobPilot AI Pro plan has ended",
+              html: buildCancellationEmail(user.name || "there"),
+            }).catch(() => {});
+          }
         }
         break;
       }

@@ -12,7 +12,7 @@
 /* ---- Configuration ---- */
 const API_URLS = ["https://jobpilotai.co", "http://localhost:3000"];
 let BASE_URL = API_URLS[0];
-let isLoggedIn = false;
+let _isLoggedIn = false;
 
 /* ---- Extraction helpers ---- */
 

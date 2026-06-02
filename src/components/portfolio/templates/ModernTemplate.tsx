@@ -2,6 +2,7 @@
 
 /* # Modern Template — Glassmorphism with violet/cyan/pink accents, floating orbs, animated mesh gradients */
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { PortfolioData, PortfolioSection } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -40,7 +41,7 @@ const ENTRY_GRADIENTS = [
 ];
 
 /* # Reusable glass card with gradient border, backdrop blur, and hover lift */
-function GlassCard({ children, className = "", span = "" }: {
+function _GlassCard({ children, className = "", span = "" }: {
   children: React.ReactNode; className?: string; span?: string;
 }) {
   return (
@@ -109,8 +110,8 @@ function Hero({ data }: { data: PortfolioData }) {
               initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3, type: "spring" as const }}>
               <div className="absolute -inset-2 rounded-3xl bg-white/20 blur-md" />
-              <img src={avatarUrl} alt={data.userName}
-                className="relative w-44 h-44 rounded-3xl object-cover shadow-2xl ring-2 ring-white/20" />
+              <Image src={avatarUrl} alt={data.userName}
+                className="relative w-44 h-44 rounded-3xl object-cover shadow-2xl ring-2 ring-white/20" width={176} height={176} unoptimized />
             </motion.div>
           )}
           <div>
@@ -333,7 +334,7 @@ function renderSection(section: PortfolioSection, index: number) {
                       <div className="flex flex-col lg:flex-row relative z-10">
                         {p.imageUrl && (
                           <div className="lg:w-1/2 overflow-hidden relative">
-                            <img src={p.imageUrl} alt={p.title} className="w-full h-72 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <Image src={p.imageUrl} alt={p.title} className="w-full h-72 lg:h-full object-cover transition-transform duration-700 group-hover:scale-105" fill unoptimized />
                             <div className="absolute inset-0 hidden lg:block" style={{ background: `linear-gradient(90deg, transparent 50%, ${c.surface})` }} />
                           </div>
                         )}
@@ -395,7 +396,7 @@ function renderSection(section: PortfolioSection, index: number) {
                           {/* # Image header */}
                           {p.imageUrl && (
                             <div className="overflow-hidden h-48 relative">
-                              <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                              <Image src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" fill unoptimized />
                               <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 50%, ${c.surface})` }} />
                             </div>
                           )}
@@ -764,7 +765,7 @@ function renderSection(section: PortfolioSection, index: number) {
                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
                     <div className="relative w-full h-full">
-                      <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <Image src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fill unoptimized />
 
                       {/* # Video play overlay */}
                       {isVideo && (

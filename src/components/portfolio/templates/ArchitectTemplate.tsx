@@ -4,6 +4,7 @@
 /* # PREMIUM LANDING PAGE — no section should look like a resume, all text sections have visual treatments */
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PortfolioData, PortfolioSection, GalleryEntry } from "@/lib/portfolio-types";
 import { SectionWrapper, staggerContainer, staggerItem } from "../shared/SectionWrapper";
@@ -37,7 +38,7 @@ const categoryGradients = [
 ];
 
 /* # Blueprint-style card with corner markers */
-function BlueprintCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function _BlueprintCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <motion.div
       className={`relative rounded-xl overflow-hidden ${className}`}
@@ -77,9 +78,9 @@ function DesignLightbox({ entry, onClose }: { entry: GalleryEntry; onClose: () =
             <VideoEmbed videoUrl={entry.videoUrl} thumbnailUrl={entry.imageUrl || undefined} title={entry.title} accentColor={c.teal} />
           </div>
         ) : (
-          <img src={entry.imageUrl} alt={entry.title}
+          <Image src={entry.imageUrl} alt={entry.title}
             className="max-w-full max-h-[85vh] object-contain rounded-xl"
-            style={{ border: `1px solid ${c.teal}15` }} />
+            style={{ border: `1px solid ${c.teal}15` }} width={1200} height={800} unoptimized />
         )}
 
         {(entry.title || entry.description) && (
@@ -126,7 +127,7 @@ function Hero({ data }: { data: PortfolioData }) {
       {heroImage && (
         <>
           <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
-            <img src={heroImage} alt="" className="w-full h-full object-cover" />
+            <Image src={heroImage} alt="" className="w-full h-full object-cover" fill unoptimized />
             <div className="absolute inset-0" style={{
               background: `linear-gradient(90deg, ${c.bg} 0%, ${c.bg}cc 30%, transparent 100%)`,
             }} />
@@ -161,9 +162,9 @@ function Hero({ data }: { data: PortfolioData }) {
               transition={{ delay: 0.3, type: "spring" as const }}>
               <div className="absolute -inset-3 rounded-xl" style={{ border: `1px solid ${c.teal}15` }} />
               <div className="absolute -inset-6 rounded-xl" style={{ border: `1px solid ${c.teal}08` }} />
-              <img src={avatarUrl} alt={data.userName}
+              <Image src={avatarUrl} alt={data.userName}
                 className="relative w-32 h-32 rounded-xl object-cover"
-                style={{ border: `2px solid ${c.teal}30` }} />
+                style={{ border: `2px solid ${c.teal}30` }} width={128} height={128} unoptimized />
             </motion.div>
           )}
           <div>
@@ -233,8 +234,8 @@ function renderSection(section: PortfolioSection) {
                       <VideoEmbed videoUrl={p.videoUrl} thumbnailUrl={p.imageUrl || undefined} title={p.title} accentColor={c.teal} />
                     ) : p.imageUrl ? (
                       <div className="aspect-[16/9] overflow-hidden">
-                        <img src={p.imageUrl} alt={p.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <Image src={p.imageUrl} alt={p.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" fill unoptimized />
                         {/* # Gradient overlay on hover */}
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                           style={{ background: `linear-gradient(180deg, transparent 50%, ${c.teal}08 70%, ${c.bg}90)` }} />
@@ -907,7 +908,7 @@ function DesignGallery({ section }: { section: PortfolioSection & { type: "galle
                 {hasVideo(g) ? (
                   <div className="relative w-full h-full">
                     {g.imageUrl ? (
-                      <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-80" />
+                      <Image src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-80" fill unoptimized />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: c.surface }}>
                         <svg width="32" height="32" viewBox="0 0 24 24" fill={c.muted}><polygon points="8,5 20,12 8,19" /></svg>
@@ -922,7 +923,7 @@ function DesignGallery({ section }: { section: PortfolioSection & { type: "galle
                   </div>
                 ) : (
                   <div className="w-full h-full overflow-hidden">
-                    <img src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-80" />
+                    <Image src={g.imageUrl} alt={g.title} className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-80" fill unoptimized />
                   </div>
                 )}
 

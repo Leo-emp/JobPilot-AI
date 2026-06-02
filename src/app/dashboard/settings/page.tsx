@@ -10,7 +10,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
   /* Default resume */
   const [defaultResume, setDefaultResume] = useState<{ id: string; fileName: string } | null>(null);
-  const [savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; createdAt: string }[]>([]);
+  const [_savedResumes, setSavedResumes] = useState<{ id: string; fileName: string; createdAt: string }[]>([]);
   const [resumesLoading, setResumesLoading] = useState(true);
   const [resumeSaving, setResumeSaving] = useState(false);
   const [resumeMessage, setResumeMessage] = useState("");
@@ -85,14 +85,18 @@ export default function SettingsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  /* Initialize name from session */
-  useEffect(() => {
+  /* Initialize name from session (render-time sync) */
+  const [prevSession, setPrevSession] = useState(session);
+  if (session && session !== prevSession) {
+    setPrevSession(session);
     if (session?.user?.name) setName(session.user.name);
     if (session?.user?.image) setProfileImage(session.user.image);
-  }, [session]);
+  }
 
-  /* Check for Stripe redirect messages */
-  useEffect(() => {
+  /* Check for Stripe redirect messages (render-time sync) */
+  const [prevParams, setPrevParams] = useState(searchParams);
+  if (searchParams !== prevParams) {
+    setPrevParams(searchParams);
     if (searchParams.get("upgraded") === "true") {
       setMessage("Your plan has been upgraded successfully!");
       setActiveTab("billing");
@@ -100,22 +104,22 @@ export default function SettingsPage() {
       setMessage("Checkout was cancelled. No changes were made.");
       setActiveTab("billing");
     }
-  }, [searchParams]);
+  }
 
-  /* Fetch plan data */
-  const fetchPlan = useCallback(async () => {
-    try {
-      const res = await fetch("/api/user/plan");
-      if (res.ok) setUserPlan(await res.json());
-    } catch {}
+  /* # Fetch plan data — .then() callback avoids synchronous setState in effect */
+  useEffect(() => {
+    fetch("/api/user/plan")
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data) setUserPlan(data); })
+      .catch(() => {});
   }, []);
 
-  useEffect(() => { fetchPlan(); }, [fetchPlan]);
-
-  /* Sync weeklyDigest from plan data */
-  useEffect(() => {
-    if (userPlan) setWeeklyDigest(userPlan.weeklyDigest);
-  }, [userPlan]);
+  /* Sync weeklyDigest from plan data (render-time sync) */
+  const [prevPlan, setPrevPlan] = useState(userPlan);
+  if (userPlan && userPlan !== prevPlan) {
+    setPrevPlan(userPlan);
+    setWeeklyDigest(userPlan.weeklyDigest);
+  }
 
   /* Check 2FA status on mount */
   useEffect(() => {
@@ -290,7 +294,6 @@ export default function SettingsPage() {
       /* --- Applications --- */
       if (data.applications?.length) {
         section(`Applications (${data.applications.length})`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         autoTable(doc, {
           startY: y,
           head: [["Job Title", "Company", "Status", "Applied", "Interview"]],
@@ -310,7 +313,6 @@ export default function SettingsPage() {
       /* --- Saved Jobs --- */
       if (data.savedJobs?.length) {
         section(`Saved Jobs (${data.savedJobs.length})`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         autoTable(doc, {
           startY: y,
           head: [["Title", "Company", "Location", "Salary", "Match", "Saved"]],
@@ -351,7 +353,6 @@ export default function SettingsPage() {
       /* --- Contacts --- */
       if (data.contacts?.length) {
         section(`Contacts (${data.contacts.length})`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         autoTable(doc, {
           startY: y,
           head: [["Name", "Email", "Company", "Role", "Relationship"]],
@@ -371,7 +372,6 @@ export default function SettingsPage() {
       /* --- Companies --- */
       if (data.companies?.length) {
         section(`Companies (${data.companies.length})`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         autoTable(doc, {
           startY: y,
           head: [["Name", "Industry", "Location", "Size", "Status"]],
@@ -391,7 +391,6 @@ export default function SettingsPage() {
       /* --- Resumes --- */
       if (data.resumes?.length) {
         section(`Resumes (${data.resumes.length})`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         autoTable(doc, {
           startY: y,
           head: [["File Name", "Uploaded"]],
@@ -408,7 +407,6 @@ export default function SettingsPage() {
       /* --- AI History --- */
       if (data.aiHistory?.length) {
         section(`AI History (${data.aiHistory.length})`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         autoTable(doc, {
           startY: y,
           head: [["Action", "Title", "Date"]],
@@ -464,8 +462,10 @@ export default function SettingsPage() {
   /* Usage calculation */
   const usageLimit = userPlan?.plan === "pro" ? 1000 : 20;
   const usagePercent = Math.min((userPlan?.aiUsageCount || 0) / usageLimit * 100, 100);
+  /* # Stable timestamp from state to avoid impure Date.now() during render */
+  const [now] = useState(() => Date.now());
   const daysUntilReset = userPlan?.usageResetDate
-    ? Math.max(0, Math.ceil((new Date(userPlan.usageResetDate).getTime() - Date.now()) / 86400000))
+    ? Math.max(0, Math.ceil((new Date(userPlan.usageResetDate).getTime() - now) / 86400000))
     : 0;
 
   return (
@@ -1052,7 +1052,7 @@ export default function SettingsPage() {
                   {portalLoading ? "Opening..." : "Open Billing Portal"}
                 </button>
                 <p className="text-xs text-text-muted mt-3">
-                  Opens Stripe's secure portal where you can update payment methods, view invoices, and manage your subscription.
+                  Opens Stripe&apos;s secure portal where you can update payment methods, view invoices, and manage your subscription.
                 </p>
               </div>
             )}

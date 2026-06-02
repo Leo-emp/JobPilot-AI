@@ -19,7 +19,12 @@ import { audit } from "./audit";
 import { isLocked, recordFailure, resetFailures } from "./account-lock";
 import { buildWelcomeEmail } from "./welcome-email";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/* # Lazy-init so missing env var doesn't crash the module on import */
+let _resend: Resend | null = null;
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   /* ---- Auth Providers ---- */
@@ -156,7 +161,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           /* Send welcome email to new OAuth users (fire-and-forget) */
-          resend.emails.send({
+          getResend().emails.send({
             from: "JobPilot AI <noreply@jobpilotai.co>",
             to: user.email,
             subject: "Welcome to JobPilot AI",

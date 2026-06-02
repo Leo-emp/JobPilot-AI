@@ -41,11 +41,9 @@ export function SkillBar({
 export function SkillPill({
   name,
   color = "#3b82f6",
-  textColor = "#ffffff",
 }: {
   name: string;
   color?: string;
-  textColor?: string;
 }) {
   return (
     <span

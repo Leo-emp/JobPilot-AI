@@ -281,7 +281,6 @@ export async function computeCareerInsights(userId: string): Promise<CareerInsig
       skills = extractSkillsFromJD(job.description);
     }
     for (const skill of skills) {
-      const key = skill.toLowerCase();
       jobSkillsMap.set(skill, (jobSkillsMap.get(skill) || 0) + 1);
     }
   }

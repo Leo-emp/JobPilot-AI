@@ -80,22 +80,40 @@ export default function AdminDashboardPage() {
   const [loadingPage, setLoadingPage] = useState(false);
 
   /* ---- Fetch admin stats ---- */
-  const fetchStats = (page: number, initial = false) => {
-    if (initial) setLoading(true);
-    else setLoadingPage(true);
-
-    fetch(`/api/admin/stats?page=${page}`)
-      .then(res => {
-        if (res.status === 403) throw new Error("You don't have admin access.");
-        if (!res.ok) throw new Error("Failed to load stats");
-        return res.json();
-      })
-      .then(data => { setStats(data); setCurrentPage(page); })
-      .catch(e => setError(e.message))
-      .finally(() => { setLoading(false); setLoadingPage(false); });
+  const fetchStats = async (page: number, initial = false) => {
+    if (!initial) setLoadingPage(true);
+    try {
+      const res = await fetch(`/api/admin/stats?page=${page}`);
+      if (res.status === 403) throw new Error("You don't have admin access.");
+      if (!res.ok) throw new Error("Failed to load stats");
+      const data = await res.json();
+      setStats(data);
+      setCurrentPage(page);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to load stats");
+    } finally {
+      setLoading(false);
+      setLoadingPage(false);
+    }
   };
 
-  useEffect(() => { fetchStats(1, true); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/stats?page=1");
+        if (res.status === 403) throw new Error("You don't have admin access.");
+        if (!res.ok) throw new Error("Failed to load stats");
+        const data = await res.json();
+        if (!cancelled) { setStats(data); setCurrentPage(1); }
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load stats");
+      } finally {
+        if (!cancelled) { setLoading(false); setLoadingPage(false); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   /* ---- Filter users by search ---- */
   const filteredUsers = stats?.users.filter(u =>
@@ -110,8 +128,9 @@ export default function AdminDashboardPage() {
   };
 
   /* ---- Time ago helper ---- */
+  const [now] = useState(() => Date.now());
   const timeAgo = (d: string) => {
-    const diff = Date.now() - new Date(d).getTime();
+    const diff = now - new Date(d).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);
