@@ -562,7 +562,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
       const mL = 20;
       const mR = 20;
       const mTop = 20;
-      const mBot = 20;
+      const mBot = 18;
       const cW = pageWidth - mL - mR;
       let y = mTop;
       const bSize = 10;
