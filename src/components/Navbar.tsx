@@ -10,7 +10,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import RocketIcon from "./RocketIcon";
+
 
 export default function Navbar() {
   /* Track whether the mobile hamburger menu is open */

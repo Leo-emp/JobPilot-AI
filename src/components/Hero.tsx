@@ -11,7 +11,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import RocketIcon from "./RocketIcon";
+
 
 /* # Zero-bounce spring — physics-based, no hard start/stop */
 const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };

@@ -6,7 +6,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import RocketIcon from "./RocketIcon";
+
 
 export default function Footer() {
   return (
@@ -19,11 +19,8 @@ export default function Footer() {
 
           {/* Column 1: Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-1 mb-4">
-              {/* Custom rocket icon matching brand colors */}
-              <RocketIcon size={24} />
-              {/* Space Grotesk font for brand consistency */}
-              <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight text-text-primary">
+            <div className="flex items-center mb-4">
+              <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight glow-text-strong">
                 JobPilot AI
               </span>
             </div>
