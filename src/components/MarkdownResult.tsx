@@ -610,7 +610,34 @@ export default function MarkdownResult({ result, showDownload = true, editable =
       };
 
       const editedMarkdown = getEditedMarkdown();
-      const lines = editedMarkdown.split("\n");
+
+      /* # Normalize section headers — AI sometimes outputs **Bold** instead of ## Heading.
+         # This ensures consistent uppercase + underline formatting in every PDF. */
+      const sectionNames = [
+        "professional summary", "core skills", "work experience", "education",
+        "certifications and trainings", "certifications", "languages",
+        "projects", "relevant experience", "volunteer experience",
+      ];
+      const normalizeHeaders = (md: string): string => {
+        return md.split("\n").map(line => {
+          const t = line.trim();
+          /* # Convert **Section Name** on its own line to ## Section Name */
+          const boldMatch = t.match(/^\*\*([^*]+)\*\*$/);
+          if (boldMatch) {
+            const inner = boldMatch[1].trim();
+            if (sectionNames.includes(inner.toLowerCase())) {
+              return `## ${inner}`;
+            }
+          }
+          /* # Convert bare "Section Name" on its own line (no markdown) to ## heading */
+          if (sectionNames.includes(t.toLowerCase())) {
+            return `## ${t}`;
+          }
+          return line;
+        }).join("\n");
+      };
+
+      const lines = normalizeHeaders(editedMarkdown).split("\n");
 
       for (const line of lines) {
         const trimmed = line.trim();
