@@ -185,9 +185,11 @@ export async function POST(req: NextRequest) {
 
     /* Build the prompt and call Gemini */
     const prompt = buildPrompt(action, payload);
+    const scoringActions = ["analyze_resume", "linkedin_audit"];
+    const temp = scoringActions.includes(action) ? 0 : 0.7;
     const gemini: GeminiResult = isMultimodal
       ? await callGeminiMultimodal(prompt, payload.images)
-      : await callGemini(prompt);
+      : await callGemini(prompt, temp);
 
     const result = scrubPlaceholders(gemini.text);
 

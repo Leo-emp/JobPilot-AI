@@ -29,7 +29,7 @@ export interface GeminiResult {
   model: string;
 }
 
-async function callGeminiCore(parts: Record<string, unknown>[]): Promise<GeminiResult> {
+async function callGeminiCore(parts: Record<string, unknown>[], temperature = 0.7): Promise<GeminiResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -59,7 +59,7 @@ async function callGeminiCore(parts: Record<string, unknown>[]): Promise<GeminiR
             body: JSON.stringify({
               contents: [{ parts }],
               generationConfig: {
-                temperature: 0.7,
+                temperature,
                 maxOutputTokens: 8192,
               },
             }),
@@ -110,8 +110,8 @@ async function callGeminiCore(parts: Record<string, unknown>[]): Promise<GeminiR
   throw new Error("AI is temporarily unavailable. Please try again in a moment.");
 }
 
-export async function callGemini(prompt: string): Promise<GeminiResult> {
-  return callGeminiCore([{ text: prompt }]);
+export async function callGemini(prompt: string, temperature = 0.7): Promise<GeminiResult> {
+  return callGeminiCore([{ text: prompt }], temperature);
 }
 
 export async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<GeminiResult> {

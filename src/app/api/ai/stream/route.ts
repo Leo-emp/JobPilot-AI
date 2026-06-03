@@ -147,9 +147,11 @@ export async function POST(req: NextRequest) {
 
     /* Build prompt and get stream */
     const prompt = buildPrompt(action, payload);
+    const scoringActions = ["analyze_resume", "linkedin_audit"];
+    const temp = scoringActions.includes(action) ? 0 : 0.7;
     const gemini: StreamResult = isMultimodal
       ? await streamGeminiMultimodal(prompt, payload.images as { data: string; mimeType: string }[])
-      : await streamGemini(prompt);
+      : await streamGemini(prompt, temp);
 
     /* Increment usage (don't wait for stream to finish) */
     dbRetry(() =>
