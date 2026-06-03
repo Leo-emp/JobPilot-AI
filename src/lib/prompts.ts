@@ -25,10 +25,12 @@ Below 40: Needs major rework`;
 const RESUME_RULES = `CRITICAL RULES:
 - Use the candidate's REAL name, contact info, experience, and education — NEVER invent or fabricate
 - NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data only
+- Every bullet must describe an ACHIEVEMENT or RESULT — never a responsibility. Wrong: "Responsible for managing a team". Right: "Led a 12-person engineering team that shipped 3 products ahead of schedule"
 - Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
 - If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
 - Prioritize bullets by impact: lead with the most impressive achievement for each role
+- NEVER invent achievements, metrics, skills, or experience the candidate does not have — only reframe and strengthen what actually exists
 - NEVER claim the candidate already holds the target job title — state their ACTUAL current role
 
 WRITING QUALITY:
@@ -105,10 +107,12 @@ function optimizeResume(payload: Record<string, any>): string {
 ${RESUME_RULES}
 
 ${hasJD ? `JD-SPECIFIC RULES:
-- Extract EXACT keywords from the job description and weave them naturally into bullet points
-- Mirror the job description's language — if they say "stakeholder management", use that exact phrase
-- Professional Summary must directly address the target role and mention 2-3 key requirements from the JD
-- Core Skills: from the candidate's real skills, pick only the ones most relevant to the JD` : `GENERAL RULES:
+- Extract EXACT keywords and phrases from the job description and requirements — weave them naturally into bullet points
+- Mirror the job description's language precisely — if they say "stakeholder management", use that exact phrase, not a synonym
+- Prioritize skills and tools explicitly mentioned in the JD and requirements above all others
+- Professional Summary must be tailored to the target role — address 2-3 key requirements from the JD, supported by evidence from the candidate's actual experience
+- Core Skills: from the candidate's REAL skills only, prioritize those that appear in the JD and requirements. Never add skills the candidate does not have
+- Rewrite work experience bullets to emphasize achievements and results that directly align with JD requirements — not generic responsibilities` : `GENERAL RULES:
 - Use strong, industry-standard keywords and ATS-friendly language throughout
 - Professional Summary must showcase the candidate's strongest value proposition
 - Core Skills: organize by strength and relevance to their field`}
@@ -124,10 +128,13 @@ function rebuildResume(payload: Record<string, any>): string {
 ${RESUME_RULES}
 
 JD-SPECIFIC RULES:
-- Extract EXACT keywords from the job description and weave them naturally into bullet points
-- Mirror the job description's language — if they say "stakeholder management", use that exact phrase
-- Professional Summary must directly address the target role and mention 2-3 key requirements from the JD
-- Core Skills: from the candidate's real skills, pick only the ones most relevant to the JD
+- Extract EXACT keywords and phrases from the job description and requirements — weave them naturally into bullet points
+- Mirror the job description's language precisely — if they say "stakeholder management", use that exact phrase, not a synonym
+- Prioritize skills and tools explicitly mentioned in the JD and requirements above all others
+- Professional Summary must be tailored to the target role — address 2-3 key requirements from the JD, supported by evidence from the candidate's actual experience. Do NOT claim qualifications the candidate does not have
+- Core Skills: from the candidate's REAL skills only, prioritize those that appear in the JD and requirements. Never add skills the candidate does not have
+- Rewrite every work experience bullet as an achievement with measurable impact — never list responsibilities. Wrong: "Managed client accounts". Right: "Grew a portfolio of 15 enterprise accounts, increasing retention by 28%"
+- If the candidate lacks a skill or experience mentioned in the JD, do NOT fabricate it — focus on what they DO have that is relevant
 
 Original Resume:
 ${payload.resume}
@@ -401,11 +408,13 @@ function careerPivot(payload: Record<string, any>): string {
 ${RESUME_RULES}
 
 CAREER PIVOT RULES:
-- Do NOT invent experience — only reframe what actually exists for the target industry
-- Reframe each achievement using the TARGET INDUSTRY's language, not the source industry
-- Professional Summary must directly address the career change — why their background is an ASSET, not a gap
-- Core Skills categories should include: Transferable Skills, Target Industry, Technical
-- Extract EXACT keywords from the target job description and weave them into reframed bullets
+- NEVER invent experience, skills, or achievements — only reframe what actually exists using the target industry's language
+- Reframe each work experience bullet as an achievement with measurable impact, using the TARGET INDUSTRY's terminology. Wrong: "Handled customer complaints". Right: "Resolved 50+ user-reported issues weekly, improving customer satisfaction scores by 22%"
+- Professional Summary must directly address the career change — position their background as a competitive ADVANTAGE, not a gap. Support every claim with evidence from their actual resume
+- Core Skills categories should include: Transferable Skills, Target Industry, Technical — only list skills the candidate genuinely has
+- Extract EXACT keywords and phrases from the target job description and requirements — weave them into reframed bullets wherever the candidate has relevant experience
+- Prioritize skills mentioned in the JD and requirements above all others — but never claim skills the candidate does not have
+- If the candidate lacks a key requirement, do NOT fabricate it — focus on adjacent transferable strengths instead
 
 Original Resume:
 ${payload.resume}
