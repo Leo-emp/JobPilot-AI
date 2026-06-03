@@ -25,7 +25,7 @@ Below 40: Needs major rework`;
 const RESUME_RULES = `CRITICAL RULES:
 - Use the candidate's REAL name, contact info, experience, and education — NEVER invent or fabricate
 - NEVER use placeholders like [Your Name], [Company], [X years], or [quantify] — use actual data only
-- Every bullet must describe an ACHIEVEMENT or RESULT — never a responsibility. Wrong: "Responsible for managing a team". Right: "Led a 12-person engineering team that shipped 3 products ahead of schedule"
+- When the resume contains achievements, results, or measurable impact, prioritize those over responsibilities. But if responsibilities are all the candidate has for a role, describe them with strong action verbs. Always prefer: "Led a 12-person engineering team that shipped 3 products ahead of schedule" over "Responsible for managing a team"
 - Every bullet must follow the formula: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
 - If no metric exists, write a strong impact-driven bullet WITHOUT fake numbers — never add brackets or placeholders
@@ -133,7 +133,7 @@ JD-SPECIFIC RULES:
 - Prioritize skills and tools explicitly mentioned in the JD and requirements above all others
 - Professional Summary must be tailored to the target role — address 2-3 key requirements from the JD, supported by evidence from the candidate's actual experience. Do NOT claim qualifications the candidate does not have
 - Core Skills: from the candidate's REAL skills only, prioritize those that appear in the JD and requirements. Never add skills the candidate does not have
-- Rewrite every work experience bullet as an achievement with measurable impact — never list responsibilities. Wrong: "Managed client accounts". Right: "Grew a portfolio of 15 enterprise accounts, increasing retention by 28%"
+- When the resume contains achievements and results, prioritize those over responsibilities — especially if they are relevant to the JD. But if responsibilities are all the candidate has, describe them with strong action verbs. Always prefer: "Grew a portfolio of 15 enterprise accounts, increasing retention by 28%" over "Managed client accounts"
 - If the candidate lacks a skill or experience mentioned in the JD, do NOT fabricate it — focus on what they DO have that is relevant
 
 Original Resume:
@@ -211,14 +211,18 @@ RULES:
 - Today's date is: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
 - Use the candidate's REAL name, email, phone, location from their resume. NEVER use [Your Name] or brackets.
 - NO company address or recipient address block. Just: name, contact line, date, then "Dear Hiring Manager,"
-- Reference SPECIFIC achievements and numbers from the resume — no vague generalities.
+- When the resume contains achievements, results, or measurable impact that are relevant to the JD, prioritize those over responsibilities. But if responsibilities are all the candidate has for a relevant area, it is fine to describe them clearly.
+- Always prefer concrete results: "I grew a portfolio of 15 enterprise accounts, increasing annual retention by 28%" over "I managed client accounts"
+- NEVER invent achievements, metrics, or skills the candidate does not have. Only use what exists in their resume.
 
 JOB DESCRIPTION ALIGNMENT (CRITICAL):
-- Read the job description FIRST. Identify the top 3-4 requirements, skills, or responsibilities the employer emphasizes most.
-- Then scan the resume for the candidate's MOST RELEVANT experience that directly addresses those requirements.
-- Every paragraph must connect back to what the JD asks for. If the JD says "stakeholder management", the letter must show the candidate doing stakeholder management — with a specific example from their resume.
+- Read the job description and requirements FIRST. Identify the top 3-4 requirements, skills, or responsibilities the employer emphasizes most.
+- Then scan the resume for the candidate's MOST RELEVANT achievements and results that directly address those requirements.
+- Every paragraph must connect back to what the JD asks for. If the JD says "stakeholder management", the letter must show the candidate ACHIEVING something through stakeholder management — with a specific example and result from their resume.
+- Use EXACT keywords and phrases from the JD and requirements naturally throughout. If the JD says "cross-functional collaboration", use that exact phrase — not a synonym.
 - Do NOT write a generic letter that could apply to any job. The reader should be able to guess which job this letter is for without seeing the JD.
 - Prioritize MATCHING skills and experience over impressive-but-irrelevant achievements. A mid-level project that directly matches the JD beats a senior achievement in an unrelated area.
+- If the candidate lacks a key requirement from the JD, do NOT fabricate it — focus on adjacent strengths they DO have.
 
 STRUCTURE (exactly 4 body paragraphs like the reference):
 
@@ -235,11 +239,13 @@ STRUCTURE (exactly 4 body paragraphs like the reference):
 6. **Sign-off** — "Sincerely," then full name
 
 TONE & FLOW:
-- Professional, polished, and human — like the reference. Not stiff, not casual.
-- Confident but never arrogant. You know your value and you state it clearly.
+- Natural, professional, and genuinely human — like a sharp, energetic person writing to someone they respect. Not stiff, not casual.
+- Confident but never arrogant. You know your value and you state it clearly with warmth.
+- Show personality — the reader should get a sense of who this person is, not just what they have done. One moment of genuine enthusiasm or a personal connection to the company's mission goes a long way.
 - Active voice. Specific. Every sentence earns its place.
 - Okay to use "I am" — the reference does. Just don't start every sentence with "I".
-- No AI giveaway phrases like: "I believe I would be a great fit", "With my proven track record", "I am confident that", "leverage my expertise"
+- No AI giveaway phrases like: "I believe I would be a great fit", "With my proven track record", "I am confident that", "leverage my expertise", "I am excited about the opportunity", "proven ability to"
+- Write like a real person who is genuinely interested in this specific role — not like a template with blanks filled in
 
 NATURAL FLOW (critical):
 - The letter must read as ONE smooth narrative, not 4 disconnected paragraphs. Each paragraph should flow into the next with a natural thread.
@@ -409,7 +415,7 @@ ${RESUME_RULES}
 
 CAREER PIVOT RULES:
 - NEVER invent experience, skills, or achievements — only reframe what actually exists using the target industry's language
-- Reframe each work experience bullet as an achievement with measurable impact, using the TARGET INDUSTRY's terminology. Wrong: "Handled customer complaints". Right: "Resolved 50+ user-reported issues weekly, improving customer satisfaction scores by 22%"
+- When the resume contains achievements and results, reframe them using the TARGET INDUSTRY's terminology. But if responsibilities are all the candidate has, reframe them with strong action verbs in the target industry's language. Always prefer: "Resolved 50+ user-reported issues weekly, improving customer satisfaction scores by 22%" over "Handled customer complaints"
 - Professional Summary must directly address the career change — position their background as a competitive ADVANTAGE, not a gap. Support every claim with evidence from their actual resume
 - Core Skills categories should include: Transferable Skills, Target Industry, Technical — only list skills the candidate genuinely has
 - Extract EXACT keywords and phrases from the target job description and requirements — weave them into reframed bullets wherever the candidate has relevant experience
