@@ -1,16 +1,13 @@
 /* ============================================================
    PDF PAGINATION ENGINE — Intelligent page breaking
    ============================================================
-   Content-aware page splitting that uses DOM measurements to
-   find optimal break points. Handles section headers, work
-   entries, education blocks, and widow/orphan protection.
+   Hybrid approach: uses DOM block measurements when available,
+   falls back to pixel-scanning for white gaps. Applies consistent
+   0.75" margins on every page via the render step (not CSS).
    ============================================================ */
 
-import { MARGINS, PAGE_SIZES, RENDER_SCALE, IFRAME, MIN_SECTION_SPACE_PX } from "./pdf-config";
+import { PAGE_SIZES, RENDER_SCALE, IFRAME } from "./pdf-config";
 
-/* ============================================================
-   TYPES
-   ============================================================ */
 interface ContentBlock {
   type: string;
   top: number;
@@ -21,27 +18,24 @@ interface ContentBlock {
 interface PageSlice {
   yStart: number;
   yEnd: number;
-  contentHeight: number;
 }
 
 /* ============================================================
    MEASURE CONTENT BLOCKS FROM IFRAME DOM
-   ============================================================
-   Queries all elements with data-pdf-block attributes and
-   records their vertical positions. These measurements guide
-   page break decisions.
    ============================================================ */
 export function measureBlocks(iframeDoc: Document): ContentBlock[] {
   const blocks: ContentBlock[] = [];
   const els = iframeDoc.querySelectorAll("[data-pdf-block]");
 
   els.forEach((el) => {
-    const rect = (el as HTMLElement).getBoundingClientRect();
+    const htmlEl = el as HTMLElement;
+    const top = htmlEl.offsetTop;
+    const height = htmlEl.offsetHeight;
     blocks.push({
-      type: (el as HTMLElement).dataset.pdfBlock || "unknown",
-      top: Math.round(rect.top),
-      height: Math.round(rect.height),
-      bottom: Math.round(rect.bottom),
+      type: htmlEl.dataset.pdfBlock || "unknown",
+      top,
+      height,
+      bottom: top + height,
     });
   });
 
@@ -49,23 +43,113 @@ export function measureBlocks(iframeDoc: Document): ContentBlock[] {
 }
 
 /* ============================================================
-   CALCULATE PAGE SLICES
+   FIND BEST BREAK POINT — HYBRID ALGORITHM
    ============================================================
-   Given the total content height and block positions, computes
-   where each page starts and ends. Ensures:
-   - Section titles stay with their content
-   - Entries are kept together when possible
-   - No orphaned single lines
-   - Consistent margins on every page
+   1. Try content blocks first (semantic breaks)
+   2. Fall back to pixel-scanning for white gaps
+   ============================================================ */
+function findBreakPoint(
+  pageBottom: number,
+  cursor: number,
+  usableHeight: number,
+  blocks: ContentBlock[],
+  canvas: HTMLCanvasElement,
+  scanFromRight: boolean
+): number {
+  /* # First: try content-aware breaking using block boundaries */
+  if (blocks.length > 0) {
+    const straddling = blocks.filter(
+      (b) => b.top < pageBottom && b.bottom > pageBottom && b.top > cursor
+    );
+
+    if (straddling.length > 0) {
+      const block = straddling[0];
+      const spaceOnPage = block.top - cursor;
+
+      /* # If less than 60px of content would remain, or it's a section title, push to next page */
+      if (spaceOnPage < 60 || block.type === "section-title") {
+        return block.top;
+      }
+
+      /* # If the entire block fits on one page, move it to next */
+      if (block.height <= usableHeight) {
+        return block.top;
+      }
+    }
+
+    /* # Check if a section-title is the last block ending on this page */
+    const blocksEndingOnPage = blocks.filter(
+      (b) => b.bottom <= pageBottom && b.bottom > pageBottom - 40 && b.top > cursor
+    );
+    const lastBlock = blocksEndingOnPage[blocksEndingOnPage.length - 1];
+    if (lastBlock?.type === "section-title") {
+      return lastBlock.top;
+    }
+  }
+
+  /* # Fallback: pixel-scan for the largest white gap in the bottom 25% of the page */
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return pageBottom;
+
+  const scale = RENDER_SCALE;
+  const scanTop = Math.floor((cursor + usableHeight * 0.75) * scale);
+  const scanBottom = Math.floor(pageBottom * scale);
+  const cw = canvas.width;
+
+  /* # For sidebar templates, scan only the right portion */
+  const scanX = scanFromRight ? Math.floor(cw * 0.4) : 0;
+  const scanW = cw - scanX - 10;
+
+  let bestGapRow = -1;
+  let bestGapSize = 0;
+  let consecutive = 0;
+  let gapStart = -1;
+
+  for (let row = scanBottom; row > scanTop; row--) {
+    const rowData = ctx.getImageData(scanX, row, scanW, 1).data;
+    let isWhite = true;
+    for (let i = 0; i < rowData.length; i += 16) {
+      if (rowData[i] < 245 || rowData[i + 1] < 245 || rowData[i + 2] < 245) {
+        isWhite = false;
+        break;
+      }
+    }
+
+    if (isWhite) {
+      if (gapStart === -1) gapStart = row;
+      consecutive++;
+    } else {
+      if (consecutive > bestGapSize && consecutive >= 12) {
+        bestGapSize = consecutive;
+        bestGapRow = gapStart - Math.floor(consecutive / 2);
+      }
+      consecutive = 0;
+      gapStart = -1;
+    }
+  }
+
+  if (consecutive > bestGapSize && consecutive >= 12) {
+    bestGapRow = gapStart - Math.floor(consecutive / 2);
+  }
+
+  if (bestGapRow > 0) {
+    return Math.round(bestGapRow / scale);
+  }
+
+  return pageBottom;
+}
+
+/* ============================================================
+   CALCULATE PAGE SLICES
    ============================================================ */
 export function calculatePageSlices(
   totalHeightPx: number,
   blocks: ContentBlock[],
-  canvasScale: number = RENDER_SCALE
+  canvas: HTMLCanvasElement,
+  hasSidebar: boolean
 ): PageSlice[] {
   const marginPx = IFRAME.marginPx;
-  const pageHeightPx = IFRAME.height;
-  const usableHeight = pageHeightPx - marginPx * 2;
+  const usableHeight = IFRAME.height - marginPx * 2;
 
   const slices: PageSlice[] = [];
   let cursor = 0;
@@ -74,55 +158,40 @@ export function calculatePageSlices(
     const pageBottom = cursor + usableHeight;
 
     if (pageBottom >= totalHeightPx) {
-      slices.push({ yStart: cursor, yEnd: totalHeightPx, contentHeight: totalHeightPx - cursor });
+      slices.push({ yStart: cursor, yEnd: totalHeightPx });
       break;
     }
 
-    let breakAt = pageBottom;
-
-    /* # Find the best break point by checking content blocks */
-    const blocksInRange = blocks.filter(
-      (b) => b.top >= cursor && b.top < pageBottom
+    const breakAt = findBreakPoint(
+      pageBottom, cursor, usableHeight, blocks, canvas, hasSidebar
     );
 
-    if (blocksInRange.length > 0) {
-      /* # Check if any block straddles the page boundary */
-      const straddling = blocks.filter(
-        (b) => b.top < pageBottom && b.bottom > pageBottom
-      );
+    /* # Ensure progress */
+    const actualBreak = breakAt <= cursor ? pageBottom : breakAt;
 
-      if (straddling.length > 0) {
-        const firstStraddler = straddling[0];
+    slices.push({ yStart: cursor, yEnd: actualBreak });
 
-        /* # If the block starts near the bottom of the page, move it entirely to next page */
-        const spaceUsed = firstStraddler.top - cursor;
-        const spaceRemaining = usableHeight - spaceUsed;
-
-        if (spaceRemaining < MIN_SECTION_SPACE_PX || firstStraddler.type === "section-title") {
-          breakAt = firstStraddler.top;
-        } else if (firstStraddler.height <= usableHeight) {
-          breakAt = firstStraddler.top;
+    /* # Skip whitespace at the top of next page */
+    let next = actualBreak;
+    const ctx = canvas.getContext("2d");
+    if (ctx && !hasSidebar) {
+      const scale = RENDER_SCALE;
+      const maxSkip = Math.min(actualBreak + 30, totalHeightPx);
+      while (next < maxSkip) {
+        const row = ctx.getImageData(0, next * scale, canvas.width, 1).data;
+        let allWhite = true;
+        for (let i = 0; i < row.length; i += 16) {
+          if (row[i] < 245 || row[i + 1] < 245 || row[i + 2] < 245) {
+            allWhite = false;
+            break;
+          }
         }
-        /* # If the block is taller than a page, we must split it — let it break naturally */
-      }
-
-      /* # Section title protection: never let a section title be the last thing on a page */
-      const lastBlockOnPage = blocksInRange
-        .filter((b) => b.bottom <= breakAt)
-        .pop();
-
-      if (lastBlockOnPage?.type === "section-title") {
-        breakAt = lastBlockOnPage.top;
+        if (!allWhite) break;
+        next++;
       }
     }
 
-    /* # Ensure we make progress (avoid infinite loop) */
-    if (breakAt <= cursor) {
-      breakAt = pageBottom;
-    }
-
-    slices.push({ yStart: cursor, yEnd: breakAt, contentHeight: breakAt - cursor });
-    cursor = breakAt;
+    cursor = next;
   }
 
   return slices;
@@ -131,37 +200,37 @@ export function calculatePageSlices(
 /* ============================================================
    RENDER PDF PAGES
    ============================================================
-   Takes a canvas and page slices, renders each slice onto an
-   A4-sized canvas with proper margins, and adds it to the PDF.
+   Draws each page slice onto an A4 canvas with consistent
+   0.75" margins on all sides, every page.
    ============================================================ */
 export async function renderPdfPages(
   sourceCanvas: HTMLCanvasElement,
   slices: PageSlice[],
   pdf: InstanceType<typeof import("jspdf").jsPDF>
 ): Promise<void> {
-  const scaledMargin = IFRAME.marginPx * RENDER_SCALE;
-  const pageWidthPx = IFRAME.width * RENDER_SCALE;
-  const pageHeightPx = IFRAME.height * RENDER_SCALE;
+  const scale = RENDER_SCALE;
+  const marginScaled = IFRAME.marginPx * scale;
+  const pageW = IFRAME.width * scale;
+  const pageH = IFRAME.height * scale;
 
   for (let i = 0; i < slices.length; i++) {
     const slice = slices[i];
-    const srcY = slice.yStart * RENDER_SCALE;
-    const srcH = slice.contentHeight * RENDER_SCALE;
+    const srcY = slice.yStart * scale;
+    const srcH = (slice.yEnd - slice.yStart) * scale;
 
     const pageCanvas = document.createElement("canvas");
-    pageCanvas.width = pageWidthPx;
-    pageCanvas.height = pageHeightPx;
+    pageCanvas.width = pageW;
+    pageCanvas.height = pageH;
     const ctx = pageCanvas.getContext("2d")!;
 
-    /* # Fill white background */
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
+    ctx.fillRect(0, 0, pageW, pageH);
 
-    /* # Draw content with consistent margins: top margin on every page */
+    /* # Draw content with top margin — consistent on EVERY page */
     ctx.drawImage(
       sourceCanvas,
-      0, srcY, pageWidthPx, srcH,
-      0, scaledMargin, pageWidthPx, srcH
+      0, srcY, pageW, srcH,
+      0, marginScaled, pageW, srcH
     );
 
     if (i > 0) pdf.addPage();
@@ -177,61 +246,29 @@ export async function renderPdfPages(
 
 /* ============================================================
    INJECT PDF BLOCK ATTRIBUTES INTO HTML
-   ============================================================
-   Post-processes template HTML to add data-pdf-block attributes
-   to semantic elements. Works with any template without requiring
-   individual template modifications.
    ============================================================ */
 export function injectPdfAttributes(html: string): string {
   let result = html;
 
-  /* # Section titles — h2 and h3 headings */
-  result = result.replace(/<h2(\s)/g, '<h2 data-pdf-block="section-title"$1');
-  result = result.replace(/<h2>/g, '<h2 data-pdf-block="section-title">');
-  result = result.replace(
-    /<h3([^>]*class="[^"]*main[^"]*")/g,
-    '<h3 data-pdf-block="section-title"$1'
-  );
+  /* # Section titles — all h2 tags and main-area h3 tags */
+  result = result.replace(/<h2(?=[\s>])/g, '<h2 data-pdf-block="section-title"');
+  result = result.replace(/<(h3[^>]*class="[^"]*(?:main|section)[^"]*")/g, '<$1 data-pdf-block="section-title"');
 
-  /* # Work experience entries */
-  result = result.replace(
-    /class="entry"/g,
-    'class="entry" data-pdf-block="entry"'
-  );
+  /* # Work experience entries — match class containing "entry" */
+  result = result.replace(/class="([^"]*\bentry\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
 
-  /* # Education rows */
-  result = result.replace(
-    /class="edu-row"/g,
-    'class="edu-row" data-pdf-block="education"'
-  );
-  result = result.replace(
-    /class="edu-entry"/g,
-    'class="edu-entry" data-pdf-block="education"'
-  );
+  /* # Education */
+  result = result.replace(/class="([^"]*\bedu-row\b[^"]*)"/g, 'class="$1" data-pdf-block="education"');
+  result = result.replace(/class="([^"]*\bedu-entry\b[^"]*)"/g, 'class="$1" data-pdf-block="education"');
 
   /* # Skill groups */
-  result = result.replace(
-    /class="skill-group"/g,
-    'class="skill-group" data-pdf-block="skill-group"'
-  );
+  result = result.replace(/class="([^"]*\bskill-group\b[^"]*)"/g, 'class="$1" data-pdf-block="skill-group"');
 
   /* # Language lines */
-  result = result.replace(
-    /class="lang-line"/g,
-    'class="lang-line" data-pdf-block="language"'
-  );
+  result = result.replace(/class="([^"]*\blang-line\b[^"]*)"/g, 'class="$1" data-pdf-block="language"');
 
   /* # Summary */
-  result = result.replace(
-    /class="summary"/g,
-    'class="summary" data-pdf-block="summary"'
-  );
-
-  /* # Certification entries */
-  result = result.replace(
-    /class="cert-row"/g,
-    'class="cert-row" data-pdf-block="certification"'
-  );
+  result = result.replace(/class="([^"]*\bsummary\b[^"]*)"/g, 'class="$1" data-pdf-block="summary"');
 
   return result;
 }
@@ -239,28 +276,21 @@ export function injectPdfAttributes(html: string): string {
 /* ============================================================
    STANDARDIZE TEMPLATE MARGINS
    ============================================================
-   Replaces template-specific body padding/margin with the
-   standard 0.75" margins from pdf-config.
+   Sets LEFT/RIGHT margins only in CSS. Vertical margins are
+   handled by the render engine for consistency across pages.
    ============================================================ */
 export function standardizeMargins(html: string): string {
   const px = IFRAME.marginPx;
 
-  /* # Replace body padding rules — handles various formats */
   let result = html.replace(
     /body\s*\{([^}]*)\}/,
-    (match, inner: string) => {
+    (_match, inner: string) => {
       let updated = inner;
-
-      /* # Remove existing padding */
       updated = updated.replace(/padding\s*:\s*[^;]+;?/g, "");
-
-      /* # Remove existing max-width and margin auto */
       updated = updated.replace(/max-width\s*:\s*[^;]+;?/g, "");
       updated = updated.replace(/margin\s*:\s*0\s*auto\s*;?/g, "");
-
-      /* # Add standardized padding and width */
-      updated += ` padding: ${px}px ${px}px 0 ${px}px; max-width: ${IFRAME.width}px; margin: 0 auto;`;
-
+      /* # Only horizontal padding — vertical handled by render engine */
+      updated += ` padding: 0 ${px}px; max-width: ${IFRAME.width}px; margin: 0 auto;`;
       return `body {${updated}}`;
     }
   );
@@ -270,32 +300,15 @@ export function standardizeMargins(html: string): string {
 
 /* ============================================================
    FULL HTML POST-PROCESSING PIPELINE
-   ============================================================
-   Applies all standardization to a template's HTML output:
-   1. Standardize margins (non-sidebar templates)
-   2. Inject PDF block attributes
-   3. Add page-break CSS
    ============================================================ */
 export function prepareForPdf(html: string, isSidebar = false): string {
   let result = html;
 
-  /* # Don't override margins for sidebar templates — they use flex layout */
   if (!isSidebar) {
     result = standardizeMargins(result);
   }
 
-  /* # Inject content block markers */
   result = injectPdfAttributes(result);
-
-  /* # Add page-break CSS before </head> */
-  const breakCSS = `<style>
-    [data-pdf-block="section-title"] { page-break-after: avoid; }
-    [data-pdf-block="entry"] { page-break-inside: avoid; }
-    [data-pdf-block="education"] { page-break-inside: avoid; }
-    [data-pdf-block="certification"] { page-break-inside: avoid; }
-    [data-pdf-block="skill-group"] { page-break-inside: avoid; }
-  </style>`;
-  result = result.replace("</head>", `${breakCSS}</head>`);
 
   return result;
 }

@@ -1462,9 +1462,9 @@ export default function TemplatesPage() {
 
       document.body.removeChild(iframe);
 
-      /* # Step 5: Calculate page slices using content-aware algorithm */
+      /* # Step 5: Calculate page slices using hybrid algorithm (blocks + pixel scan) */
       const totalHeightCss = Math.round(canvas.height / RENDER_SCALE);
-      const slices = calculatePageSlices(totalHeightCss, blocks);
+      const slices = calculatePageSlices(totalHeightCss, blocks, canvas, !!selected.hasSidebar);
 
       /* # Step 6: Render each page with consistent 0.75" margins */
       const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
