@@ -24,11 +24,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* ---- Brand Logo + Name ---- */}
-          <Link href="/" className="flex items-center gap-1 group">
-            {/* Custom SVG rocket in brand colors (replaces emoji) */}
-            <RocketIcon size={28} />
-            {/* Brand name in Space Grotesk — premium geometric font */}
-            <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text">
+          <Link href="/" className="flex items-center group">
+            <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
               JobPilot AI
             </span>
           </Link>

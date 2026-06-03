@@ -35,12 +35,6 @@ export function SoftwareAppJsonLd() {
         description: "Unlimited AI actions, unlimited resumes, priority support",
       },
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "150",
-      bestRating: "5",
-    },
   };
 
   return (

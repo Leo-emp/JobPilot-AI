@@ -481,7 +481,7 @@ export default function FeatureShowcase() {
                             className="mt-4 flex items-center gap-2"
                           >
                             <div className="px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                              <span className="text-xs text-emerald-400 font-medium">312 words</span>
+                              <span className="text-xs text-emerald-400 font-medium">287 words</span>
                             </div>
                             <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
                               <span className="text-xs text-blue-400 font-medium">Personalized</span>
@@ -672,7 +672,7 @@ export default function FeatureShowcase() {
           className="mt-24 sm:mt-32 text-center"
         >
           <p className="text-text-secondary text-lg mb-6">
-            All ten tools. One platform. Zero guesswork.
+            Every tool you need. One platform. Zero guesswork.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Start Optimizing for Free

@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 
 /* ---- Feature rows shown inside each card ---- */
 const featureRows = [
-  { name: "All 10 AI Tools (full access)", free: true, pro: true },
+  { name: "Every AI tool, fully unlocked", free: true, pro: true },
   { name: "Resume Analysis & ATS Scoring", free: true, pro: true },
   { name: "Resume Rebuild Engine", free: true, pro: true },
   { name: "Cover Letter Generator", free: true, pro: true },

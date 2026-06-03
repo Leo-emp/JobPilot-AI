@@ -52,11 +52,6 @@ export default function Hero() {
       className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-36"
     >
 
-      {/* ---- Rocket Icon — scale + fade for a dramatic entrance ---- */}
-      <motion.div variants={rocketReveal} className="relative mb-8">
-        <RocketIcon size={120} />
-      </motion.div>
-
       {/* ---- Title ---- */}
       <motion.h1 variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] mb-6 glow-text-strong">
         JobPilot AI

@@ -108,14 +108,29 @@ export async function POST(req: NextRequest) {
           audit("payment.cancelled", { userId: user.id, detail: `subscription:${subscription.id}` });
           await cacheDel(`plan:${user.id}`);
 
-          /* Send cancellation email (fire-and-forget — don't block webhook response) */
+          /* Send cancellation email with retry — user must receive this */
           if (user.email) {
-            getResend().emails.send({
+            const emailPayload = {
               from: "JobPilot AI <noreply@jobpilotai.co>",
               to: user.email,
               subject: "Your JobPilot AI Pro plan has ended",
               html: buildCancellationEmail(user.name || "there"),
-            }).catch(() => {});
+            };
+            const maxRetries = 3;
+            (async () => {
+              for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                  await getResend().emails.send(emailPayload);
+                  return;
+                } catch (err) {
+                  if (attempt === maxRetries) {
+                    console.error(`Cancellation email failed after ${maxRetries} attempts for ${user.email}:`, err);
+                  } else {
+                    await new Promise(r => setTimeout(r, 1000 * attempt));
+                  }
+                }
+              }
+            })();
           }
         }
         break;

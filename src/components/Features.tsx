@@ -178,8 +178,8 @@ export default function Features() {
             <span className="glow-text">Land the Job</span>
           </h2>
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            Ten AI-powered tools working together to take you from application
-            to interview — all in one platform.
+            A complete AI-powered toolkit that takes you from application
+            to offer — all in one platform.
           </p>
         </motion.div>
 

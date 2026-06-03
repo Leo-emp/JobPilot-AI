@@ -1169,7 +1169,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm text-text-secondary">AI tools available</span>
-                  <span className="text-sm text-white font-medium">All 10</span>
+                  <span className="text-sm text-white font-medium">All tools</span>
                 </div>
               </div>
 
