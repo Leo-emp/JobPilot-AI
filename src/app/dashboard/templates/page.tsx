@@ -15,6 +15,8 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { IFRAME, PAGE_SIZES, RENDER_SCALE } from "@/lib/pdf-config";
+import { measureBlocks, calculatePageSlices, renderPdfPages, prepareForPdf } from "@/lib/pdf-engine";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -67,8 +69,8 @@ interface Template {
   name: string;
   desc: string;
   category: string;
-  /* Each template has its own buildHTML function for unique structure */
   buildHTML: (d: ResumeData) => string;
+  hasSidebar?: boolean;
 }
 
 /* ============================================================
@@ -1256,11 +1258,11 @@ const TEMPLATES: Template[] = [
   { id: "compact", name: "Compact", desc: "Maximum density — fits 15+ years on one page", category: "Classic", buildHTML: buildCompact },
 
   /* ---- SIDEBAR ---- */
-  { id: "corporate", name: "Corporate", desc: "Navy sidebar with icon contact list and structured hierarchy", category: "Sidebar", buildHTML: buildCorporate },
-  { id: "creative", name: "Creative", desc: "Vivid purple sidebar with initials avatar and rounded elements", category: "Sidebar", buildHTML: buildCreative },
-  { id: "tech", name: "Tech", desc: "Terminal-inspired dark theme with monospace headers", category: "Sidebar", buildHTML: buildTech },
-  { id: "premium", name: "Premium", desc: "Luxury black with gold foil-style accents, serif typography", category: "Sidebar", buildHTML: buildPremium },
-  { id: "fresh", name: "Fresh", desc: "Light pastel green sidebar with organic feel", category: "Sidebar", buildHTML: buildFresh },
+  { id: "corporate", name: "Corporate", desc: "Navy sidebar with icon contact list and structured hierarchy", category: "Sidebar", buildHTML: buildCorporate, hasSidebar: true },
+  { id: "creative", name: "Creative", desc: "Vivid purple sidebar with initials avatar and rounded elements", category: "Sidebar", buildHTML: buildCreative, hasSidebar: true },
+  { id: "tech", name: "Tech", desc: "Terminal-inspired dark theme with monospace headers", category: "Sidebar", buildHTML: buildTech, hasSidebar: true },
+  { id: "premium", name: "Premium", desc: "Luxury black with gold foil-style accents, serif typography", category: "Sidebar", buildHTML: buildPremium, hasSidebar: true },
+  { id: "fresh", name: "Fresh", desc: "Light pastel green sidebar with organic feel", category: "Sidebar", buildHTML: buildFresh, hasSidebar: true },
 
   /* ---- VISUAL ---- */
   { id: "timeline", name: "Timeline", desc: "Connected timeline dots trace your career progression", category: "Visual", buildHTML: buildTimeline },
@@ -1275,9 +1277,9 @@ const TEMPLATES: Template[] = [
   { id: "card-grid", name: "Card Grid", desc: "Dashboard-style modular cards with stat highlights", category: "Modern", buildHTML: buildCardGrid },
 
   /* ---- SPECIAL ---- */
-  { id: "split", name: "Split 50/50", desc: "Equal two-column layout with dark header bar", category: "Special", buildHTML: buildSplit },
+  { id: "split", name: "Split 50/50", desc: "Equal two-column layout with dark header bar", category: "Special", buildHTML: buildSplit, hasSidebar: true },
   { id: "bands", name: "Alternating Bands", desc: "Full-width colored bands separate each section", category: "Special", buildHTML: buildBands },
-  { id: "right-sidebar", name: "Right Sidebar", desc: "Magenta right sidebar — content gets prime left position", category: "Special", buildHTML: buildRightSidebar },
+  { id: "right-sidebar", name: "Right Sidebar", desc: "Magenta right sidebar — content gets prime left position", category: "Special", buildHTML: buildRightSidebar, hasSidebar: true },
 ];
 
 /* ============================================================
@@ -1420,7 +1422,7 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download via jspdf + html2canvas inside isolated iframe ---- */
+  /* ---- PDF Download — centralized engine with intelligent page breaks ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -1429,11 +1431,13 @@ export default function TemplatesPage() {
         import("html2canvas"),
       ]);
 
-      const fullHTML = selected.buildHTML(formData);
+      /* # Step 1: Build HTML and apply PDF standardization */
+      const rawHTML = selected.buildHTML(formData);
+      const fullHTML = prepareForPdf(rawHTML, !!selected.hasSidebar);
 
-      /* Use an iframe for complete CSS isolation from the dark theme */
+      /* # Step 2: Render in isolated iframe with standard A4 dimensions */
       const iframe = document.createElement("iframe");
-      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:1122px;border:none;visibility:hidden;";
+      iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${IFRAME.width}px;height:${IFRAME.height}px;border:none;visibility:hidden;`;
       document.body.appendChild(iframe);
 
       const idoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -1442,135 +1446,33 @@ export default function TemplatesPage() {
       idoc.write(fullHTML);
       idoc.close();
 
-      /* Wait for fonts and layout to settle */
       await new Promise(r => setTimeout(r, 500));
 
+      /* # Step 3: Measure content blocks for intelligent page breaking */
+      const blocks = measureBlocks(idoc);
+
+      /* # Step 4: Render to canvas at 2x scale for crisp text */
       const canvas = await html2canvas(idoc.body, {
-        scale: 2,
+        scale: RENDER_SCALE,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
-        windowWidth: 794,
+        windowWidth: IFRAME.width,
       });
 
       document.body.removeChild(iframe);
 
-      const imgWidth = 210;
-      const pageHeight = 297;
+      /* # Step 5: Calculate page slices using content-aware algorithm */
+      const totalHeightCss = Math.round(canvas.height / RENDER_SCALE);
+      const slices = calculatePageSlices(totalHeightCss, blocks);
+
+      /* # Step 6: Render each page with consistent 0.75" margins */
       const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-      const pageHeightPx = Math.floor(pageHeight * canvas.width / imgWidth);
-      const ctx = canvas.getContext("2d");
-      let yOffset = 0;
-      let isFirstPage = true;
-
-      /* # Margin for pages 2+: ~14mm — used as minimum when centering content */
-      const MARGIN_MM = 14;
-      const FIXED_MARGIN = Math.floor(MARGIN_MM * canvas.width / imgWidth);
-
-      /* Scan only the right 55% of the canvas for white gaps.
-         This ensures two-column templates with dark sidebars still
-         get proper page breaks based on the main content area. */
-      const scanX = Math.floor(canvas.width * 0.45);
-      const scanW = canvas.width - scanX - 20;
-
-      const findBreak = (from: number, to: number): number => {
-        if (!ctx) return -1;
-        let consecutive = 0;
-        let bestRow = -1;
-        let bestSize = 0;
-        let gapTopRow = -1;
-
-        for (let row = from; row > to; row--) {
-          const rowPixels = ctx.getImageData(scanX, row, scanW, 1).data;
-          let allWhite = true;
-          for (let i = 0; i < rowPixels.length; i += 16) {
-            if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
-              allWhite = false;
-              break;
-            }
-          }
-          if (allWhite) {
-            consecutive++;
-            if (gapTopRow === -1) gapTopRow = row;
-          } else {
-            if (consecutive >= 24 && consecutive > bestSize) {
-              bestSize = consecutive;
-              bestRow = gapTopRow - consecutive + 1;
-            }
-            consecutive = 0;
-            gapTopRow = -1;
-          }
-        }
-        if (consecutive >= 24 && consecutive > bestSize) {
-          bestRow = gapTopRow - consecutive + 1;
-        }
-        return bestRow;
-      };
-
-      const skipWhite = (from: number): number => {
-        if (!ctx) return from;
-        let pos = from;
-        while (pos < canvas.height) {
-          const rowPixels = ctx.getImageData(scanX, pos, scanW, 1).data;
-          let allWhite = true;
-          for (let i = 0; i < rowPixels.length; i += 16) {
-            if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
-              allWhite = false;
-              break;
-            }
-          }
-          if (!allWhite) break;
-          pos++;
-        }
-        return pos;
-      };
-
-      while (yOffset < canvas.height) {
-        /* # Page 1: no reserved margins (CSS padding handles top, maximize content)
-           # Pages 2+: reserve minimum margin for break scanning */
-        const reserveForScan = isFirstPage ? 0 : FIXED_MARGIN;
-        const availableH = pageHeightPx - reserveForScan;
-        let sliceBottom = Math.min(yOffset + availableH, canvas.height);
-        const isLastSlice = sliceBottom >= canvas.height;
-
-        if (!isLastSlice) {
-          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.80), yOffset);
-          const br = findBreak(sliceBottom, scanEnd);
-          if (br > yOffset) sliceBottom = br;
-        }
-
-        const sliceH = sliceBottom - yOffset;
-
-        /* # Calculate where to place content on the page canvas:
-           # Page 1: top=0 (CSS padding is baked into the canvas content)
-           # Pages 2+: center the slice vertically for equal top/bottom margins */
-        let drawY: number;
-        if (isFirstPage) {
-          drawY = 0;
-        } else {
-          const totalSpace = pageHeightPx - sliceH;
-          drawY = Math.max(FIXED_MARGIN, Math.floor(totalSpace / 2));
-        }
-
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = pageHeightPx;
-        const pctx = pageCanvas.getContext("2d")!;
-        pctx.fillStyle = "#ffffff";
-        pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, drawY, canvas.width, sliceH);
-
-        if (!isFirstPage) pdf.addPage();
-        pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
-
-        yOffset = isLastSlice ? sliceBottom : skipWhite(sliceBottom);
-        isFirstPage = false;
-      }
+      await renderPdfPages(canvas, slices, pdf);
 
       pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
     } catch (err) {
       console.error("PDF generation error:", err);
-      /* Fallback: open in new tab for browser print-to-PDF */
       const html = selected.buildHTML(formData);
       const w = window.open("", "_blank");
       if (w) { w.document.write(html); w.document.close(); }
