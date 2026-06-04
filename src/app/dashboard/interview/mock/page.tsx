@@ -405,7 +405,7 @@ export default function MockInterviewPage() {
         setResume(text.trim());
         setResumeFileName(file.name);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to parse PDF. Try a .txt file instead.");
+        setError("Failed to parse this file. Please try a different PDF or use a .txt file instead.");
       } finally {
         setResumeUploading(false);
       }

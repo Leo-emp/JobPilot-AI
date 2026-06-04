@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
 
       setSent(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
