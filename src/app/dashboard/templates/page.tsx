@@ -317,24 +317,24 @@ function buildCentered(d: ResumeData): string {
 function buildCompact(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Calibri, Arial, sans-serif; max-width:780px; margin:0 auto; padding:20px 24px; line-height:1.3; font-size:11px; color:#222; }
+    body { font-family: Calibri, Arial, sans-serif; max-width:780px; margin:0 auto; padding:20px 24px; line-height:1.4; font-size:12px; color:#222; }
     .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2.5px solid #111; padding-bottom:7px; margin-bottom:10px; }
     .name { font-size:20px; font-weight:800; color:#111; letter-spacing:-0.3px; }
-    .title { font-size:10px; color:#555; }
-    .contact-right { text-align:right; font-size:10px; color:#666; line-height:1.5; }
+    .title { font-size:11px; color:#555; }
+    .contact-right { text-align:right; font-size:11px; color:#666; line-height:1.5; }
     .grid { display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }
     .full { grid-column:1 / -1; }
     h2 { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#111; margin-bottom:5px; }
     .section { margin-bottom:8px; }
-    .summary { font-size:10.5px; line-height:1.35; color:#333; }
+    .summary { font-size:12px; line-height:1.4; color:#333; }
     .entry { margin-bottom:5px; }
-    .entry-title { font-size:11px; font-weight:700; color:#111; }
-    .entry-sub { font-size:10px; color:#555; }
+    .entry-title { font-size:12px; font-weight:700; color:#111; }
+    .entry-sub { font-size:11px; color:#555; }
     ul { padding-left:14px; margin:1px 0 3px; }
-    li { font-size:10.5px; line-height:1.3; margin-bottom:1px; }
-    .skill-group { font-size:10.5px; margin-bottom:2px; }
+    li { font-size:12px; line-height:1.4; margin-bottom:1px; }
+    .skill-group { font-size:12px; margin-bottom:2px; }
     .skills-cols { }
-    p { font-size:10.5px; color:#333; margin:0 0 2px; }
+    p { font-size:12px; color:#333; margin:0 0 2px; }
   `;
   const c = contactParts(d);
   let html = `<div class="header">
