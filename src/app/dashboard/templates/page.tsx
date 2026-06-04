@@ -1024,17 +1024,14 @@ function buildCardGrid(d: ResumeData): string {
 function buildSplit(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    html,body { height:100%; }
     body { margin:0; font-family: Calibri, 'Segoe UI', sans-serif; font-size:12px; line-height:1.45; color:#1a1a1a; }
     .header { background:#111; color:#fff; padding:24px 28px; display:flex; justify-content:space-between; align-items:center; }
     .name { font-size:24px; font-weight:800; letter-spacing:-0.3px; }
     .title { font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:1.5px; }
     .contact-right { text-align:right; font-size:11px; color:#9ca3af; line-height:1.6; }
-    .cols { display:flex; min-height:calc(100vh - 80px); }
-    .col-left { width:50%; padding:20px 22px; border-right:1px solid #e5e7eb; }
-    .col-right { width:50%; padding:20px 22px; }
+    .cols { columns:2; column-gap:28px; padding:20px 22px; }
+    .section { margin-bottom:16px; break-inside:avoid; }
     h3 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#111; margin:0 0 8px; padding-bottom:4px; border-bottom:2px solid #111; }
-    .section { margin-bottom:16px; }
     .summary { font-size:12px; color:#555; line-height:1.55; }
     .entry { margin-bottom:10px; }
     .entry-title { font-weight:700; font-size:12px; color:#111; }
@@ -1048,15 +1045,14 @@ function buildSplit(d: ResumeData): string {
   let html = `<div class="header">
     <div><div class="name">${esc(d.fullName || "Your Name")}</div>${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}</div>
     <div class="contact-right">${c.map(p => esc(p)).join("<br>")}</div>
-  </div><div class="cols"><div class="col-left">`;
+  </div><div class="cols">`;
   if (d.summary) html += `<div class="section"><h3>Profile</h3><div class="summary">${esc(d.summary)}</div></div>`;
   if (d.experience) html += `<div class="section"><h3>Experience</h3>${entriesHTML(d.experience)}</div>`;
-  html += `</div><div class="col-right">`;
   if (d.skills) html += `<div class="section"><h3>Skills</h3>${skillGroupsHTML(d.skills)}</div>`;
   if (d.education) html += `<div class="section"><h3>Education</h3>${entriesHTML(d.education)}</div>`;
   if (d.certifications) html += `<div class="section"><h3>Certifications</h3>${certsHTML(d.certifications)}</div>`;
   if (d.languages) html += `<div class="section"><h3>Languages</h3>${langLines(d.languages).map(l => `<p>${esc(l)}</p>`).join("")}</div>`;
-  html += `</div></div>`;
+  html += `</div>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
 
