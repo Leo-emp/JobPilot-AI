@@ -281,18 +281,18 @@ function buildCentered(d: ResumeData): string {
     .header::after { bottom:-4px; }
     .name { font-size:26px; font-weight:400; color:#8b5e3c; letter-spacing:3px; text-transform:uppercase; }
     .title { font-size:12px; color:#888; font-style:italic; margin-top:4px; letter-spacing:1px; }
-    .contact { font-size:11.5px; color:#999; letter-spacing:0.5px; margin-top:6px; }
+    .contact { font-size:11.5px; color:#111; letter-spacing:0.5px; margin-top:6px; }
     .divider { width:60px; height:1px; background:#cba882; margin:18px auto; }
     h2 { font-size:14px; font-weight:400; font-variant:small-caps; letter-spacing:2px; color:#8b5e3c; margin-bottom:10px; }
-    .summary { font-size:12.5px; color:#555; line-height:1.65; max-width:580px; margin:0 auto 6px; font-style:italic; }
+    .summary { font-size:12.5px; color:#111; line-height:1.65; max-width:580px; margin:0 auto 6px; font-style:italic; }
     .content { text-align:left; }
     .entry { margin-bottom:12px; }
-    .entry-title { font-weight:700; font-size:12.5px; color:#4a3728; }
-    .entry-sub { font-size:11.5px; color:#777; margin-bottom:3px; }
+    .entry-title { font-weight:700; font-size:12.5px; color:#111; }
+    .entry-sub { font-size:11.5px; color:#111; margin-bottom:3px; }
     ul { padding-left:18px; margin:3px 0; text-align:left; }
-    li { font-size:12px; line-height:1.5; margin-bottom:2px; color:#555; }
-    .skill-group { font-size:12px; margin-bottom:3px; text-align:left; }
-    p { font-size:12px; margin:0 0 3px; }
+    li { font-size:12px; line-height:1.5; margin-bottom:2px; color:#111; }
+    .skill-group { font-size:12px; margin-bottom:3px; color:#111; text-align:left; }
+    p { font-size:12px; color:#111; margin:0 0 3px; }
   `;
   let html = `<div class="header">
     <div class="name">${esc(d.fullName || "Your Name")}</div>
