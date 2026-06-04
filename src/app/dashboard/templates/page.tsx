@@ -2011,8 +2011,14 @@ export default function TemplatesPage() {
                 <svg className="w-14 h-14 text-text-muted mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <p className="text-text-secondary text-sm font-medium mb-1">Upload your resume to get started</p>
-                <p className="text-text-muted text-xs">AI will extract your details and fill in all the fields automatically so you can review and edit.</p>
+                <p className="text-text-secondary text-sm font-medium mb-1">Upload your resume to auto-fill, or enter details yourself</p>
+                <p className="text-text-muted text-xs mb-4">AI will extract your details automatically, or you can fill in everything manually.</p>
+                <button
+                  onClick={() => setUploadStatus("done")}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-space-600 border border-card-border text-text-secondary hover:text-white hover:bg-space-500 transition-colors"
+                >
+                  Fill in Manually
+                </button>
               </div>
             )}
           </div>
