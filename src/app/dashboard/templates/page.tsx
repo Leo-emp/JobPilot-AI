@@ -351,6 +351,8 @@ function buildCorporate(d: ResumeData): string {
     .sidebar li { color:#cbd5e1; font-size:11.5px; margin-bottom:2px; }
     .sidebar p { color:#cbd5e1; font-size:11.5px; }
     .sidebar ul { padding-left:14px; }
+    .sidebar .entry-title { color:#f1f5f9; }
+    .sidebar .entry-sub { color:#94a3b8; }
     .main h3 { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#1e293b; border-bottom:2px solid #1e293b; padding-bottom:4px; margin:0 0 10px; }
     .main .section { margin-bottom:16px; }
     .summary { font-size:12px; color:#555; line-height:1.55; }
