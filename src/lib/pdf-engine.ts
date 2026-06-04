@@ -17,15 +17,17 @@ export function injectPdfAttributes(html: string): string {
   /* # Tag headings so we never break right after one */
   r = r.replace(/<h2(?=[\s>])(?![^>]*data-pdf-block)/g, '<h2 data-pdf-block="heading"');
   r = r.replace(/<h3(?=[\s>])(?![^>]*data-pdf-block)/g, '<h3 data-pdf-block="heading"');
-  /* # Tag content blocks we want to keep together on one page */
-  r = r.replace(/class="((?:entry|t-entry|exp-entry|entry-block)\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(edu-row\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(edu-entry\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(skill-group\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(lang-line\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(dot-row\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(summary\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
-  r = r.replace(/class="(section\b[^"]*)"/g, 'class="$1" data-pdf-block="section"');
+  /* # Tag content blocks we want to keep together on one page.
+     # Use (?:\s|") after the class name so we match "entry" and "entry foo"
+     # but NOT "entry-title" or "entry-sub" (child elements inside entries). */
+  r = r.replace(/class="((?:entry|t-entry|exp-entry|entry-block)(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(edu-row(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(edu-entry(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(skill-group(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(lang-line(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(dot-row(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(summary(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(section(?:\s[^"]*)?)"/g, 'class="$1" data-pdf-block="section"');
   return r;
 }
 
