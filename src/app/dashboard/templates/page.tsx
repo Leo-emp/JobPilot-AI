@@ -559,7 +559,8 @@ function buildFresh(d: ResumeData): string {
     .title { color:#16a34a; font-size:12px; font-weight:600; margin-bottom:14px; }
     .contact-item { color:#374151; font-size:11px; padding:4px 8px; background:#d1fae5; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
     .contact-item svg { color:#16a34a; flex-shrink:0; }
-    .sidebar h3 { color:#15803d; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px; background:#d1fae5; padding:4px 8px; border-radius:6px; margin:14px 0 8px; }
+    .sidebar h3 { color:#15803d; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px; background:#d1fae5; padding:4px 8px; border-radius:6px; margin:14px 0 8px; text-align:center; }
+    .sidebar .cert-item { color:#374151; font-size:11px; margin-bottom:4px; }
     .sidebar p,.sidebar li { color:#374151; font-size:11px; }
     .sidebar ul { padding-left:14px; }
     .sidebar li { margin-bottom:2px; }
@@ -581,11 +582,15 @@ function buildFresh(d: ResumeData): string {
   if (d.skills) sidebar += `<h3>Skills</h3>${skillGroupsHTML(d.skills)}`;
   if (d.education) sidebar += `<h3>Education</h3>${entriesHTML(d.education)}`;
   if (d.languages) sidebar += `<h3>Languages</h3>${langLines(d.languages).map(l => `<p>${esc(l)}</p>`).join("")}`;
+  if (d.certifications) {
+    sidebar += `<h3>Certifications</h3>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    sidebar += lines.map(l => `<div class="cert-item">${esc(l.replace(/^[-•]\s*/, ""))}</div>`).join("");
+  }
 
   let main = "";
   if (d.summary) main += `<div class="section"><h3>Profile</h3><div class="summary">${esc(d.summary)}</div></div>`;
   if (d.experience) main += `<div class="section"><h3>Experience</h3>${entriesHTML(d.experience)}</div>`;
-  if (d.certifications) main += `<div class="section"><h3>Certifications</h3>${certsHTML(d.certifications)}</div>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body><div class="wrap"><div class="sidebar">${sidebar}</div><div class="main">${main}</div></div></body></html>`;
 }
