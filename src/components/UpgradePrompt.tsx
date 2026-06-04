@@ -35,8 +35,8 @@ export default function UpgradePrompt({ remaining, plan }: UpgradePromptProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: "pro" }),
       });
-      const data = await res.json();
-      if (data.url) {
+      const data = await res.json().catch(() => null);
+      if (data?.url) {
         window.location.href = data.url;
       }
     } catch {

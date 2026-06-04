@@ -101,9 +101,8 @@ export default function AdminDashboardPage() {
       const res = await fetch(`/api/admin/stats?page=${page}`);
       if (res.status === 403) throw new Error("You don't have admin access.");
       if (!res.ok) throw new Error("Failed to load stats");
-      const data = await res.json();
-      setStats(data);
-      setCurrentPage(page);
+      const data = await res.json().catch(() => null);
+      if (data) { setStats(data); setCurrentPage(page); }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load stats");
     } finally {
@@ -119,8 +118,8 @@ export default function AdminDashboardPage() {
         const res = await fetch("/api/admin/stats?page=1");
         if (res.status === 403) throw new Error("You don't have admin access.");
         if (!res.ok) throw new Error("Failed to load stats");
-        const data = await res.json();
-        if (!cancelled) { setStats(data); setCurrentPage(1); }
+        const data = await res.json().catch(() => null);
+        if (!cancelled && data) { setStats(data); setCurrentPage(1); }
       } catch (e: unknown) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load stats");
       } finally {
@@ -136,10 +135,11 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch(`/api/feedback?page=${page}&status=${status}`);
       if (res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => null);
+        if (!data) return;
         setFeedbacks(data.feedbacks);
-        setFeedbackTotal(data.pagination.total);
-        setFeedbackPages(data.pagination.totalPages);
+        setFeedbackTotal(data.pagination?.total);
+        setFeedbackPages(data.pagination?.totalPages);
         setFeedbackPage(page);
       }
     } catch { /* ignore */ } finally { setFeedbackLoading(false); }

@@ -53,8 +53,8 @@ export default function HistoryPage() {
         const url = filter ? `/api/ai-history?action=${filter}&limit=50` : "/api/ai-history?limit=50";
         const res = await fetch(url);
         if (res.ok) {
-          const data = await res.json();
-          if (!cancelled) setItems(data.data);
+          const data = await res.json().catch(() => null);
+          if (!cancelled && data?.data) setItems(data.data);
         }
       } catch {
         /* Network error — ignore */
@@ -71,8 +71,8 @@ export default function HistoryPage() {
     try {
       const res = await fetch(`/api/ai-history/${id}`);
       if (res.ok) {
-        const data = await res.json();
-        setFullResult(data);
+        const data = await res.json().catch(() => null);
+        if (data) setFullResult(data);
       }
     } catch {
     } finally {

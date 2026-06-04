@@ -383,7 +383,9 @@ export default function PortfolioPage() {
       try {
         const res = await fetch("/api/portfolio");
         if (res.ok) {
-          const { portfolio } = await res.json();
+          const data = await res.json().catch(() => null);
+          const portfolio = data?.portfolio;
+          if (!portfolio) return;
           setHasPortfolio(true);
           setPortfolioId(portfolio.id);
           setSlug(portfolio.slug);
@@ -413,15 +415,17 @@ export default function PortfolioPage() {
         body: JSON.stringify({ slug, title, tagline, template }),
       });
       if (res.ok) {
-        const { portfolio } = await res.json();
-        setHasPortfolio(true);
-        setPortfolioId(portfolio.id);
-        setSections(portfolio.sections);
-        setPublished(false);
+        const data = await res.json().catch(() => null);
+        if (data?.portfolio) {
+          setHasPortfolio(true);
+          setPortfolioId(data.portfolio.id);
+          setSections(data.portfolio.sections);
+          setPublished(false);
+        }
       } else {
-        const data = await res.json();
+        const data = await res.json().catch(() => null);
         if (res.status === 409) setSlugError("This URL is already taken.");
-        else setSlugError(data.error || "Failed to create portfolio.");
+        else setSlugError(data?.error || "Failed to create portfolio.");
       }
     } catch { setSlugError("Network error. Please try again."); }
     setSaving(false);
@@ -537,7 +541,9 @@ export default function PortfolioPage() {
     try {
       const res = await fetch("/api/portfolio/import", { method: "POST" });
       if (res.ok) {
-        const { sections: imported } = await res.json();
+        const data = await res.json().catch(() => null);
+        const imported = data?.sections;
+        if (!imported) return;
         setSections(imported);
         debouncedSave({ sections: JSON.stringify(imported) });
       }

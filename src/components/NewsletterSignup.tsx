@@ -41,15 +41,15 @@ export default function NewsletterSignup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (res.ok) {
         setStatus("success");
-        setMessage(data.message || "You're subscribed!");
+        setMessage(data?.message || "You're subscribed!");
         setEmail("");
       } else {
         setStatus("error");
-        setMessage(data.error || "Something went wrong.");
+        setMessage(data?.error || "Something went wrong.");
       }
     } catch {
       setStatus("error");

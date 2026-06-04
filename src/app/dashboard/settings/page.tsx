@@ -109,7 +109,7 @@ export default function SettingsPage() {
   /* # Fetch plan data — .then() callback avoids synchronous setState in effect */
   useEffect(() => {
     fetch("/api/user/plan")
-      .then(res => res.ok ? res.json() : null)
+      .then(res => res.ok ? res.json().catch(() => null) : null)
       .then(data => { if (data) setUserPlan(data); })
       .catch(() => {});
   }, []);
@@ -124,20 +124,20 @@ export default function SettingsPage() {
   /* Check 2FA status on mount */
   useEffect(() => {
     fetch("/api/auth/two-factor/status")
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setTwoFAEnabled(d.enabled); })
+      .then(r => r.ok ? r.json().catch(() => null) : null)
+      .then(d => { if (d) setTwoFAEnabled(d?.enabled); })
       .catch(() => {});
   }, []);
 
   /* Fetch default resume + all saved resumes on mount */
   useEffect(() => {
     Promise.all([
-      fetch("/api/user/default-resume").then(r => r.ok ? r.json() : { data: null }),
-      fetch("/api/resumes?limit=50&sort=createdAt&order=desc").then(r => r.ok ? r.json() : { data: [] }),
+      fetch("/api/user/default-resume").then(r => r.ok ? r.json().catch(() => ({ data: null })) : { data: null }),
+      fetch("/api/resumes?limit=50&sort=createdAt&order=desc").then(r => r.ok ? r.json().catch(() => ({ data: [] })) : { data: [] }),
     ])
       .then(([defRes, allRes]) => {
-        if (defRes.data) setDefaultResume({ id: defRes.data.id, fileName: defRes.data.fileName });
-        setSavedResumes(allRes.data || []);
+        if (defRes?.data) setDefaultResume({ id: defRes.data.id, fileName: defRes.data.fileName });
+        setSavedResumes(allRes?.data || []);
       })
       .catch(() => {})
       .finally(() => setResumesLoading(false));
@@ -182,8 +182,8 @@ export default function SettingsPage() {
         setProfileMessage("Profile updated successfully!");
         await updateSession({ name: name.trim() });
       } else {
-        const data = await res.json();
-        setProfileMessage(data.error || "Failed to save.");
+        const data = await res.json().catch(() => null);
+        setProfileMessage(data?.error || "Failed to save.");
       }
     } catch {
       setProfileMessage("Failed to save profile.");
@@ -201,9 +201,9 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan, interval }),
       });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else setMessage(data.error || "Failed to start checkout.");
+      const data = await res.json().catch(() => null);
+      if (data?.url) window.location.href = data.url;
+      else setMessage(data?.error || "Failed to start checkout.");
     } catch {
       setMessage("Failed to connect to payment system.");
     } finally {
@@ -216,9 +216,9 @@ export default function SettingsPage() {
     setPortalLoading(true);
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else setMessage(data.error || "Failed to open billing portal.");
+      const data = await res.json().catch(() => null);
+      if (data?.url) window.location.href = data.url;
+      else setMessage(data?.error || "Failed to open billing portal.");
     } catch {
       setMessage("Failed to connect to billing system.");
     } finally {
@@ -236,7 +236,8 @@ export default function SettingsPage() {
         setExportMessage("Failed to export data. Please try again.");
         return;
       }
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+      if (!data) { setExportMessage("Failed to export data."); return; }
 
       /* Dynamic import — only loads ~400KB when user clicks export */
       const { default: jsPDF } = await import("jspdf");
@@ -449,8 +450,8 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirmEmail: deleteConfirmEmail }),
       });
-      const data = await res.json();
-      if (!res.ok) { setDeleteError(data.error || "Failed to delete."); return; }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) { setDeleteError(data?.error || "Failed to delete."); return; }
       await signOut({ callbackUrl: "/" });
     } catch {
       setDeleteError("Failed to connect to server.");
@@ -646,7 +647,8 @@ export default function SettingsPage() {
                           body: JSON.stringify({ fileName: file.name, content: text, analysis: null }),
                         });
                         if (!saveRes.ok) throw new Error("Save failed");
-                        const saved = await saveRes.json();
+                        const saved = await saveRes.json().catch(() => null);
+                        if (!saved?.id) throw new Error("Save failed");
                         const setRes = await fetch("/api/user/default-resume", {
                           method: "PUT",
                           headers: { "Content-Type": "application/json" },
@@ -707,7 +709,8 @@ export default function SettingsPage() {
                             body: JSON.stringify({ fileName: file.name, content: text, analysis: null }),
                           });
                           if (!saveRes.ok) throw new Error("Save failed");
-                          const saved = await saveRes.json();
+                          const saved = await saveRes.json().catch(() => null);
+                          if (!saved?.id) throw new Error("Save failed");
                           const setRes = await fetch("/api/user/default-resume", {
                             method: "PUT",
                             headers: { "Content-Type": "application/json" },
@@ -843,13 +846,13 @@ export default function SettingsPage() {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ code: twoFADisableCode }),
                           });
-                          const data = await res.json();
+                          const data = await res.json().catch(() => null);
                           if (res.ok) {
                             setTwoFAEnabled(false);
                             setTwoFADisableCode("");
                             setTwoFAMessage("2FA has been disabled.");
                           } else {
-                            setTwoFAMessage(data.error || "Failed to disable.");
+                            setTwoFAMessage(data?.error || "Failed to disable.");
                           }
                         } catch { setTwoFAMessage("Failed to disable 2FA."); }
                         finally { setTwoFALoading(false); }
@@ -872,13 +875,13 @@ export default function SettingsPage() {
                       setTwoFAMessage("");
                       try {
                         const res = await fetch("/api/auth/two-factor/setup", { method: "POST" });
-                        const data = await res.json();
-                        if (res.ok) {
+                        const data = await res.json().catch(() => null);
+                        if (res.ok && data) {
                           setTwoFAQrCode(data.qrCode);
                           setTwoFASecret(data.secret);
                           setTwoFAStep("setup");
                         } else {
-                          setTwoFAMessage(data.error || "Setup failed.");
+                          setTwoFAMessage(data?.error || "Setup failed.");
                         }
                       } catch { setTwoFAMessage("Failed to start 2FA setup."); }
                       finally { setTwoFALoading(false); }
@@ -922,14 +925,14 @@ export default function SettingsPage() {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ code: twoFACode }),
                           });
-                          const data = await res.json();
+                          const data = await res.json().catch(() => null);
                           if (res.ok) {
                             setTwoFAEnabled(true);
                             setTwoFAStep("idle");
                             setTwoFACode("");
                             setTwoFAMessage("2FA enabled successfully!");
                           } else {
-                            setTwoFAMessage(data.error || "Invalid code.");
+                            setTwoFAMessage(data?.error || "Invalid code.");
                           }
                         } catch { setTwoFAMessage("Verification failed."); }
                         finally { setTwoFALoading(false); }

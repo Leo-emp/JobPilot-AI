@@ -22,9 +22,9 @@ export function useDefaultResume() {
 
   useEffect(() => {
     fetch("/api/user/default-resume")
-      .then(r => r.ok ? r.json() : { data: null })
+      .then(r => r.ok ? r.json().catch(() => ({ data: null })) : { data: null })
       .then(data => {
-        if (data.data) {
+        if (data?.data) {
           setDefaultResume(data.data);
         }
       })

@@ -60,8 +60,9 @@ async function callAI(action: string, payload: Record<string, string>): Promise<
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action, payload }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "AI request failed");
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error || "AI request failed");
+  if (!data?.result) throw new Error("No response from AI");
   return data.result;
 }
 

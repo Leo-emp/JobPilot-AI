@@ -215,12 +215,12 @@ export default function DashboardPage() {
   /* # Fetch dashboard stats and career insights in parallel */
   useEffect(() => {
     fetch("/api/dashboard/stats")
-      .then(res => res.ok ? res.json() : null)
+      .then(res => res.ok ? res.json().catch(() => null) : null)
       .then(data => { if (data) setStats(data); })
       .catch(() => {});
 
     fetch("/api/career-insights")
-      .then(res => res.ok ? res.json() : null)
+      .then(res => res.ok ? res.json().catch(() => null) : null)
       .then(data => { if (data) setInsights(data); })
       .catch(() => {});
   }, []);

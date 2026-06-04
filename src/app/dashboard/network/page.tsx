@@ -264,18 +264,17 @@ export default function OutreachHubPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setError(data.error || "Failed to generate message.");
+        setError(data?.error || "Failed to generate message.");
         return;
       }
 
-      setGeneratedMessage(data.result);
-      if (data.remaining !== undefined) updateRemaining(data.remaining);
+      if (data?.result) setGeneratedMessage(data.result);
+      if (data?.remaining !== undefined) updateRemaining(data.remaining);
 
-      /* Parse the 3 versions from the AI response */
-      const versions = parseVersions(data.result);
+      const versions = parseVersions(data?.result || "");
       setMessageVersions(versions);
       setSelectedVersion(0);
       setEditedText(versions[0]?.text || data.result);

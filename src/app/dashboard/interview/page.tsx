@@ -124,7 +124,7 @@ export default function InterviewPage() {
     (async () => {
       try {
         const r = await fetch("/api/resumes?limit=20&sort=createdAt&order=desc");
-        const d = r.ok ? await r.json() : { data: [] };
+        const d = r.ok ? await r.json().catch(() => ({ data: [] })) : { data: [] };
         const list = d.data || [];
         if (!cancelled) {
           setSavedResumes(list);

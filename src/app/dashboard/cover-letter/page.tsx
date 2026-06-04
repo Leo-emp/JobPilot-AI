@@ -68,8 +68,8 @@ export default function CoverLetterPage() {
       try {
         const res = await fetch("/api/cover-letters");
         if (res.ok) {
-          const data = await res.json();
-          setSavedLetters(data.data);
+          const data = await res.json().catch(() => null);
+          if (data?.data) setSavedLetters(data.data);
         }
       } catch {
         /* Silent fail — list will just be empty */
@@ -109,16 +109,15 @@ export default function CoverLetterPage() {
         body: formData,
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setUploadError(data.error || "Failed to parse PDF.");
+        setUploadError(data?.error || "Failed to parse PDF.");
         setFileName("");
         return;
       }
 
-      /* Set the extracted text */
-      setResumeText(data.text);
+      if (data?.text) setResumeText(data.text);
     } catch {
       setUploadError("Failed to upload file. Please try again or paste your resume.");
       setFileName("");
@@ -149,8 +148,8 @@ export default function CoverLetterPage() {
           body: JSON.stringify({ jobTitle, company, content: fullResult }),
         });
         if (saveRes.ok) {
-          const saved = await saveRes.json();
-          setSavedLetters((prev) => [saved, ...prev]);
+          const saved = await saveRes.json().catch(() => null);
+          if (saved) setSavedLetters((prev) => [saved, ...prev]);
         }
       } catch {}
     }

@@ -60,8 +60,8 @@ export function useAIStream(): UseAIStreamReturn {
 
       /* Non-streaming error responses come back as JSON */
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "AI request failed.");
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "AI request failed.");
         setLoading(false);
         return null;
       }
@@ -106,17 +106,17 @@ export function useAIStream(): UseAIStreamReturn {
           body: JSON.stringify({ action, payload }),
         });
 
-        const data = await fallbackRes.json();
+        const data = await fallbackRes.json().catch(() => null);
         if (!fallbackRes.ok) {
-          setError(data.error || "AI request failed.");
+          setError(data?.error || "AI request failed.");
           setLoading(false);
           return null;
         }
 
-        setResult(data.result);
-        if (data.remaining !== undefined) updateRemaining(data.remaining);
+        setResult(data?.result || "");
+        if (data?.remaining !== undefined) updateRemaining(data.remaining);
         setLoading(false);
-        return data.result;
+        return data?.result || null;
       } catch {
         setError("Failed to connect to AI. Please try again.");
         setLoading(false);

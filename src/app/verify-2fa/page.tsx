@@ -39,10 +39,10 @@ export default function Verify2FAPage() {
         body: JSON.stringify({ code }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        setError(data.error || "Verification failed.");
+        setError(data?.error || "Verification failed.");
         setLoading(false);
         return;
       }

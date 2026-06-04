@@ -1408,7 +1408,8 @@ export default function TemplatesPage() {
         return;
       }
 
-      const { result } = await res.json();
+      const jsonData = await res.json().catch(() => null);
+      const result = jsonData?.result;
 
       /* Step 3: Parse the JSON response from Gemini */
       let parsed: Partial<ResumeData>;

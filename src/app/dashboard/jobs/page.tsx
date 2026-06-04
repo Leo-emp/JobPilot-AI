@@ -71,8 +71,8 @@ export default function JobsPage() {
   /* ---- Fetch saved resumes on mount ---- */
   useEffect(() => {
     fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
-      .then(r => r.ok ? r.json() : { data: [] })
-      .then(d => setSavedResumes(d.data || []))
+      .then(r => r.ok ? r.json().catch(() => ({ data: [] })) : { data: [] })
+      .then(d => setSavedResumes(d?.data || []))
       .catch(() => {})
       .finally(() => setResumesLoading(false));
   }, []);
@@ -196,18 +196,17 @@ export default function JobsPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setMatchError(data.error || "Match calculation failed.");
+        setMatchError(data?.error || "Match calculation failed.");
         return;
       }
 
-      /* Extract the numeric score from the AI response (handles both old and new format) */
-      const scoreMatch = data.result.match(/(?:MATCH_SCORE|Match Score):\s*(\d+)/);
+      const scoreMatch = data?.result?.match(/(?:MATCH_SCORE|Match Score):\s*(\d+)/);
       if (scoreMatch) {
         setMatchScore(parseInt(scoreMatch[1]));
       }
-      setResult(data.result);
+      if (data?.result) setResult(data.result);
     } catch {
       setMatchError("Failed to connect to AI.");
     } finally {

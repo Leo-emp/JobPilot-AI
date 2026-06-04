@@ -230,7 +230,8 @@ export default function Onboarding({ hasActivity }: OnboardingProps) {
         body: formData,
       });
       if (!parseRes.ok) throw new Error("Failed to parse PDF");
-      const parsed = await parseRes.json();
+      const parsed = await parseRes.json().catch(() => null);
+      if (!parsed) throw new Error("Failed to parse PDF");
 
       /* Step 2: Save to database */
       const saveRes = await fetch("/api/resumes", {
@@ -242,7 +243,8 @@ export default function Onboarding({ hasActivity }: OnboardingProps) {
         }),
       });
       if (!saveRes.ok) throw new Error("Failed to save resume");
-      const savedResume = await saveRes.json();
+      const savedResume = await saveRes.json().catch(() => null);
+      if (!savedResume?.id) throw new Error("Failed to save resume");
 
       /* Step 3: Set as default resume for all feature pages */
       await fetch("/api/user/default-resume", {

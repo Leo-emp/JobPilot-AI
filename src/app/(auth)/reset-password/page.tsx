@@ -63,10 +63,10 @@ function ResetPasswordForm() {
         body: JSON.stringify({ token, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
+        throw new Error(data?.error || "Something went wrong");
       }
 
       setSuccess(true);

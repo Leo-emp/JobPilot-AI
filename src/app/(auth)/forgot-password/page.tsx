@@ -30,8 +30,8 @@ export default function ForgotPasswordPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Something went wrong");
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Something went wrong");
       }
 
       setSent(true);

@@ -56,10 +56,9 @@ export default function SignupPage() {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        setError(data.error || "Failed to create account.");
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Failed to create account. Please try again.");
         return;
       }
 

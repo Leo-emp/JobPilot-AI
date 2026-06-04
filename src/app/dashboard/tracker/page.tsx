@@ -47,8 +47,8 @@ export default function TrackerPage() {
     try {
       const res = await fetch("/api/applications");
       if (res.ok) {
-        const data = await res.json();
-        setApps(data.data);
+        const data = await res.json().catch(() => null);
+        if (data?.data) setApps(data.data);
       }
     } catch {
       /* Silently fail — empty list is fine for now */

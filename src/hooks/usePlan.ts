@@ -24,7 +24,7 @@ export function usePlan(): PlanState {
 
   useEffect(() => {
     fetch("/api/user/plan")
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => (res.ok ? res.json().catch(() => null) : null))
       .then((data) => {
         if (data?.plan) setPlan(data.plan);
       })
