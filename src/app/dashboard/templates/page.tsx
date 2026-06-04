@@ -15,8 +15,8 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
-import { IFRAME, PAGE_SIZES, RENDER_SCALE } from "@/lib/pdf-config";
-import { measureBlocks, calculatePageSlices, renderPdfPages, prepareForPdf } from "@/lib/pdf-engine";
+import { IFRAME } from "@/lib/pdf-config";
+import { measureBlocks, renderTemplatePdf, prepareForPdf } from "@/lib/pdf-engine";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -1422,7 +1422,7 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download — centralized engine with intelligent page breaks ---- */
+  /* ---- PDF Download — per-page rendering with DOM-measured breaks ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -1435,9 +1435,9 @@ export default function TemplatesPage() {
       const rawHTML = selected.buildHTML(formData);
       const fullHTML = prepareForPdf(rawHTML, !!selected.hasSidebar);
 
-      /* # Step 2: Render in isolated iframe with standard A4 dimensions */
+      /* # Step 2: Render in isolated iframe */
       const iframe = document.createElement("iframe");
-      iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${IFRAME.width}px;height:${IFRAME.height}px;border:none;visibility:hidden;`;
+      iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${IFRAME.width}px;height:auto;border:none;visibility:hidden;`;
       document.body.appendChild(iframe);
 
       const idoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -1448,28 +1448,15 @@ export default function TemplatesPage() {
 
       await new Promise(r => setTimeout(r, 500));
 
-      /* # Step 3: Measure content blocks for intelligent page breaking */
+      /* # Step 3: Measure content blocks and total height */
       const blocks = measureBlocks(idoc);
+      const totalHeight = idoc.body.scrollHeight;
 
-      /* # Step 4: Render to canvas at 2x scale for crisp text */
-      const canvas = await html2canvas(idoc.body, {
-        scale: RENDER_SCALE,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        windowWidth: IFRAME.width,
-      });
+      /* # Step 4: Render each page individually at its break boundaries */
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      await renderTemplatePdf(iframe, blocks, totalHeight, pdf, html2canvas as never);
 
       document.body.removeChild(iframe);
-
-      /* # Step 5: Calculate page slices using hybrid algorithm (blocks + pixel scan) */
-      const totalHeightCss = Math.round(canvas.height / RENDER_SCALE);
-      const slices = calculatePageSlices(totalHeightCss, blocks, canvas, !!selected.hasSidebar);
-
-      /* # Step 6: Render each page with consistent 0.75" margins */
-      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-      await renderPdfPages(canvas, slices, pdf);
-
       pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
     } catch (err) {
       console.error("PDF generation error:", err);

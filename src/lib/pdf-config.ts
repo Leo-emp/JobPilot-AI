@@ -14,10 +14,10 @@ export const PAGE_SIZES = {
 
 /* # Standard margins: 0.75 inch = 19.05mm ≈ 54pt */
 export const MARGINS = {
-  top: 19.05,
-  bottom: 19.05,
-  left: 19.05,
-  right: 19.05,
+  top: 20,
+  bottom: 18,
+  left: 20,
+  right: 20,
 } as const;
 
 /* # Derived values for A4 */
