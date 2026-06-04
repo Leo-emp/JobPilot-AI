@@ -51,6 +51,7 @@ model User {
   aiResults      AiResult[]
   careerInsights CareerInsight[]
   jobViews       JobView[]
+  feedbacks      Feedback[]
   portfolio      Portfolio?
 }
 
@@ -283,4 +284,22 @@ model JobView {
 
   @@index([userId])
   @@unique([userId, url])
+}
+
+// ---- User Feedback ----
+// Stores feedback submitted via the in-app widget
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String                              // Snapshot of user email at submission time
+  category  String                              // bug, feature, improvement, other
+  message   String
+  status    String   @default("new")            // new, reviewed, resolved
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }

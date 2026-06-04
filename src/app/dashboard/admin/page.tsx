@@ -71,6 +71,15 @@ interface AdminStats {
   pagination: Pagination;
 }
 
+interface FeedbackRow {
+  id: string;
+  email: string;
+  category: string;
+  message: string;
+  status: string;
+  createdAt: string;
+}
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,6 +87,12 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingPage, setLoadingPage] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<FeedbackRow[]>([]);
+  const [feedbackFilter, setFeedbackFilter] = useState("all");
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const [feedbackTotal, setFeedbackTotal] = useState(0);
+  const [feedbackPages, setFeedbackPages] = useState(1);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   /* ---- Fetch admin stats ---- */
   const fetchStats = async (page: number, initial = false) => {
@@ -114,6 +129,32 @@ export default function AdminDashboardPage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  /* ---- Fetch feedback ---- */
+  const fetchFeedback = async (page: number, status: string) => {
+    setFeedbackLoading(true);
+    try {
+      const res = await fetch(`/api/feedback?page=${page}&status=${status}`);
+      if (res.ok) {
+        const data = await res.json();
+        setFeedbacks(data.feedbacks);
+        setFeedbackTotal(data.pagination.total);
+        setFeedbackPages(data.pagination.totalPages);
+        setFeedbackPage(page);
+      }
+    } catch { /* ignore */ } finally { setFeedbackLoading(false); }
+  };
+
+  useEffect(() => { fetchFeedback(1, feedbackFilter); }, [feedbackFilter]);
+
+  const updateFeedbackStatus = async (id: string, status: string) => {
+    await fetch("/api/feedback", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    fetchFeedback(feedbackPage, feedbackFilter);
+  };
 
   /* ---- Filter users by search ---- */
   const filteredUsers = stats?.users.filter(u =>
@@ -376,6 +417,74 @@ export default function AdminDashboardPage() {
                 className="px-3 py-1.5 rounded-lg text-sm font-medium bg-space-600 border border-card-border/50 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-space-500 transition-colors"
               >
                 Next →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ---- User Feedback ---- */}
+      <div className="rounded-2xl bg-space-700/80 border border-card-border overflow-hidden mt-8">
+        <div className="p-5 border-b border-card-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <h3 className="font-semibold text-white">User Feedback ({feedbackTotal})</h3>
+          <div className="flex gap-2">
+            {["all", "new", "reviewed", "resolved"].map(s => (
+              <button key={s} onClick={() => setFeedbackFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedbackFilter === s ? "bg-brand-indigo/20 text-brand-light border border-brand-indigo/30" : "bg-space-600 text-text-muted border border-card-border/50 hover:text-white"}`}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {feedbackLoading ? (
+          <div className="p-8 text-center text-text-muted">Loading feedback...</div>
+        ) : feedbacks.length === 0 ? (
+          <div className="p-8 text-center text-text-muted">No feedback yet</div>
+        ) : (
+          <div className="divide-y divide-card-border/30">
+            {feedbacks.map(fb => (
+              <div key={fb.id} className="p-5 hover:bg-space-600/30 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        fb.category === "bug" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                        fb.category === "feature" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                        fb.category === "improvement" ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                        "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+                      }`}>{fb.category}</span>
+                      <span className="text-xs text-text-muted">{fb.email}</span>
+                      <span className="text-xs text-text-muted">{timeAgo(fb.createdAt)}</span>
+                    </div>
+                    <p className="text-sm text-white whitespace-pre-wrap">{fb.message}</p>
+                  </div>
+                  <select
+                    value={fb.status}
+                    onChange={e => updateFeedbackStatus(fb.id, e.target.value)}
+                    className="px-2 py-1 rounded-lg text-xs bg-space-600 border border-card-border/50 text-text-secondary focus:outline-none"
+                  >
+                    <option value="new">New</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="resolved">Resolved</option>
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {feedbackPages > 1 && (
+          <div className="p-4 border-t border-card-border flex items-center justify-between">
+            <p className="text-xs text-text-muted">Page {feedbackPage} of {feedbackPages}</p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => fetchFeedback(feedbackPage - 1, feedbackFilter)} disabled={feedbackPage <= 1}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-space-600 border border-card-border/50 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-space-500 transition-colors">
+                Prev
+              </button>
+              <button onClick={() => fetchFeedback(feedbackPage + 1, feedbackFilter)} disabled={feedbackPage >= feedbackPages}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-space-600 border border-card-border/50 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-space-500 transition-colors">
+                Next
               </button>
             </div>
           </div>
