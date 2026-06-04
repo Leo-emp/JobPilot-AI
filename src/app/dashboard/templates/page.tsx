@@ -642,10 +642,12 @@ function buildSkillBars(d: ResumeData): string {
     .title { color:#7dd3fc; font-size:11px; font-weight:600; margin-bottom:14px; border-bottom:2px solid #7dd3fc; padding-bottom:8px; display:inline-block; }
     .contact-item { color:#bae6fd; font-size:11px; padding-left:10px; border-left:2px solid #2563eb; margin-bottom:6px; }
     .sidebar h3 { color:#7dd3fc; font-weight:800; font-size:10.5px; text-transform:uppercase; letter-spacing:0.8px; margin:16px 0 8px; border-top:1px solid #2d5a8e; padding-top:8px; }
-    .bar-wrap { margin-bottom:8px; }
-    .bar-label { font-size:11px; color:#bae6fd; margin-bottom:2px; }
-    .bar-track { height:6px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden; }
-    .bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg, #38bdf8, #7dd3fc); }
+    .skills-grid { columns:2; column-gap:10px; }
+    .skills-grid li { color:#bae6fd; font-size:11px; margin-bottom:3px; break-inside:avoid; }
+    .lang-item { color:#bae6fd; font-size:11px; margin-bottom:4px; }
+    .sidebar .entry-title { color:#f1f5f9; }
+    .sidebar .entry-sub { color:#94a3b8; }
+    .sidebar .cert-item { color:#e0f2fe; font-size:11px; margin-bottom:4px; }
     .sidebar p { color:#bae6fd; font-size:11px; }
     .sidebar ul { padding-left:14px; }
     .sidebar li { color:#bae6fd; font-size:11px; margin-bottom:2px; }
@@ -659,27 +661,29 @@ function buildSkillBars(d: ResumeData): string {
     li { font-size:11.5px; line-height:1.4; margin-bottom:2px; }
     p { font-size:11.5px; margin:0 0 3px; }
   `;
-  /* Skills rendered as bars with pseudo-random widths based on position */
   const skills = allSkillItems(d.skills);
-  const barWidths = [92, 88, 85, 80, 95, 78, 90, 82, 87, 75, 93, 86, 79, 91, 84, 77, 89, 83, 76, 94];
 
   let sidebar = `<div class="name">${esc(d.fullName || "Your Name")}</div>`;
   if (d.jobTitle) sidebar += `<div class="title">${esc(d.jobTitle)}</div>`;
   sidebar += contactParts(d).map(c => `<div class="contact-item">${esc(c)}</div>`).join("");
   if (d.skills) {
     sidebar += `<h3>Skills</h3>`;
-    sidebar += skills.slice(0, 10).map((s, i) => `<div class="bar-wrap"><div class="bar-label">${esc(s)}</div><div class="bar-track"><div class="bar-fill" style="width:${barWidths[i % barWidths.length]}%"></div></div></div>`).join("");
+    sidebar += `<ul class="skills-grid">${skills.map(s => `<li>${esc(s)}</li>`).join("")}</ul>`;
   }
   if (d.languages) {
     sidebar += `<h3>Languages</h3>`;
-    sidebar += langLines(d.languages).map((l, i) => `<div class="bar-wrap"><div class="bar-label">${esc(l.split("-")[0].trim())}</div><div class="bar-track"><div class="bar-fill" style="width:${[95, 70, 45, 60][i % 4]}%"></div></div></div>`).join("");
+    sidebar += langLines(d.languages).map(l => `<div class="lang-item">${esc(l)}</div>`).join("");
   }
   if (d.education) sidebar += `<h3>Education</h3>${entriesHTML(d.education)}`;
+  if (d.certifications) {
+    sidebar += `<h3>Certifications</h3>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    sidebar += lines.map(l => `<div class="cert-item">${esc(l.replace(/^[-•]\s*/, ""))}</div>`).join("");
+  }
 
   let main = "";
   if (d.summary) main += `<div class="section"><h3>Profile</h3><div class="summary">${esc(d.summary)}</div></div>`;
   if (d.experience) main += `<div class="section"><h3>Experience</h3>${entriesHTML(d.experience)}</div>`;
-  if (d.certifications) main += `<div class="section"><h3>Certifications</h3>${certsHTML(d.certifications)}</div>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body><div class="wrap"><div class="sidebar">${sidebar}</div><div class="main">${main}</div></div></body></html>`;
 }
