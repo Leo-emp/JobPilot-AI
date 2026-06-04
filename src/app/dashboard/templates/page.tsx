@@ -609,16 +609,14 @@ function buildTimeline(d: ResumeData): string {
     .contact { font-size:12px; color:#666; margin-top:6px; }
     h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#4f46e5; margin:18px 0 12px; }
     .summary { font-size:12.5px; color:#444; line-height:1.6; margin-bottom:4px; }
-    .timeline { position:relative; padding-left:24px; margin-left:8px; }
-    .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(180deg, #6366f1 0%, #c7d2fe 100%); border-radius:2px; }
-    .t-entry { position:relative; margin-bottom:16px; padding-left:4px; }
-    .t-entry::before { content:''; position:absolute; left:-28px; top:5px; width:13px; height:13px; border-radius:50%; background:#6366f1; border:3px solid #e0e7ff; }
+    .timeline { position:relative; }
+    .t-entry { position:relative; margin-bottom:16px; }
     .entry-title { font-weight:700; font-size:13px; color:#312e81; }
     .entry-sub { font-size:11.5px; color:#6b7280; margin-bottom:3px; }
     ul { padding-left:16px; margin:3px 0; }
     li { font-size:12px; line-height:1.45; margin-bottom:2px; color:#444; }
     .skills-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
-    .skill-pill { background:#e0e7ff; color:#4338ca; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:500; }
+    .skill-pill { background:#e0e7ff; color:#4338ca; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:500; text-align:center; }
     .skill-group { font-size:12px; margin-bottom:3px; }
     p { font-size:12px; color:#444; margin:0 0 3px; }
   `;
