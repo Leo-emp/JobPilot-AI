@@ -224,24 +224,36 @@ function buildATS(d: ResumeData): string {
     .contact span { margin:0 6px; }
     h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#000; margin:14px 0 6px; padding-top:8px; border-top:1px solid #ddd; }
     .summary { font-size:12px; color:#333; line-height:1.55; }
-    .entry { margin-bottom:10px; }
+    .ats-entry { margin-bottom:10px; }
     .entry-title { font-weight:700; font-size:12.5px; color:#111; }
     .entry-sub { font-size:11.5px; color:#555; }
     ul { padding-left:18px; margin:2px 0; }
     li { font-size:12px; line-height:1.45; margin-bottom:2px; }
     .skill-group { font-size:12px; margin-bottom:2px; }
-    .skills-list { columns:2; column-gap:24px; }
     p { font-size:12px; color:#333; margin:0 0 2px; }
   `;
+  /* # ATS uses ats-entry instead of entry so the page-break engine can
+     # split entries between bullet points (avoids large gaps on page 1) */
+  const atsEntries = (text: string): string => {
+    const entries = parseEntries(text);
+    if (entries.length === 0) return `<p>${esc(text)}</p>`;
+    return entries.map(e => `
+      <div class="ats-entry">
+        <div class="entry-title">${esc(e.title)}</div>
+        ${e.sub ? `<div class="entry-sub">${esc(e.sub)}</div>` : ""}
+        ${e.bullets.length > 0 ? `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+      </div>
+    `).join("");
+  };
   let html = `<div class="header">
     <div class="name">${esc(d.fullName || "Your Name")}</div>
     ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
     <div class="contact">${contactParts(d).map(c => `<span>${esc(c)}</span>`).join(" | ")}</div>
   </div>`;
   if (d.summary) html += `<h2>Summary</h2><div class="summary">${esc(d.summary)}</div>`;
-  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
-  if (d.skills) html += `<h2>Skills</h2><div class="skills-list">${skillGroupsHTML(d.skills)}</div>`;
-  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
+  if (d.experience) html += `<h2>Experience</h2>${atsEntries(d.experience)}`;
+  if (d.skills) html += `<h2>Skills</h2>${skillGroupsHTML(d.skills)}`;
+  if (d.education) html += `<h2>Education</h2>${atsEntries(d.education)}`;
   if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
   if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join(" | ")}</p>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
