@@ -936,9 +936,9 @@ function buildIconSections(d: ResumeData): string {
     .contact-row span { display:flex; align-items:center; gap:4px; }
     .contact-row svg { color:#dc2626; }
     .section { margin-bottom:16px; }
-    .section-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-    .section-icon { width:30px; height:30px; border-radius:8px; background:#fef2f2; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0; }
-    .section-head h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#111; margin:0; }
+    .section-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid #111; }
+    .section-icon { width:28px; height:28px; border-radius:8px; background:#fef2f2; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0; }
+    .section-head h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#111; margin:0; line-height:28px; }
     .summary { font-size:12.5px; color:#444; line-height:1.6; }
     .entry { margin-bottom:10px; margin-left:40px; }
     .entry-title { font-weight:700; font-size:12.5px; color:#111; }
