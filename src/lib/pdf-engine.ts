@@ -14,31 +14,43 @@ import { PAGE_SIZES, RENDER_SCALE, IFRAME } from "./pdf-config";
    ============================================================ */
 export function injectPdfAttributes(html: string): string {
   let r = html;
+  /* # Tag headings so we never break right after one */
   r = r.replace(/<h2(?=[\s>])(?![^>]*data-pdf-block)/g, '<h2 data-pdf-block="heading"');
   r = r.replace(/<h3(?=[\s>])(?![^>]*data-pdf-block)/g, '<h3 data-pdf-block="heading"');
+  /* # Tag content blocks we want to keep together on one page */
   r = r.replace(/class="((?:entry|t-entry|exp-entry|entry-block)\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
   r = r.replace(/class="(edu-row\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
   r = r.replace(/class="(edu-entry\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
   r = r.replace(/class="(skill-group\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
   r = r.replace(/class="(lang-line\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
+  r = r.replace(/class="(dot-row\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
   r = r.replace(/class="(summary\b[^"]*)"/g, 'class="$1" data-pdf-block="entry"');
   r = r.replace(/class="(section\b[^"]*)"/g, 'class="$1" data-pdf-block="section"');
   return r;
 }
 
 /* ============================================================
+   EXPORT Block type for consumers
+   ============================================================ */
+export type { Block };
+
+/* ============================================================
    MEASURE BLOCK POSITIONS FROM IFRAME DOM
    ============================================================ */
-interface Block { top: number; bottom: number; type: string; }
+interface Block { top: number; bottom: number; left: number; type: string; }
 
 export function measureBlocks(iframeDoc: Document): Block[] {
   const blocks: Block[] = [];
   iframeDoc.querySelectorAll("[data-pdf-block]").forEach((el) => {
     const h = el as HTMLElement;
-    const top = h.offsetTop;
-    const height = h.offsetHeight;
-    if (height > 0) {
-      blocks.push({ top, bottom: top + height, type: h.dataset.pdfBlock || "entry" });
+    const rect = h.getBoundingClientRect();
+    if (rect.height > 0) {
+      blocks.push({
+        top: rect.top + (iframeDoc.defaultView?.scrollY || 0),
+        bottom: rect.bottom + (iframeDoc.defaultView?.scrollY || 0),
+        left: rect.left,
+        type: h.dataset.pdfBlock || "entry",
+      });
     }
   });
   return blocks.sort((a, b) => a.top - b.top);
@@ -70,13 +82,17 @@ function findBreak(
   const idealCss = idealBreakScaled / scale;
   const minCss = minBreakScaled / scale;
 
-  /* # Find block boundaries (gaps between blocks) in the break zone */
+  /* # Find block boundaries (gaps between blocks) in the break zone
+     # For sidebar templates, only consider blocks in the main column */
+  const mainBlocks = hasSidebar
+    ? blocks.filter(b => b.left > IFRAME.width * 0.30)
+    : blocks;
   const gaps: number[] = [];
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
+  for (let i = 0; i < mainBlocks.length; i++) {
+    const b = mainBlocks[i];
     if (b.top > minCss && b.top < idealCss) {
       /* # Don't break right after a heading — check if previous block was a heading */
-      const prev = i > 0 ? blocks[i - 1] : null;
+      const prev = i > 0 ? mainBlocks[i - 1] : null;
       if (prev?.type === "heading" && b.top - prev.bottom < 10) continue;
       gaps.push(b.top);
     }

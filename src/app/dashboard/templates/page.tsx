@@ -15,6 +15,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { injectPdfAttributes, measureBlocks } from "@/lib/pdf-engine";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -1420,7 +1421,7 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download via jspdf + html2canvas inside isolated iframe ---- */
+  /* ---- PDF Download via jspdf + html2canvas — content-aware page breaking ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -1429,8 +1430,12 @@ export default function TemplatesPage() {
         import("html2canvas"),
       ]);
 
-      const fullHTML = selected.buildHTML(formData);
+      /* # Inject data-pdf-block attributes for smart page breaking */
+      const rawHTML = selected.buildHTML(formData);
+      const fullHTML = injectPdfAttributes(rawHTML);
+      const hasSidebar = !!selected.hasSidebar;
 
+      /* # Render in a hidden iframe */
       const iframe = document.createElement("iframe");
       iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:1122px;border:none;visibility:hidden;";
       document.body.appendChild(iframe);
@@ -1441,7 +1446,11 @@ export default function TemplatesPage() {
       idoc.write(fullHTML);
       idoc.close();
 
-      await new Promise(r => setTimeout(r, 500));
+      /* # Wait for fonts and layout to settle */
+      await new Promise(r => setTimeout(r, 600));
+
+      /* # Measure DOM block positions before capturing canvas */
+      const blocks = measureBlocks(idoc);
 
       const canvas = await html2canvas(idoc.body, {
         scale: 2,
@@ -1453,21 +1462,52 @@ export default function TemplatesPage() {
 
       document.body.removeChild(iframe);
 
-      const imgWidth = 210;
-      const pageHeight = 297;
+      /* # PDF setup — A4 dimensions */
+      const A4_W = 210;
+      const A4_H = 297;
+      const SCALE = 2;
       const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-      const pageHeightPx = Math.floor(pageHeight * canvas.width / imgWidth);
+      const pageHPx = Math.floor(A4_H * canvas.width / A4_W);
       const ctx = canvas.getContext("2d");
-      let yOffset = 0;
-      let isFirstPage = true;
 
-      const MARGIN_MM = 20;
-      const FIXED_MARGIN = Math.floor(MARGIN_MM * canvas.width / imgWidth);
+      /* # Consistent margins: 20mm top, 18mm bottom */
+      const MARGIN_TOP_PX = Math.floor(20 * canvas.width / A4_W);
+      const MARGIN_BOT_PX = Math.floor(18 * canvas.width / A4_W);
 
-      const scanX = Math.floor(canvas.width * 0.45);
+      /* # Sidebar templates: scan only the main content column for breaks
+         # Non-sidebar: scan full width */
+      const scanX = hasSidebar ? Math.floor(canvas.width * 0.38) : 0;
       const scanW = canvas.width - scanX - 20;
 
+      /* # Phase 1: find break at DOM block boundary (between entries/sections)
+         # Phase 2: fall back to pixel-scanning for the largest white gap */
+      /* # For sidebar templates, only consider blocks in the main content column */
+      const mainColumnBlocks = hasSidebar
+        ? blocks.filter(b => b.left > 794 * 0.30)
+        : blocks;
+
       const findBreak = (from: number, to: number): number => {
+        /* # Check block boundaries first — breaks between entries are cleanest */
+        const fromCss = from / SCALE;
+        const toCss = to / SCALE;
+        const gapPositions: number[] = [];
+
+        for (let i = 0; i < mainColumnBlocks.length; i++) {
+          const b = mainColumnBlocks[i];
+          if (b.top > toCss && b.top < fromCss) {
+            /* # Never break right after a heading — keep heading with first entry */
+            const prev = i > 0 ? mainColumnBlocks[i - 1] : null;
+            if (prev && (prev.type === "heading" || prev.type === "section") && b.top - prev.bottom < 15) continue;
+            gapPositions.push(b.top);
+          }
+        }
+
+        /* # Pick the gap closest to ideal break (maximizes content per page) */
+        if (gapPositions.length > 0) {
+          return Math.round(gapPositions[gapPositions.length - 1] * SCALE);
+        }
+
+        /* # Fallback: pixel scan for largest white gap (reduced threshold for better results) */
         if (!ctx) return -1;
         let consecutive = 0;
         let bestRow = -1;
@@ -1487,24 +1527,26 @@ export default function TemplatesPage() {
             consecutive++;
             if (gapTopRow === -1) gapTopRow = row;
           } else {
-            if (consecutive >= 24 && consecutive > bestSize) {
+            if (consecutive >= 10 && consecutive > bestSize) {
               bestSize = consecutive;
-              bestRow = gapTopRow - consecutive + 1;
+              bestRow = gapTopRow - Math.floor(consecutive / 2);
             }
             consecutive = 0;
             gapTopRow = -1;
           }
         }
-        if (consecutive >= 24 && consecutive > bestSize) {
-          bestRow = gapTopRow - consecutive + 1;
+        if (consecutive >= 10 && consecutive > bestSize) {
+          bestRow = gapTopRow - Math.floor(consecutive / 2);
         }
         return bestRow;
       };
 
+      /* # Skip whitespace rows between slices so next page starts at content */
       const skipWhite = (from: number): number => {
         if (!ctx) return from;
         let pos = from;
-        while (pos < canvas.height) {
+        const maxSkip = Math.min(from + 80 * SCALE, canvas.height);
+        while (pos < maxSkip) {
           const rowPixels = ctx.getImageData(scanX, pos, scanW, 1).data;
           let allWhite = true;
           for (let i = 0; i < rowPixels.length; i += 16) {
@@ -1519,38 +1561,41 @@ export default function TemplatesPage() {
         return pos;
       };
 
+      let yOffset = 0;
+      let isFirstPage = true;
+
       while (yOffset < canvas.height) {
-        const reserveForScan = isFirstPage ? 0 : FIXED_MARGIN;
-        const availableH = pageHeightPx - reserveForScan;
+        /* # First page: template already has its own top padding (from CSS)
+           # Subsequent pages: engine adds consistent top margin
+           # Sidebar templates: no external margins (sidebar bg fills edge-to-edge) */
+        const topMargin = isFirstPage ? 0 : (hasSidebar ? 0 : MARGIN_TOP_PX);
+        const botMargin = hasSidebar ? 0 : MARGIN_BOT_PX;
+        const availableH = pageHPx - topMargin - botMargin;
+
         let sliceBottom = Math.min(yOffset + availableH, canvas.height);
         const isLastSlice = sliceBottom >= canvas.height;
 
+        /* # Find best break point in the bottom 25% of available space */
         if (!isLastSlice) {
-          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.80), yOffset);
+          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.75), yOffset);
           const br = findBreak(sliceBottom, scanEnd);
           if (br > yOffset) sliceBottom = br;
         }
 
         const sliceH = sliceBottom - yOffset;
 
-        let drawY: number;
-        if (isFirstPage) {
-          drawY = 0;
-        } else {
-          const totalSpace = pageHeightPx - sliceH;
-          drawY = Math.max(FIXED_MARGIN, Math.floor(totalSpace / 2));
-        }
-
+        /* # Draw content slice onto a clean white A4 page canvas */
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
-        pageCanvas.height = pageHeightPx;
+        pageCanvas.height = pageHPx;
         const pctx = pageCanvas.getContext("2d")!;
         pctx.fillStyle = "#ffffff";
-        pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, drawY, canvas.width, sliceH);
+        pctx.fillRect(0, 0, pageCanvas.width, pageHPx);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, topMargin, canvas.width, sliceH);
 
         if (!isFirstPage) pdf.addPage();
-        pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
+        /* # PNG for crisp text (no JPEG compression artifacts) */
+        pdf.addImage(pageCanvas.toDataURL("image/png"), "PNG", 0, 0, A4_W, A4_H);
 
         yOffset = isLastSlice ? sliceBottom : skipWhite(sliceBottom);
         isFirstPage = false;
