@@ -1298,9 +1298,7 @@ const TEMPLATES: Template[] = [
   { id: "pill-tags", name: "Pill Tags", desc: "Colorful rounded pill badges for every skill", category: "Visual", buildHTML: buildPillTags },
 
   /* ---- MODERN ---- */
-  { id: "banner", name: "Banner", desc: "Full-width gradient header with icon contact chips", category: "Modern", buildHTML: buildBanner },
   { id: "icon-sections", name: "Icon Sections", desc: "Every section led by a distinctive icon in a colored box", category: "Modern", buildHTML: buildIconSections },
-  { id: "card-grid", name: "Card Grid", desc: "Dashboard-style modular cards with stat highlights", category: "Modern", buildHTML: buildCardGrid },
 
   /* ---- SPECIAL ---- */
   { id: "split", name: "Split 50/50", desc: "Equal two-column layout with dark header bar", category: "Special", buildHTML: buildSplit, hasSidebar: true },
