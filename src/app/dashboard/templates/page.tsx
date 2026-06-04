@@ -15,8 +15,8 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
-import { IFRAME } from "@/lib/pdf-config";
-import { measureBlocks, renderTemplatePdf, prepareForPdf } from "@/lib/pdf-engine";
+import { IFRAME, RENDER_SCALE } from "@/lib/pdf-config";
+import { measureBlocks, renderFullPdf, prepareForPdf } from "@/lib/pdf-engine";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -1422,7 +1422,7 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download — per-page rendering with DOM-measured breaks ---- */
+  /* ---- PDF Download — single canvas with DOM-guided page breaks ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -1431,13 +1431,11 @@ export default function TemplatesPage() {
         import("html2canvas"),
       ]);
 
-      /* # Step 1: Build HTML and apply PDF standardization */
       const rawHTML = selected.buildHTML(formData);
       const fullHTML = prepareForPdf(rawHTML, !!selected.hasSidebar);
 
-      /* # Step 2: Render in isolated iframe */
       const iframe = document.createElement("iframe");
-      iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${IFRAME.width}px;height:auto;border:none;visibility:hidden;`;
+      iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${IFRAME.width}px;height:${IFRAME.height}px;border:none;visibility:hidden;`;
       document.body.appendChild(iframe);
 
       const idoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -1448,15 +1446,21 @@ export default function TemplatesPage() {
 
       await new Promise(r => setTimeout(r, 500));
 
-      /* # Step 3: Measure content blocks and total height */
       const blocks = measureBlocks(idoc);
-      const totalHeight = idoc.body.scrollHeight;
 
-      /* # Step 4: Render each page individually at its break boundaries */
-      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-      await renderTemplatePdf(iframe, blocks, totalHeight, pdf, html2canvas as never);
+      const canvas = await html2canvas(idoc.body, {
+        scale: RENDER_SCALE,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        windowWidth: IFRAME.width,
+      });
 
       document.body.removeChild(iframe);
+
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      await renderFullPdf(canvas, blocks, !!selected.hasSidebar, pdf);
+
       pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
     } catch (err) {
       console.error("PDF generation error:", err);
