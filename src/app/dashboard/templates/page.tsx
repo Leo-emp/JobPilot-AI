@@ -220,15 +220,15 @@ function buildTraditional(d: ResumeData): string {
 function buildATS(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; max-width:760px; margin:0 auto; padding:32px 36px; line-height:1.5; font-size:12.5px; color:#222; }
-    .header { text-align:center; margin-bottom:14px; border-bottom:1px solid #ccc; padding-bottom:12px; }
-    .name { font-size:24px; font-weight:700; color:#000; text-transform:uppercase; letter-spacing:2px; }
-    .title { font-size:12px; color:#555; margin:3px 0; }
+    body { font-family: Arial, Helvetica, sans-serif; max-width:760px; margin:0 auto; padding:28px 36px; line-height:1.45; font-size:12px; color:#222; }
+    .header { text-align:center; margin-bottom:12px; border-bottom:1px solid #ccc; padding-bottom:10px; }
+    .name { font-size:22px; font-weight:700; color:#000; text-transform:uppercase; letter-spacing:2px; }
+    .title { font-size:11.5px; color:#555; margin:2px 0; }
     .contact { font-size:11px; color:#666; }
     .contact span { margin:0 6px; }
-    h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#000; margin:14px 0 6px; padding-top:8px; border-top:1px solid #ddd; }
-    .summary { font-size:12px; color:#333; line-height:1.55; }
-    .ats-entry { margin-bottom:10px; }
+    h2 { font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#000; margin:12px 0 5px; padding-top:6px; border-top:1px solid #ddd; }
+    .summary { font-size:12px; color:#333; line-height:1.5; }
+    .ats-entry { margin-bottom:8px; }
     .entry-title { font-weight:700; font-size:12.5px; color:#111; }
     .entry-sub { font-size:11.5px; color:#555; }
     ul { padding-left:18px; margin:2px 0; }
@@ -258,7 +258,11 @@ function buildATS(d: ResumeData): string {
   if (d.experience) html += `<h2>Experience</h2>${atsEntries(d.experience)}`;
   if (d.skills) html += `<h2>Skills</h2>${skillGroupsHTML(d.skills)}`;
   if (d.education) html += `<h2>Education</h2>${atsEntries(d.education)}`;
-  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
+  if (d.certifications) {
+    html += `<h2>Certifications</h2>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    html += lines.map(l => `<p>${esc(l.replace(/^[-•]\s*/, ""))}</p>`).join("");
+  }
   if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join(" | ")}</p>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
