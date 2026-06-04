@@ -1169,13 +1169,13 @@ function buildRightSidebar(d: ResumeData): string {
 function buildStandardATS(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Helvetica, Arial, sans-serif; max-width:760px; margin:0 auto; padding:30px 36px; line-height:1.45; font-size:10pt; color:#191919; }
+    body { font-family: Helvetica, Arial, sans-serif; max-width:760px; margin:0 auto; padding:24px 36px; line-height:1.4; font-size:10pt; color:#191919; }
     .name { font-size:24pt; font-weight:700; color:#111; margin-bottom:2px; }
-    .contact { font-size:10pt; color:#191919; margin-bottom:14px; }
+    .contact { font-size:10pt; color:#191919; margin-bottom:10px; }
     .contact a { color:#003399; text-decoration:underline; }
-    h2 { font-size:12pt; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#111; border-bottom:2px solid #1a1a1a; padding-bottom:3px; margin:18px 0 10px; }
-    .summary { font-size:10pt; color:#191919; line-height:1.5; margin-bottom:4px; }
-    .std-entry { margin-bottom:10px; }
+    h2 { font-size:11pt; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#111; border-bottom:2px solid #1a1a1a; padding-bottom:2px; margin:12px 0 6px; }
+    .summary { font-size:10pt; color:#191919; line-height:1.45; margin-bottom:2px; }
+    .std-entry { margin-bottom:6px; }
     .entry-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px; }
     .entry-row .left { font-weight:700; font-size:10.5pt; color:#111; }
     .entry-row .date { font-weight:700; font-size:10.5pt; color:#111; white-space:nowrap; margin-left:12px; }
