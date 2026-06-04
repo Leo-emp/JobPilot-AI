@@ -324,7 +324,7 @@ function buildCompact(d: ResumeData): string {
     .contact-right { text-align:right; font-size:10px; color:#666; line-height:1.5; }
     .grid { display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }
     .full { grid-column:1 / -1; }
-    h2 { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#111; margin-bottom:5px; }
+    h2 { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#111; margin-bottom:5px; }
     .section { margin-bottom:8px; }
     .summary { font-size:10.5px; line-height:1.35; color:#333; }
     .entry { margin-bottom:5px; }
