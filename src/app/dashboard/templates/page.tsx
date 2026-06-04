@@ -15,8 +15,6 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
-import { IFRAME, RENDER_SCALE } from "@/lib/pdf-config";
-import { measureBlocks, renderFullPdf, prepareForPdf } from "@/lib/pdf-engine";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -1422,7 +1420,7 @@ export default function TemplatesPage() {
     }
   };
 
-  /* ---- PDF Download — single canvas with DOM-guided page breaks ---- */
+  /* ---- PDF Download via jspdf + html2canvas inside isolated iframe ---- */
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
@@ -1431,11 +1429,10 @@ export default function TemplatesPage() {
         import("html2canvas"),
       ]);
 
-      const rawHTML = selected.buildHTML(formData);
-      const fullHTML = prepareForPdf(rawHTML, !!selected.hasSidebar);
+      const fullHTML = selected.buildHTML(formData);
 
       const iframe = document.createElement("iframe");
-      iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${IFRAME.width}px;height:${IFRAME.height}px;border:none;visibility:hidden;`;
+      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:1122px;border:none;visibility:hidden;";
       document.body.appendChild(iframe);
 
       const idoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -1446,20 +1443,118 @@ export default function TemplatesPage() {
 
       await new Promise(r => setTimeout(r, 500));
 
-      const blocks = measureBlocks(idoc);
-
       const canvas = await html2canvas(idoc.body, {
-        scale: RENDER_SCALE,
+        scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
-        windowWidth: IFRAME.width,
+        windowWidth: 794,
       });
 
       document.body.removeChild(iframe);
 
+      const imgWidth = 210;
+      const pageHeight = 297;
       const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-      await renderFullPdf(canvas, blocks, !!selected.hasSidebar, pdf);
+      const pageHeightPx = Math.floor(pageHeight * canvas.width / imgWidth);
+      const ctx = canvas.getContext("2d");
+      let yOffset = 0;
+      let isFirstPage = true;
+
+      const MARGIN_MM = 20;
+      const FIXED_MARGIN = Math.floor(MARGIN_MM * canvas.width / imgWidth);
+
+      const scanX = Math.floor(canvas.width * 0.45);
+      const scanW = canvas.width - scanX - 20;
+
+      const findBreak = (from: number, to: number): number => {
+        if (!ctx) return -1;
+        let consecutive = 0;
+        let bestRow = -1;
+        let bestSize = 0;
+        let gapTopRow = -1;
+
+        for (let row = from; row > to; row--) {
+          const rowPixels = ctx.getImageData(scanX, row, scanW, 1).data;
+          let allWhite = true;
+          for (let i = 0; i < rowPixels.length; i += 16) {
+            if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
+              allWhite = false;
+              break;
+            }
+          }
+          if (allWhite) {
+            consecutive++;
+            if (gapTopRow === -1) gapTopRow = row;
+          } else {
+            if (consecutive >= 24 && consecutive > bestSize) {
+              bestSize = consecutive;
+              bestRow = gapTopRow - consecutive + 1;
+            }
+            consecutive = 0;
+            gapTopRow = -1;
+          }
+        }
+        if (consecutive >= 24 && consecutive > bestSize) {
+          bestRow = gapTopRow - consecutive + 1;
+        }
+        return bestRow;
+      };
+
+      const skipWhite = (from: number): number => {
+        if (!ctx) return from;
+        let pos = from;
+        while (pos < canvas.height) {
+          const rowPixels = ctx.getImageData(scanX, pos, scanW, 1).data;
+          let allWhite = true;
+          for (let i = 0; i < rowPixels.length; i += 16) {
+            if (rowPixels[i] < 245 || rowPixels[i + 1] < 245 || rowPixels[i + 2] < 245) {
+              allWhite = false;
+              break;
+            }
+          }
+          if (!allWhite) break;
+          pos++;
+        }
+        return pos;
+      };
+
+      while (yOffset < canvas.height) {
+        const reserveForScan = isFirstPage ? 0 : FIXED_MARGIN;
+        const availableH = pageHeightPx - reserveForScan;
+        let sliceBottom = Math.min(yOffset + availableH, canvas.height);
+        const isLastSlice = sliceBottom >= canvas.height;
+
+        if (!isLastSlice) {
+          const scanEnd = Math.max(yOffset + Math.floor(availableH * 0.80), yOffset);
+          const br = findBreak(sliceBottom, scanEnd);
+          if (br > yOffset) sliceBottom = br;
+        }
+
+        const sliceH = sliceBottom - yOffset;
+
+        let drawY: number;
+        if (isFirstPage) {
+          drawY = 0;
+        } else {
+          const totalSpace = pageHeightPx - sliceH;
+          drawY = Math.max(FIXED_MARGIN, Math.floor(totalSpace / 2));
+        }
+
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = pageHeightPx;
+        const pctx = pageCanvas.getContext("2d")!;
+        pctx.fillStyle = "#ffffff";
+        pctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        pctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, drawY, canvas.width, sliceH);
+
+        if (!isFirstPage) pdf.addPage();
+        pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.98), "JPEG", 0, 0, imgWidth, pageHeight);
+
+        yOffset = isLastSlice ? sliceBottom : skipWhite(sliceBottom);
+        isFirstPage = false;
+      }
 
       pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
     } catch (err) {
