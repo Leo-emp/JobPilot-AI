@@ -410,8 +410,11 @@ function buildCreative(d: ResumeData): string {
     .title { color:#c4b5fd; font-size:11px; text-transform:uppercase; letter-spacing:2px; margin-top:6px; margin-bottom:16px; }
     .contact-item { color:#c4b5fd; background:rgba(0,0,0,0.15); padding:5px 10px; border-radius:8px; margin-bottom:5px; font-size:11px; display:flex; align-items:center; gap:8px; }
     .contact-item svg { flex-shrink:0; }
-    .sidebar h3 { color:#fff; font-weight:800; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:8px; margin:14px 0 8px; }
+    .sidebar h3 { color:#fff; font-weight:800; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:8px; margin:14px 0 8px; text-align:center; }
     .sidebar p,.sidebar li { color:#ede9fe; font-size:11px; }
+    .sidebar .entry-title { color:#f5f3ff; }
+    .sidebar .entry-sub { color:#c4b5fd; }
+    .sidebar .cert-item { color:#ede9fe; font-size:11px; margin-bottom:4px; }
     .sidebar ul { padding-left:14px; }
     .sidebar li { margin-bottom:2px; }
     .main h3 { font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:#5b21b6; padding:4px 0; border-left:4px solid #7c3aed; padding-left:10px; margin-bottom:8px; }
@@ -432,13 +435,17 @@ function buildCreative(d: ResumeData): string {
   const icons = [ICONS.location, ICONS.phone, ICONS.email, ICONS.linkedin];
   sidebar += contactParts(d).map((c, i) => `<div class="contact-item">${icons[i] || ""}${esc(c)}</div>`).join("");
   if (d.skills) sidebar += `<h3>Skills</h3>${skillGroupsHTML(d.skills)}`;
+  if (d.education) sidebar += `<h3>Education</h3>${entriesHTML(d.education)}`;
+  if (d.certifications) {
+    sidebar += `<h3>Certifications</h3>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    sidebar += lines.map(l => `<div class="cert-item">${esc(l.replace(/^[-•]\s*/, ""))}</div>`).join("");
+  }
   if (d.languages) sidebar += `<h3>Languages</h3>${langLines(d.languages).map(l => `<p>${esc(l)}</p>`).join("")}`;
 
   let main = "";
   if (d.summary) main += `<div class="section"><h3>Profile</h3><div class="summary">${esc(d.summary)}</div></div>`;
   if (d.experience) main += `<div class="section"><h3>Experience</h3>${entriesHTML(d.experience)}</div>`;
-  if (d.education) main += `<div class="section"><h3>Education</h3>${entriesHTML(d.education)}</div>`;
-  if (d.certifications) main += `<div class="section"><h3>Certifications</h3>${certsHTML(d.certifications)}</div>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body><div class="wrap"><div class="sidebar">${sidebar}</div><div class="main">${main}</div></div></body></html>`;
 }
