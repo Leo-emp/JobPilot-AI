@@ -202,25 +202,12 @@ function buildTraditional(d: ResumeData): string {
   html += `<div class="contact">${contactParts(d).join(" · ")}</div>`;
   if (d.summary) html += `<h2>Professional Summary</h2><div class="summary">${esc(d.summary)}</div>`;
   if (d.experience) html += `<h2>Work Experience</h2>${entriesHTML(d.experience)}`;
-  /* # Ensure dates always show as a range */
-  const ensureRange = (s: string) => {
-    if (!s) return s;
-    if (s.match(/\d\s*[-–]\s*[\d(]/) || s.match(/[-–]\s*(?:Current|Present)/i)) return s;
-    return s.replace(/((?:\d{1,2}\/)\d{4}|\d{4})\s*$/, '$1 – Present');
-  };
-  if (d.education) {
-    html += `<h2>Education</h2>`;
-    const entries = parseEntries(d.education);
-    html += entries.map(e => {
-      const sub = e.sub ? ensureRange(e.sub) : "";
-      return `<div class="entry"><div class="entry-title">${esc(e.title)}</div>${sub ? `<div class="entry-sub">${esc(sub)}</div>` : ""}${e.bullets.length > 0 ? `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}</div>`;
-    }).join("");
-  }
+  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
   if (d.skills) html += `<h2>Core Skills</h2>${skillGroupsHTML(d.skills)}`;
   if (d.certifications) {
     html += `<h2>Certifications</h2>`;
     const lines = d.certifications.split("\n").filter(l => l.trim());
-    html += lines.map(l => `<p>${esc(ensureRange(l.replace(/^[-•]\s*/, "")))}</p>`).join("");
+    html += lines.map(l => `<p>${esc(l.replace(/^[-•]\s*/, ""))}</p>`).join("");
   }
   if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join(" · ")}</p>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
@@ -251,19 +238,13 @@ function buildATS(d: ResumeData): string {
   `;
   /* # ATS uses ats-entry instead of entry so the page-break engine can
      # split entries between bullet points (avoids large gaps on page 1) */
-  /* # Ensure dates always show as a range */
-  const ensureRange = (s: string) => {
-    if (!s) return s;
-    if (s.match(/\d\s*[-–]\s*[\d(]/) || s.match(/[-–]\s*(?:Current|Present)/i)) return s;
-    return s.replace(/((?:\d{1,2}\/)\d{4}|\d{4})\s*$/, '$1 – Present');
-  };
-  const atsEntries = (text: string, rangeDates = false): string => {
+  const atsEntries = (text: string): string => {
     const entries = parseEntries(text);
     if (entries.length === 0) return `<p>${esc(text)}</p>`;
     return entries.map(e => `
       <div class="ats-entry">
         <div class="entry-title">${esc(e.title)}</div>
-        ${e.sub ? `<div class="entry-sub">${esc(rangeDates ? ensureRange(e.sub) : e.sub)}</div>` : ""}
+        ${e.sub ? `<div class="entry-sub">${esc(e.sub)}</div>` : ""}
         ${e.bullets.length > 0 ? `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
       </div>
     `).join("");
@@ -276,11 +257,11 @@ function buildATS(d: ResumeData): string {
   if (d.summary) html += `<h2>Summary</h2><div class="summary">${esc(d.summary)}</div>`;
   if (d.experience) html += `<h2>Experience</h2>${atsEntries(d.experience)}`;
   if (d.skills) html += `<h2>Skills</h2>${skillGroupsHTML(d.skills)}`;
-  if (d.education) html += `<h2>Education</h2>${atsEntries(d.education, true)}`;
+  if (d.education) html += `<h2>Education</h2>${atsEntries(d.education)}`;
   if (d.certifications) {
     html += `<h2>Certifications</h2>`;
     const lines = d.certifications.split("\n").filter(l => l.trim());
-    html += lines.map(l => `<p>${esc(ensureRange(l.replace(/^[-•]\s*/, "")))}</p>`).join("");
+    html += lines.map(l => `<p>${esc(l.replace(/^[-•]\s*/, ""))}</p>`).join("");
   }
   if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join(" | ")}</p>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
@@ -1250,13 +1231,6 @@ function buildStandardATS(d: ResumeData): string {
     }).join("");
   }
 
-  /* # Ensure dates always show as a range (MM/YYYY – MM/YYYY or YYYY – Present) */
-  const ensureRange = (d: string) => {
-    if (!d) return d;
-    if (d.match(/\d\s*[-–]\s*[\d(]/) || d.match(/[-–]\s*(?:Current|Present)/i)) return d;
-    return d + " – Present";
-  };
-
   if (d.education) {
     html += `<h2>Education</h2>`;
     const entries = parseEntries(d.education);
@@ -1266,7 +1240,7 @@ function buildStandardATS(d: ResumeData): string {
       if (e.sub) {
         const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{1,2}\/\d{4}|\d{4})$/);
         if (datePart) {
-          dateText = ensureRange(datePart[1]);
+          dateText = datePart[1];
           const beforeDate = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
           if (beforeDate) text += ", " + beforeDate;
         } else {
@@ -1287,7 +1261,7 @@ function buildStandardATS(d: ResumeData): string {
       const datePart = clean.match(/[-—–]\s*([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|Current|Present|\d{1,2}\/\d{4}|\d{4})\s*$/);
       if (datePart) {
         const title = clean.slice(0, clean.indexOf(datePart[0])).trim();
-        return `<div class="edu-line">${esc(title)} — <strong>${esc(ensureRange(datePart[1]))}</strong></div>`;
+        return `<div class="edu-line">${esc(title)} — <strong>${esc(datePart[1])}</strong></div>`;
       }
       return `<div class="edu-line">${esc(clean)}</div>`;
     }).join("");

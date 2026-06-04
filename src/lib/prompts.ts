@@ -964,8 +964,8 @@ Return ONLY valid JSON with these exact keys (use empty string "" if a field is 
   "summary": "professional summary or objective paragraph",
   "skills": "skills organized by category, one category per line, format: Category: Skill1, Skill2, Skill3",
   "experience": "work experience in this exact format — each role on its own block:\\nTitle | Company | Dates\\n- bullet point\\n- bullet point\\n(blank line between roles)",
-  "education": "education in this format:\\nDegree | Institution | Year\\n- honors or GPA if mentioned",
-  "certifications": "each certification on its own line, format: Name — Year",
+  "education": "education in this format:\\nDegree | Institution | MM/YYYY – MM/YYYY\\n- honors or GPA if mentioned\\nALWAYS include full start and end dates with month/year (e.g. 09/2022 – 06/2023). If still studying, use Current (e.g. 10/2025 – Current).",
+  "certifications": "each certification on its own line, format: Name — MM/YYYY – MM/YYYY\\nALWAYS include full start and end dates with month/year (e.g. 04/2024 – 10/2024). Extract exact months from the resume.",
   "languages": "each on its own line, format: Language - Proficiency"
 }
 
