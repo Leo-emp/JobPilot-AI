@@ -1156,9 +1156,7 @@ function buildStandardATS(d: ResumeData): string {
     .entry-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px; }
     .entry-row .left { font-weight:700; font-size:10.5pt; color:#111; }
     .entry-row .date { font-weight:700; font-size:10.5pt; color:#111; white-space:nowrap; margin-left:12px; }
-    .edu-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-    .edu-row .left { font-weight:400; font-size:10.5pt; color:#191919; }
-    .edu-row .date { font-weight:700; font-size:10.5pt; color:#111; white-space:nowrap; margin-left:12px; }
+    .edu-line { font-size:10.5pt; color:#191919; margin-bottom:8px; }
     ul { padding-left:20px; margin:2px 0 8px; list-style-type:disc; }
     li { font-size:10pt; line-height:1.45; margin-bottom:2px; color:#191919; }
     .skill-group { font-size:10pt; margin-bottom:3px; color:#191919; }
@@ -1211,28 +1209,9 @@ function buildStandardATS(d: ResumeData): string {
     html += `<h2>Education</h2>`;
     const entries = parseEntries(d.education);
     html += entries.map(e => {
-      let leftText = e.title;
-      let dateText = "";
-      if (e.sub) {
-        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{1,2}\/\d{4}|\d{4})$/);
-        if (datePart) {
-          dateText = datePart[1];
-          const beforeDate = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
-          if (beforeDate) leftText += ", " + beforeDate;
-        } else {
-          leftText += ", " + e.sub.replace(/ · /g, ", ");
-        }
-      }
-      if (!dateText) {
-        const inlineDate = leftText.match(/,\s*((?:\d{4}\s*[-–]\s*(?:Current|Present|\d{4}))|\d{1,2}\/\d{4}|\d{4})\s*$/);
-        if (inlineDate) {
-          dateText = inlineDate[1];
-          leftText = leftText.slice(0, leftText.indexOf(inlineDate[0])).trim();
-        }
-      }
-      let row = `<div class="edu-row"><span class="left">${esc(leftText)}</span>`;
-      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
-      row += `</div>`;
+      let text = e.title;
+      if (e.sub) text += ", " + e.sub.replace(/ · /g, ", ");
+      let row = `<div class="edu-line">${esc(text)}</div>`;
       if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
       return row;
     }).join("");
@@ -1243,12 +1222,7 @@ function buildStandardATS(d: ResumeData): string {
     const lines = d.certifications.split("\n").filter(l => l.trim());
     html += lines.map(l => {
       const clean = l.replace(/^[-•]\s*/, "");
-      const datePart = clean.match(/[-—–]\s*([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|Current|Present|\d{1,2}\/\d{4}|\d{4})\s*$/);
-      if (datePart) {
-        const title = clean.slice(0, clean.indexOf(datePart[0])).trim();
-        return `<div class="edu-row"><span class="left">${esc(title)}</span><span class="date">${esc(datePart[1])}</span></div>`;
-      }
-      return `<div class="edu-row"><span class="left">${esc(clean)}</span></div>`;
+      return `<div class="edu-line">${esc(clean)}</div>`;
     }).join("");
   }
 
