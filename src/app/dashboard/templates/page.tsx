@@ -1284,7 +1284,6 @@ const TEMPLATES: Template[] = [
   { id: "traditional", name: "Traditional", desc: "Classic serif layout trusted by Fortune 500 recruiters", category: "Classic", buildHTML: buildTraditional },
   { id: "ats-friendly", name: "ATS-Friendly", desc: "Zero-decoration layout that passes every ATS parser", category: "Classic", buildHTML: buildATS },
   { id: "centered", name: "Centered Elegant", desc: "Symmetric centered layout with ornamental copper accents", category: "Classic", buildHTML: buildCentered },
-  { id: "compact", name: "Compact", desc: "Maximum density — fits 15+ years on one page", category: "Classic", buildHTML: buildCompact },
 
   /* ---- SIDEBAR ---- */
   { id: "corporate", name: "Corporate", desc: "Navy sidebar with icon contact list and structured hierarchy", category: "Sidebar", buildHTML: buildCorporate, hasSidebar: true },
@@ -1294,7 +1293,6 @@ const TEMPLATES: Template[] = [
   { id: "fresh", name: "Fresh", desc: "Light pastel green sidebar with organic feel", category: "Sidebar", buildHTML: buildFresh, hasSidebar: true },
 
   /* ---- VISUAL ---- */
-  { id: "timeline", name: "Timeline", desc: "Connected timeline dots trace your career progression", category: "Visual", buildHTML: buildTimeline },
   { id: "skill-bars", name: "Skill Bars", desc: "Horizontal progress bars visualize your skill proficiency", category: "Visual", buildHTML: buildSkillBars },
   { id: "rating-dots", name: "Rating Dots", desc: "5-dot rating system for skills and languages", category: "Visual", buildHTML: buildRatingDots },
   { id: "pill-tags", name: "Pill Tags", desc: "Colorful rounded pill badges for every skill", category: "Visual", buildHTML: buildPillTags },
