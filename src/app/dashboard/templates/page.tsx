@@ -812,8 +812,8 @@ function buildPillTags(d: ResumeData): string {
     h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#059669; margin:16px 0 8px; }
     .summary { font-size:12.5px; color:#444; line-height:1.6; }
     .pills { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px; }
-    .pill { padding:5px 12px; border-radius:14px; font-size:11px; font-weight:500; background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; display:inline-block; text-align:center; line-height:1.3; }
-    .pill-cat { padding:5px 12px; border-radius:14px; font-size:10px; font-weight:700; background:#059669; color:#fff; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; text-align:center; line-height:1.3; }
+    .pill { padding:4px 12px; border-radius:14px; font-size:11px; font-weight:500; background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; display:inline-block; text-align:center; }
+    .pill-cat { padding:4px 12px; border-radius:14px; font-size:10px; font-weight:700; background:#059669; color:#fff; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; text-align:center; }
     .entry { margin-bottom:12px; }
     .entry-title { font-weight:700; font-size:12.5px; color:#111; }
     .entry-sub { font-size:11.5px; color:#555; margin-bottom:3px; }
