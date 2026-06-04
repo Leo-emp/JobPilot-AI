@@ -510,6 +510,9 @@ function buildPremium(d: ResumeData): string {
     .sidebar p,.sidebar li { color:#ccc; font-family:Calibri,sans-serif; font-size:11px; }
     .sidebar ul { padding-left:14px; }
     .sidebar li { margin-bottom:2px; }
+    .sidebar .entry-title { color:#f1f5f9; }
+    .sidebar .entry-sub { color:#9ca3af; }
+    .sidebar .cert-item { color:#d1d5db; font-family:Calibri,sans-serif; font-size:11px; margin-bottom:4px; }
     .main h3 { font-weight:400; color:#0a0a0a; font-variant:small-caps; letter-spacing:2px; border-bottom:1px solid #d4a843; padding-bottom:4px; font-size:14px; margin-bottom:10px; }
     .main .section { margin-bottom:16px; }
     .summary { font-size:12px; color:#555; line-height:1.55; font-style:italic; }
@@ -527,11 +530,15 @@ function buildPremium(d: ResumeData): string {
   if (d.skills) sidebar += `<h3>Expertise</h3>${skillGroupsHTML(d.skills)}`;
   if (d.languages) sidebar += `<h3>Languages</h3>${langLines(d.languages).map(l => `<p>${esc(l)}</p>`).join("")}`;
   if (d.education) sidebar += `<h3>Education</h3>${entriesHTML(d.education)}`;
+  if (d.certifications) {
+    sidebar += `<h3>Certificates</h3>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    sidebar += lines.map(l => `<div class="cert-item">${esc(l.replace(/^[-•]\s*/, ""))}</div>`).join("");
+  }
 
   let main = "";
   if (d.summary) main += `<div class="section"><h3>Executive Profile</h3><div class="summary">${esc(d.summary)}</div></div>`;
   if (d.experience) main += `<div class="section"><h3>Professional Experience</h3>${entriesHTML(d.experience)}</div>`;
-  if (d.certifications) main += `<div class="section"><h3>Credentials</h3>${certsHTML(d.certifications)}</div>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body><div class="wrap"><div class="sidebar">${sidebar}</div><div class="main">${main}</div></div></body></html>`;
 }
