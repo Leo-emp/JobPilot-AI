@@ -464,7 +464,7 @@ function buildTech(d: ResumeData): string {
     .sidebar p,.sidebar li { color:#d1d5db; font-size:11px; }
     .sidebar ul { padding-left:14px; }
     .sidebar li { margin-bottom:2px; }
-    .main h3 { font-weight:700; color:#0f0f23; background:#e0f2fe; padding:5px 12px; border:1px solid #22d3ee; border-radius:3px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:inline-block; }
+    .main h3 { font-weight:700; color:#0f0f23; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding-bottom:4px; border-bottom:2px solid #0f0f23; }
     .main .section { margin-bottom:16px; }
     .summary { font-size:12px; color:#555; line-height:1.55; }
     .entry { margin-bottom:10px; }
