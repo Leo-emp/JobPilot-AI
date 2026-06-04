@@ -1050,10 +1050,10 @@ function buildSplit(d: ResumeData): string {
     .title { font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:1.5px; }
     .contact-right { text-align:right; font-size:11px; color:#9ca3af; line-height:1.6; }
     .cols { columns:2; column-gap:28px; padding:20px 22px; }
-    .section { margin-bottom:16px; break-inside:avoid; }
-    h3 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#111; margin:0 0 8px; padding-bottom:4px; border-bottom:2px solid #111; }
+    .section { margin-bottom:16px; }
+    h3 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#111; margin:0 0 8px; padding-bottom:4px; border-bottom:2px solid #111; break-after:avoid; }
     .summary { font-size:12px; color:#555; line-height:1.55; }
-    .entry { margin-bottom:10px; }
+    .entry { margin-bottom:10px; break-inside:avoid; }
     .entry-title { font-weight:700; font-size:12px; color:#111; }
     .entry-sub { font-size:11px; color:#666; margin-bottom:2px; }
     ul { padding-left:15px; margin:2px 0; }
