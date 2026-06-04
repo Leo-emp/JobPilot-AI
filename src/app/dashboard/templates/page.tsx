@@ -636,7 +636,7 @@ function buildTimeline(d: ResumeData): string {
     ul { padding-left:16px; margin:3px 0; }
     li { font-size:12px; line-height:1.45; margin-bottom:2px; color:#444; }
     .skills-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
-    .skill-pill { background:#e0e7ff; color:#4338ca; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:500; display:inline-flex; align-items:center; justify-content:center; }
+    .skill-pill { background:#e0e7ff; color:#4338ca; padding:6px 10px 4px; border-radius:12px; font-size:11px; font-weight:500; display:inline-block; text-align:center; line-height:1; }
     .skill-group { font-size:12px; margin-bottom:3px; }
     p { font-size:12px; color:#444; margin:0 0 3px; }
   `;
@@ -815,8 +815,8 @@ function buildPillTags(d: ResumeData): string {
     h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#059669; margin:16px 0 8px; }
     .summary { font-size:12.5px; color:#444; line-height:1.6; }
     .pills { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px; }
-    .pill { padding:3px 12px; border-radius:14px; font-size:11px; font-weight:500; background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; display:inline-flex; align-items:center; justify-content:center; }
-    .pill-cat { padding:3px 12px; border-radius:14px; font-size:10px; font-weight:700; background:#059669; color:#fff; text-transform:uppercase; letter-spacing:0.5px; display:inline-flex; align-items:center; justify-content:center; }
+    .pill { padding:6px 12px 4px; border-radius:14px; font-size:11px; font-weight:500; background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; display:inline-block; text-align:center; line-height:1; }
+    .pill-cat { padding:6px 12px 4px; border-radius:14px; font-size:10px; font-weight:700; background:#059669; color:#fff; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; text-align:center; line-height:1; }
     .entry { margin-bottom:12px; }
     .entry-title { font-weight:700; font-size:12.5px; color:#111; }
     .entry-sub { font-size:11.5px; color:#555; margin-bottom:3px; }
