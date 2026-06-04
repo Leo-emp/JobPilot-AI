@@ -413,12 +413,11 @@ function buildCreative(d: ResumeData): string {
     .wrap { display:flex; min-height:100vh; }
     .sidebar { width:35%; background:linear-gradient(160deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%); color:#ede9fe; padding:32px 20px; }
     .main { width:65%; padding:28px 26px; }
-    .initials { width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:#fff; margin-bottom:12px; letter-spacing:1px; }
     .name { font-size:22px; font-weight:800; color:#fff; line-height:1.1; }
     .title { color:#c4b5fd; font-size:11px; text-transform:uppercase; letter-spacing:2px; margin-top:6px; margin-bottom:16px; }
     .contact-item { color:#c4b5fd; background:rgba(0,0,0,0.15); padding:5px 10px; border-radius:8px; margin-bottom:5px; font-size:11px; display:flex; align-items:center; gap:8px; }
     .contact-item svg { flex-shrink:0; }
-    .sidebar h3 { color:#fff; font-weight:800; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; background:rgba(0,0,0,0.2); padding:8px 10px; border-radius:8px; margin:14px 0 8px; text-align:center; line-height:1; }
+    .sidebar h3 { color:#fff; font-weight:800; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; background:rgba(0,0,0,0.2); padding:10px 10px 8px; border-radius:8px; margin:14px 0 8px; text-align:center; line-height:1; }
     .sidebar p,.sidebar li { color:#ede9fe; font-size:11px; }
     .sidebar .entry-title { color:#f5f3ff; }
     .sidebar .entry-sub { color:#c4b5fd; }
@@ -436,9 +435,7 @@ function buildCreative(d: ResumeData): string {
     .skill-group { font-size:11.5px; margin-bottom:3px; }
     p { font-size:11.5px; margin:0 0 3px; }
   `;
-  const initials = (d.fullName || "YN").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  let sidebar = `<div class="initials">${initials}</div>`;
-  sidebar += `<div class="name">${esc(d.fullName || "Your Name")}</div>`;
+  let sidebar = `<div class="name">${esc(d.fullName || "Your Name")}</div>`;
   if (d.jobTitle) sidebar += `<div class="title">${esc(d.jobTitle)}</div>`;
   const icons = [ICONS.location, ICONS.phone, ICONS.email, ICONS.linkedin];
   sidebar += contactParts(d).map((c, i) => `<div class="contact-item">${icons[i] || ""}${esc(c)}</div>`).join("");
@@ -579,7 +576,7 @@ function buildFresh(d: ResumeData): string {
     .title { color:#16a34a; font-size:12px; font-weight:600; margin-bottom:14px; }
     .contact-item { color:#374151; font-size:11px; padding:4px 8px; background:#d1fae5; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
     .contact-item svg { color:#16a34a; flex-shrink:0; }
-    .sidebar h3 { color:#15803d; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px; background:#d1fae5; padding:8px 8px; border-radius:6px; margin:14px 0 8px; text-align:center; line-height:1; }
+    .sidebar h3 { color:#15803d; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:0.5px; background:#d1fae5; padding:10px 8px 8px; border-radius:6px; margin:14px 0 8px; text-align:center; line-height:1; }
     .sidebar .cert-item { color:#374151; font-size:11px; margin-bottom:4px; }
     .sidebar p,.sidebar li { color:#374151; font-size:11px; }
     .sidebar ul { padding-left:14px; }
@@ -1140,7 +1137,7 @@ function buildRightSidebar(d: ResumeData): string {
     .entry { margin-bottom:10px; }
     .entry-title { font-weight:700; font-size:12px; color:#111; }
     .entry-sub { font-size:11px; color:#666; margin-bottom:3px; }
-    .sidebar h3 { color:#fff; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; background:rgba(255,255,255,0.15); padding:8px 10px; border-radius:14px; text-align:center; line-height:1; margin:14px 0 8px; }
+    .sidebar h3 { color:#fff; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; background:rgba(255,255,255,0.15); padding:10px 10px 8px; border-radius:14px; text-align:center; line-height:1; margin:14px 0 8px; }
     .contact-item { color:#fda4af; text-align:center; font-size:11px; margin-bottom:5px; }
     .sidebar p,.sidebar li { color:#fecdd3; font-size:11px; }
     .sidebar ul { padding-left:14px; }
