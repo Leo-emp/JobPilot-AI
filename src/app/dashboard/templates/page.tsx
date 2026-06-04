@@ -515,7 +515,7 @@ function buildPremium(d: ResumeData): string {
     .sidebar .cert-item { color:#d1d5db; font-family:Calibri,sans-serif; font-size:11px; margin-bottom:4px; }
     .main h3 { font-weight:400; color:#0a0a0a; font-variant:small-caps; letter-spacing:2px; border-bottom:1px solid #d4a843; padding-bottom:4px; font-size:14px; margin-bottom:10px; }
     .main .section { margin-bottom:16px; }
-    .summary { font-size:12px; color:#555; line-height:1.55; font-style:italic; }
+    .summary { font-size:11.5px; color:#1a1a1a; line-height:1.4; font-family:Calibri,sans-serif; }
     .entry { margin-bottom:10px; }
     .entry-title { font-family:Calibri,sans-serif; font-weight:700; font-size:12px; color:#333; }
     .entry-sub { font-size:11px; color:#777; margin-bottom:3px; font-family:Calibri,sans-serif; }
