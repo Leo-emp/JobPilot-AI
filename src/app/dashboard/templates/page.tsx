@@ -204,7 +204,11 @@ function buildTraditional(d: ResumeData): string {
   if (d.experience) html += `<h2>Work Experience</h2>${entriesHTML(d.experience)}`;
   if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
   if (d.skills) html += `<h2>Core Skills</h2>${skillGroupsHTML(d.skills)}`;
-  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
+  if (d.certifications) {
+    html += `<h2>Certifications</h2>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    html += lines.map(l => `<p>${esc(l.replace(/^[-•]\s*/, ""))}</p>`).join("");
+  }
   if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join(" · ")}</p>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
