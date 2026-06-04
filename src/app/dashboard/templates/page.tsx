@@ -938,26 +938,26 @@ function buildMonogram(d: ResumeData): string {
 function buildIconSections(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Calibri, 'Segoe UI', sans-serif; max-width:760px; margin:0 auto; padding:32px 40px; line-height:1.5; font-size:12.5px; color:#1a1a1a; }
+    body { font-family: Calibri, 'Segoe UI', sans-serif; max-width:760px; margin:0 auto; padding:32px 40px; line-height:1.5; font-size:14px; color:#1a1a1a; }
     .header { margin-bottom:18px; padding-bottom:14px; border-bottom:2px solid #dc2626; }
     .name { font-size:28px; font-weight:800; color:#111; }
-    .title { font-size:13px; color:#dc2626; font-weight:600; }
-    .contact-row { display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:11.5px; color:#666; }
+    .title { font-size:14px; color:#dc2626; font-weight:600; }
+    .contact-row { display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:13px; color:#666; }
     .contact-row span { display:flex; align-items:center; gap:4px; }
     .contact-row svg { color:#dc2626; }
     .section { margin-bottom:16px; }
     .section-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; padding-bottom:6px; border-bottom:2px solid #111; }
     .section-icon { width:28px; height:28px; border-radius:8px; background:#fef2f2; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0; }
-    .section-head h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#111; margin:0; line-height:28px; }
-    .summary { font-size:12.5px; color:#444; line-height:1.6; }
+    .section-head h2 { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#111; margin:0; line-height:28px; }
+    .summary { font-size:14px; color:#444; line-height:1.6; }
     .entry { margin-bottom:10px; margin-left:40px; }
-    .entry-title { font-weight:700; font-size:12.5px; color:#111; }
-    .entry-sub { font-size:11.5px; color:#666; margin-bottom:3px; }
+    .entry-title { font-weight:700; font-size:14px; color:#111; }
+    .entry-sub { font-size:13px; color:#666; margin-bottom:3px; }
     ul { padding-left:16px; margin:3px 0; }
-    li { font-size:12px; line-height:1.45; margin-bottom:2px; color:#444; }
-    .skill-group { font-size:12px; margin-bottom:3px; margin-left:40px; }
+    li { font-size:13px; line-height:1.5; margin-bottom:2px; color:#444; }
+    .skill-group { font-size:13px; margin-bottom:3px; margin-left:40px; }
     .certs-list { margin-left:40px; }
-    p { font-size:12px; color:#444; margin:0 0 3px; }
+    p { font-size:13px; color:#444; margin:0 0 3px; }
   `;
   const icons = [ICONS.location, ICONS.phone, ICONS.email, ICONS.linkedin];
   let html = `<div class="header">
