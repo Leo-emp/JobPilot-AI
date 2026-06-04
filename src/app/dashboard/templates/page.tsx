@@ -325,7 +325,7 @@ function buildCompact(d: ResumeData): string {
     ul { padding-left:14px; margin:1px 0 3px; }
     li { font-size:10.5px; line-height:1.3; margin-bottom:1px; }
     .skill-group { font-size:10.5px; margin-bottom:2px; }
-    .skills-cols { columns:2; column-gap:16px; }
+    .skills-cols { }
     p { font-size:10.5px; color:#333; margin:0 0 2px; }
   `;
   const c = contactParts(d);
