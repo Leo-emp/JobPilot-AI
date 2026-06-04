@@ -38,17 +38,17 @@ export type SectionType = (typeof SECTION_TYPES)[number];
 
 /* ---- Section display info ---- */
 export const SECTION_INFO: Record<SectionType, { name: string; icon: string }> = {
-  about:          { name: "About",          icon: "👤" },
-  experience:     { name: "Experience",     icon: "💼" },
-  education:      { name: "Education",      icon: "🎓" },
-  skills:         { name: "Skills",         icon: "⚡" },
-  projects:       { name: "Projects",       icon: "🚀" },
-  certifications: { name: "Certifications", icon: "📜" },
-  publications:   { name: "Publications",   icon: "📄" },
-  awards:         { name: "Awards",         icon: "🏆" },
-  gallery:        { name: "Gallery",        icon: "🖼️" },
-  testimonials:   { name: "Testimonials",   icon: "💬" },
-  contact:        { name: "Contact",        icon: "📧" },
+  about:          { name: "About",          icon: "U" },
+  experience:     { name: "Experience",     icon: "B" },
+  education:      { name: "Education",      icon: "E" },
+  skills:         { name: "Skills",         icon: "S" },
+  projects:       { name: "Projects",       icon: "P" },
+  certifications: { name: "Certifications", icon: "C" },
+  publications:   { name: "Publications",   icon: "D" },
+  awards:         { name: "Awards",         icon: "A" },
+  gallery:        { name: "Gallery",        icon: "G" },
+  testimonials:   { name: "Testimonials",   icon: "T" },
+  contact:        { name: "Contact",        icon: "M" },
 };
 
 /* ---- Section data shapes ---- */
