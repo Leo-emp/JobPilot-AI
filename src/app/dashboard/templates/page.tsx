@@ -1299,14 +1299,12 @@ const TEMPLATES: Template[] = [
 
   /* ---- MODERN ---- */
   { id: "banner", name: "Banner", desc: "Full-width gradient header with icon contact chips", category: "Modern", buildHTML: buildBanner },
-  { id: "monogram", name: "Monogram", desc: "Large initials badge as a personal brand mark", category: "Modern", buildHTML: buildMonogram },
   { id: "icon-sections", name: "Icon Sections", desc: "Every section led by a distinctive icon in a colored box", category: "Modern", buildHTML: buildIconSections },
   { id: "card-grid", name: "Card Grid", desc: "Dashboard-style modular cards with stat highlights", category: "Modern", buildHTML: buildCardGrid },
 
   /* ---- SPECIAL ---- */
   { id: "split", name: "Split 50/50", desc: "Equal two-column layout with dark header bar", category: "Special", buildHTML: buildSplit, hasSidebar: true },
   { id: "bands", name: "Alternating Bands", desc: "Full-width colored bands separate each section", category: "Special", buildHTML: buildBands },
-  { id: "right-sidebar", name: "Right Sidebar", desc: "Magenta right sidebar — content gets prime left position", category: "Special", buildHTML: buildRightSidebar, hasSidebar: true },
 ];
 
 /* ============================================================
