@@ -1076,7 +1076,7 @@ function buildBands(d: ResumeData): string {
     .name { font-size:30px; font-weight:800; letter-spacing:-0.5px; }
     .title { font-size:13px; color:#94a3b8; margin-top:2px; }
     .contact-row { display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:11.5px; color:#94a3b8; }
-    h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#4f46e5; margin-bottom:10px; }
+    h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#4f46e5; margin-bottom:10px; border-bottom:2px solid #4f46e5; padding-bottom:4px; }
     .summary { font-size:12.5px; color:#475569; line-height:1.6; }
     .entry { margin-bottom:12px; }
     .entry-title { font-weight:700; font-size:12.5px; color:#111; }
