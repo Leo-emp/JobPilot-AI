@@ -986,7 +986,7 @@ function buildIconSections(d: ResumeData): string {
 function buildCardGrid(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Segoe UI', Calibri, sans-serif; margin:0; padding:0 28px; font-size:12px; line-height:1.45; color:#1a1a1a; background:#f1f5f9; }
+    body { font-family: 'Segoe UI', Calibri, sans-serif; margin:0; padding:24px 28px; font-size:12px; line-height:1.45; color:#1a1a1a; background:#f1f5f9; }
     .header-card { background:linear-gradient(135deg, #0f172a, #1e293b); color:#fff; padding:24px 28px; border-radius:12px; margin-bottom:16px; }
     .name { font-size:26px; font-weight:800; letter-spacing:-0.5px; }
     .title { font-size:12px; color:#94a3b8; margin-top:2px; }
