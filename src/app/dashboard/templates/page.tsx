@@ -479,7 +479,8 @@ function buildTech(d: ResumeData): string {
     .sidebar p,.sidebar li { color:#d1d5db; font-size:11px; }
     .sidebar ul { padding-left:14px; }
     .sidebar li { margin-bottom:2px; }
-    .main h3 { font-weight:700; color:#0f0f23; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; padding-bottom:4px; border-bottom:2px solid #0f0f23; }
+    .main h3 { font-weight:700; color:#22d3ee; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+    .sidebar .cert-item { color:#d1d5db; font-size:11px; margin-bottom:4px; }
     .main .section { margin-bottom:16px; }
     .summary { font-size:12px; color:#555; line-height:1.55; }
     .entry { margin-bottom:10px; }
@@ -497,11 +498,15 @@ function buildTech(d: ResumeData): string {
   if (d.skills) sidebar += `<h3>Skills</h3>${skillGroupsHTML(d.skills)}`;
   if (d.languages) sidebar += `<h3>Languages</h3>${langLines(d.languages).map(l => `<p>${esc(l)}</p>`).join("")}`;
   if (d.education) sidebar += `<h3>Education</h3>${entriesHTML(d.education)}`;
+  if (d.certifications) {
+    sidebar += `<h3>Certifications</h3>`;
+    const lines = d.certifications.split("\n").filter(l => l.trim());
+    sidebar += lines.map(l => `<div class="cert-item">${esc(l.replace(/^[-•]\s*/, ""))}</div>`).join("");
+  }
 
   let main = "";
   if (d.summary) main += `<div class="section"><h3>Profile</h3><br><div class="summary">${esc(d.summary)}</div></div>`;
   if (d.experience) main += `<div class="section"><h3>Experience</h3><br>${entriesHTML(d.experience)}</div>`;
-  if (d.certifications) main += `<div class="section"><h3>Certifications</h3><br>${certsHTML(d.certifications)}</div>`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body><div class="wrap"><div class="sidebar">${sidebar}</div><div class="main">${main}</div></div></body></html>`;
 }
