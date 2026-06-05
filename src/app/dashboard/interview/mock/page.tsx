@@ -926,7 +926,7 @@ export default function MockInterviewPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="text-3xl mb-2">📄</div>
+                    <div className="flex justify-center mb-2"><svg className="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg></div>
                     <p className="text-white font-medium">Drop your resume here or click to upload</p>
                     <p className="text-sm text-text-muted mt-1">PDF or TXT — max 5MB</p>
                   </>
@@ -937,7 +937,7 @@ export default function MockInterviewPage() {
               <div className="w-full rounded-xl bg-space-700 border border-card-border overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 bg-space-600/50 border-b border-card-border">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">📄</span>
+                    <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
                     <span className="text-sm text-white font-medium">{resumeFileName || "Pasted resume"}</span>
                     <span className="text-xs text-text-muted">({resume.length.toLocaleString()} chars)</span>
                   </div>
@@ -1166,7 +1166,7 @@ export default function MockInterviewPage() {
             {/* Fallback if no webcam — hint how to enable it */}
             {!webcamReady && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-space-600 flex items-center justify-center text-2xl sm:text-3xl text-text-muted">👤</div>
+                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-space-600 flex items-center justify-center text-text-muted"><svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>
                 <p className="text-xs text-text-muted px-4 text-center">Camera off — click the lock icon in your address bar to enable</p>
               </div>
             )}

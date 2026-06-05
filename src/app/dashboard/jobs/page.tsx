@@ -572,7 +572,7 @@ export default function JobsPage() {
           {/* ---- No Results ---- */}
           {hasSearched && !searchLoading && searchResults.length === 0 && !searchError && (
             <div className="glass-card p-12 text-center">
-              <div className="text-4xl mb-4">🔍</div>
+              <div className="flex justify-center mb-4"><svg className="w-10 h-10 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg></div>
               <p className="text-text-secondary">No jobs found. Try different keywords or location.</p>
             </div>
           )}
@@ -580,7 +580,7 @@ export default function JobsPage() {
           {/* ---- Initial State ---- */}
           {!hasSearched && (
             <div className="glass-card p-12 text-center">
-              <div className="text-4xl mb-4">🌐</div>
+              <div className="flex justify-center mb-4"><svg className="w-10 h-10 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg></div>
               <h3 className="font-bold text-lg mb-2">Search Job Boards</h3>
               <p className="text-text-secondary text-sm max-w-md mx-auto">
                 Search thousands of job listings from major job boards. Save interesting ones to your tracker and get AI match scores.
@@ -645,7 +645,7 @@ export default function JobsPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="text-3xl mb-2">📄</div>
+                      <div className="flex justify-center mb-2"><svg className="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg></div>
                       <p className="text-white font-medium">Drop your resume here or click to upload</p>
                       <p className="text-sm text-text-muted mt-1">PDF or TXT — max 5MB</p>
                       {!resumesLoading && savedResumes.length === 0 && (
@@ -658,7 +658,7 @@ export default function JobsPage() {
                 <div className="w-full rounded-xl bg-space-700 border border-card-border overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 bg-space-600/50 border-b border-card-border">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">📄</span>
+                      <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
                       <span className="text-sm text-white font-medium">{resumeFileName || "Resume loaded"}</span>
                       <span className="text-xs text-text-muted">({resumeText.length.toLocaleString()} chars)</span>
                     </div>

@@ -240,8 +240,8 @@ export default function InterviewPage() {
         href="/dashboard/interview/mock"
         className="flex items-center gap-4 p-5 mb-8 rounded-2xl bg-gradient-to-r from-blue-500/10 to-blue-500/10 border border-brand-indigo/20 hover:border-brand-indigo/40 transition-all group"
       >
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-xl shrink-0">
-          🎥
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shrink-0">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" /></svg>
         </div>
         <div className="flex-1">
           <p className="font-semibold text-white group-hover:text-brand-light transition-colors">
@@ -266,7 +266,7 @@ export default function InterviewPage() {
               : "text-text-secondary hover:text-white hover:bg-space-600 border border-transparent"
           }`}
         >
-          🎯 Predict Questions
+          Predict Questions
         </button>
         <button
           onClick={() => { setActiveTab("practice"); resetAI(); }}
@@ -276,7 +276,7 @@ export default function InterviewPage() {
               : "text-text-secondary hover:text-white hover:bg-space-600 border border-transparent"
           }`}
         >
-          💬 Practice Answers
+          Practice Answers
           {parsedQuestions.length > 0 && (
             <span className="ml-2 px-2 py-0.5 rounded-full bg-brand-indigo/30 text-brand-light text-xs">
               {parsedQuestions.length}
@@ -384,7 +384,7 @@ export default function InterviewPage() {
               disabled={!jobTitle || !jobDescription || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Predicting..." : "🎯 Generate Questions"}
+              {loading ? "Predicting..." : "Generate Questions"}
             </button>
 
             {(streaming && activeTab === "predict" ? streamResult : questions) && (
@@ -420,8 +420,8 @@ export default function InterviewPage() {
             {parsedQuestions.length === 0 ? (
               /* No questions generated yet */
               <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-2xl bg-space-600 border border-card-border flex items-center justify-center text-3xl mx-auto mb-4">
-                  🎯
+                <div className="w-16 h-16 rounded-2xl bg-space-600 border border-card-border flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-7 h-7 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18A2.25 2.25 0 0118 20.25h-1.5m-9 0H6A2.25 2.25 0 013.75 18v-1.5M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 </div>
                 <h2 className="text-xl font-bold mb-2">No Questions Yet</h2>
                 <p className="text-text-secondary mb-6 max-w-md mx-auto">
@@ -641,7 +641,7 @@ export default function InterviewPage() {
                                   disabled={loading || !resumeText.trim()}
                                   className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
-                                  {(isLoadingThis || isStreamingThis) && !hasAnswer ? "Generating..." : "💡 Show Model Answer"}
+                                  {(isLoadingThis || isStreamingThis) && !hasAnswer ? "Generating..." : "Show Model Answer"}
                                 </button>
                                 {!resumeText.trim() && (
                                   <p className="text-xs text-text-muted self-center">Paste your resume above for AI feedback</p>
