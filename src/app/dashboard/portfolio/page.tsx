@@ -1020,24 +1020,40 @@ function SkillsForm({ section, onUpdate }: { section: PortfolioSection & { type:
               className="bg-transparent text-sm font-semibold text-white focus:outline-none" placeholder="Category Name" />
             <button onClick={() => removeGroup(gi)} className="text-xs text-red-400/60 hover:text-red-400">Remove</button>
           </div>
-          {/* # Skills list */}
-          <div className="space-y-2">
+          {/* # Skills list with proficiency sliders */}
+          <div className="space-y-3">
             {group.skills.map((skill, si) => (
-              <div key={si} className="flex items-center gap-2">
-                <input value={skill.name} placeholder="Skill name"
-                  onChange={e => {
-                    const next = [...group.skills];
-                    next[si] = { ...skill, name: e.target.value };
-                    updateGroup(gi, { ...group, skills: next });
-                  }}
-                  className="flex-1 px-2 py-1 rounded bg-space-600 border border-card-border text-white text-sm focus:outline-none" />
-                <button onClick={() => {
-                  updateGroup(gi, { ...group, skills: group.skills.filter((_, i) => i !== si) });
-                }} className="text-xs text-red-400/40 hover:text-red-400">×</button>
+              <div key={si} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <input value={skill.name} placeholder="Skill name"
+                    onChange={e => {
+                      const next = [...group.skills];
+                      next[si] = { ...skill, name: e.target.value };
+                      updateGroup(gi, { ...group, skills: next });
+                    }}
+                    className="flex-1 px-2 py-1 rounded bg-space-600 border border-card-border text-white text-sm focus:outline-none" />
+                  <button onClick={() => {
+                    updateGroup(gi, { ...group, skills: group.skills.filter((_, i) => i !== si) });
+                  }} className="text-xs text-red-400/40 hover:text-red-400">×</button>
+                </div>
+                {/* # Proficiency slider (1-100%) */}
+                <div className="flex items-center gap-2 pl-1">
+                  <input
+                    type="range" min="1" max="100"
+                    value={skill.proficiency ?? 80}
+                    onChange={e => {
+                      const next = [...group.skills];
+                      next[si] = { ...skill, proficiency: Number(e.target.value) };
+                      updateGroup(gi, { ...group, skills: next });
+                    }}
+                    className="flex-1 h-1 accent-indigo-500 cursor-pointer"
+                  />
+                  <span className="text-xs text-white/50 w-8 text-right font-mono">{skill.proficiency ?? 80}%</span>
+                </div>
               </div>
             ))}
           </div>
-          <button onClick={() => updateGroup(gi, { ...group, skills: [...group.skills, { name: "" }] })}
+          <button onClick={() => updateGroup(gi, { ...group, skills: [...group.skills, { name: "", proficiency: 80 }] })}
             className="mt-2 text-xs text-brand-light hover:underline">
             + Add Skill
           </button>

@@ -16,15 +16,15 @@ export type TemplateName = (typeof TEMPLATES)[number];
 
 /* ---- Template display info for the picker UI ---- */
 export const TEMPLATE_INFO: Record<TemplateName, { name: string; desc: string; accent: string }> = {
-  minimal:      { name: "Minimal",      desc: "Refined elegance with glassmorphism",           accent: "#3b82f6" },
-  developer:    { name: "Developer",    desc: "Cyberpunk terminal with neon glow",             accent: "#00ff88" },
-  creative:     { name: "Creative",     desc: "Bold gradients & floating glass panels",        accent: "#ec4899" },
-  corporate:    { name: "Corporate",    desc: "Luxury serif with navy & gold textures",        accent: "#c8a96e" },
-  academic:     { name: "Academic",     desc: "Scholarly paper with elegant citations",        accent: "#2c5282" },
-  modern:       { name: "Modern",       desc: "Animated mesh gradient, bento cards",           accent: "#8b5cf6" },
-  videographer: { name: "Videographer", desc: "Cinematic widescreen, dark film aesthetic",     accent: "#e50914" },
-  photographer: { name: "Photographer", desc: "Full-bleed gallery, image-forward design",     accent: "#f5f5f5" },
-  architect:    { name: "Architect",    desc: "Blueprint grid, clean structural lines",        accent: "#2dd4bf" },
+  minimal:      { name: "Minimal",      desc: "Pearl × Graphite — clean edge-to-edge typography",   accent: "#a8a29e" },
+  developer:    { name: "Developer",    desc: "Emerald × Cyan — terminal aesthetic, matrix glow",   accent: "#059669" },
+  creative:     { name: "Creative",     desc: "Teal × Magenta — bold gradients, stacked cards",     accent: "#0891b2" },
+  corporate:    { name: "Corporate",    desc: "Gold × Warm Ivory — luxury serif, executive feel",   accent: "#b8960c" },
+  academic:     { name: "Academic",     desc: "Sapphire × Steel Blue — scholarly paper style",      accent: "#1d4ed8" },
+  modern:       { name: "Modern",       desc: "Violet × Electric Blue — mesh gradient, bento grid", accent: "#7c3aed" },
+  videographer: { name: "Videographer", desc: "Crimson × Amber — cinematic widescreen, film grain", accent: "#b91c1c" },
+  photographer: { name: "Photographer", desc: "Rose × Golden Peach — full-bleed gallery, lightbox", accent: "#be185d" },
+  architect:    { name: "Architect",    desc: "Copper × Navy Steel — blueprint grid, plan view",    accent: "#c2410c" },
 };
 
 /* ---- Section types ---- */
