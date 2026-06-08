@@ -1,9 +1,10 @@
 /* ============================================================
-   ECOSYSTEM SHOWCASE - Job Board & AI Outreach Hub
+   ECOSYSTEM SHOWCASE - Job Board, Outreach & Portfolio
    ============================================================
-   Showcases two platform features below the AI tool showcase:
+   Showcases three platform features below the AI tool showcase:
    1. Job Board Integration — search real listings, save & track
    2. AI Outreach Hub — generate cold outreach messages with AI
+   3. Portfolio Builder — 9 templates, resume import, shareable link
    Content slides in from its edge, visual cards from opposite
    side. Internal card elements animate on scroll for premium feel.
    ============================================================ */
@@ -73,7 +74,7 @@ export default function EcosystemShowcase() {
             <span className="glow-text">Command Center</span>
           </h2>
           <p className="max-w-xl mx-auto text-text-secondary text-lg">
-            Search real jobs and craft perfect outreach — without leaving your dashboard.
+            Search real jobs, craft perfect outreach, and showcase your work — all from one dashboard.
           </p>
         </motion.div>
 
@@ -404,6 +405,168 @@ export default function EcosystemShowcase() {
           </motion.div>
         </div>
 
+        {/* ============================================================
+             FEATURE 3 - Portfolio Builder
+             Content: left → slides from left. Visual: right → slides from right.
+             ============================================================ */}
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center mt-24 sm:mt-32">
+
+          {/* ---- Content Side — slides in from left ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING }}
+            className="flex-1 max-w-xl"
+          >
+            {/* # Feature tag */}
+            <div className="inline-flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                Portfolio Builder
+              </span>
+            </div>
+
+            {/* # Headline */}
+            <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+              A stunning portfolio site — built in minutes, not days
+            </h3>
+
+            {/* # Description */}
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
+              Pick from 9 premium templates, fill in your details, and publish a professional portfolio
+              with a shareable link. Import directly from your resume so you never type the same thing twice.
+            </p>
+
+            {/* # Capability bullets — stagger in */}
+            <motion.ul
+              variants={bulletStagger}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-50px" }}
+              className="space-y-3"
+            >
+              {[
+                "9 designer templates — from minimal to creative to corporate",
+                "One-click import from your uploaded resume",
+                "Custom slug — share yourname.jobpilotai.co with anyone",
+              ].map((cap, j) => (
+                <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+
+          {/* ---- Visual Side — slides in from right ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING, delay: 0.15 }}
+            className="flex-1 w-full max-w-lg"
+          >
+            <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
+              {/* # Gradient accent bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
+
+              {/* # Fake browser chrome */}
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50 flex items-center px-2">
+                  <span className="text-[9px] text-text-muted">jobpilotai.co/p/sarah-chen</span>
+                </div>
+              </div>
+
+              {/* # Portfolio preview card */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
+                className="mb-4"
+              >
+                {/* # Header area */}
+                <div className="p-4 rounded-t-lg bg-gradient-to-br from-violet-600/20 to-purple-600/10 border border-card-border border-b-0">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
+                      <span className="text-sm font-bold text-violet-300">SC</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-white">Sarah Chen</div>
+                      <div className="text-[11px] text-text-secondary">Full Stack Engineer</div>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-text-secondary leading-relaxed">
+                    Building AI-powered tools that make people&apos;s careers easier. 5 years of React, Node, and Python.
+                  </p>
+                </div>
+
+                {/* # Sections */}
+                <div className="p-4 rounded-b-lg bg-space-700/50 border border-card-border border-t-0">
+                  <motion.div
+                    variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.5 } } }}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    className="space-y-2"
+                  >
+                    {[
+                      { icon: "briefcase", label: "Experience", count: "3 roles" },
+                      { icon: "code", label: "Projects", count: "5 projects" },
+                      { icon: "bolt", label: "Skills", count: "12 skills" },
+                    ].map((section, i) => (
+                      <motion.div
+                        key={i}
+                        variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg bg-space-600/30"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded bg-violet-500/10 flex items-center justify-center">
+                            <div className="w-2.5 h-2.5 rounded-sm bg-violet-400/40" />
+                          </div>
+                          <span className="text-[11px] text-white font-medium">{section.label}</span>
+                        </div>
+                        <span className="text-[10px] text-text-muted">{section.count}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* # Template picker row — fades in */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-[10px] text-text-muted">Template:</span>
+                <div className="flex gap-1.5">
+                  {["Modern", "Creative", "Developer"].map((t, i) => (
+                    <div key={i} className={`px-2 py-1 rounded ${i === 0 ? "bg-violet-500/20 border border-violet-500/30" : "bg-space-700/50"}`}>
+                      <span className={`text-[9px] font-medium ${i === 0 ? "text-white" : "text-text-muted"}`}>{t}</span>
+                    </div>
+                  ))}
+                  <div className="px-2 py-1 rounded bg-space-700/50">
+                    <span className="text-[9px] text-text-muted">+6</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+
         {/* ---- Bottom CTA — fades up on scroll ---- */}
         <motion.div
           variants={ctaFade}
@@ -413,7 +576,7 @@ export default function EcosystemShowcase() {
           className="mt-24 sm:mt-32 text-center"
         >
           <p className="text-text-secondary text-lg mb-6">
-            Find jobs. Craft perfect outreach. Land interviews.
+            Find jobs. Craft perfect outreach. Showcase your work. Land interviews.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Get Started Free
