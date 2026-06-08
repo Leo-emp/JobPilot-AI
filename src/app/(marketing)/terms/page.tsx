@@ -119,7 +119,7 @@ export default function TermsPage() {
             <li>Free accounts include limited AI usage per calendar month.</li>
             <li>Paid subscriptions are billed on a recurring basis (monthly or annually as selected).</li>
             <li>You may cancel your subscription at any time. Access continues until the end of the current billing period.</li>
-            <li>All payments are non-refundable unless required by applicable law, or within 7 days of initial purchase if no AI features have been used.</li>
+            <li>All payments are non-refundable unless required by applicable law, or within 7 days of initial purchase if no AI features have been used. To request a refund, email <a href="mailto:support@jobpilotai.co" className="text-brand-light hover:text-white transition-colors">support@jobpilotai.co</a>.</li>
             <li>We reserve the right to change pricing with 30 days&apos; written notice to existing subscribers.</li>
             <li>Failed payments may result in account downgrade to the free plan.</li>
           </ul>

@@ -88,7 +88,7 @@ const faqSections = [
       },
       {
         q: "Do you offer refunds?",
-        a: "We offer refunds within the first 7 days of a new subscription if you're not satisfied. After that, your subscription continues until the end of the billing period. Contact us for any billing issues.",
+        a: "We offer refunds within the first 7 days of a new subscription if you're not satisfied. After that, your subscription continues until the end of the billing period. For any billing issues, email support@jobpilotai.co.",
       },
     ],
   },
@@ -226,7 +226,7 @@ export default function HelpPage() {
             Contact Us
           </Link>
           <a
-            href="mailto:support@jobpilotai.com"
+            href="mailto:support@jobpilotai.co"
             className="px-6 py-2.5 text-sm font-medium text-brand-light border border-brand-indigo/30 rounded-xl hover:bg-brand-indigo/10 transition-colors"
           >
             Email Support

@@ -85,7 +85,7 @@ export function buildCancellationEmail(firstName: string): string {
 </td></tr>
 
 <tr><td align="center" style="padding: 32px 48px 48px 48px;">
-  <p style="font-family: ${FONT}; font-size: 13px; color: #3f3f4a; margin: 0 0 8px 0; letter-spacing: -0.1px;">Questions? Reply to this email &mdash; we read every one.</p>
+  <p style="font-family: ${FONT}; font-size: 13px; color: #3f3f4a; margin: 0 0 8px 0; letter-spacing: -0.1px;">Questions? Email us at <a href="mailto:support@jobpilotai.co" style="color: #6366f1; text-decoration: none;">support@jobpilotai.co</a> &mdash; we read every one.</p>
   <p style="font-family: ${FONT}; font-size: 12px; color: #27272e; margin: 0;"><a href="https://jobpilotai.co" style="color: #3f3f4a; text-decoration: none;">jobpilotai.co</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;&copy; 2026 JobPilot AI</p>
 </td></tr>
 
