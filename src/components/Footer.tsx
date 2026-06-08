@@ -124,10 +124,10 @@ export default function Footer() {
           </p>
           {/* Social links */}
           <div className="flex items-center gap-6">
-            <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="text-sm text-text-muted hover:text-white transition-colors">
+            <a href="https://x.com/jobpilotai" target="_blank" rel="noopener noreferrer" className="text-sm text-text-muted hover:text-white transition-colors">
               Twitter
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-sm text-text-muted hover:text-white transition-colors">
+            <a href="https://linkedin.com/company/jobpilotai" target="_blank" rel="noopener noreferrer" className="text-sm text-text-muted hover:text-white transition-colors">
               LinkedIn
             </a>
             <a href="https://github.com/Leo-emp" target="_blank" rel="noopener noreferrer" className="text-sm text-text-muted hover:text-white transition-colors">

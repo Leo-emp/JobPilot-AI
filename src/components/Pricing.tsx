@@ -97,6 +97,8 @@ export default function Pricing() {
           <button
             onClick={() => setAnnual(!annual)}
             className={`relative w-14 h-7 rounded-full transition-colors ${annual ? "bg-brand-indigo" : "bg-space-600"}`}
+            role="switch"
+            aria-checked={annual}
             aria-label="Toggle annual billing"
           >
             <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-transform ${annual ? "left-8" : "left-1"}`} />
