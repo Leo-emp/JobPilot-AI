@@ -76,7 +76,7 @@ export default function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="relative z-10 py-32 sm:py-40 px-4"
+      className="relative z-10 py-24 sm:py-32 px-4"
     >
       <div className="max-w-7xl mx-auto">
 
@@ -86,16 +86,16 @@ export default function Testimonials() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
-          className="text-center mb-20 sm:mb-24"
+          className="text-center mb-16 sm:mb-20"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] glow-text-subtle mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Testimonials
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             What People{" "}
             <span className="glow-text">Say</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-lg font-light">
+          <p className="max-w-2xl mx-auto text-text-secondary text-lg">
             Real results from real job seekers using JobPilot AI.
           </p>
         </motion.div>
@@ -124,7 +124,7 @@ export default function Testimonials() {
               </div>
 
               {/* # Testimonial text */}
-              <p className="text-text-secondary text-base leading-relaxed flex-1 font-light">
+              <p className="text-text-secondary text-base leading-relaxed flex-1">
                 &ldquo;{t.text}&rdquo;
               </p>
             </motion.div>

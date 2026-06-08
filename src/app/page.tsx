@@ -41,14 +41,11 @@ export default function Home() {
       <main>
         <Hero />
         <TrustBar />
-        <div className="relative z-10 max-w-4xl mx-auto h-px" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)" }} />
         <Features />
         <FeatureShowcase />
         <EcosystemShowcase />
-        <div className="relative z-10 max-w-4xl mx-auto h-px" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)" }} />
         <HowItWorks />
         <Testimonials />
-        <div className="relative z-10 max-w-4xl mx-auto h-px" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)" }} />
         <Pricing />
         <CTA />
         <NewsletterSignup />

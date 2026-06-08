@@ -159,7 +159,7 @@ const cardReveal = {
 
 export default function Features() {
   return (
-    <section id="features" className="relative z-10 py-32 sm:py-40 px-4">
+    <section id="features" className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* ---- Section Header — fades in on scroll ---- */}
@@ -168,16 +168,16 @@ export default function Features() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
-          className="text-center mb-20 sm:mb-24"
+          className="text-center mb-16 sm:mb-20"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] glow-text-subtle mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Features
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Everything You Need to{" "}
             <span className="glow-text">Land the Job</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-lg font-light">
+          <p className="max-w-2xl mx-auto text-text-secondary text-lg">
             A complete AI-powered toolkit that takes you from application
             to offer — all in one platform.
           </p>
@@ -189,15 +189,15 @@ export default function Features() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
         >
           {features.map((feature, index) => (
             <motion.a
               key={index}
               href={`#${feature.showcaseId}`}
               variants={cardReveal}
-              whileHover={{ y: -2, transition: { duration: 0.25 } }}
-              className="group relative rounded-2xl border border-card-border bg-space-800/60 p-8 sm:p-10 text-center hover:border-white/[0.08] hover:bg-space-700/60 transition-all duration-300 cursor-pointer hover:shadow-[0_0_40px_rgba(56,189,248,0.06)]"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="group relative rounded-2xl border border-card-border bg-space-800/60 p-7 text-center hover:border-brand-indigo/30 hover:bg-space-700/60 transition-colors duration-300 cursor-pointer"
             >
               {/* # Icon circle — centered */}
               <div className={`mx-auto mb-5 w-14 h-14 rounded-xl ${feature.bg} border ${feature.border} flex items-center justify-center ${feature.color}`}>
@@ -210,7 +210,7 @@ export default function Features() {
               </h3>
 
               {/* # Description */}
-              <p className="text-sm text-text-secondary leading-relaxed font-light">
+              <p className="text-sm text-text-secondary leading-relaxed">
                 {feature.description}
               </p>
             </motion.a>

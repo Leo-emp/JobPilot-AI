@@ -219,7 +219,7 @@ const ctaFade = {
 
 export default function FeatureShowcase() {
   return (
-    <section className="relative z-10 py-32 sm:py-40 px-4">
+    <section className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* ---- Section Header — fades in on scroll ---- */}
@@ -230,21 +230,21 @@ export default function FeatureShowcase() {
           viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-20 sm:mb-28"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] glow-text-subtle mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Built for Results
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Every Tool You Need,{" "}
             <span className="glow-text">Nothing You Don&apos;t</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-lg font-light">
+          <p className="max-w-2xl mx-auto text-text-secondary text-lg">
             Each feature is purpose-built to solve a specific problem in your job search.
             No fluff. No gimmicks. Just tools that get you hired.
           </p>
         </motion.div>
 
         {/* ---- Feature Deep-Dive Sections ---- */}
-        <div className="space-y-32 sm:space-y-40">
+        <div className="space-y-24 sm:space-y-32">
           {showcaseFeatures.map((feature, index) => {
             /* # Even index: content left, visual right */
             /* # Odd index: content right, visual left (flex-row-reverse) */
@@ -282,7 +282,7 @@ export default function FeatureShowcase() {
                   </h3>
 
                   {/* # Description */}
-                  <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6 font-light">
+                  <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6">
                     {feature.description}
                   </p>
 
@@ -309,7 +309,7 @@ export default function FeatureShowcase() {
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
-                        <span className="text-base text-text-secondary leading-relaxed font-light">
+                        <span className="text-base text-text-secondary leading-relaxed">
                           {cap}
                         </span>
                       </motion.li>
@@ -671,7 +671,7 @@ export default function FeatureShowcase() {
           viewport={{ once: true, margin: "-80px" }}
           className="mt-24 sm:mt-32 text-center"
         >
-          <p className="text-text-secondary text-lg mb-6 font-light">
+          <p className="text-text-secondary text-lg mb-6">
             Every tool you need. One platform. Zero guesswork.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">

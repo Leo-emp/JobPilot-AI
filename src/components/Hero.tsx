@@ -49,7 +49,7 @@ export default function Hero() {
       variants={stagger}
       initial="hidden"
       animate="show"
-      className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-32 pb-36 sm:pt-40 sm:pb-44 lg:pt-48 lg:pb-52"
+      className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-32 sm:pt-32 sm:pb-36 lg:pt-40 lg:pb-44"
     >
 
       {/* ---- Title ---- */}
@@ -58,12 +58,12 @@ export default function Hero() {
       </motion.h1>
 
       {/* ---- Tagline ---- */}
-      <motion.p variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl md:text-2xl font-medium tracking-[0.2em] uppercase mb-8 glow-text-subtle">
+      <motion.p variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl md:text-2xl font-medium tracking-[0.15em] uppercase mb-8 glow-text-subtle">
         Your Career Co-Pilot
       </motion.p>
 
       {/* ---- Description ---- */}
-      <motion.p variants={fadeUp} className="max-w-2xl text-base sm:text-lg text-text-secondary leading-relaxed mb-14 font-light">
+      <motion.p variants={fadeUp} className="max-w-2xl text-base sm:text-lg text-text-secondary leading-relaxed mb-12">
         AI-powered resume optimization, intelligent job matching,
         personalized cover letters, and interview prep —
         everything you need to land your dream job, in one place.

@@ -54,7 +54,7 @@ const ctaFade = {
 
 export default function EcosystemShowcase() {
   return (
-    <section className="relative z-10 py-32 sm:py-40 px-4">
+    <section className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* ---- Section Header — fades in on scroll ---- */}
@@ -65,14 +65,14 @@ export default function EcosystemShowcase() {
           viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-20 sm:mb-28"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] glow-text-subtle mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
             Beyond AI Tools
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Your Complete Career{" "}
             <span className="glow-text">Command Center</span>
           </h2>
-          <p className="max-w-xl mx-auto text-text-secondary text-lg font-light">
+          <p className="max-w-xl mx-auto text-text-secondary text-lg">
             Search real jobs and craft perfect outreach — without leaving your dashboard.
           </p>
         </motion.div>
@@ -109,7 +109,7 @@ export default function EcosystemShowcase() {
             </h3>
 
             {/* # Description */}
-            <p className="text-base text-text-secondary leading-relaxed mb-6 font-light">
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
               Real listings from Indeed, LinkedIn, Glassdoor, and more — pulled directly into your workspace.
               Save roles with one click and they land straight in your tracker.
             </p>
@@ -131,7 +131,7 @@ export default function EcosystemShowcase() {
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-base text-text-secondary leading-relaxed font-light">{cap}</span>
+                  <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
                 </motion.li>
               ))}
             </motion.ul>
@@ -289,7 +289,7 @@ export default function EcosystemShowcase() {
             </h3>
 
             {/* # Description */}
-            <p className="text-base text-text-secondary leading-relaxed mb-6 font-light">
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
               Upload your resume, describe who you&apos;re reaching out to, and AI generates 3 personalized message
               versions — from short and direct to detailed and confident. No more generic templates that get ignored.
             </p>
@@ -311,7 +311,7 @@ export default function EcosystemShowcase() {
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-base text-text-secondary leading-relaxed font-light">{cap}</span>
+                  <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
                 </motion.li>
               ))}
             </motion.ul>
@@ -427,7 +427,7 @@ export default function EcosystemShowcase() {
           viewport={{ once: true, margin: "-80px" }}
           className="mt-24 sm:mt-32 text-center"
         >
-          <p className="text-text-secondary text-lg mb-6 font-light">
+          <p className="text-text-secondary text-lg mb-6">
             Find jobs. Craft perfect outreach. Land interviews.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">

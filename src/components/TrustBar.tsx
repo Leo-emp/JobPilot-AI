@@ -73,7 +73,7 @@ const stagger = {
 
 export default function TrustBar() {
   return (
-    <section className="relative z-10 py-16 sm:py-20 px-4">
+    <section className="relative z-10 py-12 sm:py-16 px-4">
       <div className="max-w-5xl mx-auto">
         <motion.div
           variants={stagger}
@@ -89,7 +89,7 @@ export default function TrustBar() {
                 <Counter target={stat.target} suffix={stat.suffix} />
               </div>
               {/* # Label below the number */}
-              <div className="text-sm sm:text-base text-text-muted uppercase tracking-[0.2em]">
+              <div className="text-sm sm:text-base text-text-muted uppercase tracking-wider">
                 {stat.label}
               </div>
             </motion.div>
