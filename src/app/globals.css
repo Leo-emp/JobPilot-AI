@@ -35,7 +35,7 @@
 
   /* Surfaces */
   --color-card-bg: #111113;
-  --color-card-border: rgba(255, 255, 255, 0.07);
+  --color-card-border: rgba(255, 255, 255, 0.05);
 
   /* Fonts */
   --font-sans: var(--font-sans);
@@ -95,26 +95,42 @@ body {
   overflow-x: hidden;
 }
 
-/* ---- Brand Text ---- */
-/* Gradient text with cyan glow — section headings, stats, navbar brand */
-.glow-text {
-  color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35), 0 0 40px rgba(56, 189, 248, 0.15);
+/* # Subtle noise grain overlay — adds tactile depth to flat dark background */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
-/* Hero title — white-to-cyan gradient with soft glow */
-.glow-text-strong {
-  background: linear-gradient(135deg, #ffffff 20%, #38bdf8 80%);
+/* ---- Brand Text ---- */
+/* Clean gradient text — no text-shadow, no glow. Premium and refined. */
+.glow-text {
+  background: linear-gradient(135deg, #f0f0f3 30%, #60a5fa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.3)) drop-shadow(0 0 60px rgba(56, 189, 248, 0.12));
 }
 
-/* Tagline — cyan with moderate glow */
+/* Hero title — white-to-blue gradient, no drop-shadow */
+.glow-text-strong {
+  background: linear-gradient(135deg, #ffffff 20%, #60a5fa 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Tagline / section labels — subtle blue gradient */
 .glow-text-subtle {
-  color: #38bdf8;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.4), 0 0 40px rgba(56, 189, 248, 0.15);
+  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ---- Animations ---- */
@@ -185,8 +201,8 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(56, 189, 248, 0.18);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 30px rgba(56, 189, 248, 0.12), 0 0 60px rgba(56, 189, 248, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.3), 0 0 40px rgba(56, 189, 248, 0.06), 0 0 80px rgba(56, 189, 248, 0.03);
 }
 
 /* ---- Buttons ---- */
@@ -209,7 +225,7 @@ body {
 
 .btn-primary:hover {
   background: #2563eb;
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4), 0 0 30px rgba(56, 189, 248, 0.25), 0 0 0 1px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.4);
 }
 
 /* Secondary — ghost button with subtle border */

@@ -60,7 +60,7 @@ export default function Pricing() {
   const [annual, setAnnual] = useState(false);
 
   return (
-    <section id="pricing" className="relative z-10 py-24 sm:py-32 px-4">
+    <section id="pricing" className="relative z-10 py-32 sm:py-40 px-4">
       <div className="max-w-5xl mx-auto">
 
         {/* ---- Section Header — fades in on scroll ---- */}
@@ -71,14 +71,14 @@ export default function Pricing() {
           viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-12 sm:mb-16"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] glow-text-subtle mb-4">
             Pricing
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Simple, Transparent{" "}
             <span className="glow-text">Pricing</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-lg">
+          <p className="max-w-2xl mx-auto text-text-secondary text-lg font-light">
             Start free. Upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </motion.div>
@@ -143,7 +143,7 @@ export default function Pricing() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   )}
-                  <span className={`text-sm ${row.free ? "text-text-secondary" : "text-text-muted/50"}`}>
+                  <span className={`text-sm font-light ${row.free ? "text-text-secondary" : "text-text-muted/50"}`}>
                     {row.name}
                   </span>
                 </div>
@@ -181,7 +181,7 @@ export default function Pricing() {
                   <svg className="w-4.5 h-4.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-sm text-text-secondary">{row.name}</span>
+                  <span className="text-sm text-text-secondary font-light">{row.name}</span>
                 </div>
               ))}
             </div>

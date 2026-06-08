@@ -32,7 +32,7 @@ const fadeUp = {
 
 export default function CTA() {
   return (
-    <section className="relative z-10 py-24 sm:py-32 px-4">
+    <section className="relative z-10 py-36 sm:py-44 px-4">
       <motion.div
         variants={stagger}
         initial="hidden"
@@ -57,7 +57,7 @@ export default function CTA() {
         </motion.h2>
 
         {/* # Supporting text */}
-        <motion.p variants={fadeUp} className="text-lg sm:text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
+        <motion.p variants={fadeUp} className="text-lg sm:text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed font-light">
           Join thousands of professionals who use JobPilot AI to land interviews
           faster, write better resumes, and walk into every opportunity fully prepared.
         </motion.p>

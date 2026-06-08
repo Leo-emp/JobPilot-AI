@@ -70,7 +70,7 @@ export default function NewsletterSignup() {
         <motion.h3 variants={fadeUp} className="text-2xl sm:text-3xl font-bold mb-3">
           Get Weekly <span className="glow-text">Career Tips</span>
         </motion.h3>
-        <motion.p variants={fadeUp} className="text-text-secondary text-base sm:text-lg mb-8 max-w-lg mx-auto">
+        <motion.p variants={fadeUp} className="text-text-secondary text-base sm:text-lg mb-8 max-w-lg mx-auto font-light">
           AI-powered resume advice, interview strategies, and job market insights delivered to your inbox every week.
         </motion.p>
 

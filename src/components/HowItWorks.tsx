@@ -67,7 +67,7 @@ export default function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="relative z-10 py-24 sm:py-32 px-4"
+      className="relative z-10 py-32 sm:py-40 px-4"
     >
       <div className="max-w-5xl mx-auto">
 
@@ -77,16 +77,16 @@ export default function HowItWorks() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
-          className="text-center mb-16 sm:mb-20"
+          className="text-center mb-20 sm:mb-24"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest glow-text-subtle mb-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] glow-text-subtle mb-4">
             How It Works
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Three Steps to Your{" "}
             <span className="glow-text">Dream Job</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-text-secondary text-lg">
+          <p className="max-w-2xl mx-auto text-text-secondary text-lg font-light">
             No complicated setup. No learning curve. Just results.
           </p>
         </motion.div>
@@ -117,7 +117,7 @@ export default function HowItWorks() {
                 <h3 className="text-xl sm:text-2xl font-bold mb-3">
                   {step.title}
                 </h3>
-                <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-xl">
+                <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-xl font-light">
                   {step.description}
                 </p>
               </div>
