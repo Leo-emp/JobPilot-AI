@@ -473,12 +473,12 @@ export default function EcosystemShowcase() {
             transition={{ ...SPRING, delay: 0.15 }}
             className="flex-1 w-full max-w-lg"
           >
-            <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
+            <div className="glass-card relative overflow-hidden">
               {/* # Gradient accent bar */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
 
               {/* # Fake browser chrome */}
-              <div className="flex items-center gap-2 mb-5">
+              <div className="flex items-center gap-2 px-6 pt-6 sm:px-8 sm:pt-8 mb-4">
                 <div className="w-3 h-3 rounded-full bg-red-500/60" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                 <div className="w-3 h-3 rounded-full bg-green-500/60" />
@@ -487,80 +487,93 @@ export default function EcosystemShowcase() {
                 </div>
               </div>
 
-              {/* # Portfolio preview card */}
+              {/* # Mini portfolio page — resembles a real template */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
-                className="mb-4"
               >
-                {/* # Header area */}
-                <div className="p-4 rounded-t-lg bg-gradient-to-br from-violet-600/20 to-purple-600/10 border border-card-border border-b-0">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
-                      <span className="text-sm font-bold text-violet-300">SC</span>
+                {/* # Hero header with gradient */}
+                <div className="mx-4 sm:mx-6 rounded-t-xl bg-gradient-to-br from-violet-600/30 via-purple-600/20 to-indigo-600/10 p-5 relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "16px 16px" }} />
+                  <div className="relative flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                      <span className="text-lg font-bold text-white">SC</span>
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-white">Sarah Chen</div>
-                      <div className="text-[11px] text-text-secondary">Full Stack Engineer</div>
+                      <div className="text-base font-bold text-white">Sarah Chen</div>
+                      <div className="text-xs text-violet-200/80">Full Stack Engineer</div>
+                      <div className="flex gap-1.5 mt-1.5">
+                        {["React", "Node.js", "Python"].map((t, i) => (
+                          <span key={i} className="px-1.5 py-0.5 rounded bg-white/10 text-[8px] text-white/70">{t}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <p className="text-[10px] text-text-secondary leading-relaxed">
-                    Building AI-powered tools that make people&apos;s careers easier. 5 years of React, Node, and Python.
-                  </p>
                 </div>
 
-                {/* # Sections */}
-                <div className="p-4 rounded-b-lg bg-space-700/50 border border-card-border border-t-0">
+                {/* # Content body */}
+                <div className="mx-4 sm:mx-6 rounded-b-xl bg-space-800/80 border border-card-border border-t-0 p-4 mb-4 sm:mb-6 space-y-4">
+
+                  {/* # Skills section with bars */}
                   <motion.div
-                    variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.5 } } }}
-                    initial="hidden"
-                    whileInView="show"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="space-y-2"
+                    transition={{ ...SPRING, duration: 0.8, delay: 0.5 }}
                   >
-                    {[
-                      { icon: "briefcase", label: "Experience", count: "3 roles" },
-                      { icon: "code", label: "Projects", count: "5 projects" },
-                      { icon: "bolt", label: "Skills", count: "12 skills" },
-                    ].map((section, i) => (
-                      <motion.div
-                        key={i}
-                        variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                        className="flex items-center justify-between px-3 py-2 rounded-lg bg-space-600/30"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded bg-violet-500/10 flex items-center justify-center">
-                            <div className="w-2.5 h-2.5 rounded-sm bg-violet-400/40" />
+                    <div className="text-[10px] font-semibold text-white uppercase tracking-wider mb-2">Skills</div>
+                    <div className="space-y-1.5">
+                      {[
+                        { name: "React / Next.js", pct: 95 },
+                        { name: "Python / FastAPI", pct: 88 },
+                        { name: "TypeScript", pct: 92 },
+                      ].map((skill, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between mb-0.5">
+                            <span className="text-[9px] text-text-secondary">{skill.name}</span>
+                            <span className="text-[9px] text-text-muted">{skill.pct}%</span>
                           </div>
-                          <span className="text-[11px] text-white font-medium">{section.label}</span>
+                          <div className="h-1 rounded-full bg-space-600">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${skill.pct}%` }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 1.2, delay: 0.6 + i * 0.1 }}
+                              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-400"
+                            />
+                          </div>
                         </div>
-                        <span className="text-[10px] text-text-muted">{section.count}</span>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                </div>
-              </motion.div>
-
-              {/* # Template picker row — fades in */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-[10px] text-text-muted">Template:</span>
-                <div className="flex gap-1.5">
-                  {["Modern", "Creative", "Developer"].map((t, i) => (
-                    <div key={i} className={`px-2 py-1 rounded ${i === 0 ? "bg-violet-500/20 border border-violet-500/30" : "bg-space-700/50"}`}>
-                      <span className={`text-[9px] font-medium ${i === 0 ? "text-white" : "text-text-muted"}`}>{t}</span>
+                      ))}
                     </div>
-                  ))}
-                  <div className="px-2 py-1 rounded bg-space-700/50">
-                    <span className="text-[9px] text-text-muted">+6</span>
-                  </div>
+                  </motion.div>
+
+                  {/* # Projects section with cards */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
+                  >
+                    <div className="text-[10px] font-semibold text-white uppercase tracking-wider mb-2">Projects</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { name: "AI Career Coach", tech: "Next.js + Gemini" },
+                        { name: "DevOps Dashboard", tech: "React + Go" },
+                      ].map((proj, i) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-space-700/50 border border-card-border">
+                          <div className="w-full h-8 rounded bg-gradient-to-br from-violet-500/10 to-purple-500/5 mb-2 flex items-center justify-center">
+                            <svg className="w-3.5 h-3.5 text-violet-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                            </svg>
+                          </div>
+                          <div className="text-[10px] font-semibold text-white">{proj.name}</div>
+                          <div className="text-[8px] text-text-muted">{proj.tech}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </div>
