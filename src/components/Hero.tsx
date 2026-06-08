@@ -49,7 +49,7 @@ export default function Hero() {
       variants={stagger}
       initial="hidden"
       animate="show"
-      className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-32 sm:pt-32 sm:pb-36 lg:pt-40 lg:pb-44"
+      className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 sm:pt-32 sm:pb-28 lg:pt-40 lg:pb-36"
     >
 
       {/* ---- Title ---- */}

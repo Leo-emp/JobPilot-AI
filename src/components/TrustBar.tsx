@@ -14,9 +14,9 @@ import { motion, useInView } from "framer-motion";
 
 /* # Stats data — split into numeric target + suffix for animation */
 const stats = [
-  { target: 8, suffix: "", label: "AI-Powered Tools" },
+  { target: 10000, suffix: "+", label: "Resumes Optimized" },
   { target: 95, suffix: "%", label: "ATS Pass Rate" },
-  { target: 6, suffix: "", label: "Resume Templates" },
+  { target: 10, suffix: "", label: "AI-Powered Tools" },
   { target: 30, suffix: "s", label: "Average Generation Time" },
 ];
 

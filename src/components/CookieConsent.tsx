@@ -32,8 +32,8 @@ export default function CookieConsent() {
   if (accepted) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6" role="banner" aria-label="Cookie consent">
-      <div className="max-w-4xl mx-auto rounded-2xl bg-space-800 backdrop-blur-md border border-card-border shadow-2xl p-5 sm:p-6">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6">
+      <div className="max-w-4xl mx-auto rounded-2xl bg-space-800/95 backdrop-blur-md border border-card-border shadow-2xl p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
 
           {/* Cookie icon + message */}
