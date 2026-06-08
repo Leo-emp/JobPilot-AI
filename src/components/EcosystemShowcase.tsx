@@ -236,21 +236,6 @@ export default function EcosystemShowcase() {
                   </div>
                 </motion.div>
 
-                {/* # Job card 3 — partial, faded */}
-                <motion.div
-                  variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 0.6, y: 0, transition: { ...SPRING, duration: 0.8 } } }}
-                  className="p-3 rounded-lg bg-space-700/50 border border-card-border"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <div className="text-sm font-bold text-white">Backend Engineer</div>
-                      <div className="text-xs text-text-secondary">StartupXYZ</div>
-                    </div>
-                    <div className="px-2.5 py-1 rounded-md bg-brand-indigo/15 border border-brand-indigo/30">
-                      <span className="text-[10px] text-brand-light font-semibold">Save Job</span>
-                    </div>
-                  </div>
-                </motion.div>
               </motion.div>
             </div>
           </motion.div>
