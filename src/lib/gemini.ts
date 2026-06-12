@@ -7,7 +7,10 @@
    - 429/503 models skipped to next immediately
    - 30-second timeout per request via AbortController
    - Two passes: immediate, then 2s delay retry
+   - Sentry gen_ai spans for token/latency/model monitoring
    ============================================================ */
+
+import * as Sentry from "@sentry/nextjs";
 
 const GEMINI_MODELS = [
   "gemini-2.5-flash",
@@ -35,79 +38,105 @@ async function callGeminiCore(parts: Record<string, unknown>[], temperature = 0.
     throw new Error("GEMINI_API_KEY is not configured.");
   }
 
-  let _lastError = "";
+  return Sentry.startSpan(
+    {
+      op: "gen_ai.generate_content",
+      name: "generate_content gemini",
+      attributes: {
+        "gen_ai.operation.name": "generate_content",
+        "gen_ai.system": "google_gemini",
+      },
+    },
+    async (span) => {
+      let _lastError = "";
 
-  for (let pass = 0; pass < MAX_RETRY_PASSES; pass++) {
-    if (pass > 0) {
-      await new Promise((r) => setTimeout(r, 2000));
-    }
+      for (let pass = 0; pass < MAX_RETRY_PASSES; pass++) {
+        if (pass > 0) {
+          await new Promise((r) => setTimeout(r, 2000));
+        }
 
-    for (const model of GEMINI_MODELS) {
-      const deadSince = deadModels.get(model);
-      if (deadSince && Date.now() - deadSince < DEAD_MODEL_TTL_MS) continue;
-      if (deadSince) deadModels.delete(model);
+        for (const model of GEMINI_MODELS) {
+          const deadSince = deadModels.get(model);
+          if (deadSince && Date.now() - deadSince < DEAD_MODEL_TTL_MS) continue;
+          if (deadSince) deadModels.delete(model);
 
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts }],
-              generationConfig: {
-                temperature,
-                maxOutputTokens: 8192,
-              },
-            }),
-            signal: controller.signal,
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts }],
+                  generationConfig: {
+                    temperature,
+                    maxOutputTokens: 8192,
+                  },
+                }),
+                signal: controller.signal,
+              }
+            );
+
+            clearTimeout(timeout);
+
+            if (response.status === 404) {
+              deadModels.set(model, Date.now());
+              continue;
+            }
+
+            if (response.status === 429 || response.status === 503) {
+              _lastError = `Model ${model} rate-limited`;
+              continue;
+            }
+
+            if (response.status === 500) {
+              _lastError = `Model ${model} server error`;
+              continue;
+            }
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              const msg = errorData.error?.message || "Gemini API error";
+              _lastError = msg;
+              continue;
+            }
+
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!text) {
+              _lastError = "Empty response from AI model";
+              continue;
+            }
+
+            /* Record model + token usage on the Sentry span */
+            span.updateName(`generate_content ${model}`);
+            span.setAttribute("gen_ai.request.model", model);
+            span.setAttribute("gen_ai.request.temperature", temperature);
+            span.setAttribute("gen_ai.request.max_output_tokens", 8192);
+            if (data.usageMetadata) {
+              span.setAttribute("gen_ai.usage.input_tokens", data.usageMetadata.promptTokenCount ?? 0);
+              span.setAttribute("gen_ai.usage.output_tokens", data.usageMetadata.candidatesTokenCount ?? 0);
+              span.setAttribute("gen_ai.usage.total_tokens", data.usageMetadata.totalTokenCount ?? 0);
+              if (data.usageMetadata.cachedContentTokenCount) {
+                span.setAttribute("gen_ai.usage.input_tokens.cached", data.usageMetadata.cachedContentTokenCount);
+              }
+            }
+
+            return { text, model };
+          } catch (error: unknown) {
+            _lastError = error instanceof Error ? error.message : "Network error";
+            continue;
           }
-        );
-
-        clearTimeout(timeout);
-
-        if (response.status === 404) {
-          deadModels.set(model, Date.now());
-          continue;
         }
-
-        if (response.status === 429 || response.status === 503) {
-          _lastError = `Model ${model} rate-limited`;
-          continue;
-        }
-
-        if (response.status === 500) {
-          _lastError = `Model ${model} server error`;
-          continue;
-        }
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          const msg = errorData.error?.message || "Gemini API error";
-          _lastError = msg;
-          continue;
-        }
-
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!text) {
-          _lastError = "Empty response from AI model";
-          continue;
-        }
-
-        return { text, model };
-      } catch (error: unknown) {
-        _lastError = error instanceof Error ? error.message : "Network error";
-        continue;
       }
-    }
-  }
 
-  throw new Error("AI is temporarily unavailable. Please try again in a moment.");
+      throw new Error("AI is temporarily unavailable. Please try again in a moment.");
+    }
+  );
 }
 
 export async function callGemini(prompt: string, temperature = 0.7): Promise<GeminiResult> {

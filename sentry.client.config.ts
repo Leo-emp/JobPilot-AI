@@ -14,6 +14,9 @@ Sentry.init({
   /* Send 100% of errors, sample 20% of performance transactions */
   tracesSampleRate: 0.2,
 
+  /* AI span streaming (server-side AI, but keeps config consistent) */
+  streamGenAiSpans: true,
+
   /* Only enable in production to keep dev console clean */
   enabled: process.env.NODE_ENV === "production",
 

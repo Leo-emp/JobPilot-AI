@@ -4,9 +4,12 @@
    Uses Gemini's streamGenerateContent endpoint to return tokens
    as they're generated. Falls back through models on failure
    just like the non-streaming version.
+   Sentry gen_ai spans for token/latency/model monitoring.
    ============================================================ */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import * as Sentry from "@sentry/nextjs";
 
 const GEMINI_MODELS = [
   "gemini-2.5-flash",
@@ -87,6 +90,19 @@ export async function streamGemini(prompt: string, temperature = 0.7): Promise<S
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
+      /* Start a Sentry span that lives until the stream closes */
+      const sentrySpan = Sentry.startInactiveSpan({
+        op: "gen_ai.generate_content",
+        name: `generate_content ${model}`,
+        attributes: {
+          "gen_ai.operation.name": "generate_content",
+          "gen_ai.system": "google_gemini",
+          "gen_ai.request.model": model,
+          "gen_ai.request.temperature": temperature,
+          "gen_ai.request.max_output_tokens": 8192,
+        },
+      });
+
       return {
         model,
         stream: new ReadableStream({
@@ -94,6 +110,7 @@ export async function streamGemini(prompt: string, temperature = 0.7): Promise<S
             try {
               const { done, value } = await reader.read();
               if (done) {
+                sentrySpan?.end();
                 ctrl.close();
                 return;
               }
@@ -112,15 +129,23 @@ export async function streamGemini(prompt: string, temperature = 0.7): Promise<S
                   if (text) {
                     ctrl.enqueue(encoder.encode(text));
                   }
+                  /* Capture token usage from the final chunk */
+                  if (parsed.usageMetadata && sentrySpan) {
+                    sentrySpan.setAttribute("gen_ai.usage.input_tokens", parsed.usageMetadata.promptTokenCount ?? 0);
+                    sentrySpan.setAttribute("gen_ai.usage.output_tokens", parsed.usageMetadata.candidatesTokenCount ?? 0);
+                    sentrySpan.setAttribute("gen_ai.usage.total_tokens", parsed.usageMetadata.totalTokenCount ?? 0);
+                  }
                 } catch {
                   /* Skip malformed JSON chunks */
                 }
               }
             } catch {
+              sentrySpan?.end();
               ctrl.close();
             }
           },
           cancel() {
+            sentrySpan?.end();
             reader.cancel();
           },
         }),
@@ -183,13 +208,25 @@ export async function streamGeminiMultimodal(prompt: string, images: { data: str
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
+      const sentrySpan = Sentry.startInactiveSpan({
+        op: "gen_ai.generate_content",
+        name: `generate_content ${model}`,
+        attributes: {
+          "gen_ai.operation.name": "generate_content",
+          "gen_ai.system": "google_gemini",
+          "gen_ai.request.model": model,
+          "gen_ai.request.temperature": temperature,
+          "gen_ai.request.max_output_tokens": 8192,
+        },
+      });
+
       return {
         model,
         stream: new ReadableStream({
           async pull(ctrl) {
             try {
               const { done, value } = await reader.read();
-              if (done) { ctrl.close(); return; }
+              if (done) { sentrySpan?.end(); ctrl.close(); return; }
 
               const chunk = decoder.decode(value, { stream: true });
               for (const line of chunk.split("\n")) {
@@ -200,11 +237,16 @@ export async function streamGeminiMultimodal(prompt: string, images: { data: str
                   const parsed = JSON.parse(jsonStr);
                   const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
                   if (text) ctrl.enqueue(encoder.encode(text));
+                  if (parsed.usageMetadata && sentrySpan) {
+                    sentrySpan.setAttribute("gen_ai.usage.input_tokens", parsed.usageMetadata.promptTokenCount ?? 0);
+                    sentrySpan.setAttribute("gen_ai.usage.output_tokens", parsed.usageMetadata.candidatesTokenCount ?? 0);
+                    sentrySpan.setAttribute("gen_ai.usage.total_tokens", parsed.usageMetadata.totalTokenCount ?? 0);
+                  }
                 } catch {}
               }
-            } catch { ctrl.close(); }
+            } catch { sentrySpan?.end(); ctrl.close(); }
           },
-          cancel() { reader.cancel(); },
+          cancel() { sentrySpan?.end(); reader.cancel(); },
         }),
       };
     } catch (error: unknown) {
