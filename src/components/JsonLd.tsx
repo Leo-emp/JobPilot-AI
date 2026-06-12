@@ -7,6 +7,11 @@
    like star ratings, FAQ dropdowns, and article previews.
    ============================================================ */
 
+/* # Prevent </script> breakout in JSON-LD (defense-in-depth) */
+function safeJsonLd(data: Record<string, unknown>): string {
+  return JSON.stringify(data).replace(/<\/script/gi, "<\\/script");
+}
+
 /* # SoftwareApplication schema — for the homepage */
 /* # Tells Google "this is a software product" with ratings and pricing */
 export function SoftwareAppJsonLd() {
@@ -40,7 +45,7 @@ export function SoftwareAppJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
     />
   );
 }
@@ -67,7 +72,7 @@ export function OrganizationJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
     />
   );
 }
@@ -110,7 +115,7 @@ export function ArticleJsonLd({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
     />
   );
 }

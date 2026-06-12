@@ -8,11 +8,16 @@
 
 const EXT_ID = process.env.CHROME_EXTENSION_ID || "";
 
+if (!EXT_ID && process.env.NODE_ENV === "production") {
+  console.warn("[SECURITY] CHROME_EXTENSION_ID not set — extension CORS allows ANY chrome extension. Set this env var in production.");
+}
+
 export function isAllowedExtension(origin: string | null): boolean {
   if (!origin) return false;
-  return EXT_ID
-    ? origin === `chrome-extension://${EXT_ID}`
-    : origin.startsWith("chrome-extension://");
+  if (EXT_ID) return origin === `chrome-extension://${EXT_ID}`;
+  /* In production without explicit ID, reject all extension origins */
+  if (process.env.NODE_ENV === "production") return false;
+  return origin.startsWith("chrome-extension://");
 }
 
 export function extensionCorsHeaders(origin: string | null, methods = "GET, POST, OPTIONS") {

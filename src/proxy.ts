@@ -168,7 +168,7 @@ export function proxy(req: NextRequest) {
     );
     const isChromeExtension = ALLOWED_EXTENSION_ID
       ? requestOrigin === `chrome-extension://${ALLOWED_EXTENSION_ID}`
-      : requestOrigin?.startsWith("chrome-extension://");
+      : (process.env.NODE_ENV !== "production" && requestOrigin?.startsWith("chrome-extension://"));
     const isAuthCallback = pathname.startsWith("/api/auth");
     const isWebhook = pathname.startsWith("/api/stripe/webhook");
     const isServerCall = !origin && !referer;
@@ -235,6 +235,9 @@ export function proxy(req: NextRequest) {
     "camera=(self), microphone=(self), geolocation=()"
   );
   response.headers.set("X-DNS-Prefetch-Control", "off");
+  /* Prevent other sites from embedding this site in iframes or reading its resources */
+  response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
 
   /* ---- CORS — restrict API access to own origin + Chrome extension ---- */
   if (pathname.startsWith("/api")) {
@@ -244,7 +247,7 @@ export function proxy(req: NextRequest) {
       /* Chrome extension gets its own CORS — locked to specific ID when configured */
       const isAllowedExtension = ALLOWED_EXTENSION_ID
         ? origin === `chrome-extension://${ALLOWED_EXTENSION_ID}`
-        : origin?.startsWith("chrome-extension://");
+        : (process.env.NODE_ENV !== "production" && origin?.startsWith("chrome-extension://"));
       if (origin && isAllowedExtension) {
         response.headers.set("Access-Control-Allow-Origin", origin);
         response.headers.set("Access-Control-Allow-Credentials", "true");

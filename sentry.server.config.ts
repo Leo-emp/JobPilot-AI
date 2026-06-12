@@ -32,7 +32,16 @@ Sentry.init({
     if (event.request?.headers) {
       delete event.request.headers["cookie"];
       delete event.request.headers["authorization"];
+      delete event.request.headers["x-goog-api-key"];
     }
     return event;
+  },
+
+  /* Strip API keys from breadcrumb URLs */
+  beforeBreadcrumb(breadcrumb) {
+    if (breadcrumb.data?.url) {
+      breadcrumb.data.url = breadcrumb.data.url.replace(/[?&]key=[^&]+/g, "");
+    }
+    return breadcrumb;
   },
 });

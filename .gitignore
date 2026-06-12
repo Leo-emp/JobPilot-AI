@@ -32,7 +32,19 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+.env.production
+.env.development
 !.env.example
+
+# secrets & credentials — never commit these
+*.key
+*.p12
+*.pfx
+*.cert
+credentials.json
+service-account*.json
+*.secret
 
 # database scripts with credentials
 /scripts/
