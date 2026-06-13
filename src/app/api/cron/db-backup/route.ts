@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       `db-backups/backup-${timestamp}.json`,
       JSON.stringify(backup),
       {
-        access: "public",
+        access: "private",
         contentType: "application/json",
       }
     );
@@ -122,7 +122,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      url: blob.url,
       records: totalRecords,
       counts: backup.counts,
       oldBackupsDeleted: Math.max(0, blobs.length - MAX_BACKUPS),
@@ -130,7 +129,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[db-backup] Failed:", err);
     return NextResponse.json(
-      { error: "Backup failed", detail: String(err) },
+      { error: "Backup failed" },
       { status: 500 }
     );
   }
