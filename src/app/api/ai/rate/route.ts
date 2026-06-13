@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { aiRateSchema, formatZodError } from "@/lib/validations";
 
 export async function PATCH(req: NextRequest) {
   const session = await auth();
@@ -16,11 +17,12 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { resultId, rating } = body;
-
-  if (!resultId || typeof rating !== "boolean") {
-    return NextResponse.json({ error: "resultId (string) and rating (boolean) required." }, { status: 400 });
+  const parsed = aiRateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
+
+  const { resultId, rating } = parsed.data;
 
   const record = await prisma.aiResult.findFirst({
     where: { id: resultId, userId: session.user.id },

@@ -199,7 +199,7 @@ export function proxy(req: NextRequest) {
   const csp = [
     "default-src 'self'",
     /* Scripts: nonce + fallback unsafe-inline + eval (dev only) + trusted third parties */
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://js.stripe.com https://us.i.posthog.com https://*.sentry.io`,
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://js.stripe.com https://us.i.posthog.com https://*.sentry.io https://challenges.cloudflare.com`,
     /* Styles: unsafe-inline needed for Tailwind + template preview iframes */
     "style-src 'self' 'unsafe-inline'",
     /* Images: self + data URIs (base64) + blob (PDF previews) + common CDNs */
@@ -209,7 +209,7 @@ export function proxy(req: NextRequest) {
     /* API calls: self + Stripe + Gemini + PostHog + Sentry */
     "connect-src 'self' https://api.stripe.com https://generativelanguage.googleapis.com https://us.i.posthog.com https://*.sentry.io",
     /* Frames: self (srcDoc iframes for template previews) + Stripe checkout */
-    "frame-src 'self' blob: https://js.stripe.com https://hooks.stripe.com https://player.vimeo.com",
+    "frame-src 'self' blob: https://js.stripe.com https://hooks.stripe.com https://player.vimeo.com https://challenges.cloudflare.com",
     /* Block all other embeds */
     "object-src 'none'",
     "base-uri 'self'",

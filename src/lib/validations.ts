@@ -431,6 +431,47 @@ export const publishPortfolioSchema = z.object({
 
 
 /* ============================================================
+   AI HISTORY / RATING SCHEMAS
+   ============================================================ */
+
+/* PATCH /api/ai/rate */
+export const aiRateSchema = z.object({
+  resultId: z.string().min(1, "resultId is required.").max(100),
+  rating: z.boolean({ message: "rating must be a boolean." }),
+});
+
+/* POST /api/ai-history */
+export const createAiHistorySchema = z.object({
+  action: z.string().min(1, "action is required.").max(100),
+  title: shortText("Title"),
+  result: z.string().min(1, "result is required.").max(200_000),
+});
+
+
+/* ============================================================
+   EXTENSION EXTRA SCHEMAS
+   ============================================================ */
+
+/* POST /api/extension/job-view */
+export const extensionJobViewSchema = z.object({
+  title: shortText("Job title").max(500),
+  company: z.string().trim().max(200).optional().or(z.literal("")),
+  url: z.string().trim().min(1, "URL is required.").max(2000).url("Invalid URL."),
+  source: z.string().max(50).optional(),
+});
+
+
+/* ============================================================
+   USER EXTRA SCHEMAS
+   ============================================================ */
+
+/* PUT /api/user/default-resume */
+export const setDefaultResumeSchema = z.object({
+  resumeId: z.string().min(1, "resumeId is required.").max(100),
+});
+
+
+/* ============================================================
    HELPER: Format Zod errors into user-friendly messages
    ============================================================ */
 export function formatZodError(error: z.ZodError): string {

@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
+import { createAiHistorySchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: List AI results for the logged-in user ---- */
 export async function GET(req: NextRequest) {
@@ -54,17 +55,18 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { action, title, result } = body;
-
-  if (!action || !title || !result) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  const parsed = createAiHistorySchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
+
+  const { action, title, result } = parsed.data;
 
   const saved = await prisma.aiResult.create({
     data: {
       userId: session.user.id,
       action,
-      title: title.slice(0, 200),
+      title,
       result,
     },
   });

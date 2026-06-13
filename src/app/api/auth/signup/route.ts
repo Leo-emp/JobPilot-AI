@@ -14,6 +14,7 @@ import { signupSchema, formatZodError } from "@/lib/validations";
 import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 import { audit, getClientIp } from "@/lib/audit";
 import { buildWelcomeEmail } from "@/lib/welcome-email";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 /* # Lazy-init so missing env var doesn't crash the module on import */
 let _resend: Resend | null = null;
@@ -43,6 +44,16 @@ export async function POST(req: NextRequest) {
 
     /* Parse and validate the JSON body with Zod */
     const body = await req.json();
+
+    /* # Verify Turnstile CAPTCHA token (only enforced when configured) */
+    const turnstileOk = await verifyTurnstile(body.turnstileToken);
+    if (!turnstileOk) {
+      return NextResponse.json(
+        { error: "Bot verification failed. Please try again." },
+        { status: 403 }
+      );
+    }
+
     const parsed = signupSchema.safeParse(body);
 
     if (!parsed.success) {

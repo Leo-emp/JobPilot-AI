@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
+import { extensionJobViewSchema, formatZodError } from "@/lib/validations";
 /* # Career intelligence functions — will be wired in when skill tracking is enabled */
 import { extractSkillsFromJD as _extractSkillsFromJD, extractAndStoreJobSkills as _extractAndStoreJobSkills } from "@/lib/career-intelligence";
 
@@ -36,29 +37,30 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, company, url, source } = body;
-
-    if (!title || !url) {
+    const parsed = extensionJobViewSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing title or url" },
+        { error: formatZodError(parsed.error) },
         { status: 400, headers: corsHeaders(origin) }
       );
     }
+
+    const { title, company, url, source } = parsed.data;
 
     /* Upsert — update viewedAt if same URL already tracked */
     await prisma.jobView.upsert({
       where: {
         userId_url: {
           userId: session.user.id,
-          url: url.slice(0, 2000),
+          url,
         },
       },
       update: { viewedAt: new Date() },
       create: {
         userId: session.user.id,
-        title: (title || "").slice(0, 500),
-        company: (company || "").slice(0, 200),
-        url: url.slice(0, 2000),
+        title,
+        company: company || "",
+        url,
         source: source || "other",
       },
     });

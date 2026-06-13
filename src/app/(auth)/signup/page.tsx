@@ -9,10 +9,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Turnstile from "@/components/Turnstile";
 
 export default function SignupPage() {
   /* Form field states */
@@ -24,7 +25,9 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const router = useRouter();
+  const handleTurnstile = useCallback((token: string) => setTurnstileToken(token), []);
 
   /* Handle email/password form submission */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +56,7 @@ export default function SignupPage() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, turnstileToken }),
       });
 
       if (!res.ok) {
@@ -222,6 +225,8 @@ export default function SignupPage() {
               I understand that my data is processed by AI and I am responsible for verifying all generated content.
             </label>
           </div>
+
+          <Turnstile onVerify={handleTurnstile} />
 
           <button
             type="submit"

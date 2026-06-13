@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { setDefaultResumeSchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: Fetch the user's default resume ---- */
 export async function GET() {
@@ -52,11 +53,12 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { resumeId } = body;
-
-  if (!resumeId || typeof resumeId !== "string") {
-    return NextResponse.json({ error: "resumeId is required" }, { status: 400 });
+  const parsed = setDefaultResumeSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
+
+  const { resumeId } = parsed.data;
 
   /* Verify the resume belongs to this user */
   const resume = await prisma.resume.findFirst({
