@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 export const GET = safeHandler(async (req: NextRequest) => {
   /* ---- Auth + admin gate ---- */
@@ -25,6 +26,11 @@ export const GET = safeHandler(async (req: NextRequest) => {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
   const pageSize = 50;
   const skip = (page - 1) * pageSize;
+
+  /* # Return cached stats if available (60s TTL — admin dashboard tolerates slight staleness) */
+  const cacheKey = `admin:stats:page:${page}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) return NextResponse.json(cached);
 
   /* ---- Date boundaries for signup stats ---- */
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -112,7 +118,7 @@ export const GET = safeHandler(async (req: NextRequest) => {
   }
   weeklyGrowth.push(...await Promise.all(weekPromises));
 
-  return NextResponse.json({
+  const result = {
     overview: {
       totalUsers,
       freeUsers,
@@ -144,5 +150,10 @@ export const GET = safeHandler(async (req: NextRequest) => {
       totalUsers,
       totalPages: Math.ceil(totalUsers / pageSize),
     },
-  });
+  };
+
+  /* # Cache for 60 seconds — 16 DB queries is expensive to repeat */
+  await cacheSet(cacheKey, result, 60);
+
+  return NextResponse.json(result);
 });

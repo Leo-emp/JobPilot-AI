@@ -17,6 +17,14 @@ import { safeHandler } from "@/lib/api-handler";
 import { cacheGet, cacheSet } from "@/lib/redis";
 import { detectSponsorship } from "@/lib/sponsorship-detector";
 
+/* # 10-second timeout for external API calls — prevents one slow source from blocking the entire search */
+const API_TIMEOUT_MS = 10_000;
+function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeout));
+}
+
 /* ---- Standardized job format returned to the frontend ---- */
 interface Job {
   id: string;
@@ -49,7 +57,7 @@ async function fetchAdzuna(query: string, location: string, page: number, countr
   });
   if (location) params.set("where", location);
 
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `https://api.adzuna.com/v1/api/jobs/${country}/search/${page}?${params.toString()}`
   );
   if (!res.ok) return [];
@@ -82,7 +90,7 @@ async function fetchRemotive(query: string): Promise<Job[]> {
   if (query) params.set("search", query);
   params.set("limit", "20");
 
-  const res = await fetch(`https://remotive.com/api/remote-jobs?${params.toString()}`);
+  const res = await fetchWithTimeout(`https://remotive.com/api/remote-jobs?${params.toString()}`);
   if (!res.ok) return [];
 
   const data = await res.json();
@@ -106,7 +114,7 @@ async function fetchRemotive(query: string): Promise<Job[]> {
    SOURCE 3: REMOTEOK (free, no key, JSON array)
    ============================================================ */
 async function fetchRemoteOK(query: string): Promise<Job[]> {
-  const res = await fetch("https://remoteok.com/api", {
+  const res = await fetchWithTimeout("https://remoteok.com/api", {
     headers: { "User-Agent": "JobPilotAI/1.0" },
   });
   if (!res.ok) return [];
@@ -146,7 +154,7 @@ async function fetchRemoteOK(query: string): Promise<Job[]> {
    SOURCE 4: WE WORK REMOTELY (free RSS feed, no key)
    ============================================================ */
 async function fetchWWR(query: string): Promise<Job[]> {
-  const res = await fetch("https://weworkremotely.com/remote-jobs.rss");
+  const res = await fetchWithTimeout("https://weworkremotely.com/remote-jobs.rss");
   if (!res.ok) return [];
 
   const xml = await res.text();
@@ -209,7 +217,7 @@ async function fetchJooble(query: string, location: string, page: number): Promi
   const body: Record<string, string> = { keywords: query, page: String(page) };
   if (location) body.location = location;
 
-  const res = await fetch(`https://jooble.org/api/${apiKey}`, {
+  const res = await fetchWithTimeout(`https://jooble.org/api/${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -249,7 +257,7 @@ async function fetchJSearch(query: string, location: string, page: number, count
     num_pages: "1",
   });
 
-  const res = await fetch(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
+  const res = await fetchWithTimeout(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
     headers: {
       "X-RapidAPI-Key": apiKey,
       "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
@@ -286,7 +294,7 @@ async function fetchReed(query: string, location: string): Promise<Job[]> {
   const params = new URLSearchParams({ keywords: query, resultsToTake: "20" });
   if (location) params.set("locationName", location);
 
-  const res = await fetch(`https://www.reed.co.uk/api/1.0/search?${params.toString()}`, {
+  const res = await fetchWithTimeout(`https://www.reed.co.uk/api/1.0/search?${params.toString()}`, {
     headers: { Authorization: `Basic ${btoa(apiKey + ":")}` },
   });
   if (!res.ok) return [];
@@ -315,7 +323,7 @@ async function fetchTheMuse(query: string, page: number): Promise<Job[]> {
   const params = new URLSearchParams({ page: String(page - 1) });
   if (query) params.set("category", query);
 
-  const res = await fetch(`https://www.themuse.com/api/public/jobs?${params.toString()}`);
+  const res = await fetchWithTimeout(`https://www.themuse.com/api/public/jobs?${params.toString()}`);
   if (!res.ok) return [];
 
   const data = await res.json();
@@ -349,7 +357,7 @@ async function fetchArbeitnow(query: string): Promise<Job[]> {
   const params = new URLSearchParams();
   if (query) params.set("search", query);
 
-  const res = await fetch(`https://arbeitnow.com/api/job-board-api?${params.toString()}`);
+  const res = await fetchWithTimeout(`https://arbeitnow.com/api/job-board-api?${params.toString()}`);
   if (!res.ok) return [];
 
   const data = await res.json();
@@ -375,7 +383,7 @@ async function fetchArbeitnow(query: string): Promise<Job[]> {
 async function fetchFindwork(query: string): Promise<Job[]> {
   const params = new URLSearchParams({ search: query });
 
-  const res = await fetch(`https://findwork.dev/api/jobs/?${params.toString()}`, {
+  const res = await fetchWithTimeout(`https://findwork.dev/api/jobs/?${params.toString()}`, {
     headers: { "Accept": "application/json" },
   });
   if (!res.ok) return [];
@@ -429,7 +437,7 @@ async function fetchInternships(query: string, country: string): Promise<Job[]> 
         what: `internship ${query}`,
         what_or: keywords,
       });
-      const res = await fetch(`https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params.toString()}`);
+      const res = await fetchWithTimeout(`https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params.toString()}`);
       if (res.ok) {
         const ct = res.headers.get("content-type") || "";
         if (ct.includes("application/json")) {
@@ -458,7 +466,7 @@ async function fetchInternships(query: string, country: string): Promise<Job[]> 
   const joobleKey = process.env.JOOBLE_API_KEY;
   if (joobleKey) {
     try {
-      const res = await fetch(`https://jooble.org/api/${joobleKey}`, {
+      const res = await fetchWithTimeout(`https://jooble.org/api/${joobleKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -494,7 +502,7 @@ async function fetchInternships(query: string, country: string): Promise<Job[]> 
       const topTerms = keywords.split(" ").slice(0, 4).join(" OR ");
       const searchQ = `(${topTerms}) ${query} in ${countryName}`;
       const params = new URLSearchParams({ query: searchQ, page: "1", num_pages: "1" });
-      const res = await fetch(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
+      const res = await fetchWithTimeout(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
         headers: { "X-RapidAPI-Key": jsearchKey, "X-RapidAPI-Host": "jsearch.p.rapidapi.com" },
       });
       if (res.ok) {

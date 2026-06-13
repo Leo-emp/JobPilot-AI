@@ -56,7 +56,7 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             updatedAt: true,
           },
         }),
-        /* All resumes */
+        /* All resumes (capped at 500) */
         prisma.resume.findMany({
           where: { userId },
           select: {
@@ -67,8 +67,9 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 500,
         }),
-        /* All saved jobs */
+        /* All saved jobs (capped at 5000) */
         prisma.savedJob.findMany({
           where: { userId },
           select: {
@@ -83,8 +84,9 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 5000,
         }),
-        /* All applications */
+        /* All applications (capped at 5000) */
         prisma.application.findMany({
           where: { userId },
           select: {
@@ -99,8 +101,9 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             updatedAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 5000,
         }),
-        /* All cover letters */
+        /* All cover letters (capped at 2000) */
         prisma.coverLetter.findMany({
           where: { userId },
           select: {
@@ -111,8 +114,9 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 2000,
         }),
-        /* All contacts */
+        /* All contacts (capped at 2000) */
         prisma.contact.findMany({
           where: { userId },
           select: {
@@ -130,8 +134,9 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 2000,
         }),
-        /* All companies */
+        /* All companies (capped at 2000) */
         prisma.company.findMany({
           where: { userId },
           select: {
@@ -147,8 +152,9 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 2000,
         }),
-        /* All AI history */
+        /* All AI history (capped at 5000) */
         prisma.aiResult.findMany({
           where: { userId },
           select: {
@@ -159,6 +165,7 @@ export const GET = safeHandler(async (_req: NextRequest) => {
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
+          take: 5000,
         }),
       ])
     );

@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 export const GET = safeHandler(async () => {
   const session = await auth();
@@ -20,6 +21,15 @@ export const GET = safeHandler(async () => {
   }
 
   const userId = session.user.id;
+
+  /* # Return cached stats if available (30s TTL) */
+  const cacheKey = `dashboard:stats:${userId}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) {
+    return NextResponse.json(cached, {
+      headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" },
+    });
+  }
 
   /* # Fetch all data in parallel for speed */
   const [
@@ -90,20 +100,24 @@ export const GET = safeHandler(async () => {
   const aiLimit = planLimits[plan] || 20;
   const aiUsed = user?.aiUsageCount || 0;
 
-  return NextResponse.json(
-    {
-      resumeCount,
-      jobCount,
-      applicationCount,
-      coverLetterCount,
-      contactCount,
-      aiResultCount,
-      aiUsage: { used: aiUsed, limit: aiLimit, plan },
-      recentActivity,
-      pipeline,
-      upcomingInterviews,
-      upcomingFollowUps,
-    },
-    { headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" } }
-  );
+  const result = {
+    resumeCount,
+    jobCount,
+    applicationCount,
+    coverLetterCount,
+    contactCount,
+    aiResultCount,
+    aiUsage: { used: aiUsed, limit: aiLimit, plan },
+    recentActivity,
+    pipeline,
+    upcomingInterviews,
+    upcomingFollowUps,
+  };
+
+  /* # Cache for 30 seconds — prevents DB storm when user refreshes dashboard */
+  await cacheSet(cacheKey, result, 30);
+
+  return NextResponse.json(result, {
+    headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" },
+  });
 });

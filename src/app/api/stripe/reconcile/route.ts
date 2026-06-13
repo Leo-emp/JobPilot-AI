@@ -32,7 +32,7 @@ export const GET = safeHandler(async (req: NextRequest) => {
   let fixed = 0;
   let checked = 0;
 
-  /* ---- Check users who have a Stripe subscription ID ---- */
+  /* ---- Check users who have a Stripe subscription ID (capped at 200 per run) ---- */
   const usersWithSubs = await dbRetry(() =>
     prisma.user.findMany({
       where: {
@@ -40,6 +40,7 @@ export const GET = safeHandler(async (req: NextRequest) => {
         deletedAt: null,
       },
       select: { id: true, email: true, plan: true, stripeSubId: true },
+      take: 200,
     })
   );
 

@@ -13,6 +13,7 @@ import { computeCareerInsights, refreshUserSkills, extractAndStoreJobSkills } fr
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 /* # GET — return computed career insights */
 export const GET = safeHandler(async () => {
@@ -21,10 +22,18 @@ export const GET = safeHandler(async () => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  /* # Cache for 10 minutes — insights don't change rapidly */
+  const cacheKey = `career:insights:${session.user.id}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) return NextResponse.json(cached);
+
   try {
     const insights = await dbRetry(() =>
       computeCareerInsights(session.user.id)
     );
+
+    await cacheSet(cacheKey, insights, 600);
+
     return NextResponse.json(insights);
   } catch (err) {
     console.error("[career-insights] Error:", err);
