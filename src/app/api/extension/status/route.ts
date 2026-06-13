@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { safeHandler } from "@/lib/api-handler";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 
 /* ---- OPTIONS: Handle CORS preflight ---- */
@@ -21,7 +22,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 /* ---- GET: Check if user is logged in ---- */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
   const session = await auth();
 
@@ -42,4 +43,4 @@ export async function GET(req: NextRequest) {
     },
     { headers: corsHeaders(origin) }
   );
-}
+});

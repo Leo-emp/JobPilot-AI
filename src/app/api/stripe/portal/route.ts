@@ -14,42 +14,38 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
-export async function POST() {
-  try {
-    /* User must be logged in */
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const POST = safeHandler(async () => {
+  /* User must be logged in */
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    /* Get the user's Stripe customer ID */
-    const user = await prisma.user.findUnique({
+  /* Get the user's Stripe customer ID */
+  const user = await dbRetry(() =>
+    prisma.user.findUnique({
       where: { id: session.user.id },
       select: { stripeCustomerId: true },
-    });
+    })
+  );
 
-    if (!user?.stripeCustomerId) {
-      return NextResponse.json(
-        { error: "No billing account found. Subscribe to a plan first." },
-        { status: 400 }
-      );
-    }
-
-    /* Create a billing portal session */
-    const baseUrl = process.env.AUTH_URL || "http://localhost:3000";
-
-    const portalSession = await getStripe().billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
-      return_url: `${baseUrl}/dashboard/settings`,
-    });
-
-    return NextResponse.json({ url: portalSession.url });
-  } catch (error: unknown) {
-    console.error("Stripe portal error:", error);
+  if (!user?.stripeCustomerId) {
     return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
-      { status: 500 }
+      { error: "No billing account found. Subscribe to a plan first." },
+      { status: 400 }
     );
   }
-}
+
+  /* Create a billing portal session */
+  const baseUrl = process.env.AUTH_URL || "http://localhost:3000";
+
+  const portalSession = await getStripe().billingPortal.sessions.create({
+    customer: user.stripeCustomerId,
+    return_url: `${baseUrl}/dashboard/settings`,
+  });
+
+  return NextResponse.json({ url: portalSession.url });
+});

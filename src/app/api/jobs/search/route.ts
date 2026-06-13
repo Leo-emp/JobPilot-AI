@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { safeHandler } from "@/lib/api-handler";
 import { cacheGet, cacheSet } from "@/lib/redis";
 import { detectSponsorship } from "@/lib/sponsorship-detector";
 
@@ -592,7 +593,7 @@ function deduplicateJobs(jobs: Job[]): Job[] {
 /* ============================================================
    MAIN HANDLER
    ============================================================ */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -722,4 +723,4 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   }
-}
+});

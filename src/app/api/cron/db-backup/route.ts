@@ -5,9 +5,10 @@
    Triggered daily at 3am UTC by Vercel Cron.
    Protected by CRON_SECRET bearer token.
 
-   Exports all tables as JSON and stores the backup in Vercel
-   Blob storage. Keeps the last 7 backups and auto-deletes
-   older ones to stay within free tier limits.
+   Exports all tables as JSON in batches (paginated to avoid
+   OOM on large datasets) and stores the backup in Vercel Blob
+   storage. Keeps the last 7 backups and auto-deletes older
+   ones to stay within free tier limits.
 
    Restore: download the JSON from Vercel Blob dashboard,
    then re-insert rows via Prisma or raw SQL.
@@ -16,11 +17,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put, list, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 
 /* # Max backups to keep — 7 days of daily snapshots */
 const MAX_BACKUPS = 7;
 
-export async function POST(req: NextRequest) {
+/* # Batch size for paginated table exports — prevents OOM */
+const BATCH_SIZE = 500;
+
+/* # Generic paginated export — fetches all rows in batches */
+async function exportTable<T extends { id: string }>(
+  findMany: (args: { take: number; skip: number }) => Promise<T[]>
+): Promise<T[]> {
+  const all: T[] = [];
+  let skip = 0;
+
+  while (true) {
+    const batch = await dbRetry(() => findMany({ take: BATCH_SIZE, skip }));
+    all.push(...batch);
+    if (batch.length < BATCH_SIZE) break;
+    skip += BATCH_SIZE;
+  }
+
+  return all;
+}
+
+export const POST = safeHandler(async (req: NextRequest) => {
   /* # Auth: only allow requests with the correct cron secret */
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -29,108 +52,76 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    /* # Export all tables in parallel */
-    const [
-      users,
-      accounts,
-      resumes,
-      savedJobs,
-      applications,
-      coverLetters,
-      contacts,
-      companies,
-      aiResults,
-      portfolios,
-      jobViews,
-      careerInsights,
-      feedback,
-    ] = await Promise.all([
-      prisma.user.findMany({ where: { deletedAt: null } }),
-      prisma.account.findMany(),
-      prisma.resume.findMany(),
-      prisma.savedJob.findMany(),
-      prisma.application.findMany(),
-      prisma.coverLetter.findMany(),
-      prisma.contact.findMany(),
-      prisma.company.findMany(),
-      prisma.aiResult.findMany(),
-      prisma.portfolio.findMany(),
-      prisma.jobView.findMany(),
-      prisma.careerInsight.findMany(),
-      prisma.feedback.findMany(),
-    ]);
+  /* # Export tables sequentially in batches to control memory usage */
+  const users = await exportTable((args) => prisma.user.findMany({ ...args, where: { deletedAt: null } }));
+  const accounts = await exportTable((args) => prisma.account.findMany(args));
+  const resumes = await exportTable((args) => prisma.resume.findMany(args));
+  const savedJobs = await exportTable((args) => prisma.savedJob.findMany(args));
+  const applications = await exportTable((args) => prisma.application.findMany(args));
+  const coverLetters = await exportTable((args) => prisma.coverLetter.findMany(args));
+  const contacts = await exportTable((args) => prisma.contact.findMany(args));
+  const companies = await exportTable((args) => prisma.company.findMany(args));
+  const aiResults = await exportTable((args) => prisma.aiResult.findMany(args));
+  const portfolios = await exportTable((args) => prisma.portfolio.findMany(args));
+  const jobViews = await exportTable((args) => prisma.jobView.findMany(args));
+  const careerInsights = await exportTable((args) => prisma.careerInsight.findMany(args));
+  const feedback = await exportTable((args) => prisma.feedback.findMany(args));
 
-    /* # Build the backup payload with metadata */
-    const backup = {
-      version: 1,
-      createdAt: new Date().toISOString(),
-      counts: {
-        users: users.length,
-        accounts: accounts.length,
-        resumes: resumes.length,
-        savedJobs: savedJobs.length,
-        applications: applications.length,
-        coverLetters: coverLetters.length,
-        contacts: contacts.length,
-        companies: companies.length,
-        aiResults: aiResults.length,
-        portfolios: portfolios.length,
-        jobViews: jobViews.length,
-        careerInsights: careerInsights.length,
-        feedback: feedback.length,
-      },
-      data: {
-        users,
-        accounts,
-        resumes,
-        savedJobs,
-        applications,
-        coverLetters,
-        contacts,
-        companies,
-        aiResults,
-        portfolios,
-        jobViews,
-        careerInsights,
-        feedback,
-      },
-    };
+  /* # Build the backup payload with metadata */
+  const counts = {
+    users: users.length,
+    accounts: accounts.length,
+    resumes: resumes.length,
+    savedJobs: savedJobs.length,
+    applications: applications.length,
+    coverLetters: coverLetters.length,
+    contacts: contacts.length,
+    companies: companies.length,
+    aiResults: aiResults.length,
+    portfolios: portfolios.length,
+    jobViews: jobViews.length,
+    careerInsights: careerInsights.length,
+    feedback: feedback.length,
+  };
 
-    /* # Upload to Vercel Blob with timestamped filename */
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const blob = await put(
-      `db-backups/backup-${timestamp}.json`,
-      JSON.stringify(backup),
-      {
-        access: "private",
-        contentType: "application/json",
-      }
-    );
+  const backup = {
+    version: 2,
+    createdAt: new Date().toISOString(),
+    counts,
+    data: {
+      users, accounts, resumes, savedJobs, applications,
+      coverLetters, contacts, companies, aiResults,
+      portfolios, jobViews, careerInsights, feedback,
+    },
+  };
 
-    /* # Clean up old backups — keep only the most recent MAX_BACKUPS */
-    const { blobs } = await list({ prefix: "db-backups/" });
-    if (blobs.length > MAX_BACKUPS) {
-      const sorted = blobs.sort(
-        (a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
-      );
-      const toDelete = sorted.slice(0, blobs.length - MAX_BACKUPS);
-      await Promise.all(toDelete.map((b) => del(b.url)));
+  /* # Upload to Vercel Blob with timestamped filename */
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  await put(
+    `db-backups/backup-${timestamp}.json`,
+    JSON.stringify(backup),
+    {
+      access: "private",
+      contentType: "application/json",
     }
+  );
 
-    const totalRecords = Object.values(backup.counts).reduce((sum, c) => sum + c, 0);
-
-    return NextResponse.json({
-      success: true,
-      records: totalRecords,
-      counts: backup.counts,
-      oldBackupsDeleted: Math.max(0, blobs.length - MAX_BACKUPS),
-    });
-  } catch (err) {
-    console.error("[db-backup] Failed:", err);
-    return NextResponse.json(
-      { error: "Backup failed" },
-      { status: 500 }
+  /* # Clean up old backups — keep only the most recent MAX_BACKUPS */
+  const { blobs } = await list({ prefix: "db-backups/" });
+  if (blobs.length > MAX_BACKUPS) {
+    const sorted = blobs.sort(
+      (a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
     );
+    const toDelete = sorted.slice(0, blobs.length - MAX_BACKUPS);
+    await Promise.all(toDelete.map((b) => del(b.url)));
   }
-}
+
+  const totalRecords = Object.values(counts).reduce((sum, c) => sum + c, 0);
+
+  return NextResponse.json({
+    success: true,
+    records: totalRecords,
+    counts,
+    oldBackupsDeleted: Math.max(0, blobs.length - MAX_BACKUPS),
+  });
+});

@@ -10,34 +10,29 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { publishPortfolioSchema, formatZodError } from "@/lib/validations";
 import type { PortfolioSection } from "@/lib/portfolio-types";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
+import { createRateLimiter } from "@/lib/rate-limit";
 
-/* # Write rate limiter — 10 publish toggles per minute */
-const publishStore = new Map<string, { count: number; resetAt: number }>();
-function checkPublishLimit(userId: string): boolean {
-  const now = Date.now();
-  const entry = publishStore.get(userId);
-  if (!entry || now > entry.resetAt) {
-    publishStore.set(userId, { count: 1, resetAt: now + 60_000 });
-    return true;
-  }
-  if (entry.count >= 10) return false;
-  entry.count++;
-  return true;
-}
+/* # Publish rate limiter — 10 toggles per minute per user (Redis-backed) */
+const publishLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!checkPublishLimit(session.user.id)) {
+  const publishCheck = await publishLimiter.check(`portfolio-publish:${session.user.id}`);
+  if (!publishCheck.allowed) {
     return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }
 
-  const portfolio = await prisma.portfolio.findUnique({
-    where: { userId: session.user.id },
-  });
+  const portfolio = await dbRetry(() =>
+    prisma.portfolio.findUnique({
+      where: { userId: session.user.id },
+    })
+  );
   if (!portfolio) {
     return NextResponse.json({ error: "Portfolio not found. Create one first." }, { status: 404 });
   }
@@ -60,13 +55,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const updated = await prisma.portfolio.update({
-    where: { userId: session.user.id },
-    data: { published: parsed.data.published },
-  });
+  const updated = await dbRetry(() =>
+    prisma.portfolio.update({
+      where: { userId: session.user.id },
+      data: { published: parsed.data.published },
+    })
+  );
 
   return NextResponse.json({
     published: updated.published,
     url: updated.published ? `/p/${updated.slug}` : null,
   });
-}
+});

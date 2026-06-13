@@ -14,37 +14,28 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPortfolioSchema, updatePortfolioSchema, validateSections, formatZodError } from "@/lib/validations";
 import { getDefaultSections } from "@/lib/portfolio-types";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
+import { createRateLimiter } from "@/lib/rate-limit";
 
-/* # In-memory write rate limiter — 20 writes per minute per user */
-const writeStore = new Map<string, { count: number; resetAt: number }>();
-const WRITE_LIMIT = 20;
-const WRITE_WINDOW_MS = 60_000;
-
-function checkWriteLimit(userId: string): boolean {
-  const now = Date.now();
-  const entry = writeStore.get(userId);
-  if (!entry || now > entry.resetAt) {
-    writeStore.set(userId, { count: 1, resetAt: now + WRITE_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= WRITE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
+/* # Write rate limiter — 20 writes per minute per user (Redis-backed) */
+const writeLimiter = createRateLimiter({ maxRequests: 20, windowMs: 60_000 });
 
 /* # Max request body size: 500KB */
 const MAX_BODY_SIZE = 512_000;
 
 /* ---- GET: Fetch the logged-in user's portfolio ---- */
-export async function GET() {
+export const GET = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const portfolio = await prisma.portfolio.findUnique({
-    where: { userId: session.user.id },
-  });
+  const portfolio = await dbRetry(() =>
+    prisma.portfolio.findUnique({
+      where: { userId: session.user.id },
+    })
+  );
 
   if (!portfolio) {
     return NextResponse.json({ portfolio: null });
@@ -58,16 +49,17 @@ export async function GET() {
       socialLinks: portfolio.socialLinks ? JSON.parse(portfolio.socialLinks) : null,
     },
   });
-}
+});
 
 /* ---- POST: Create a new portfolio ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!checkWriteLimit(session.user.id)) {
+  const writeCheck = await writeLimiter.check(`portfolio-write:${session.user.id}`);
+  if (!writeCheck.allowed) {
     return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }
 
@@ -78,9 +70,11 @@ export async function POST(req: NextRequest) {
   }
 
   /* # Check if user already has a portfolio */
-  const existing = await prisma.portfolio.findUnique({
-    where: { userId: session.user.id },
-  });
+  const existing = await dbRetry(() =>
+    prisma.portfolio.findUnique({
+      where: { userId: session.user.id },
+    })
+  );
   if (existing) {
     return NextResponse.json({ error: "You already have a portfolio. Update it instead." }, { status: 409 });
   }
@@ -92,21 +86,25 @@ export async function POST(req: NextRequest) {
   }
 
   /* # Check slug uniqueness */
-  const slugTaken = await prisma.portfolio.findUnique({ where: { slug: parsed.data.slug } });
+  const slugTaken = await dbRetry(() =>
+    prisma.portfolio.findUnique({ where: { slug: parsed.data.slug } })
+  );
   if (slugTaken) {
     return NextResponse.json({ error: "This URL is already taken. Choose a different one." }, { status: 409 });
   }
 
-  const portfolio = await prisma.portfolio.create({
-    data: {
-      userId: session.user.id,
-      slug: parsed.data.slug,
-      title: parsed.data.title,
-      tagline: parsed.data.tagline || null,
-      template: parsed.data.template,
-      sections: JSON.stringify(getDefaultSections()),
-    },
-  });
+  const portfolio = await dbRetry(() =>
+    prisma.portfolio.create({
+      data: {
+        userId: session.user.id,
+        slug: parsed.data.slug,
+        title: parsed.data.title,
+        tagline: parsed.data.tagline || null,
+        template: parsed.data.template,
+        sections: JSON.stringify(getDefaultSections()),
+      },
+    })
+  );
 
   return NextResponse.json({
     portfolio: {
@@ -114,16 +112,17 @@ export async function POST(req: NextRequest) {
       sections: JSON.parse(portfolio.sections),
     },
   }, { status: 201 });
-}
+});
 
 /* ---- PATCH: Update the user's portfolio ---- */
-export async function PATCH(req: NextRequest) {
+export const PATCH = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!checkWriteLimit(session.user.id)) {
+  const writeCheck = await writeLimiter.check(`portfolio-write:${session.user.id}`);
+  if (!writeCheck.allowed) {
     return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }
 
@@ -133,9 +132,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Request body too large (max 500KB)." }, { status: 413 });
   }
 
-  const existing = await prisma.portfolio.findUnique({
-    where: { userId: session.user.id },
-  });
+  const existing = await dbRetry(() =>
+    prisma.portfolio.findUnique({
+      where: { userId: session.user.id },
+    })
+  );
   if (!existing) {
     return NextResponse.json({ error: "Portfolio not found." }, { status: 404 });
   }
@@ -156,7 +157,9 @@ export async function PATCH(req: NextRequest) {
 
   /* # If slug is changing, check uniqueness */
   if (parsed.data.slug && parsed.data.slug !== existing.slug) {
-    const slugTaken = await prisma.portfolio.findUnique({ where: { slug: parsed.data.slug } });
+    const slugTaken = await dbRetry(() =>
+      prisma.portfolio.findUnique({ where: { slug: parsed.data.slug } })
+    );
     if (slugTaken) {
       return NextResponse.json({ error: "This URL is already taken." }, { status: 409 });
     }
@@ -174,10 +177,12 @@ export async function PATCH(req: NextRequest) {
   if (parsed.data.avatarUrl !== undefined) updateData.avatarUrl = parsed.data.avatarUrl || null;
   if (parsed.data.sections !== undefined) updateData.sections = parsed.data.sections;
 
-  const portfolio = await prisma.portfolio.update({
-    where: { userId: session.user.id },
-    data: updateData,
-  });
+  const portfolio = await dbRetry(() =>
+    prisma.portfolio.update({
+      where: { userId: session.user.id },
+      data: updateData,
+    })
+  );
 
   return NextResponse.json({
     portfolio: {
@@ -187,27 +192,32 @@ export async function PATCH(req: NextRequest) {
       socialLinks: portfolio.socialLinks ? JSON.parse(portfolio.socialLinks) : null,
     },
   });
-}
+});
 
 /* ---- DELETE: Delete the user's portfolio ---- */
-export async function DELETE() {
+export const DELETE = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!checkWriteLimit(session.user.id)) {
+  const writeCheck = await writeLimiter.check(`portfolio-write:${session.user.id}`);
+  if (!writeCheck.allowed) {
     return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
   }
 
-  const existing = await prisma.portfolio.findUnique({
-    where: { userId: session.user.id },
-  });
+  const existing = await dbRetry(() =>
+    prisma.portfolio.findUnique({
+      where: { userId: session.user.id },
+    })
+  );
   if (!existing) {
     return NextResponse.json({ error: "Portfolio not found." }, { status: 404 });
   }
 
-  await prisma.portfolio.delete({ where: { userId: session.user.id } });
+  await dbRetry(() =>
+    prisma.portfolio.delete({ where: { userId: session.user.id } })
+  );
 
   return NextResponse.json({ success: true });
-}
+});

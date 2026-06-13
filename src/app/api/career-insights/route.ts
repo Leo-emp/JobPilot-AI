@@ -12,9 +12,10 @@ import { auth } from "@/lib/auth";
 import { computeCareerInsights, refreshUserSkills, extractAndStoreJobSkills } from "@/lib/career-intelligence";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 
 /* # GET — return computed career insights */
-export async function GET() {
+export const GET = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,10 +30,10 @@ export async function GET() {
     console.error("[career-insights] Error:", err);
     return NextResponse.json({ error: "Failed to compute insights" }, { status: 500 });
   }
-}
+});
 
 /* # POST — refresh skills cache and backfill job skills */
-export async function POST() {
+export const POST = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -67,4 +68,4 @@ export async function POST() {
     console.error("[career-insights] Refresh error:", err);
     return NextResponse.json({ error: "Failed to refresh insights" }, { status: 500 });
   }
-}
+});

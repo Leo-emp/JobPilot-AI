@@ -12,6 +12,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { createApplicationSchema, formatZodError } from "@/lib/validations";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
@@ -26,7 +28,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 /* ---- GET: List applications for the logged-in user (paginated) ---- */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
   const session = await auth();
   if (!session?.user?.id) {
@@ -39,17 +41,17 @@ export async function GET(req: NextRequest) {
     allowedSorts: ["createdAt", "updatedAt", "company", "status"],
   });
 
-  const applications = await prisma.application.findMany({
+  const applications = await dbRetry(() => prisma.application.findMany({
     where: { userId: session.user.id },
     ...query,
     include: { job: { select: { url: true, description: true, salary: true } } },
-  });
+  }));
 
   return NextResponse.json(paginatedResponse(applications, params.limit), { headers: corsHeaders(origin) });
-}
+});
 
 /* ---- POST: Create a new application ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
   const session = await auth();
   if (!session?.user?.id) {
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
   /* If user provided description or salary, create a SavedJob to store them */
   let jobId: string | undefined;
   if (description || salary) {
-    const savedJob = await prisma.savedJob.create({
+    const savedJob = await dbRetry(() => prisma.savedJob.create({
       data: {
         userId: session.user.id,
         title: jobTitle,
@@ -79,11 +81,11 @@ export async function POST(req: NextRequest) {
         description: description || "",
         salary: salary || null,
       },
-    });
+    }));
     jobId = savedJob.id;
   }
 
-  const application = await prisma.application.create({
+  const application = await dbRetry(() => prisma.application.create({
     data: {
       userId: session.user.id,
       jobTitle,
@@ -91,7 +93,7 @@ export async function POST(req: NextRequest) {
       status: "Saved",
       ...(jobId && { jobId }),
     },
-  });
+  }));
 
   return NextResponse.json(application, { status: 201, headers: corsHeaders(origin) });
-}
+});

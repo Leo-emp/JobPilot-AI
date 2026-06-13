@@ -11,6 +11,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { userPerMinute, userPerHour, ipPerMinute } from "@/lib/rate-limit";
 import { extensionAiSchema, formatZodError } from "@/lib/validations";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
@@ -89,7 +91,7 @@ async function callGemini(prompt: string): Promise<string> {
 }
 
 /* ---- POST: Run AI tool from extension ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
 
   /* Check authentication */
@@ -149,11 +151,11 @@ export async function POST(req: NextRequest) {
   }
 
   /* Fetch the user's most recent resume for AI context */
-  const latestResume = await prisma.resume.findFirst({
+  const latestResume = await dbRetry(() => prisma.resume.findFirst({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
     select: { content: true },
-  });
+  }));
 
   const resumeText = latestResume?.content || "No resume uploaded yet.";
 
@@ -167,10 +169,10 @@ export async function POST(req: NextRequest) {
   }
 
   /* ---- Check usage limits ---- */
-  const user = await prisma.user.findUnique({
+  const user = await dbRetry(() => prisma.user.findUnique({
     where: { id: session.user.id },
     select: { plan: true, aiUsageCount: true, usageResetDate: true },
-  });
+  }));
 
   if (!user) {
     return NextResponse.json(
@@ -184,10 +186,10 @@ export async function POST(req: NextRequest) {
   if (user.usageResetDate < now) {
     const nextReset = new Date(now);
     nextReset.setMonth(nextReset.getMonth() + 1);
-    await prisma.user.update({
+    await dbRetry(() => prisma.user.update({
       where: { id: session.user.id },
       data: { aiUsageCount: 0, usageResetDate: nextReset },
-    });
+    }));
     user.aiUsageCount = 0;
   }
 
@@ -244,10 +246,10 @@ Job Description: ${description}`;
     const result = scrubPlaceholders(raw);
 
     /* Increment usage counter */
-    await prisma.user.update({
+    await dbRetry(() => prisma.user.update({
       where: { id: session.user.id },
       data: { aiUsageCount: { increment: 1 } },
-    });
+    }));
 
     return NextResponse.json(
       { result },
@@ -260,4 +262,4 @@ Job Description: ${description}`;
       { status: 500, headers: corsHeaders(origin) }
     );
   }
-}
+});

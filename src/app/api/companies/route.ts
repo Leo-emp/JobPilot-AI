@@ -11,11 +11,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { createCompanySchema, formatZodError } from "@/lib/validations";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
 /* ---- GET: List companies for the logged-in user (paginated) ---- */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,16 +29,16 @@ export async function GET(req: NextRequest) {
     allowedSorts: ["createdAt", "updatedAt", "name", "priority", "status"],
   });
 
-  const companies = await prisma.company.findMany({
+  const companies = await dbRetry(() => prisma.company.findMany({
     where: { userId: session.user.id },
     ...query,
-  });
+  }));
 
   return NextResponse.json(paginatedResponse(companies, params.limit));
-}
+});
 
 /* ---- POST: Add a new target company ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -54,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   const { name, industry, website, location, size, notes, priority, status } = parsed.data;
 
-  const company = await prisma.company.create({
+  const company = await dbRetry(() => prisma.company.create({
     data: {
       userId: session.user.id,
       name,
@@ -66,7 +68,7 @@ export async function POST(req: NextRequest) {
       priority: priority || "Medium",
       status: status || "Researching",
     },
-  });
+  }));
 
   return NextResponse.json(company, { status: 201 });
-}
+});

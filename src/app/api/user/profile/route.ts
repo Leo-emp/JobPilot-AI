@@ -11,6 +11,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { formatZodError } from "@/lib/validations";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
 const profileSchema = z.object({
   name: z.string().trim().min(1, "Name is required.").max(100, "Name is too long.").optional(),
@@ -18,37 +20,35 @@ const profileSchema = z.object({
   weeklyDigest: z.boolean().optional(),
 });
 
-export async function PATCH(req: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const PATCH = safeHandler(async (req: NextRequest) => {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const body = await req.json();
-    const parsed = profileSchema.safeParse(body);
+  const body = await req.json();
+  const parsed = profileSchema.safeParse(body);
 
-    if (!parsed.success) {
-      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
-    }
+  if (!parsed.success) {
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
+  }
 
-    const updates: Record<string, string | boolean | null> = {};
-    if (parsed.data.name !== undefined) updates.name = parsed.data.name;
-    if (parsed.data.image !== undefined) updates.image = parsed.data.image;
-    if (parsed.data.weeklyDigest !== undefined) updates.weeklyDigest = parsed.data.weeklyDigest;
+  const updates: Record<string, string | boolean | null> = {};
+  if (parsed.data.name !== undefined) updates.name = parsed.data.name;
+  if (parsed.data.image !== undefined) updates.image = parsed.data.image;
+  if (parsed.data.weeklyDigest !== undefined) updates.weeklyDigest = parsed.data.weeklyDigest;
 
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No changes provided." }, { status: 400 });
-    }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No changes provided." }, { status: 400 });
+  }
 
-    const user = await prisma.user.update({
+  const user = await dbRetry(() =>
+    prisma.user.update({
       where: { id: session.user.id },
       data: updates,
       select: { id: true, name: true, email: true, image: true },
-    });
+    })
+  );
 
-    return NextResponse.json(user);
-  } catch {
-    return NextResponse.json({ error: "Failed to update profile." }, { status: 500 });
-  }
-}
+  return NextResponse.json(user);
+});

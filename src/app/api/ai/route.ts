@@ -18,6 +18,7 @@ import { scrubPlaceholders } from "@/lib/ai-post-process";
 import { buildPrompt } from "@/lib/prompts";
 import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
+import { safeHandler } from "@/lib/api-handler";
 import * as Sentry from "@sentry/nextjs";
 
 /* ---- Monthly Plan Limits ---- */
@@ -43,7 +44,7 @@ function buildHistoryTitle(action: string, payload: Record<string, any>): string
 }
 
 /* ---- Main POST Handler ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -223,4 +224,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, { timeoutMs: 60_000 });

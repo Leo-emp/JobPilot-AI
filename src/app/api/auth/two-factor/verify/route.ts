@@ -14,12 +14,14 @@ import * as OTPAuth from "otpauth";
 import { z } from "zod";
 import { formatZodError } from "@/lib/validations";
 import { authPerMinute } from "@/lib/rate-limit";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
 const verifySchema = z.object({
   code: z.string().length(6, "Code must be 6 digits").regex(/^\d+$/, "Code must be numeric"),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,10 +43,12 @@ export async function POST(req: NextRequest) {
   }
 
   /* Fetch user's stored secret */
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { twoFactorSecret: true, twoFactorEnabled: true },
-  });
+  const user = await dbRetry(() =>
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { twoFactorSecret: true, twoFactorEnabled: true },
+    })
+  );
 
   if (!user?.twoFactorSecret) {
     return NextResponse.json({ error: "2FA has not been set up. Run setup first." }, { status: 400 });
@@ -68,11 +72,13 @@ export async function POST(req: NextRequest) {
 
   /* If 2FA wasn't enabled yet, enable it now (first-time setup flow) */
   if (!user.twoFactorEnabled) {
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { twoFactorEnabled: true },
-    });
+    await dbRetry(() =>
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { twoFactorEnabled: true },
+      })
+    );
   }
 
   return NextResponse.json({ verified: true });
-}
+});

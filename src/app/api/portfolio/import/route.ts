@@ -11,6 +11,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { PortfolioSection, ExperienceEntry, EducationEntry, SkillGroup, CertificationEntry } from "@/lib/portfolio-types";
 import { autoCategorizeSkills } from "@/lib/skill-categories";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
 /* # Parse "Title | Company · Location | Date" format used by resume builder */
 function parseExperienceBlock(text: string): ExperienceEntry[] {
@@ -120,17 +122,19 @@ function parseCertifications(text: string): CertificationEntry[] {
   return entries;
 }
 
-export async function POST() {
+export const POST = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   /* # Find user's most recent resume */
-  const resume = await prisma.resume.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const resume = await dbRetry(() =>
+    prisma.resume.findFirst({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    })
+  );
 
   if (!resume) {
     return NextResponse.json(
@@ -139,10 +143,12 @@ export async function POST() {
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { name: true, email: true, image: true, topSkills: true },
-  });
+  const user = await dbRetry(() =>
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, email: true, image: true, topSkills: true },
+    })
+  );
 
   /* # Try to parse structured data from AI analysis JSON */
   let parsed: Record<string, string> = {};
@@ -253,4 +259,4 @@ export async function POST() {
   });
 
   return NextResponse.json({ sections });
-}
+});

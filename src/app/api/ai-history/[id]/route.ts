@@ -8,12 +8,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 
 /* ---- GET: Retrieve full AI result ---- */
-export async function GET(
+export const GET = safeHandler(async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,22 +23,22 @@ export async function GET(
 
   const { id } = await params;
 
-  const result = await prisma.aiResult.findFirst({
+  const result = await dbRetry(() => prisma.aiResult.findFirst({
     where: { id, userId: session.user.id },
-  });
+  }));
 
   if (!result) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   return NextResponse.json(result);
-}
+});
 
 /* ---- DELETE: Remove an AI result ---- */
-export async function DELETE(
+export const DELETE = safeHandler(async (
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,15 +46,15 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const result = await prisma.aiResult.findFirst({
+  const result = await dbRetry(() => prisma.aiResult.findFirst({
     where: { id, userId: session.user.id },
-  });
+  }));
 
   if (!result) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.aiResult.delete({ where: { id } });
+  await dbRetry(() => prisma.aiResult.delete({ where: { id } }));
 
   return NextResponse.json({ success: true });
-}
+});

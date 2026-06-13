@@ -8,6 +8,8 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
+import { safeHandler } from "@/lib/api-handler";
+import { createRateLimiter } from "@/lib/rate-limit";
 import { z } from "zod";
 
 /* # Simple email validation */
@@ -15,24 +17,14 @@ const schema = z.object({
   email: z.string().email("Please enter a valid email address.").max(254),
 });
 
-/* # IP-based rate limiter — 5 subscribes per minute per IP */
-const ipStore = new Map<string, { count: number; resetAt: number }>();
-function checkLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipStore.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipStore.set(ip, { count: 1, resetAt: now + 60_000 });
-    return true;
-  }
-  if (entry.count >= 5) return false;
-  entry.count++;
-  return true;
-}
+/* # IP-based rate limiter — 5 subscribes per minute per IP (Redis-backed) */
+const newsletterLimiter = createRateLimiter({ maxRequests: 5, windowMs: 60_000 });
 
-export async function POST(req: NextRequest) {
-  /* # Rate limit by IP */
+export const POST = safeHandler(async (req: NextRequest) => {
+  /* # Rate limit by IP (Redis-backed — consistent across all instances) */
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!checkLimit(ip)) {
+  const limitCheck = await newsletterLimiter.check(`newsletter:${ip}`);
+  if (!limitCheck.allowed) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
 
@@ -76,4 +68,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ success: true, message: "You're subscribed! Check your inbox for career tips." });
-}
+});

@@ -9,13 +9,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { updateContactSchema, formatZodError } from "@/lib/validations";
 
 /* ---- PATCH: Update a contact ---- */
-export async function PATCH(
+export const PATCH = safeHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,27 +51,27 @@ export async function PATCH(
   }
 
   /* Update only if this contact belongs to the logged-in user */
-  const result = await prisma.contact.updateMany({
+  const result = await dbRetry(() => prisma.contact.updateMany({
     where: { id, userId: session.user.id },
     data: updateData,
-  });
+  }));
 
   if (result.count === 0) {
     return NextResponse.json({ error: "Contact not found." }, { status: 404 });
   }
 
-  const contact = await prisma.contact.findFirst({
+  const contact = await dbRetry(() => prisma.contact.findFirst({
     where: { id, userId: session.user.id },
-  });
+  }));
 
   return NextResponse.json(contact);
-}
+});
 
 /* ---- DELETE: Remove a contact ---- */
-export async function DELETE(
+export const DELETE = safeHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -78,13 +80,13 @@ export async function DELETE(
   const { id } = await params;
 
   /* Delete only if this contact belongs to the logged-in user */
-  const result = await prisma.contact.deleteMany({
+  const result = await dbRetry(() => prisma.contact.deleteMany({
     where: { id, userId: session.user.id },
-  });
+  }));
 
   if (result.count === 0) {
     return NextResponse.json({ error: "Contact not found." }, { status: 404 });
   }
 
   return NextResponse.json({ success: true });
-}
+});

@@ -10,8 +10,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   /* ---- Auth + admin gate ---- */
   const session = await auth();
   if (!session?.user?.isAdmin) {
@@ -43,7 +45,7 @@ export async function GET(req: NextRequest) {
     monthlySignups,
     totalAICallsResult,
     users,
-  ] = await Promise.all([
+  ] = await dbRetry(() => Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { plan: "free" } }),
     prisma.user.count({ where: { plan: "pro" } }),
@@ -83,7 +85,7 @@ export async function GET(req: NextRequest) {
         },
       },
     }),
-  ]);
+  ]));
 
   const totalAICalls = totalAICallsResult._sum.aiUsageCount || 0;
 
@@ -101,7 +103,7 @@ export async function GET(req: NextRequest) {
     const start = new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
     const end = new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000);
     weekPromises.push(
-      prisma.user.count({ where: { createdAt: { gte: start, lt: end } } })
+      dbRetry(() => prisma.user.count({ where: { createdAt: { gte: start, lt: end } } }))
         .then(count => ({
           week: start.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
           signups: count,
@@ -143,4 +145,4 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(totalUsers / pageSize),
     },
   });
-}
+});

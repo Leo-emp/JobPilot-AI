@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/db-backup",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/gdpr-cleanup",
+      "schedule": "0 4 * * *"
     }
   ]
 }

@@ -8,14 +8,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
 /* # Slug format guard — reject obviously invalid slugs before hitting DB */
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
 
-export async function GET(
+export const GET = safeHandler(async (
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
-) {
+) => {
   const { slug } = await params;
 
   /* # Reject malformed slugs early — no DB query needed */
@@ -23,14 +25,16 @@ export async function GET(
     return NextResponse.json({ error: "Portfolio not found." }, { status: 404 });
   }
 
-  const portfolio = await prisma.portfolio.findUnique({
-    where: { slug },
-    include: {
-      user: {
-        select: { name: true, image: true },
+  const portfolio = await dbRetry(() =>
+    prisma.portfolio.findUnique({
+      where: { slug },
+      include: {
+        user: {
+          select: { name: true, image: true },
+        },
       },
-    },
-  });
+    })
+  );
 
   /* # Only return published portfolios */
   if (!portfolio || !portfolio.published) {
@@ -58,4 +62,4 @@ export async function GET(
       "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
     },
   });
-}
+});

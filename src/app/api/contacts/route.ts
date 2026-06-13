@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
 import { createContactSchema, formatZodError } from "@/lib/validations";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 import { safeHandler } from "@/lib/api-handler";
@@ -28,10 +29,10 @@ export const GET = safeHandler(async (req: NextRequest) => {
     allowedSorts: ["createdAt", "updatedAt", "name", "company"],
   });
 
-  const contacts = await prisma.contact.findMany({
+  const contacts = await dbRetry(() => prisma.contact.findMany({
     where: { userId: session.user.id },
     ...query,
-  });
+  }));
 
   return NextResponse.json(paginatedResponse(contacts, params.limit));
 });
@@ -55,7 +56,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
   const { name, email, phone, company, role, linkedinUrl, relationship, notes, nextFollowUp } = parsed.data;
 
-  const contact = await prisma.contact.create({
+  const contact = await dbRetry(() => prisma.contact.create({
     data: {
       userId: session.user.id,
       name,
@@ -68,7 +69,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
       notes: notes || null,
       nextFollowUp: nextFollowUp ? new Date(nextFollowUp) : null,
     },
-  });
+  }));
 
   return NextResponse.json(contact, { status: 201 });
 });

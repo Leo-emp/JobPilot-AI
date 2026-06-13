@@ -8,9 +8,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { aiRateSchema, formatZodError } from "@/lib/validations";
 
-export async function PATCH(req: NextRequest) {
+export const PATCH = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,19 +26,19 @@ export async function PATCH(req: NextRequest) {
 
   const { resultId, rating } = parsed.data;
 
-  const record = await prisma.aiResult.findFirst({
+  const record = await dbRetry(() => prisma.aiResult.findFirst({
     where: { id: resultId, userId: session.user.id },
     select: { id: true },
-  });
+  }));
 
   if (!record) {
     return NextResponse.json({ error: "Result not found." }, { status: 404 });
   }
 
-  await prisma.aiResult.update({
+  await dbRetry(() => prisma.aiResult.update({
     where: { id: resultId },
     data: { rating },
-  });
+  }));
 
   return NextResponse.json({ ok: true });
-}
+});

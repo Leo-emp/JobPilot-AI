@@ -13,13 +13,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { computeWeeklyStats } from "@/lib/weekly-stats";
 import { buildWeeklyDigestEmail } from "@/lib/weekly-digest-email";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BATCH_SIZE = 50;
 
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   /* Auth: only allow requests with the correct cron secret */
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
@@ -30,13 +32,13 @@ export async function POST(req: NextRequest) {
 
   try {
     /* Get all opted-in, active users */
-    const users = await prisma.user.findMany({
+    const users = await dbRetry(() => prisma.user.findMany({
       where: {
         weeklyDigest: true,
         deletedAt: null,
       },
       select: { id: true, email: true },
-    });
+    }));
 
     let sent = 0;
     let skipped = 0;
@@ -96,4 +98,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, { timeoutMs: 120_000 });

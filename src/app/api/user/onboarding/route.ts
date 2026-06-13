@@ -11,6 +11,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { formatZodError } from "@/lib/validations";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
 const onboardingSchema = z.object({
   goal: z.enum(["find-job", "optimize-resume", "career-change", "interview-prep"]),
@@ -20,7 +22,7 @@ const onboardingSchema = z.object({
   ]),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -36,13 +38,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: {
-      goal: parsed.data.goal,
-      referralSource: parsed.data.referralSource,
-    },
-  });
+  await dbRetry(() =>
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        goal: parsed.data.goal,
+        referralSource: parsed.data.referralSource,
+      },
+    })
+  );
 
   return NextResponse.json({ success: true });
-}
+});

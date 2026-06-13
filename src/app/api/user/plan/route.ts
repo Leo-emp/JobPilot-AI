@@ -14,13 +14,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { safeHandler } from "@/lib/api-handler";
 
 /* # Cache key prefix for user plan data */
 const PLAN_CACHE_PREFIX = "plan";
 /* # Cache TTL: 60 seconds — fresh enough for usage display */
 const PLAN_CACHE_TTL = 60;
 
-export async function GET() {
+export const GET = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,4 +63,4 @@ export async function GET() {
   return NextResponse.json(planData, {
     headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=30" },
   });
-}
+});

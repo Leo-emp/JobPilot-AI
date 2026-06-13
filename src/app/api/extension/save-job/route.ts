@@ -10,6 +10,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { extensionSaveJobSchema, formatZodError } from "@/lib/validations";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 
@@ -23,7 +25,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 /* ---- POST: Save a job from the extension ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
 
   /* Check authentication */
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
   const appliedStatus = status || "Saved";
 
   /* Save the job listing */
-  const savedJob = await prisma.savedJob.create({
+  const savedJob = await dbRetry(() => prisma.savedJob.create({
     data: {
       userId: session.user.id,
       title: jobTitle,
@@ -59,10 +61,10 @@ export async function POST(req: NextRequest) {
       url: url || null,
       description: description || "",
     },
-  });
+  }));
 
   /* Create an application record linked to the saved job */
-  const application = await prisma.application.create({
+  const application = await dbRetry(() => prisma.application.create({
     data: {
       userId: session.user.id,
       jobId: savedJob.id,
@@ -71,10 +73,10 @@ export async function POST(req: NextRequest) {
       status: appliedStatus,
       ...(appliedStatus === "Applied" && { appliedDate: new Date() }),
     },
-  });
+  }));
 
   return NextResponse.json(
     { success: true, jobId: savedJob.id, applicationId: application.id },
     { status: 201, headers: corsHeaders(origin) }
   );
-}
+});

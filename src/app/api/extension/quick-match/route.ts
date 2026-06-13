@@ -10,6 +10,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 import { extractSkillsFromJD } from "@/lib/career-intelligence";
 
@@ -22,7 +24,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 /* ---- GET: Compute quick keyword match ---- */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
 
   const session = await auth();
@@ -43,10 +45,10 @@ export async function GET(req: NextRequest) {
 
   try {
     /* Get user's cached skills */
-    const user = await prisma.user.findUnique({
+    const user = await dbRetry(() => prisma.user.findUnique({
       where: { id: session.user.id },
       select: { topSkills: true },
-    });
+    }));
 
     if (!user?.topSkills) {
       return NextResponse.json(
@@ -93,4 +95,4 @@ export async function GET(req: NextRequest) {
       { status: 500, headers: corsHeaders(origin) }
     );
   }
-}
+});

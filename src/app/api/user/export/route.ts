@@ -15,11 +15,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { safeHandler } from "@/lib/api-handler";
 
 /* # 3 exports per hour per user — enough for legitimate use, blocks abuse */
 const exportLimiter = createRateLimiter({ maxRequests: 3, windowMs: 60 * 60_000 });
 
-export async function GET(_req: NextRequest) {
+export const GET = safeHandler(async (_req: NextRequest) => {
   /* # Authenticate — only logged-in users can export their own data */
   const session = await auth();
   if (!session?.user?.id) {
@@ -189,4 +190,4 @@ export async function GET(_req: NextRequest) {
       "Cache-Control": "no-store",
     },
   });
-}
+});

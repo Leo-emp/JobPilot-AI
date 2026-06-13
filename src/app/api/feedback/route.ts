@@ -9,6 +9,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { audit } from "@/lib/audit";
 import { z } from "zod";
 
@@ -25,7 +27,7 @@ const statusSchema = z.object({
 });
 
 /* ---- POST: Submit feedback ---- */
-export async function POST(request: NextRequest) {
+export const POST = safeHandler(async (request: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,14 +45,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid feedback data" }, { status: 400 });
   }
 
-  const feedback = await prisma.feedback.create({
+  const feedback = await dbRetry(() => prisma.feedback.create({
     data: {
       userId: session.user.id,
       email: session.user.email || "",
       category: parsed.data.category,
       message: parsed.data.message,
     },
-  });
+  }));
 
   audit("feedback.submitted", {
     userId: session.user.id,
@@ -60,10 +62,10 @@ export async function POST(request: NextRequest) {
   });
 
   return NextResponse.json({ success: true });
-}
+});
 
 /* ---- GET: List all feedback (admin only) ---- */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -76,7 +78,7 @@ export async function GET(req: NextRequest) {
 
   const where = status && status !== "all" ? { status } : {};
 
-  const [feedbacks, total] = await Promise.all([
+  const [feedbacks, total] = await dbRetry(() => Promise.all([
     prisma.feedback.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -84,16 +86,16 @@ export async function GET(req: NextRequest) {
       take: pageSize,
     }),
     prisma.feedback.count({ where }),
-  ]);
+  ]));
 
   return NextResponse.json({
     feedbacks,
     pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
   });
-}
+});
 
 /* ---- PATCH: Update feedback status (admin only) ---- */
-export async function PATCH(request: NextRequest) {
+export const PATCH = safeHandler(async (request: NextRequest) => {
   const session = await auth();
   if (!session?.user?.isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -111,10 +113,10 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 
-  await prisma.feedback.update({
+  await dbRetry(() => prisma.feedback.update({
     where: { id: parsed.data.id },
     data: { status: parsed.data.status },
-  });
+  }));
 
   return NextResponse.json({ success: true });
-}
+});

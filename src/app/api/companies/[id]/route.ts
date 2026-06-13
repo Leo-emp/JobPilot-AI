@@ -9,13 +9,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { updateCompanySchema, formatZodError } from "@/lib/validations";
 
 /* ---- PATCH: Update a company ---- */
-export async function PATCH(
+export const PATCH = safeHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,27 +45,27 @@ export async function PATCH(
   if (body.status !== undefined) updateData.status = body.status;
 
   /* Update only if this company belongs to the logged-in user */
-  const result = await prisma.company.updateMany({
+  const result = await dbRetry(() => prisma.company.updateMany({
     where: { id, userId: session.user.id },
     data: updateData,
-  });
+  }));
 
   if (result.count === 0) {
     return NextResponse.json({ error: "Company not found." }, { status: 404 });
   }
 
-  const company = await prisma.company.findFirst({
+  const company = await dbRetry(() => prisma.company.findFirst({
     where: { id, userId: session.user.id },
-  });
+  }));
 
   return NextResponse.json(company);
-}
+});
 
 /* ---- DELETE: Remove a company ---- */
-export async function DELETE(
+export const DELETE = safeHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -72,13 +74,13 @@ export async function DELETE(
   const { id } = await params;
 
   /* Delete only if this company belongs to the logged-in user */
-  const result = await prisma.company.deleteMany({
+  const result = await dbRetry(() => prisma.company.deleteMany({
     where: { id, userId: session.user.id },
-  });
+  }));
 
   if (result.count === 0) {
     return NextResponse.json({ error: "Company not found." }, { status: 404 });
   }
 
   return NextResponse.json({ success: true });
-}
+});

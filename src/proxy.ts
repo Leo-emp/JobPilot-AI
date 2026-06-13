@@ -154,6 +154,22 @@ export function proxy(req: NextRequest) {
     );
   }
 
+  /* ---- WAF: Query String Inspection ---- */
+  /* # Block attack patterns in query parameters (SQL injection, XSS, path traversal) */
+  const queryString = req.nextUrl.search;
+  if (queryString) {
+    const decodedQuery = decodeURIComponent(queryString).toLowerCase();
+    const queryBlocked =
+      /(union\s+select|drop\s+table|;\s*delete|;\s*insert|;\s*update|exec\s*\(|xp_cmdshell)/i.test(decodedQuery) ||
+      /(<script|javascript:|onerror\s*=|onload\s*=|data:text\/html)/i.test(decodedQuery) ||
+      /(\.\.[/\\]){2,}/.test(decodedQuery);
+
+    if (queryBlocked) {
+      audit("security.waf.query_blocked", { ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown", detail: pathname });
+      return new NextResponse(null, { status: 403 });
+    }
+  }
+
   /* ---- CSRF Origin Verification for state-changing requests ---- */
   const method = req.method;
   if (method === "POST" || method === "PATCH" || method === "DELETE") {

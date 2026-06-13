@@ -11,8 +11,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import * as OTPAuth from "otpauth";
 import QRCode from "qrcode";
+import { safeHandler } from "@/lib/api-handler";
+import { dbRetry } from "@/lib/db-retry";
 
-export async function POST() {
+export const POST = safeHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,10 +33,12 @@ export async function POST() {
   });
 
   /* Store the secret (not yet enabled — user must verify first) */
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { twoFactorSecret: secret.base32, twoFactorEnabled: false },
-  });
+  await dbRetry(() =>
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: { twoFactorSecret: secret.base32, twoFactorEnabled: false },
+    })
+  );
 
   /* Generate QR code as data URL */
   const otpauthUrl = totp.toString();
@@ -45,4 +49,4 @@ export async function POST() {
     secret: secret.base32,
     otpauthUrl,
   });
-}
+});

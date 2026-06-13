@@ -41,6 +41,8 @@ export type AuditEvent =
   | "security.csrf.blocked"
   | "security.body_size.blocked"
   | "security.waf.blocked"
+  | "security.waf.query_blocked"
+  | "gdpr.hard_delete"
   | "auth.2fa.enabled"
   | "auth.2fa.disabled";
 

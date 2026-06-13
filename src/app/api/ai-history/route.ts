@@ -11,11 +11,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 import { createAiHistorySchema, formatZodError } from "@/lib/validations";
 
 /* ---- GET: List AI results for the logged-in user ---- */
-export async function GET(req: NextRequest) {
+export const GET = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,7 +32,7 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const actionFilter = url.searchParams.get("action");
 
-  const results = await prisma.aiResult.findMany({
+  const results = await dbRetry(() => prisma.aiResult.findMany({
     where: {
       userId: session.user.id,
       ...(actionFilter ? { action: actionFilter } : {}),
@@ -42,13 +44,13 @@ export async function GET(req: NextRequest) {
       createdAt: true,
     },
     ...query,
-  });
+  }));
 
   return NextResponse.json(paginatedResponse(results, params.limit));
-}
+});
 
 /* ---- POST: Save a new AI result ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,14 +64,14 @@ export async function POST(req: NextRequest) {
 
   const { action, title, result } = parsed.data;
 
-  const saved = await prisma.aiResult.create({
+  const saved = await dbRetry(() => prisma.aiResult.create({
     data: {
       userId: session.user.id,
       action,
       title,
       result,
     },
-  });
+  }));
 
   return NextResponse.json({ id: saved.id }, { status: 201 });
-}
+});

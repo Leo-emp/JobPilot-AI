@@ -59,8 +59,11 @@ export async function GET(_req: NextRequest) {
     const geminiStart = Date.now();
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`,
-        { signal: AbortSignal.timeout(5000) }
+        "https://generativelanguage.googleapis.com/v1beta/models",
+        {
+          headers: { "x-goog-api-key": geminiKey },
+          signal: AbortSignal.timeout(5000),
+        }
       );
       geminiOk = res.ok;
     } catch { /* Gemini unreachable */ }

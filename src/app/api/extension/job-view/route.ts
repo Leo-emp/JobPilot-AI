@@ -10,6 +10,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
+import { safeHandler } from "@/lib/api-handler";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 import { extensionJobViewSchema, formatZodError } from "@/lib/validations";
 /* # Career intelligence functions — will be wired in when skill tracking is enabled */
@@ -24,7 +26,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 /* ---- POST: Track a job page view ---- */
-export async function POST(req: NextRequest) {
+export const POST = safeHandler(async (req: NextRequest) => {
   const origin = req.headers.get("origin");
 
   const session = await auth();
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
     const { title, company, url, source } = parsed.data;
 
     /* Upsert — update viewedAt if same URL already tracked */
-    await prisma.jobView.upsert({
+    await dbRetry(() => prisma.jobView.upsert({
       where: {
         userId_url: {
           userId: session.user.id,
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
         url,
         source: source || "other",
       },
-    });
+    }));
 
     return NextResponse.json(
       { success: true },
@@ -76,4 +78,4 @@ export async function POST(req: NextRequest) {
       { status: 500, headers: corsHeaders(origin) }
     );
   }
-}
+});
