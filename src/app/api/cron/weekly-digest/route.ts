@@ -17,6 +17,7 @@ import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
 import { computeWeeklyStats } from "@/lib/weekly-stats";
 import { buildWeeklyDigestEmail } from "@/lib/weekly-digest-email";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BATCH_SIZE = 50;
@@ -29,6 +30,14 @@ export const POST = safeHandler(async (req: NextRequest) => {
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  /* # Idempotency lock — prevents duplicate emails if Vercel retries the cron */
+  const lockKey = `cron:weekly-digest:${new Date().toISOString().slice(0, 10)}`;
+  const alreadyRan = await cacheGet(lockKey);
+  if (alreadyRan) {
+    return NextResponse.json({ skipped: true, reason: "Already ran today" });
+  }
+  await cacheSet(lockKey, "1", 86400);
 
   try {
     /* Get all opted-in, active users */

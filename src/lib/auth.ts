@@ -235,6 +235,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.email = token.email as string;
         session.user.isAdmin = token.isAdmin ?? false;
         session.user.twoFactorPending = (token.twoFactorPending as boolean) ?? false;
+
+        /* # Block soft-deleted users — their JWT may still be valid but account is gone */
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { deletedAt: true },
+        });
+        if (!dbUser || dbUser.deletedAt) {
+          session.user.id = "";
+        }
       }
       return session;
     },

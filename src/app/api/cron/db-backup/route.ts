@@ -19,6 +19,7 @@ import { put, list, del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 /* # Max backups to keep — 7 days of daily snapshots */
 const MAX_BACKUPS = 7;
@@ -51,6 +52,14 @@ export const POST = safeHandler(async (req: NextRequest) => {
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  /* # Idempotency lock — prevents duplicate backups if Vercel retries */
+  const lockKey = `cron:db-backup:${new Date().toISOString().slice(0, 10)}`;
+  const alreadyRan = await cacheGet(lockKey);
+  if (alreadyRan) {
+    return NextResponse.json({ skipped: true, reason: "Already ran today" });
+  }
+  await cacheSet(lockKey, "1", 86400);
 
   /* # Export tables sequentially in batches to control memory usage */
   const users = await exportTable((args) => prisma.user.findMany({ ...args, where: { deletedAt: null } }));

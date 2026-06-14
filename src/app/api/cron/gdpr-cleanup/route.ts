@@ -17,6 +17,7 @@ import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
 import { audit } from "@/lib/audit";
 import { getStripe } from "@/lib/stripe";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 /* # 30-day retention period before permanent deletion */
 const RETENTION_DAYS = 30;
@@ -32,6 +33,14 @@ export const POST = safeHandler(async (req: NextRequest) => {
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  /* # Idempotency lock — prevents duplicate runs if Vercel retries */
+  const lockKey = `cron:gdpr-cleanup:${new Date().toISOString().slice(0, 10)}`;
+  const alreadyRan = await cacheGet(lockKey);
+  if (alreadyRan) {
+    return NextResponse.json({ skipped: true, reason: "Already ran today" });
+  }
+  await cacheSet(lockKey, "1", 86400);
 
   /* # Calculate the cutoff date — accounts deleted more than 30 days ago */
   const cutoff = new Date();

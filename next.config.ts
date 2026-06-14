@@ -34,6 +34,31 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  /* Security headers — CSP, permissions policy */
+  headers: async () => [
+    {
+      source: "/(.*)",
+      headers: [
+        {
+          key: "Content-Security-Policy",
+          value: [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://va.vercel-scripts.com",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: blob: https://*.googleusercontent.com https://*.licdn.com https://*.gravatar.com https://images.unsplash.com",
+            "connect-src 'self' https://*.sentry.io https://challenges.cloudflare.com https://va.vercel-scripts.com",
+            "frame-src https://challenges.cloudflare.com https://js.stripe.com",
+            "frame-ancestors 'none'",
+          ].join("; "),
+        },
+        {
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
+        },
+      ],
+    },
+  ],
 };
 
 export default withSentryConfig(withBundleAnalyzer(nextConfig), {
