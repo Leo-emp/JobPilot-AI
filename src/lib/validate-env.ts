@@ -9,8 +9,8 @@
 /* # Required for core functionality — app cannot serve without these */
 const REQUIRED = [
   "AUTH_SECRET",
-  "TURSO_DATABASE_URL",
-  "TURSO_AUTH_TOKEN",
+  "DATABASE_URL",
+  "DATABASE_AUTH_TOKEN",
 ] as const;
 
 /* # Warn-only — app works but specific features are disabled */

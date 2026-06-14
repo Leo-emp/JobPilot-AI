@@ -44,6 +44,9 @@
     "unpdf": "^1.6.2",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "postcss": "^8.5.14"
+  },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.2.6",
     "@playwright/test": "^1.60.0",
