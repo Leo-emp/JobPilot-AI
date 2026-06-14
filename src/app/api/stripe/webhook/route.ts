@@ -59,7 +59,10 @@ export const POST = safeHandler(async (req: NextRequest) => {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
-      const subscriptionId = session.subscription as string;
+      /* # Type guard: Stripe can return string OR Subscription object */
+      const subscriptionId = typeof session.subscription === "string"
+        ? session.subscription
+        : session.subscription?.id;
 
       if (userId && subscriptionId) {
         /* Fetch the subscription to determine which plan they bought */

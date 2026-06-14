@@ -27,12 +27,19 @@ const ALLOWED_EXTENSION_ID = process.env.CHROME_EXTENSION_ID || "";
 const ipStore = new Map<string, { count: number; resetAt: number }>();
 const IP_MAX_REQUESTS = 30;
 const IP_WINDOW_MS = 60_000;
+/* # Cap to prevent memory exhaustion under DDoS with randomized IPs */
+const IP_STORE_MAX_SIZE = 10_000;
 
 function checkIpLimit(ip: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
   const entry = ipStore.get(ip);
 
   if (!entry || now > entry.resetAt) {
+    /* # Evict oldest entry if at capacity */
+    if (ipStore.size >= IP_STORE_MAX_SIZE && !ipStore.has(ip)) {
+      const oldestKey = ipStore.keys().next().value;
+      if (oldestKey) ipStore.delete(oldestKey);
+    }
     ipStore.set(ip, { count: 1, resetAt: now + IP_WINDOW_MS });
     return { allowed: true, remaining: IP_MAX_REQUESTS - 1 };
   }

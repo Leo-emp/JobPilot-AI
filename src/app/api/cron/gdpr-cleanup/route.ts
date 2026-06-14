@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
 import { audit } from "@/lib/audit";
+import { getStripe } from "@/lib/stripe";
 
 /* # 30-day retention period before permanent deletion */
 const RETENTION_DAYS = 30;
@@ -36,13 +37,13 @@ export const POST = safeHandler(async (req: NextRequest) => {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
 
-  /* # Find expired soft-deleted users */
+  /* # Find expired soft-deleted users (include Stripe sub for cleanup) */
   const expiredUsers = await dbRetry(() =>
     prisma.user.findMany({
       where: {
         deletedAt: { not: null, lt: cutoff },
       },
-      select: { id: true, email: true, deletedAt: true },
+      select: { id: true, email: true, deletedAt: true, stripeSubId: true },
       take: BATCH_SIZE,
     })
   );
@@ -50,9 +51,16 @@ export const POST = safeHandler(async (req: NextRequest) => {
   let purged = 0;
   let failed = 0;
 
-  /* # Hard-delete each user — Prisma cascade removes all child records */
+  /* # Hard-delete each user — cancel Stripe sub first, then Prisma cascade removes all child records */
   for (const user of expiredUsers) {
     try {
+      /* # Cancel any active Stripe subscription to prevent orphaned charges */
+      if (user.stripeSubId) {
+        try {
+          await getStripe().subscriptions.cancel(user.stripeSubId);
+        } catch { /* # Already cancelled or doesn't exist — safe to proceed */ }
+      }
+
       await dbRetry(() =>
         prisma.user.delete({ where: { id: user.id } })
       );

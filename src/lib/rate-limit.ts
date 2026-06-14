@@ -42,6 +42,9 @@ interface RateLimitEntry {
   timestamps: number[];
 }
 
+/* # Cap to prevent memory exhaustion under DDoS with randomized IPs */
+const MAX_STORE_SIZE = 10_000;
+
 function createInMemoryLimiter(config: RateLimiterConfig) {
   const store = new Map<string, RateLimitEntry>();
 
@@ -67,6 +70,12 @@ function createInMemoryLimiter(config: RateLimiterConfig) {
         const resetIn = config.windowMs - (now - oldestInWindow);
         store.set(identifier, entry);
         return { allowed: false, remaining: 0, resetIn };
+      }
+
+      /* # Evict oldest entries if store is full — prevents unbounded memory growth */
+      if (store.size >= MAX_STORE_SIZE && !store.has(identifier)) {
+        const oldestKey = store.keys().next().value;
+        if (oldestKey) store.delete(oldestKey);
       }
 
       entry.timestamps.push(now);

@@ -18,9 +18,8 @@ import { buildPrompt } from "@/lib/prompts";
 import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 import { safeHandler } from "@/lib/api-handler";
+import { PLAN_LIMITS } from "@/lib/plan-limits";
 import * as Sentry from "@sentry/nextjs";
-
-const PLAN_LIMITS: Record<string, number> = { free: 20, pro: 1000 };
 const MAX_PAYLOAD_SIZE = 50_000;
 const MAX_MULTIMODAL_PAYLOAD_SIZE = 20_000_000;
 
@@ -111,7 +110,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
       await cacheDel(`plan:${session.user.id}`);
     }
 
-    /* Enforce plan limits */
+    /* # Atomic limit check + increment — prevents race condition */
     if (!admin) {
       const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
       if (user.aiUsageCount >= limit) {
@@ -121,6 +120,26 @@ export const POST = safeHandler(async (req: NextRequest) => {
         audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action });
         return jsonError(msg, 429);
       }
+
+      /* # Atomically increment BEFORE calling Gemini */
+      const updated = await dbRetry(() =>
+        prisma.user.update({
+          where: { id: session.user.id },
+          data: { aiUsageCount: { increment: 1 } },
+          select: { aiUsageCount: true },
+        })
+      );
+      if (updated.aiUsageCount > limit) {
+        await dbRetry(() =>
+          prisma.user.update({
+            where: { id: session.user.id },
+            data: { aiUsageCount: { decrement: 1 } },
+          })
+        );
+        audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action, detail: "concurrent_race" });
+        return jsonError("You've reached your monthly AI limit.", 429);
+      }
+      await cacheDel(`plan:${session.user.id}`);
     }
 
     /* Inject career intelligence context for relevant actions */
@@ -128,12 +147,14 @@ export const POST = safeHandler(async (req: NextRequest) => {
     if (contextActions.includes(action)) {
       try {
         const userData = await prisma.user.findUnique({ where: { id: session.user.id }, select: { topSkills: true } });
-        const topSkills: string[] = userData?.topSkills ? JSON.parse(userData.topSkills) : [];
+        let topSkills: string[] = [];
+        try { topSkills = userData?.topSkills ? JSON.parse(userData.topSkills) : []; } catch { /* # Malformed JSON — skip */ }
         if (topSkills.length > 0) {
           const savedJobs = await prisma.savedJob.findMany({ where: { userId: session.user.id, requiredSkills: { not: null } }, select: { requiredSkills: true }, take: 20 });
           const jobSkillCounts = new Map<string, number>();
           for (const j of savedJobs) {
-            const skills: string[] = JSON.parse(j.requiredSkills!);
+            let skills: string[] = [];
+            try { skills = JSON.parse(j.requiredSkills!); } catch { /* # Malformed JSON — skip */ }
             for (const s of skills) jobSkillCounts.set(s, (jobSkillCounts.get(s) || 0) + 1);
           }
           const userLower = new Set(topSkills.map(s => s.toLowerCase()));
@@ -154,13 +175,15 @@ export const POST = safeHandler(async (req: NextRequest) => {
       ? await streamGeminiMultimodal(prompt, payload.images as { data: string; mimeType: string }[])
       : await streamGemini(prompt, temp);
 
-    /* Increment usage (don't wait for stream to finish) */
-    dbRetry(() =>
-      prisma.user.update({
-        where: { id: session.user.id },
-        data: { aiUsageCount: { increment: 1 } },
-      })
-    ).then(() => cacheDel(`plan:${session.user.id}`)).catch(() => {});
+    /* # Usage already incremented atomically above — admin-only increment here */
+    if (admin) {
+      dbRetry(() =>
+        prisma.user.update({
+          where: { id: session.user.id },
+          data: { aiUsageCount: { increment: 1 } },
+        })
+      ).then(() => cacheDel(`plan:${session.user.id}`)).catch(() => {});
+    }
 
     /* Collect full text for history saving, while streaming to client */
     const encoder = new TextEncoder();

@@ -23,7 +23,7 @@ export const GET = safeHandler(async (req: NextRequest) => {
 
   /* ---- Pagination for user list ---- */
   const { searchParams } = new URL(req.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+  const page = Math.min(1000, Math.max(1, parseInt(searchParams.get("page") || "1")));
   const pageSize = 50;
   const skip = (page - 1) * pageSize;
 

@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { signupSchema, formatZodError } from "@/lib/validations";
 import { authPerMinute, authPerHour } from "@/lib/rate-limit";
 import { audit, getClientIp } from "@/lib/audit";
+import * as Sentry from "@sentry/nextjs";
 import { buildWelcomeEmail } from "@/lib/welcome-email";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { safeHandler } from "@/lib/api-handler";
@@ -105,7 +106,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
     to: email,
     subject: "Welcome to JobPilot AI",
     html: buildWelcomeEmail(name),
-  }).catch(() => {});
+  }).catch((err) => { Sentry.captureException(err, { tags: { email_type: "welcome" } }); });
 
   /* Return success with the new user's info (never send password back) */
   return NextResponse.json(

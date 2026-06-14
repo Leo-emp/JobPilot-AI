@@ -18,6 +18,9 @@ import { extensionAiSchema, formatZodError } from "@/lib/validations";
 import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 import { checkGlobalDailyCap } from "@/lib/redis";
 import { scrubPlaceholders } from "@/lib/ai-post-process";
+import { PLAN_LIMITS } from "@/lib/plan-limits";
+import { cacheDel } from "@/lib/redis";
+import { audit } from "@/lib/audit";
 
 /* ---- OPTIONS: Handle CORS preflight ---- */
 export async function OPTIONS(req: NextRequest) {
@@ -193,7 +196,6 @@ export const POST = safeHandler(async (req: NextRequest) => {
     user.aiUsageCount = 0;
   }
 
-  const PLAN_LIMITS: Record<string, number> = { free: 20, pro: 1000 };
   const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
 
   if (user.aiUsageCount >= limit) {
@@ -202,6 +204,29 @@ export const POST = safeHandler(async (req: NextRequest) => {
       { status: 429, headers: corsHeaders(origin) }
     );
   }
+
+  /* # Atomically increment BEFORE calling Gemini — prevents race condition */
+  const updated = await dbRetry(() =>
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: { aiUsageCount: { increment: 1 } },
+      select: { aiUsageCount: true },
+    })
+  );
+  if (updated.aiUsageCount > limit) {
+    await dbRetry(() =>
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { aiUsageCount: { decrement: 1 } },
+      })
+    );
+    audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action, detail: "extension_concurrent_race" });
+    return NextResponse.json(
+      { error: "You've reached your monthly AI limit." },
+      { status: 429, headers: corsHeaders(origin) }
+    );
+  }
+  await cacheDel(`plan:${session.user.id}`);
 
   /* ---- Build prompt based on action ---- */
   let prompt: string;
@@ -245,11 +270,7 @@ Job Description: ${description}`;
     const raw = await callGemini(prompt);
     const result = scrubPlaceholders(raw);
 
-    /* Increment usage counter */
-    await dbRetry(() => prisma.user.update({
-      where: { id: session.user.id },
-      data: { aiUsageCount: { increment: 1 } },
-    }));
+    /* # Usage already incremented atomically above */
 
     return NextResponse.json(
       { result },

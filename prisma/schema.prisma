@@ -53,6 +53,9 @@ model User {
   jobViews       JobView[]
   feedbacks      Feedback[]
   portfolio      Portfolio?
+
+  @@index([stripeSubId])
+  @@index([deletedAt])
 }
 
 // ---- Password Reset Token ----

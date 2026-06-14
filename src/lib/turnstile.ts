@@ -30,7 +30,7 @@ export async function verifyTurnstile(token: string | null | undefined): Promise
     const data = await res.json();
     return data.success === true;
   } catch {
-    /* # Network failure — fail open to avoid blocking real users */
-    return true;
+    /* # Network failure — fail closed to prevent bot abuse */
+    return false;
   }
 }

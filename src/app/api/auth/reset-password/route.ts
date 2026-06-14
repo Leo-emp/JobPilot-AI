@@ -63,22 +63,20 @@ export const POST = safeHandler(async (req: NextRequest) => {
     return NextResponse.json({ error: "This reset link has expired. Please request a new one." }, { status: 400 });
   }
 
-  /* ---- Update the user's password ---- */
+  /* ---- Update password + mark token used atomically (prevents token reuse if server crashes mid-operation) ---- */
   const hashedPassword = await bcrypt.hash(password, 12);
 
   await dbRetry(() =>
-    prisma.user.update({
-      where: { email: resetRecord.email },
-      data: { password: hashedPassword },
-    })
-  );
-
-  /* ---- Mark the token as used ---- */
-  await dbRetry(() =>
-    prisma.passwordReset.update({
-      where: { id: resetRecord.id },
-      data: { used: true },
-    })
+    prisma.$transaction([
+      prisma.user.update({
+        where: { email: resetRecord.email },
+        data: { password: hashedPassword },
+      }),
+      prisma.passwordReset.update({
+        where: { id: resetRecord.id },
+        data: { used: true },
+      }),
+    ])
   );
 
   audit("auth.password_reset.completed", { email: resetRecord.email, ip: getClientIp(req.headers) });
