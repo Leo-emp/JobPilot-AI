@@ -13,11 +13,16 @@ const REQUIRED = [
   "DATABASE_AUTH_TOKEN",
 ] as const;
 
-/* # Warn-only — app works but specific features are disabled */
+/* # Warn-only — app works but specific features are degraded or disabled */
 const RECOMMENDED = [
   "GEMINI_API_KEY",
   "RESEND_API_KEY",
   "CRON_SECRET",
+  "UPSTASH_REDIS_REST_URL",
+  "UPSTASH_REDIS_REST_TOKEN",
+  "TURNSTILE_SECRET_KEY",
+  "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+  "NEXT_PUBLIC_SENTRY_DSN",
 ] as const;
 
 const missing: string[] = [];
