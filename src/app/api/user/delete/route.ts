@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { deleteUserSchema, formatZodError } from "@/lib/validations";
 import { audit, getClientIp } from "@/lib/audit";
 import { safeHandler } from "@/lib/api-handler";
+import { cacheSet } from "@/lib/redis";
 import { dbRetry } from "@/lib/db-retry";
 
 export const DELETE = safeHandler(async (req: NextRequest) => {
@@ -52,6 +53,9 @@ export const DELETE = safeHandler(async (req: NextRequest) => {
       data: { deletedAt: new Date() },
     })
   );
+
+  /* # Invalidate session cache so auth check blocks this user immediately */
+  await cacheSet(`session:active:${session.user.id}`, "0", 300);
 
   audit("auth.account.deleted", {
     userId: session.user.id,

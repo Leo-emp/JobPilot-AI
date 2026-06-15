@@ -40,22 +40,31 @@ export const POST = safeHandler(async (req: NextRequest) => {
   await cacheSet(lockKey, "1", 86400);
 
   try {
-    /* Get all opted-in, active users */
-    const users = await dbRetry(() => prisma.user.findMany({
-      where: {
-        weeklyDigest: true,
-        deletedAt: null,
-      },
-      select: { id: true, email: true },
-    }));
-
     let sent = 0;
     let skipped = 0;
     let failed = 0;
 
-    /* Process in batches to avoid Resend rate limits */
-    for (let i = 0; i < users.length; i += BATCH_SIZE) {
-      const batch = users.slice(i, i + BATCH_SIZE);
+    /* # Paginate users instead of loading all into memory at once */
+    let cursor: string | undefined;
+    let hasMore = true;
+
+    while (hasMore) {
+      const users = await dbRetry(() => prisma.user.findMany({
+        where: {
+          weeklyDigest: true,
+          deletedAt: null,
+        },
+        select: { id: true, email: true },
+        take: BATCH_SIZE,
+        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+        orderBy: { id: "asc" },
+      }));
+
+      if (users.length < BATCH_SIZE) hasMore = false;
+      if (users.length === 0) break;
+      cursor = users[users.length - 1].id;
+
+      const batch = users;
 
       const results = await Promise.allSettled(
         batch.map(async (user) => {
@@ -91,11 +100,12 @@ export const POST = safeHandler(async (req: NextRequest) => {
       }
     }
 
-    console.log(`[weekly-digest] Completed: ${sent} sent, ${skipped} skipped, ${failed} failed out of ${users.length} users`);
+    const total = sent + skipped + failed;
+    console.log(`[weekly-digest] Completed: ${sent} sent, ${skipped} skipped, ${failed} failed out of ${total} users`);
 
     return NextResponse.json({
       success: true,
-      total: users.length,
+      total,
       sent,
       skipped,
       failed,

@@ -188,7 +188,8 @@ export const POST = safeHandler(async (req: NextRequest) => {
     /* Collect full text for history saving, while streaming to client */
     const encoder = new TextEncoder();
     const reader = gemini.stream.getReader();
-    let fullText = "";
+    /* # Use array of chunks instead of string concatenation — O(n) vs O(n²) */
+    const chunks: string[] = [];
 
     const outputStream = new ReadableStream({
       async pull(ctrl) {
@@ -196,7 +197,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
         if (done) {
           /* Save to AI history with model info after stream completes */
           const title = buildHistoryTitle(action, payload);
-          const cleaned = scrubPlaceholders(fullText);
+          const cleaned = scrubPlaceholders(chunks.join(""));
           prisma.aiResult.create({
             data: { userId: session.user.id, action, title, result: cleaned, model: gemini.model },
           }).catch(() => {});
@@ -205,7 +206,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
           return;
         }
         const text = new TextDecoder().decode(value);
-        fullText += text;
+        chunks.push(text);
         ctrl.enqueue(encoder.encode(text));
       },
       cancel() {

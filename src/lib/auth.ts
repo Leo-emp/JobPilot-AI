@@ -18,6 +18,7 @@ import { prisma } from "./prisma";
 import { audit } from "./audit";
 import { isLocked, recordFailure, resetFailures } from "./account-lock";
 import { buildWelcomeEmail } from "./welcome-email";
+import { cacheGet, cacheSet } from "./redis";
 
 /* # Lazy-init so missing env var doesn't crash the module on import */
 let _resend: Resend | null = null;
@@ -236,12 +237,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.isAdmin = token.isAdmin ?? false;
         session.user.twoFactorPending = (token.twoFactorPending as boolean) ?? false;
 
-        /* # Block soft-deleted users — their JWT may still be valid but account is gone */
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { deletedAt: true },
-        });
-        if (!dbUser || dbUser.deletedAt) {
+        /* # Block soft-deleted users — check Redis cache first to avoid DB hit on every request */
+        const userId = token.id as string;
+        const cacheKey = `session:active:${userId}`;
+        const cached = await cacheGet(cacheKey);
+
+        if (cached === null) {
+          /* # Cache miss — check DB and cache result for 5 minutes */
+          const dbUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { deletedAt: true },
+          });
+          const isActive = dbUser && !dbUser.deletedAt;
+          await cacheSet(cacheKey, isActive ? "1" : "0", 300);
+          if (!isActive) session.user.id = "";
+        } else if (cached === "0") {
           session.user.id = "";
         }
       }

@@ -240,7 +240,7 @@ export async function computeCareerInsights(userId: string): Promise<CareerInsig
   const [user, resumes, savedJobs, applications, jobViews] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { topSkills: true } }),
     prisma.resume.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 1, select: { content: true } }),
-    prisma.savedJob.findMany({ where: { userId }, select: { description: true, requiredSkills: true, matchScore: true } }),
+    prisma.savedJob.findMany({ where: { userId }, select: { description: true, requiredSkills: true, matchScore: true }, orderBy: { createdAt: "desc" }, take: 500 }),
     prisma.application.findMany({
       where: { userId },
       select: { status: true, company: true, job: { select: { matchScore: true } } },

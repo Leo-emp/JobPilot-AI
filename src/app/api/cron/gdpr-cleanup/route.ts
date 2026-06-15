@@ -22,8 +22,8 @@ import { cacheGet, cacheSet } from "@/lib/redis";
 /* # 30-day retention period before permanent deletion */
 const RETENTION_DAYS = 30;
 
-/* # Process one user at a time to avoid long transactions */
-const BATCH_SIZE = 10;
+/* # Process users in batches — 50 balances throughput with Stripe API limits */
+const BATCH_SIZE = 50;
 
 export const POST = safeHandler(async (req: NextRequest) => {
   /* Auth: only allow requests with the correct cron secret */
@@ -87,12 +87,20 @@ export const POST = safeHandler(async (req: NextRequest) => {
     }
   }
 
-  console.log(`[gdpr-cleanup] Purged ${purged}, failed ${failed}, remaining expired: ${expiredUsers.length - purged}`);
+  /* # Clean up expired password reset tokens to prevent table bloat */
+  const tokenCleanup = await dbRetry(() =>
+    prisma.passwordReset.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    })
+  );
+
+  console.log(`[gdpr-cleanup] Purged ${purged} users, failed ${failed}, cleaned ${tokenCleanup.count} expired tokens`);
 
   return NextResponse.json({
     success: true,
     purged,
     failed,
+    expiredTokensCleaned: tokenCleanup.count,
     cutoffDate: cutoff.toISOString(),
     timestamp: new Date().toISOString(),
   });
