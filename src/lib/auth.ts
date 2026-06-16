@@ -6,6 +6,31 @@
    2. Google OAuth — sign in with Google account
    3. LinkedIn OAuth — sign in with LinkedIn account
    JWT strategy stores user session in a signed cookie.
+
+   --- AUTH_SECRET ROTATION RUNBOOK ---
+   AUTH_SECRET signs all JWT session cookies. Rotating it
+   invalidates every active session — all users get logged out.
+
+   When to rotate:
+   - Secret may have been exposed (leaked in logs, git, etc.)
+   - Periodic rotation policy (every 6-12 months)
+
+   Steps:
+   1. Pick a LOW-TRAFFIC window (early morning UTC)
+   2. Generate a new secret:
+        node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+   3. Update on Vercel:
+        npx vercel env rm AUTH_SECRET production --yes
+        echo "<new-secret>" | npx vercel env add AUTH_SECRET production
+   4. Redeploy:
+        npx vercel --prod
+   5. Monitor Sentry for auth errors (expect a brief spike
+      as users with old JWTs get redirected to /login)
+   6. Users simply log in again — no data loss, no action needed
+
+   Impact: all active sessions expire immediately. Users see the
+   login page on next visit. No passwords or data are affected.
+   At 1000 users, expect ~50-100 re-logins over the next 24h.
    ============================================================ */
 
 import NextAuth from "next-auth";
