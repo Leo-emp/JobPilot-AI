@@ -10,6 +10,7 @@ export const revalidate = 3600;
 
 export const metadata = {
   title: "Cookie Policy — JobPilot AI",
+  description: "JobPilot AI cookie policy. We only use essential authentication cookies — no tracking, no ads, no third-party analytics cookies.",
 };
 
 export default function CookiesPage() {

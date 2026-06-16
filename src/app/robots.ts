@@ -17,8 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/dashboard/",     /* # Private user dashboard — no indexing */
           "/api/",           /* # API endpoints — not web pages */
-          "/login",          /* # Auth pages — low SEO value */
-          "/signup",
         ],
       },
     ],

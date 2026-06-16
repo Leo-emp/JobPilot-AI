@@ -36,23 +36,33 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/#features" className="text-sm text-text-secondary hover:text-white transition-colors">
-                  Features
+                <Link href="/features" className="text-sm text-text-secondary hover:text-white transition-colors">
+                  All Features
+                </Link>
+              </li>
+              <li>
+                <Link href="/features/resume-builder" className="text-sm text-text-secondary hover:text-white transition-colors">
+                  AI Resume Builder
+                </Link>
+              </li>
+              <li>
+                <Link href="/features/cover-letter-generator" className="text-sm text-text-secondary hover:text-white transition-colors">
+                  Cover Letter Generator
+                </Link>
+              </li>
+              <li>
+                <Link href="/features/interview-prep" className="text-sm text-text-secondary hover:text-white transition-colors">
+                  Interview Prep
+                </Link>
+              </li>
+              <li>
+                <Link href="/features/application-tracker" className="text-sm text-text-secondary hover:text-white transition-colors">
+                  Application Tracker
                 </Link>
               </li>
               <li>
                 <Link href="/#pricing" className="text-sm text-text-secondary hover:text-white transition-colors">
                   Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/#how-it-works" className="text-sm text-text-secondary hover:text-white transition-colors">
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link href="/#testimonials" className="text-sm text-text-secondary hover:text-white transition-colors">
-                  Testimonials
                 </Link>
               </li>
             </ul>

@@ -38,6 +38,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/signup`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
   ];
 
+  /* # SEO feature landing pages — target high-value keywords */
+  const featurePages: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/features`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/features/resume-builder`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/features/cover-letter-generator`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/features/interview-prep`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/features/portfolio-builder`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/features/application-tracker`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+  ];
+
   /* # Blog post pages */
   const blogPages: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
     url: `${baseUrl}/blog/${slug}`,
@@ -63,5 +73,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* # DB error shouldn't break the sitemap — static pages still get indexed */
   }
 
-  return [...staticPages, ...blogPages, ...portfolioPages];
+  return [...staticPages, ...featurePages, ...blogPages, ...portfolioPages];
 }

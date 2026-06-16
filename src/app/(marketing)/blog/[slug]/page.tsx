@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArticleJsonLd } from "@/components/JsonLd";
+import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/JsonLd";
 
 /* ---- Full blog post data with article content ---- */
 const posts: Record<string, {
@@ -539,6 +539,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         slug={slug}
         datePublished={post.dateISO}
       />
+      <BreadcrumbJsonLd items={[
+        { name: "Home", url: "https://jobpilotai.co" },
+        { name: "Blog", url: "https://jobpilotai.co/blog" },
+        { name: post.title, url: `https://jobpilotai.co/blog/${slug}` },
+      ]} />
       {/* ---- Back link ---- */}
       <Link
         href="/blog"

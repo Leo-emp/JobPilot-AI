@@ -190,6 +190,27 @@ export default function HelpPage() {
         Find answers to common questions about JobPilot AI.
       </p>
 
+      {/* ---- FAQPage JSON-LD for Google rich results ---- */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqSections.flatMap((s) =>
+              s.questions.map((item) => ({
+                "@type": "Question",
+                name: item.q,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: item.a,
+                },
+              }))
+            ),
+          }).replace(/<\/script/gi, "<\\/script"),
+        }}
+      />
+
       {/* ---- FAQ Sections ---- */}
       <div className="space-y-8">
         {faqSections.map((section) => (
