@@ -7,11 +7,10 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { formatZodError } from "@/lib/validations";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { dbRetry } from "@/lib/db-retry";
 
 const onboardingSchema = z.object({
@@ -22,11 +21,7 @@ const onboardingSchema = z.object({
   ]),
 });
 
-export const POST = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = authHandler(async (req, session) => {
 
   const body = await req.json();
   const parsed = onboardingSchema.safeParse(body);

@@ -32,7 +32,9 @@ export interface GeminiResult {
   model: string;
 }
 
-async function callGeminiCore(parts: Record<string, unknown>[], temperature = 0.7): Promise<GeminiResult> {
+/* # systemInstruction enables Gemini's automatic prompt caching —
+   static instructions are cached server-side, reducing latency and cost */
+async function callGeminiCore(parts: Record<string, unknown>[], temperature = 0.7, systemInstruction?: string): Promise<GeminiResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -70,6 +72,9 @@ async function callGeminiCore(parts: Record<string, unknown>[], temperature = 0.
                 method: "POST",
                 headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
                 body: JSON.stringify({
+                  ...(systemInstruction && {
+                    systemInstruction: { parts: [{ text: systemInstruction }] },
+                  }),
                   contents: [{ parts }],
                   generationConfig: {
                     temperature,
@@ -139,11 +144,11 @@ async function callGeminiCore(parts: Record<string, unknown>[], temperature = 0.
   );
 }
 
-export async function callGemini(prompt: string, temperature = 0.7): Promise<GeminiResult> {
-  return callGeminiCore([{ text: prompt }], temperature);
+export async function callGemini(prompt: string, temperature = 0.7, systemInstruction?: string): Promise<GeminiResult> {
+  return callGeminiCore([{ text: prompt }], temperature, systemInstruction);
 }
 
-export async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[]): Promise<GeminiResult> {
+export async function callGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[], systemInstruction?: string): Promise<GeminiResult> {
   const parts: Record<string, unknown>[] = [{ text: prompt }];
   for (const img of images) {
     const base64Data = img.data.includes(",") ? img.data.split(",")[1] : img.data;
@@ -154,5 +159,5 @@ export async function callGeminiMultimodal(prompt: string, images: { data: strin
       },
     });
   }
-  return callGeminiCore(parts);
+  return callGeminiCore(parts, 0.7, systemInstruction);
 }

@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
-import { safeHandler } from "@/lib/api-handler";
+import { safeHandler, authHandler } from "@/lib/api-handler";
 import { audit } from "@/lib/audit";
 import { z } from "zod";
 
@@ -27,12 +27,7 @@ const statusSchema = z.object({
 });
 
 /* ---- POST: Submit feedback ---- */
-export const POST = safeHandler(async (request: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const POST = authHandler(async (request, session) => {
   let body: unknown;
   try {
     body = await request.json();

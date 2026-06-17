@@ -7,14 +7,15 @@
    - Clean 500 JSON response (never leaks internals)
 
    Usage:
-     import { safeHandler } from "@/lib/api-handler";
+     import { safeHandler, authHandler } from "@/lib/api-handler";
      export const GET = safeHandler(async (req) => { ... });
-     export const POST = safeHandler(async (req) => { ... }, { timeoutMs: 60_000 });
+     export const POST = authHandler(async (req, session) => { ... });
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { TimeoutError } from "@/lib/with-timeout";
+import { auth } from "@/lib/auth";
 
 /* # Default request timeout — 30 seconds for most routes */
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -25,6 +26,27 @@ interface SafeHandlerOptions {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type RouteHandler = (...args: any[]) => Promise<Response | NextResponse>;
+
+/* # Session type passed to authHandler callbacks */
+export interface AuthSession {
+  user: { id: string; isAdmin?: boolean; email?: string; name?: string };
+}
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+type AuthedRouteHandler = (req: NextRequest, session: AuthSession, ...rest: any[]) => Promise<Response | NextResponse>;
+
+/* # authHandler — safeHandler + automatic session check
+   Rejects with 401 if unauthenticated, passes verified session to handler */
+export function authHandler(handler: AuthedRouteHandler, options?: SafeHandlerOptions): RouteHandler {
+  return safeHandler(async (...args: any[]) => {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const req = args[0] as NextRequest;
+    return handler(req, session as unknown as AuthSession, ...args.slice(1));
+  }, options);
+}
 
 export function safeHandler(handler: RouteHandler, options?: SafeHandlerOptions): RouteHandler {
   const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;

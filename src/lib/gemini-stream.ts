@@ -30,7 +30,7 @@ export interface StreamResult {
   model: string;
 }
 
-export async function streamGemini(prompt: string, temperature = 0.7): Promise<StreamResult> {
+export async function streamGemini(prompt: string, temperature = 0.7, systemInstruction?: string): Promise<StreamResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -53,6 +53,9 @@ export async function streamGemini(prompt: string, temperature = 0.7): Promise<S
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
+            ...(systemInstruction && {
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+            }),
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               temperature,
@@ -159,7 +162,7 @@ export async function streamGemini(prompt: string, temperature = 0.7): Promise<S
   throw new Error(lastError || "AI is temporarily unavailable. Please try again in a moment.");
 }
 
-export async function streamGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[], temperature = 0.7): Promise<StreamResult> {
+export async function streamGeminiMultimodal(prompt: string, images: { data: string; mimeType: string }[], systemInstruction?: string, temperature = 0.7): Promise<StreamResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured.");
@@ -188,6 +191,9 @@ export async function streamGeminiMultimodal(prompt: string, images: { data: str
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
+            ...(systemInstruction && {
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+            }),
             contents: [{ parts }],
             generationConfig: {
               temperature,

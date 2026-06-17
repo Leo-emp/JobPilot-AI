@@ -6,20 +6,16 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 
 /* ---- GET: Retrieve full AI result ---- */
-export const GET = safeHandler(async (
-  _req: NextRequest,
+export const GET = authHandler(async (
+  _req,
+  session,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const { id } = await params;
 
@@ -35,14 +31,11 @@ export const GET = safeHandler(async (
 });
 
 /* ---- DELETE: Remove an AI result ---- */
-export const DELETE = safeHandler(async (
-  _req: NextRequest,
+export const DELETE = authHandler(async (
+  _req,
+  session,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const { id } = await params;
 

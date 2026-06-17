@@ -7,18 +7,13 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { setDefaultResumeSchema, formatZodError } from "@/lib/validations";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { dbRetry } from "@/lib/db-retry";
 
 /* ---- GET: Fetch the user's default resume ---- */
-export const GET = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = authHandler(async (_req, session) => {
 
   const user = await dbRetry(() =>
     prisma.user.findUnique({
@@ -55,11 +50,7 @@ export const GET = safeHandler(async () => {
 });
 
 /* ---- PUT: Set a resume as default ---- */
-export const PUT = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const PUT = authHandler(async (req, session) => {
 
   const body = await req.json();
   const parsed = setDefaultResumeSchema.safeParse(body);
@@ -91,11 +82,7 @@ export const PUT = safeHandler(async (req: NextRequest) => {
 });
 
 /* ---- DELETE: Clear the default resume ---- */
-export const DELETE = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const DELETE = authHandler(async (_req, session) => {
 
   await dbRetry(() =>
     prisma.user.update({

@@ -51,9 +51,9 @@ vi.mock("@/lib/gemini", () => ({
   GeminiResult: {},
 }));
 
-/* Mock prompts — passthrough */
+/* Mock prompts — returns PromptParts object matching new interface */
 vi.mock("@/lib/prompts", () => ({
-  buildPrompt: vi.fn(() => "mocked prompt"),
+  buildPrompt: vi.fn(() => ({ prompt: "mocked prompt", system: undefined })),
 }));
 
 /* Mock audit */

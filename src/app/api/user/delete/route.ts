@@ -8,18 +8,16 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteUserSchema, formatZodError } from "@/lib/validations";
 import { audit, getClientIp } from "@/lib/audit";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { cacheSet } from "@/lib/redis";
 import { dbRetry } from "@/lib/db-retry";
 
-export const DELETE = safeHandler(async (req: NextRequest) => {
-  /* Verify authentication */
-  const session = await auth();
-  if (!session?.user?.id || !session?.user?.email) {
+export const DELETE = authHandler(async (req, session) => {
+  /* # Extra check: email required for deletion confirmation */
+  if (!session.user.email) {
     return NextResponse.json(
       { error: "You must be logged in to delete your account." },
       { status: 401 }

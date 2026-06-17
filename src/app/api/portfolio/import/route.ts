@@ -7,11 +7,10 @@
    ============================================================ */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { PortfolioSection, ExperienceEntry, EducationEntry, SkillGroup, CertificationEntry } from "@/lib/portfolio-types";
 import { autoCategorizeSkills } from "@/lib/skill-categories";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { dbRetry } from "@/lib/db-retry";
 
 /* # Parse "Title | Company · Location | Date" format used by resume builder */
@@ -122,11 +121,7 @@ function parseCertifications(text: string): CertificationEntry[] {
   return entries;
 }
 
-export const POST = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = authHandler(async (_req, session) => {
 
   /* # Find user's most recent resume */
   const resume = await dbRetry(() =>

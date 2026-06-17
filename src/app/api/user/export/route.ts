@@ -11,21 +11,15 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { createRateLimiter } from "@/lib/rate-limit";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 
 /* # 3 exports per hour per user — enough for legitimate use, blocks abuse */
 const exportLimiter = createRateLimiter({ maxRequests: 3, windowMs: 60 * 60_000 });
 
-export const GET = safeHandler(async (_req: NextRequest) => {
-  /* # Authenticate — only logged-in users can export their own data */
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = authHandler(async (_req, session) => {
 
   const limitCheck = await exportLimiter.check(`export:${session.user.id}`);
   if (!limitCheck.allowed) {

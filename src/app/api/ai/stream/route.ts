@@ -168,12 +168,12 @@ export const POST = safeHandler(async (req: NextRequest) => {
     }
 
     /* Build prompt and get stream */
-    const prompt = buildPrompt(action, payload);
+    const { system, prompt } = buildPrompt(action, payload);
     const scoringActions = ["analyze_resume", "linkedin_audit"];
     const temp = scoringActions.includes(action) ? 0 : 0.7;
     const gemini: StreamResult = isMultimodal
-      ? await streamGeminiMultimodal(prompt, payload.images as { data: string; mimeType: string }[])
-      : await streamGemini(prompt, temp);
+      ? await streamGeminiMultimodal(prompt, payload.images as { data: string; mimeType: string }[], system, temp)
+      : await streamGemini(prompt, temp, system);
 
     /* # Usage already incremented atomically above — admin-only increment here */
     if (admin) {

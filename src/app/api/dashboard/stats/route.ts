@@ -8,18 +8,12 @@
    ============================================================ */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { cacheGet, cacheSet } from "@/lib/redis";
 
-export const GET = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = authHandler(async (_req, session) => {
   const userId = session.user.id;
 
   /* # Return cached stats if available (30s TTL) */

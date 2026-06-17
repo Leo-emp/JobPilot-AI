@@ -8,19 +8,14 @@
    ============================================================ */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { computeCareerInsights, refreshUserSkills, extractAndStoreJobSkills } from "@/lib/career-intelligence";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { cacheGet, cacheSet } from "@/lib/redis";
 
 /* # GET — return computed career insights */
-export const GET = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = authHandler(async (_req, session) => {
 
   /* # Cache for 10 minutes — insights don't change rapidly */
   const cacheKey = `career:insights:${session.user.id}`;
@@ -42,11 +37,7 @@ export const GET = safeHandler(async () => {
 });
 
 /* # POST — refresh skills cache and backfill job skills */
-export const POST = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = authHandler(async (_req, session) => {
 
   try {
     /* Re-extract skills from latest resume */

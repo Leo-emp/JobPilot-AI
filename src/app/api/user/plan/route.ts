@@ -10,22 +10,17 @@
    ============================================================ */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { cacheGet, cacheSet } from "@/lib/redis";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 
 /* # Cache key prefix for user plan data */
 const PLAN_CACHE_PREFIX = "plan";
 /* # Cache TTL: 60 seconds — fresh enough for usage display */
 const PLAN_CACHE_TTL = 60;
 
-export const GET = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = authHandler(async (_req, session) => {
 
   /* # Try cache first */
   const cacheKey = `${PLAN_CACHE_PREFIX}:${session.user.id}`;

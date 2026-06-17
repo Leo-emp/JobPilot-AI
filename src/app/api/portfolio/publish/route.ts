@@ -6,22 +6,17 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { publishPortfolioSchema, formatZodError } from "@/lib/validations";
 import type { PortfolioSection } from "@/lib/portfolio-types";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { dbRetry } from "@/lib/db-retry";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 /* # Publish rate limiter — 10 toggles per minute per user (Redis-backed) */
 const publishLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
-export const POST = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = authHandler(async (req, session) => {
 
   const publishCheck = await publishLimiter.check(`portfolio-publish:${session.user.id}`);
   if (!publishCheck.allowed) {

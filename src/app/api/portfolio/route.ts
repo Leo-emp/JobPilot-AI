@@ -10,11 +10,10 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPortfolioSchema, updatePortfolioSchema, validateSections, formatZodError } from "@/lib/validations";
 import { getDefaultSections } from "@/lib/portfolio-types";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler, safeHandler } from "@/lib/api-handler";
 import { dbRetry } from "@/lib/db-retry";
 import { createRateLimiter } from "@/lib/rate-limit";
 
@@ -25,11 +24,7 @@ const writeLimiter = createRateLimiter({ maxRequests: 20, windowMs: 60_000 });
 const MAX_BODY_SIZE = 512_000;
 
 /* ---- GET: Fetch the logged-in user's portfolio ---- */
-export const GET = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = authHandler(async (_req, session) => {
 
   const portfolio = await dbRetry(() =>
     prisma.portfolio.findUnique({
@@ -52,11 +47,7 @@ export const GET = safeHandler(async () => {
 });
 
 /* ---- POST: Create a new portfolio ---- */
-export const POST = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = authHandler(async (req, session) => {
 
   const writeCheck = await writeLimiter.check(`portfolio-write:${session.user.id}`);
   if (!writeCheck.allowed) {
@@ -115,11 +106,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
 });
 
 /* ---- PATCH: Update the user's portfolio ---- */
-export const PATCH = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const PATCH = authHandler(async (req, session) => {
 
   const writeCheck = await writeLimiter.check(`portfolio-write:${session.user.id}`);
   if (!writeCheck.allowed) {
@@ -195,11 +182,7 @@ export const PATCH = safeHandler(async (req: NextRequest) => {
 });
 
 /* ---- DELETE: Delete the user's portfolio ---- */
-export const DELETE = safeHandler(async () => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const DELETE = authHandler(async (_req, session) => {
 
   const writeCheck = await writeLimiter.check(`portfolio-write:${session.user.id}`);
   if (!writeCheck.allowed) {

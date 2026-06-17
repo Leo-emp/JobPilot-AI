@@ -9,19 +9,14 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
-import { safeHandler } from "@/lib/api-handler";
+import { authHandler } from "@/lib/api-handler";
 import { createCoverLetterSchema, formatZodError } from "@/lib/validations";
 import { parsePaginationParams, buildPaginationQuery, paginatedResponse } from "@/lib/pagination";
 
 /* ---- GET: List cover letters for the logged-in user (paginated) ---- */
-export const GET = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = authHandler(async (req, session) => {
 
   const params = parsePaginationParams(req.url);
   const query = buildPaginationQuery({
@@ -38,11 +33,7 @@ export const GET = safeHandler(async (req: NextRequest) => {
 });
 
 /* ---- POST: Save a new cover letter ---- */
-export const POST = safeHandler(async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = authHandler(async (req, session) => {
 
   const body = await req.json();
   const parsed = createCoverLetterSchema.safeParse(body);
