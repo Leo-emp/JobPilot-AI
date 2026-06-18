@@ -1412,7 +1412,7 @@ export default function TemplatesPage() {
       const result = jsonData?.result;
 
       /* Step 3: Parse the JSON response from Gemini */
-      let parsed: Partial<ResumeData>;
+      let parsed: Record<string, unknown>;
       try {
         const cleaned = result.replace(/```json\s*|```\s*/g, "").trim();
         parsed = JSON.parse(cleaned);
@@ -1422,20 +1422,32 @@ export default function TemplatesPage() {
         return;
       }
 
+      /* # Safety: coerce any non-string values (arrays/objects) to strings */
+      const str = (v: unknown): string => {
+        if (typeof v === "string") return v;
+        if (Array.isArray(v)) return v.map(item =>
+          typeof item === "object" && item !== null
+            ? Object.values(item as Record<string, string>).join(" | ")
+            : String(item)
+        ).join("\n");
+        if (typeof v === "object" && v !== null) return Object.values(v as Record<string, string>).join(", ");
+        return v ? String(v) : "";
+      };
+
       /* Step 4: Populate the form with parsed data */
       setFormData({
-        fullName: parsed.fullName || "",
-        jobTitle: parsed.jobTitle || "",
-        email: parsed.email || "",
-        phone: parsed.phone || "",
-        location: parsed.location || "",
-        linkedin: parsed.linkedin || "",
-        summary: parsed.summary || "",
-        skills: parsed.skills || "",
-        experience: parsed.experience || "",
-        education: parsed.education || "",
-        certifications: parsed.certifications || "",
-        languages: parsed.languages || "",
+        fullName: str(parsed.fullName),
+        jobTitle: str(parsed.jobTitle),
+        email: str(parsed.email),
+        phone: str(parsed.phone),
+        location: str(parsed.location),
+        linkedin: str(parsed.linkedin),
+        summary: str(parsed.summary),
+        skills: str(parsed.skills),
+        experience: str(parsed.experience),
+        education: str(parsed.education),
+        certifications: str(parsed.certifications),
+        languages: str(parsed.languages),
       });
 
       setUploadStatus("done");
