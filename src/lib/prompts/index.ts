@@ -19,10 +19,10 @@ export type { PromptParts } from "./shared";
 
 export function buildPrompt(action: string, payload: Record<string, any>): import("./shared").PromptParts {
   switch (action) {
-    case "analyze_resume": return { system: SCORING_SYSTEM, prompt: analyzeResume(payload) };
+    case "analyze_resume": return { prompt: analyzeResume(payload) };
     case "optimize_resume": return { system: RESUME_SYSTEM, prompt: optimizeResume(payload) };
     case "rebuild_resume": return { system: RESUME_SYSTEM, prompt: rebuildResume(payload) };
-    case "match_score": return { system: SCORING_SYSTEM, prompt: matchScore(payload) };
+    case "match_score": return { prompt: matchScore(payload) };
     case "cover_letter": return { prompt: coverLetter(payload) };
     case "interview_questions": return { prompt: interviewQuestions(payload) };
     case "interview_answer": return { prompt: interviewAnswer(payload) };
