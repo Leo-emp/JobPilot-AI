@@ -67,3 +67,13 @@ next-env.d.ts
 
 .vercel
 welcome-email-preview.html
+
+# test artifacts
+test-results/
+
+# AI tooling config
+.claude/
+.superpowers/
+
+# temp DB restore files
+prisma/restore-test.db*

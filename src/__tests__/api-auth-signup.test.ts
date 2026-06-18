@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+/* # Mock auth — prevents next-auth from loading next/server at import time */
+vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
+
 /* Mock prisma before importing the route */
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -21,6 +24,32 @@ vi.mock("resend", () => {
 vi.mock("@/lib/audit", () => ({
   audit: vi.fn(),
   getClientIp: vi.fn(() => "127.0.0.1"),
+}));
+
+/* # Mock Sentry */
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+
+/* # Mock safeHandler — passthrough */
+vi.mock("@/lib/api-handler", () => ({
+  safeHandler: vi.fn((fn: unknown) => fn),
+}));
+
+/* # Mock db-retry — execute callback directly */
+vi.mock("@/lib/db-retry", () => ({
+  dbRetry: vi.fn((fn: () => unknown) => fn()),
+}));
+
+/* # Mock turnstile — skip CAPTCHA in tests */
+vi.mock("@/lib/turnstile", () => ({
+  verifyTurnstile: vi.fn(async () => true),
+}));
+
+/* # Mock welcome email builder */
+vi.mock("@/lib/welcome-email", () => ({
+  buildWelcomeEmail: vi.fn(() => "<html>welcome</html>"),
 }));
 
 /* Mock rate limiter to allow all requests by default (async) */
