@@ -23,6 +23,8 @@ const RECOMMENDED = [
   "TURNSTILE_SECRET_KEY",
   "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
   "NEXT_PUBLIC_SENTRY_DSN",
+  "ADZUNA_APP_ID",
+  "ADZUNA_APP_KEY",
 ] as const;
 
 const missing: string[] = [];

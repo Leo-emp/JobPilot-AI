@@ -14,11 +14,13 @@ const nextConfig: NextConfig = {
   },
   /* Keep unpdf external — native bindings crash Turbopack workers */
   serverExternalPackages: ["unpdf"],
-  /* Server-side env vars — read from .env.local / Vercel env vars only */
-  env: {
-    ADZUNA_APP_ID: process.env.ADZUNA_APP_ID || "",
-    ADZUNA_APP_KEY: process.env.ADZUNA_APP_KEY || "",
-  },
+  /* # ADZUNA keys removed from here — next.config `env` exposes vars to the
+     client bundle. These are server-only secrets accessed via process.env
+     in api/jobs/search/route.ts where they belong. */
+  /* # Never ship source maps to the browser — prevents code/logic exposure */
+  productionBrowserSourceMaps: false,
+  /* # Disable x-powered-by header — hides that this is a Next.js app */
+  poweredByHeader: false,
   /* Cap request body size — prevents memory exhaustion from oversized payloads */
   experimental: {
     serverActions: {

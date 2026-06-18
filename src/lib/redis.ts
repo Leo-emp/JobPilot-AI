@@ -90,6 +90,10 @@ export async function cacheDel(key: string): Promise<void> {
 
 const GLOBAL_DAILY_CAP = parseInt(process.env.GLOBAL_AI_DAILY_CAP || "5000", 10);
 
+/* # Per-instance counter for when Redis is unavailable — resets on deploy/restart */
+let inMemoryDailyCount = 0;
+let inMemoryDailyDate = new Date().toISOString().slice(0, 10);
+
 export async function checkGlobalDailyCap(): Promise<{ allowed: boolean; used: number; cap: number }> {
   const r = getRedis();
 
@@ -105,6 +109,14 @@ export async function checkGlobalDailyCap(): Promise<{ allowed: boolean; used: n
     }
   }
 
-  /* # Fail closed when Redis is unavailable — per-instance counters can't enforce a global cap */
-  return { allowed: false, used: 0, cap: GLOBAL_DAILY_CAP };
+  /* # In-memory fallback with tighter cap — not globally accurate across
+     instances, but prevents total AI blackout when Redis is down */
+  const today = new Date().toISOString().slice(0, 10);
+  if (today !== inMemoryDailyDate) {
+    inMemoryDailyCount = 0;
+    inMemoryDailyDate = today;
+  }
+  inMemoryDailyCount++;
+  const instanceCap = Math.ceil(GLOBAL_DAILY_CAP / 3);
+  return { allowed: inMemoryDailyCount <= instanceCap, used: inMemoryDailyCount, cap: instanceCap };
 }
