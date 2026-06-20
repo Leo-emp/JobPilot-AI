@@ -7,6 +7,7 @@
    ============================================================ */
 
 import { NextRequest } from "next/server";
+import crypto from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
@@ -20,6 +21,10 @@ import { audit } from "@/lib/audit";
 import { safeHandler } from "@/lib/api-handler";
 import { PLAN_LIMITS } from "@/lib/plan-limits";
 import * as Sentry from "@sentry/nextjs";
+
+function hashText(text: string): string {
+  return crypto.createHash("sha256").update(text).digest("hex");
+}
 const MAX_PAYLOAD_SIZE = 50_000;
 const MAX_MULTIMODAL_PAYLOAD_SIZE = 20_000_000;
 
@@ -171,6 +176,48 @@ export const POST = safeHandler(async (req: NextRequest) => {
     const { system, prompt } = buildPrompt(action, payload);
     const scoringActions = ["analyze_resume", "linkedin_audit"];
     const temp = scoringActions.includes(action) ? 0 : 0.7;
+
+    /* # Score cache: same resume text → same score, no Gemini call needed */
+    const cacheableActions = ["analyze_resume"];
+    const resumeText = typeof payload.resume === "string" ? payload.resume : "";
+    const contentHash = cacheableActions.includes(action) && resumeText ? hashText(resumeText) : null;
+
+    if (contentHash) {
+      const cached = await dbRetry(() =>
+        prisma.aiResult.findFirst({
+          where: { userId: session.user.id, action, contentHash },
+          orderBy: { createdAt: "desc" },
+          select: { result: true },
+        })
+      );
+      if (cached?.result) {
+        /* # Refund the usage credit since we're serving from cache */
+        if (!admin) {
+          dbRetry(() =>
+            prisma.user.update({
+              where: { id: session.user.id },
+              data: { aiUsageCount: { decrement: 1 } },
+            })
+          ).then(() => cacheDel(`plan:${session.user.id}`)).catch(() => {});
+        }
+        const encoder = new TextEncoder();
+        const cachedStream = new ReadableStream({
+          start(ctrl) {
+            ctrl.enqueue(encoder.encode(cached.result));
+            ctrl.close();
+          },
+        });
+        return new Response(cachedStream, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Transfer-Encoding": "chunked",
+            "Cache-Control": "no-cache",
+            "X-Content-Type-Options": "nosniff",
+          },
+        });
+      }
+    }
+
     const gemini: StreamResult = isMultimodal
       ? await streamGeminiMultimodal(prompt, payload.images as { data: string; mimeType: string }[], system, temp)
       : await streamGemini(prompt, temp, system);
@@ -195,11 +242,11 @@ export const POST = safeHandler(async (req: NextRequest) => {
       async pull(ctrl) {
         const { done, value } = await reader.read();
         if (done) {
-          /* Save to AI history with model info after stream completes */
+          /* Save to AI history with model info + content hash after stream completes */
           const title = buildHistoryTitle(action, payload);
           const cleaned = scrubPlaceholders(chunks.join(""));
           prisma.aiResult.create({
-            data: { userId: session.user.id, action, title, result: cleaned, model: gemini.model },
+            data: { userId: session.user.id, action, title, result: cleaned, model: gemini.model, contentHash },
           }).catch(() => {});
 
           ctrl.close();

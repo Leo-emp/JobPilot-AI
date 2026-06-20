@@ -8,6 +8,7 @@
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
@@ -21,6 +22,10 @@ import { audit } from "@/lib/audit";
 import { safeHandler } from "@/lib/api-handler";
 import { PLAN_LIMITS } from "@/lib/plan-limits";
 import * as Sentry from "@sentry/nextjs";
+
+function hashText(text: string): string {
+  return crypto.createHash("sha256").update(text).digest("hex");
+}
 
 /* ---- Max input size ---- */
 const MAX_PAYLOAD_SIZE = 50_000;
@@ -212,6 +217,35 @@ export const POST = safeHandler(async (req: NextRequest) => {
     const { system, prompt } = buildPrompt(action, payload);
     const scoringActions = ["analyze_resume", "linkedin_audit"];
     const temp = scoringActions.includes(action) ? 0 : 0.7;
+
+    /* # Score cache: same resume text → same score, no Gemini call needed */
+    const cacheableActions = ["analyze_resume"];
+    const resumeText = typeof payload.resume === "string" ? payload.resume : "";
+    const contentHash = cacheableActions.includes(action) && resumeText ? hashText(resumeText) : null;
+
+    if (contentHash) {
+      const cached = await dbRetry(() =>
+        prisma.aiResult.findFirst({
+          where: { userId: session.user.id, action, contentHash },
+          orderBy: { createdAt: "desc" },
+          select: { result: true, model: true },
+        })
+      );
+      if (cached?.result) {
+        if (!admin) {
+          dbRetry(() =>
+            prisma.user.update({
+              where: { id: session.user.id },
+              data: { aiUsageCount: { decrement: 1 } },
+            })
+          ).then(() => cacheDel(`plan:${session.user.id}`)).catch(() => {});
+        }
+        const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
+        const remaining = admin ? "unlimited" : Math.max(0, limit - user.aiUsageCount);
+        return NextResponse.json({ result: cached.result, remaining, model: cached.model });
+      }
+    }
+
     const gemini: GeminiResult = isMultimodal
       ? await callGeminiMultimodal(prompt, payload.images, system)
       : await callGemini(prompt, temp, system);
@@ -229,10 +263,10 @@ export const POST = safeHandler(async (req: NextRequest) => {
       await cacheDel(`plan:${session.user.id}`);
     }
 
-    /* Save to AI history with model info (non-blocking) */
+    /* Save to AI history with model info + content hash (non-blocking) */
     const title = buildHistoryTitle(action, payload);
     prisma.aiResult.create({
-      data: { userId: session.user.id, action, title, result, model: gemini.model },
+      data: { userId: session.user.id, action, title, result, model: gemini.model, contentHash },
     }).catch(() => {});
 
     /* Calculate remaining calls */

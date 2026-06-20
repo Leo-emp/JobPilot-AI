@@ -86,6 +86,23 @@ export const POST = safeHandler(async (req: NextRequest) => {
   /* The salt is automatically generated and embedded in the hash */
   const hashedPassword = await bcrypt.hash(password, 12);
 
+  /* ---- Capture UTM Attribution Data ---- */
+  // # Read UTM data from request body — frontend passes this from URL params / cookie
+  // # This lets Marketing HQ attribute signups to specific campaigns and channels
+  const utmData = body.utm;
+  let referralSource: string | null = null;
+  if (utmData && typeof utmData === "object") {
+    // # Store all UTM params as a JSON string in the referralSource field
+    // # Keys are normalised to utm_* so the funnel events API can parse them consistently
+    referralSource = JSON.stringify({
+      utm_source: (utmData as Record<string, unknown>).source ?? null,
+      utm_medium: (utmData as Record<string, unknown>).medium ?? null,
+      utm_campaign: (utmData as Record<string, unknown>).campaign ?? null,
+      utm_term: (utmData as Record<string, unknown>).term ?? null,
+      utm_content: (utmData as Record<string, unknown>).content ?? null,
+    });
+  }
+
   /* ---- Create the User in the Database ---- */
   const user = await dbRetry(() =>
     prisma.user.create({
@@ -93,6 +110,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
         name,
         email,
         password: hashedPassword,
+        // # Spread referralSource only when UTM data was provided — avoids overwriting
+        // # any default value and keeps the field null for non-attributed signups
+        ...(referralSource ? { referralSource } : {}),
       },
     })
   );
