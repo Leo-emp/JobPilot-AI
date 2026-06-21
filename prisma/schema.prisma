@@ -308,3 +308,29 @@ model Feedback {
   @@index([status])
   @@index([createdAt])
 }
+
+// # ---- Blog Posts ----
+// # SEO blog articles published via Marketing HQ pipeline
+// # Served at /blog with ISR, content in markdown
+model BlogPost {
+  id              String    @id @default(cuid())
+  slug            String    @unique               // # URL slug e.g. "how-to-beat-ats-2026"
+  title           String                          // # Article title (H1)
+  excerpt         String                          // # Short description for cards (~30 words)
+  content         String                          // # Full markdown article body
+  category        String                          // # "Resume Tips", "Interview Prep", etc.
+  tags            String?                         // # Comma-separated SEO tags
+  metaTitle       String?                         // # SEO <title> override (falls back to title)
+  metaDescription String?                         // # SEO meta description (under 160 chars)
+  coverImageUrl   String?                         // # 1200x630 OG/cover image URL
+  author          String   @default("JobPilot AI Team")
+  readTime        String                          // # "2 min read"
+  status          String   @default("draft")      // # draft, published, archived
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([category])
+}
