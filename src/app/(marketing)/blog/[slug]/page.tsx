@@ -190,9 +190,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             p: ({ children }) => (
               <p className="text-text-secondary leading-relaxed mb-4">{children}</p>
             ),
-            // # Bullet list items — indented with disc markers
+            // # Unordered lists — disc markers with spacing
+            ul: ({ children }) => (
+              <ul className="list-disc ml-6 mb-4">{children}</ul>
+            ),
+            // # Ordered lists — numbered with spacing
+            ol: ({ children }) => (
+              <ol className="list-decimal ml-6 mb-4">{children}</ol>
+            ),
+            // # List items — muted colour for readability
             li: ({ children }) => (
-              <li className="ml-6 text-text-secondary leading-relaxed list-disc">{children}</li>
+              <li className="text-text-secondary leading-relaxed">{children}</li>
             ),
             // # Bold text — white to stand out against muted body copy
             strong: ({ children }) => (
