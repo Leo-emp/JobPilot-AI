@@ -1,13 +1,16 @@
-﻿/* ============================================================
-   BLOG PAGE
+/* ============================================================
+   BLOG PAGE - DB-Driven Blog Listing
    ============================================================
-   Career advice and job search tips blog. Static articles for
-   now — helps with SEO and positions the brand as an authority.
-   Each post is a card linking to its own page (future).
+   Career advice and job search tips blog. Articles created by
+   Marketing HQ's Blog Writer Agent, stored in BlogPost table.
+   ISR: regenerates every hour for fresh content from the DB.
    ============================================================ */
 
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
 
+// # ISR: regenerate this page every hour to pick up newly published posts
 export const revalidate = 3600;
 
 export const metadata = {
@@ -15,68 +18,42 @@ export const metadata = {
   description: "Career tips, resume advice, and job search strategies from the JobPilot AI team.",
 };
 
-/* ---- Blog post data ---- */
-const posts = [
-  {
-    slug: "how-to-beat-ats-systems-2026",
-    title: "How to Beat ATS Systems in 2026",
-    excerpt: "Applicant Tracking Systems reject 75% of resumes before a human ever sees them. Here's exactly how to format your resume to get through every time.",
-    category: "Resume Tips",
-    date: "May 2, 2026",
-    readTime: "5 min read",
-    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  },
-  {
-    slug: "linkedin-profile-mistakes",
-    title: "7 LinkedIn Profile Mistakes That Cost You Interviews",
-    excerpt: "Your LinkedIn profile is your digital first impression. These common mistakes are silently killing your chances of getting contacted by recruiters.",
-    category: "LinkedIn",
-    date: "Apr 28, 2026",
-    readTime: "4 min read",
-    color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  },
-  {
-    slug: "cover-letter-that-gets-read",
-    title: "How to Write a Cover Letter That Actually Gets Read",
-    excerpt: "Most cover letters get skimmed in under 10 seconds. Learn the structure that hooks hiring managers and makes them want to read your resume.",
-    category: "Cover Letters",
-    date: "Apr 21, 2026",
-    readTime: "6 min read",
-    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  },
-  {
-    slug: "career-change-resume-guide",
-    title: "The Complete Guide to Career Change Resumes",
-    excerpt: "Switching industries? Your resume needs a different strategy. Learn how to reframe your experience and highlight transferable skills that matter.",
-    category: "Career Change",
-    date: "Apr 15, 2026",
-    readTime: "7 min read",
-    color: "bg-sky-500/10 text-blue-400 border-sky-500/20",
-  },
-  {
-    slug: "interview-questions-you-will-be-asked",
-    title: "The 20 Interview Questions You Will Be Asked (And How to Answer Them)",
-    excerpt: "From 'Tell me about yourself' to 'Why should we hire you?' — proven answer frameworks for every common interview question in 2026.",
-    category: "Interview Prep",
-    date: "Apr 8, 2026",
-    readTime: "8 min read",
-    color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  },
-  {
-    slug: "remote-job-search-strategy",
-    title: "How to Land a Remote Job: A Step-by-Step Strategy",
-    excerpt: "Remote jobs get 10x more applications than on-site roles. Here's how to stand out, where to look, and what remote-first companies actually want to see.",
-    category: "Job Search",
-    date: "Apr 1, 2026",
-    readTime: "6 min read",
-    color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  },
-];
+// # Category color mapping — each category gets a distinct colour badge
+// # Falls back to indigo if a new category is added without a colour assignment
+const CATEGORY_COLORS: Record<string, string> = {
+  "Resume Tips": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  "Interview Prep": "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  "LinkedIn": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  "Cover Letters": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  "Career Change": "bg-sky-500/10 text-sky-400 border-sky-500/20",
+  "Job Search": "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  "Career Advice": "bg-violet-500/10 text-violet-400 border-violet-500/20",
+  "Networking": "bg-teal-500/10 text-teal-400 border-teal-500/20",
+};
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  // # Fetch all published posts from the database, newest first
+  // # dbRetry wraps with exponential backoff for transient Turso connection errors
+  const posts = await dbRetry(() =>
+    prisma.blogPost.findMany({
+      where: { status: "published" },
+      orderBy: { publishedAt: "desc" },
+      // # Only select the fields we need for the listing cards — saves bandwidth
+      select: {
+        slug: true,
+        title: true,
+        excerpt: true,
+        category: true,
+        readTime: true,
+        coverImageUrl: true,  // # Optional cover image for visual cards
+        publishedAt: true,
+      },
+    })
+  );
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-16 sm:py-24">
-      {/* ---- Page Header ---- */}
+      {/* # Page Header */}
       <div className="mb-16">
         <h1 className="font-[family-name:var(--font-space-grotesk)] text-4xl sm:text-5xl font-bold mb-4 glow-text-strong">
           Blog
@@ -86,42 +63,76 @@ export default function BlogPage() {
         </p>
       </div>
 
-      {/* ---- Blog Post Grid ---- */}
+      {/* # Blog Post Grid — 2 columns on desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {posts.map((post) => (
-          <Link
-            key={post.slug}
-            href={`/blog/${post.slug}`}
-            className="group rounded-2xl border border-card-border bg-space-800/60 p-7 hover:border-brand-indigo/30 hover:bg-space-700/60 transition-all duration-300"
-          >
-            {/* Category + Read time */}
-            <div className="flex items-center gap-3 mb-4">
-              <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${post.color}`}>
-                {post.category}
-              </span>
-              <span className="text-xs text-text-muted">{post.readTime}</span>
-            </div>
+        {posts.map((post) => {
+          // # Look up the colour for this category, default to indigo
+          const color = CATEGORY_COLORS[post.category] || "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
 
-            {/* Title */}
-            <h2 className="text-xl font-bold mb-3 group-hover:text-brand-light transition-colors leading-tight">
-              {post.title}
-            </h2>
+          // # Format the date for display — "May 2, 2026"
+          const dateStr = post.publishedAt
+            ? post.publishedAt.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "";
 
-            {/* Excerpt */}
-            <p className="text-base text-text-secondary leading-relaxed mb-4">
-              {post.excerpt}
-            </p>
+          return (
+            <Link
+              key={post.slug}
+              href={`/blog/${post.slug}`}
+              className="group rounded-2xl border border-card-border bg-space-800/60 overflow-hidden hover:border-brand-indigo/30 hover:bg-space-700/60 transition-all duration-300"
+            >
+              {/* # Cover image — only shown if the post has one (optional field) */}
+              {post.coverImageUrl && (
+                <div className="w-full h-40 overflow-hidden">
+                  <img
+                    src={post.coverImageUrl}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              )}
 
-            {/* Date + Read more */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-muted">{post.date}</span>
-              <span className="text-sm text-brand-light font-medium group-hover:text-white transition-colors">
-                Read more &rarr;
-              </span>
-            </div>
-          </Link>
-        ))}
+              <div className="p-7">
+                {/* # Category badge + read time */}
+                <div className="flex items-center gap-3 mb-4">
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${color}`}>
+                    {post.category}
+                  </span>
+                  <span className="text-xs text-text-muted">{post.readTime}</span>
+                </div>
+
+                {/* # Post title — highlights on hover */}
+                <h2 className="text-xl font-bold mb-3 group-hover:text-brand-light transition-colors leading-tight">
+                  {post.title}
+                </h2>
+
+                {/* # Short excerpt — gives readers a preview of the content */}
+                <p className="text-base text-text-secondary leading-relaxed mb-4">
+                  {post.excerpt}
+                </p>
+
+                {/* # Date + Read more CTA */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-muted">{dateStr}</span>
+                  <span className="text-sm text-brand-light font-medium group-hover:text-white transition-colors">
+                    Read more &rarr;
+                  </span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
+
+      {/* # Empty state — shown when no posts exist yet in the DB */}
+      {posts.length === 0 && (
+        <div className="text-center py-20">
+          <p className="text-text-muted text-lg">No blog posts yet. Check back soon!</p>
+        </div>
+      )}
     </div>
   );
 }

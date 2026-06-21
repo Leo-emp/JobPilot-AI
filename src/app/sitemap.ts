@@ -10,15 +10,8 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-/* # Blog slugs — must match the posts defined in the blog page */
-const BLOG_SLUGS = [
-  "how-to-beat-ats-systems-2026",
-  "linkedin-profile-mistakes",
-  "cover-letter-that-gets-read",
-  "career-change-resume-guide",
-  "interview-questions-you-will-be-asked",
-  "remote-job-search-strategy",
-];
+/* # Blog slugs are now fetched dynamically from the BlogPost table.
+   # The BLOG_SLUGS constant has been removed — see the blogPages block below. */
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://jobpilotai.co";
@@ -48,13 +41,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/features/application-tracker`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
   ];
 
-  /* # Blog post pages */
-  const blogPages: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
-    url: `${baseUrl}/blog/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+  /* # Blog post pages — dynamic from BlogPost table
+     # Fetches all published slugs and their updatedAt timestamps from the DB.
+     # Try/catch ensures a DB error never breaks the sitemap — static pages still get indexed. */
+  let blogPages: MetadataRoute.Sitemap = [];
+  try {
+    const blogPosts = await prisma.blogPost.findMany({
+      where: { status: "published" },
+      select: { slug: true, updatedAt: true },
+    });
+    blogPages = blogPosts.map((p) => ({
+      url: `${baseUrl}/blog/${p.slug}`,
+      lastModified: p.updatedAt,  // # Use actual DB timestamp instead of new Date()
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    /* # DB error shouldn't break sitemap — silently skip blog pages */
+  }
 
   /* # Published portfolio pages — these are user-generated public content */
   let portfolioPages: MetadataRoute.Sitemap = [];
