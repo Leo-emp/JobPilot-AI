@@ -9,6 +9,7 @@
 
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { dbRetry } from "@/lib/db-retry";
 
 /* # Blog slugs are now fetched dynamically from the BlogPost table.
    # The BLOG_SLUGS constant has been removed — see the blogPages block below. */
@@ -46,10 +47,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
      # Try/catch ensures a DB error never breaks the sitemap — static pages still get indexed. */
   let blogPages: MetadataRoute.Sitemap = [];
   try {
-    const blogPosts = await prisma.blogPost.findMany({
+    const blogPosts = await dbRetry(() => prisma.blogPost.findMany({
       where: { status: "published" },
       select: { slug: true, updatedAt: true },
-    });
+    }));
     blogPages = blogPosts.map((p) => ({
       url: `${baseUrl}/blog/${p.slug}`,
       lastModified: p.updatedAt,  // # Use actual DB timestamp instead of new Date()

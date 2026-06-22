@@ -78,8 +78,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       publishedTime: post.publishedAt?.toISOString(),
       url: `https://jobpilotai.co/blog/${slug}`,
-      // # Include cover image in OG tags if available (Twitter card + link previews)
-      ...(post.coverImageUrl
+      // # Include cover image in OG tags only if it's an HTTPS URL (not base64 data URL)
+      // # Social platforms reject data: URLs — once we migrate to Vercel Blob, all images will be HTTPS
+      ...(post.coverImageUrl && !post.coverImageUrl.startsWith("data:")
         ? { images: [{ url: post.coverImageUrl, width: 1200, height: 630 }] }
         : {}),
     },
@@ -87,7 +88,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       card: "summary_large_image",
       title: post.title,
       description,
-      ...(post.coverImageUrl ? { images: [post.coverImageUrl] } : {}),
+      ...(post.coverImageUrl && !post.coverImageUrl.startsWith("data:")
+        ? { images: [post.coverImageUrl] }
+        : {}),
     },
   };
 }
