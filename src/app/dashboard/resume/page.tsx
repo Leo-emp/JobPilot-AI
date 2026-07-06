@@ -57,6 +57,8 @@ export default function ResumePage() {
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  /* Optional free-form instructions for AI content decisions */
+  const [customInstructions, setCustomInstructions] = useState("");
 
   /* Cache analyze result so the same resume always returns the same score */
   const [analyzeCache, setAnalyzeCache] = useState<{ text: string; result: string } | null>(null);
@@ -125,6 +127,9 @@ export default function ResumePage() {
       payload.jobTitle = jobTitle;
       payload.company = company;
       payload.jobDescription = jobDescription;
+      if (customInstructions.trim()) {
+        payload.customInstructions = customInstructions.trim();
+      }
     }
 
     if (action === "analyze_resume" && analyzeCache && analyzeCache.text === resumeText) {
@@ -251,6 +256,14 @@ export default function ResumePage() {
               rows={5}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
             />
+            <textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              rows={3}
+              maxLength={2000}
+              className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+            />
             <button
               onClick={() => callAI("optimize_resume")}
               disabled={!resumeText || loading}
@@ -291,6 +304,14 @@ export default function ResumePage() {
               rows={5}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
             />
+            <textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              rows={3}
+              maxLength={2000}
+              className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+            />
             <button
               onClick={() => callAI("rebuild_resume")}
               disabled={!resumeText || !jobDescription || !jobTitle || loading}
@@ -329,6 +350,14 @@ export default function ResumePage() {
               onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste the job description for your target role..."
               rows={5}
+              className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+            />
+            <textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              rows={3}
+              maxLength={2000}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
             />
             <button
