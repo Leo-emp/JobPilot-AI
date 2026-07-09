@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 
 export default function Navbar() {
@@ -24,7 +25,16 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* ---- Brand Logo + Name ---- */}
-          <Link href="/" className="flex items-center group">
+          <Link href="/" className="flex items-center gap-2 group">
+            {/* JP monogram logo — SVG for crisp rendering at any zoom */}
+            <Image
+              src="/jp-logo.svg"
+              alt="JobPilot AI"
+              width={36}
+              height={36}
+              className=""
+              priority
+            />
             <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
               JobPilot AI
             </span>
