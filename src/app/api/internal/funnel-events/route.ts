@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!secret) {
     // # Misconfigured server — secret not set
     return NextResponse.json(
-      { error: "INTERNAL_API_SECRET not configured" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
