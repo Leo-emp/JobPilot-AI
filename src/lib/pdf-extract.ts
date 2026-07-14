@@ -16,7 +16,12 @@ export async function extractTextFromPdf(file: File): Promise<string> {
   ).toString();
 
   const arrayBuffer = await file.arrayBuffer();
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+  const doc = await pdfjsLib.getDocument({
+    data: new Uint8Array(arrayBuffer),
+    cMapUrl: "/cmaps/",
+    cMapPacked: true,
+    useSystemFonts: true,
+  }).promise;
 
   const pages: string[] = [];
 
