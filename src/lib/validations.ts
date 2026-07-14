@@ -70,6 +70,7 @@ const aiActions = [
   "analyze_resume",
   "optimize_resume",
   "rebuild_resume",
+  "deep_tailor",
   "match_score",
   "cover_letter",
   "interview_questions",

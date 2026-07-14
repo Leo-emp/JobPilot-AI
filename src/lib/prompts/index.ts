@@ -11,7 +11,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { RESUME_SYSTEM, SCORING_SYSTEM } from "./shared";
-import { analyzeResume, optimizeResume, rebuildResume, matchScore, careerPivot, parseResumeFields } from "./resume";
+import { analyzeResume, optimizeResume, rebuildResume, deepTailor, matchScore, careerPivot, parseResumeFields } from "./resume";
 import { coverLetter, interviewQuestions, interviewAnswer, interviewFeedback, mockInterviewRespond, mockInterviewStart, mockInterviewEvaluate, mockInterviewSummary } from "./interview";
 import { linkedinAudit, linkedinRewrite, craftOutreach, linkedinContentStrategy } from "./linkedin";
 
@@ -22,6 +22,7 @@ export function buildPrompt(action: string, payload: Record<string, any>): impor
     case "analyze_resume": return { prompt: analyzeResume(payload) };
     case "optimize_resume": return { system: RESUME_SYSTEM, prompt: optimizeResume(payload) };
     case "rebuild_resume": return { system: RESUME_SYSTEM, prompt: rebuildResume(payload) };
+    case "deep_tailor": return { system: RESUME_SYSTEM, prompt: deepTailor(payload) };
     case "match_score": return { prompt: matchScore(payload) };
     case "cover_letter": return { prompt: coverLetter(payload) };
     case "interview_questions": return { prompt: interviewQuestions(payload) };

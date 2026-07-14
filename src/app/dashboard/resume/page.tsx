@@ -25,6 +25,7 @@ const tabs = [
   { id: "analyze", label: "Analyze Resume" },
   { id: "optimize", label: "Quick Optimize" },
   { id: "rebuild", label: "Full Rebuild" },
+  { id: "deep_tailor", label: "Deep Tailor" },
   { id: "pivot", label: "Career Pivot" },
 ];
 
@@ -318,6 +319,63 @@ export default function ResumePage() {
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Rebuilding..." : "Rebuild Resume"}
+            </button>
+          </div>
+        )}
+
+        {/* ---- Deep Tailor Tab ---- */}
+        {activeTab === "deep_tailor" && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">Deep Tailor</h2>
+            <p className="text-text-secondary text-sm mb-4">
+              Completely rewrite your resume tailored to a specific job description. If you hold a similar role to the one you&apos;re applying for, the AI will expand your experience with relevant responsibilities you likely perform but didn&apos;t include in your resume — without inventing jobs, companies, or unrelated skills.
+            </p>
+            <div className="rounded-xl bg-space-700/50 border border-card-border p-4 mb-6 text-sm text-text-secondary">
+              <p className="font-semibold text-white mb-2">How it works</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Your real job titles, companies, and dates stay unchanged</li>
+                <li>If the job description mentions responsibilities that someone in your role would realistically perform, the AI writes them into your resume</li>
+                <li>Skills or tasks that don&apos;t match your role are never added</li>
+                <li>Best for applying to similar roles where your resume only shows a fraction of what you actually do</li>
+              </ul>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <input
+                type="text"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder="Job Title"
+                className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+              />
+              <input
+                type="text"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                placeholder="Company Name"
+                className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm"
+              />
+            </div>
+            <textarea
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Paste the full job description here..."
+              rows={5}
+              className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+            />
+            <textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              rows={3}
+              maxLength={2000}
+              className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+            />
+            <button
+              onClick={() => callAI("deep_tailor")}
+              disabled={!resumeText || !jobDescription || !jobTitle || loading}
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Tailoring..." : "Deep Tailor Resume"}
             </button>
           </div>
         )}
