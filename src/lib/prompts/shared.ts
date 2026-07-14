@@ -59,8 +59,8 @@ STRUCTURE (follow this EXACT order):
    Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
    If NO work experience, replace with ## Projects or ## Relevant Experience using academic/volunteer/freelance projects.
 5. ## Education
-   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY**
+   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY** (use "Current" for ongoing: **MM/YYYY – Current**)
+6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY** (use "Current" for ongoing: **MM/YYYY – Current**)
 7. ## Languages (each with proficiency level)
 
 Return the COMPLETE resume in clean markdown format.`;
