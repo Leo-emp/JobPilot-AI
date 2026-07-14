@@ -62,7 +62,7 @@ ${hasJD ? `JD-SPECIFIC RULES:
 
 Resume:
 ${payload.resume}
-${hasJD ? `\nJob Description:\n${payload.jobDescription}` : ""}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER INSTRUCTIONS (CONTENT ONLY):\nApply these to CONTENT decisions only — what to emphasize, reword, remove, or add. Do NOT change the resume structure, section order, formatting rules, or output format. The RESUME_RULES above always take priority for structure and formatting.\n\n${payload.customInstructions}` : ""}`;
+${hasJD ? `\nJob Description:\n${payload.jobDescription}` : ""}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER CUSTOMIZATION INSTRUCTIONS (FOLLOW EXACTLY):\nApply these instructions precisely. Do NOT change the resume structure or sections UNLESS the user explicitly asks to:\n- If the user explicitly says to REMOVE a job, section, or entry — remove it completely\n- If the user explicitly says to ADD a new section or entry — add it using the same RESUME_RULES formatting\n- If the user does NOT mention structure changes, keep the default structure intact\n- All other instructions apply to content only — what to emphasize, reword, or adjust\n\n${payload.customInstructions}` : ""}`;
 }
 
 export function rebuildResume(payload: Record<string, any>): string {
@@ -85,7 +85,7 @@ ${payload.resume}
 Target Job:
 Title: ${payload.jobTitle}
 Company: ${payload.company}
-Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER INSTRUCTIONS (CONTENT ONLY):\nApply these to CONTENT decisions only — what to emphasize, reword, remove, or add. Do NOT change the resume structure, section order, formatting rules, or output format. The RESUME_RULES above always take priority for structure and formatting.\n\n${payload.customInstructions}` : ""}`;
+Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER CUSTOMIZATION INSTRUCTIONS (FOLLOW EXACTLY):\nApply these instructions precisely. Do NOT change the resume structure or sections UNLESS the user explicitly asks to:\n- If the user explicitly says to REMOVE a job, section, or entry — remove it completely\n- If the user explicitly says to ADD a new section or entry — add it using the same RESUME_RULES formatting\n- If the user does NOT mention structure changes, keep the default structure intact\n- All other instructions apply to content only — what to emphasize, reword, or adjust\n\n${payload.customInstructions}` : ""}`;
 }
 
 export function deepTailor(payload: Record<string, any>): string {
@@ -110,7 +110,7 @@ ${payload.resume}
 Target Job:
 Title: ${payload.jobTitle}
 Company: ${payload.company}
-Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER INSTRUCTIONS (CONTENT ONLY):\nApply these to CONTENT decisions only — what to emphasize, reword, remove, or add. Do NOT change the resume structure, section order, formatting rules, or output format. The RESUME_RULES above always take priority for structure and formatting.\n\n${payload.customInstructions}` : ""}`;
+Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER CUSTOMIZATION INSTRUCTIONS (FOLLOW EXACTLY):\nApply these instructions precisely. Do NOT change the resume structure or sections UNLESS the user explicitly asks to:\n- If the user explicitly says to REMOVE a job, section, or entry — remove it completely\n- If the user explicitly says to ADD a new section or entry — add it using the same RESUME_RULES formatting\n- If the user does NOT mention structure changes, keep the default structure intact\n- All other instructions apply to content only — what to emphasize, reword, or adjust\n\n${payload.customInstructions}` : ""}`;
 }
 
 export function matchScore(payload: Record<string, any>): string {
@@ -169,7 +169,7 @@ ${payload.resume}
 
 Target Role: ${payload.jobTitle}
 Target Industry: ${payload.company}
-Target Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER INSTRUCTIONS (CONTENT ONLY):\nApply these to CONTENT decisions only — what to emphasize, reword, remove, or add. Do NOT change the resume structure, section order, formatting rules, or output format. The RESUME_RULES above always take priority for structure and formatting.\n\n${payload.customInstructions}` : ""}`;
+Target Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (from user's job search data — prioritize these):\n${payload.careerContext}` : ""}${payload.customInstructions ? `\n\nUSER CUSTOMIZATION INSTRUCTIONS (FOLLOW EXACTLY):\nApply these instructions precisely. Do NOT change the resume structure or sections UNLESS the user explicitly asks to:\n- If the user explicitly says to REMOVE a job, section, or entry — remove it completely\n- If the user explicitly says to ADD a new section or entry — add it using the same RESUME_RULES formatting\n- If the user does NOT mention structure changes, keep the default structure intact\n- All other instructions apply to content only — what to emphasize, reword, or adjust\n\n${payload.customInstructions}` : ""}`;
 }
 
 export function parseResumeFields(payload: Record<string, any>): string {

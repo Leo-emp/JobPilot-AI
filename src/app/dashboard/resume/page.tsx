@@ -260,7 +260,7 @@ export default function ResumePage() {
             <textarea
               value={customInstructions}
               onChange={(e) => setCustomInstructions(e.target.value)}
-              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              placeholder="Optional: Tell the AI exactly what to customize (e.g. remove H&M Sales Advisor job, add an AI Projects section, emphasize leadership, add more metrics...)"
               rows={3}
               maxLength={2000}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
@@ -333,7 +333,7 @@ export default function ResumePage() {
             <textarea
               value={customInstructions}
               onChange={(e) => setCustomInstructions(e.target.value)}
-              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              placeholder="Optional: Tell the AI exactly what to customize (e.g. remove H&M Sales Advisor job, add an AI Projects section, emphasize leadership, add more metrics...)"
               rows={3}
               maxLength={2000}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
@@ -381,7 +381,7 @@ export default function ResumePage() {
             <textarea
               value={customInstructions}
               onChange={(e) => setCustomInstructions(e.target.value)}
-              placeholder="Optional: Tell the AI what to change (e.g. emphasize leadership experience, remove internship section, add more quantified metrics...)"
+              placeholder="Optional: Tell the AI exactly what to customize (e.g. remove H&M Sales Advisor job, add an AI Projects section, emphasize leadership, add more metrics...)"
               rows={3}
               maxLength={2000}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
