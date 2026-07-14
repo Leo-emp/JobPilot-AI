@@ -1,9 +1,10 @@
 /* ============================================================
    PDF TEXT EXTRACTION API — Gemini Vision Fallback
    ============================================================
-   POST /api/pdf-extract — receives a base64 PDF, sends it to
-   Gemini vision to extract text when client-side pdfjs fails
-   (image-based PDFs, outlined fonts, scanned documents).
+   POST /api/pdf-extract — receives JPEG images of PDF pages
+   (rendered client-side by pdfjs), sends them to Gemini vision
+   to extract text. Used when pdfjs cannot extract text from
+   image-based PDFs, outlined fonts, or scanned documents.
    Protected: requires auth session.
    ============================================================ */
 
@@ -11,24 +12,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { authHandler } from "@/lib/api-handler";
 import { callGeminiMultimodal } from "@/lib/gemini";
 
-/* # Max PDF size: 15MB base64 (~11MB raw) */
-const MAX_BASE64_LENGTH = 20_000_000;
-
 export const POST = authHandler(async (req: NextRequest) => {
   const body = await req.json();
-  const { pdfBase64, mimeType } = body;
+  const { images } = body;
 
-  if (!pdfBase64 || typeof pdfBase64 !== "string") {
-    return NextResponse.json({ error: "Missing pdfBase64" }, { status: 400 });
+  if (!Array.isArray(images) || images.length === 0) {
+    return NextResponse.json({ error: "Missing images" }, { status: 400 });
   }
 
-  if (pdfBase64.length > MAX_BASE64_LENGTH) {
-    return NextResponse.json({ error: "File too large" }, { status: 413 });
+  if (images.length > 10) {
+    return NextResponse.json({ error: "Too many pages" }, { status: 400 });
   }
 
   const result = await callGeminiMultimodal(
     `Extract ALL text from this resume document. Preserve the structure: sections, headings, bullet points, dates, contact info. Return ONLY the extracted text — no commentary, no formatting suggestions, no markdown formatting. Just the raw text content exactly as it appears.`,
-    [{ data: pdfBase64, mimeType: mimeType || "application/pdf" }],
+    images,
   );
 
   return NextResponse.json({ text: result.text });

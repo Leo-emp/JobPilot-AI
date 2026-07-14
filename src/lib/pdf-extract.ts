@@ -10,23 +10,34 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/* # Convert a File to a base64 string for the API fallback */
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+/* # Render PDF pages to JPEG images using pdfjs canvas rendering.
+   Converts each page to a compressed JPEG (~200-500KB) instead of
+   sending the raw PDF (~10MB+) to avoid Vercel's 4.5MB body limit. */
+async function renderPdfToImages(doc: any): Promise<string[]> {
+  const images: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d")!;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    images.push(canvas.toDataURL("image/jpeg", 0.85));
+    canvas.remove();
+  }
+  return images;
 }
 
-/* # Gemini vision fallback — sends the PDF as an image for OCR */
-async function extractWithGemini(file: File): Promise<string> {
-  const base64 = await fileToBase64(file);
+/* # Gemini vision fallback — renders PDF to images, sends to Gemini */
+async function extractWithGemini(doc: any): Promise<string> {
+  const images = await renderPdfToImages(doc);
   const res = await fetch("/api/pdf-extract", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pdfBase64: base64, mimeType: file.type || "application/pdf" }),
+    body: JSON.stringify({
+      images: images.map((img) => ({ data: img, mimeType: "image/jpeg" })),
+    }),
   });
   if (!res.ok) throw new Error("Vision extraction failed");
   const data = await res.json();
@@ -84,5 +95,5 @@ export async function extractTextFromPdf(file: File): Promise<string> {
   }
 
   /* # Step 3: Fallback to Gemini vision for image-based/outlined PDFs */
-  return extractWithGemini(file);
+  return extractWithGemini(doc);
 }
