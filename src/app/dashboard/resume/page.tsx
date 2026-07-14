@@ -302,7 +302,7 @@ export default function ResumePage() {
               >
                 <p className="font-semibold text-white text-sm mb-1">Deep Tailor</p>
                 <p className="text-text-secondary text-xs">
-                  If you hold a similar role to the one you&apos;re applying for, the AI expands your experience with responsibilities you likely perform but didn&apos;t include — without inventing jobs, companies, or unrelated skills.
+                  Fully tailors your resume to the job description. If you hold a similar role, the AI adds responsibilities from the JD that you would normally do in that role — so your resume reads like it was written for this exact job. No fake jobs, companies, or unrelated skills.
                 </p>
               </button>
             </div>
