@@ -18,6 +18,7 @@ import { getStripe } from "@/lib/stripe";
 import { audit } from "@/lib/audit";
 import { cacheDel } from "@/lib/redis";
 import { buildCancellationEmail } from "@/lib/cancellation-email";
+import { buildUpgradeEmail } from "@/lib/upgrade-email";
 import Stripe from "stripe";
 import { safeHandler } from "@/lib/api-handler";
 
@@ -88,6 +89,19 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
         audit("payment.upgrade", { userId, plan, detail: `subscription:${subscriptionId}` });
         await cacheDel(`plan:${userId}`);
+
+        /* Send upgrade confirmation email */
+        const upgradedUser = await dbRetry(() =>
+          prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } })
+        );
+        if (upgradedUser?.email) {
+          getResend().emails.send({
+            from: "JobPilot AI <noreply@jobpilotai.co>",
+            to: upgradedUser.email,
+            subject: "You're now on Pro — unlimited AI requests are live",
+            html: buildUpgradeEmail(upgradedUser.name || "there"),
+          }).catch((err) => { console.error(`Upgrade email failed for ${upgradedUser.email}:`, err); })
+        }
       }
       break;
     }

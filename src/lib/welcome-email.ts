@@ -2,7 +2,7 @@
    WELCOME EMAIL - Premium HTML template for new user onboarding
    ============================================================ */
 
-const LOGO_BASE64 = "PHN2ZyB2aWV3Qm94PSIwIDAgNjQgMTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJ0bCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNDOEQ0REUiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQThCOEM4Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJ0ciIgeDE9IjEwMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM0QTcyOTgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMzA1ODc4Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJibCIgeDE9IjAlIiB5MT0iMCUiIHgyPSI1MCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzdBOUFCMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM1QzdFOTYiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyIiB4MT0iMTAwJSIgeTE9IjAlIiB4Mj0iNTAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyNjRBNjgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTUyRTQ1Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cG9seWdvbiBwb2ludHM9IjMyLDAgNCw1NiAzMiw1MCIgZmlsbD0idXJsKCN0bCkiLz4KICA8cG9seWdvbiBwb2ludHM9IjMyLDAgNjAsNTYgMzIsNTAiIGZpbGw9InVybCgjdHIpIi8+CiAgPHBvbHlnb24gcG9pbnRzPSI0LDU2IDMyLDUwIDMyLDc0IDIwLDk4IiBmaWxsPSJ1cmwoI2JsKSIvPgogIDxwb2x5Z29uIHBvaW50cz0iNjAsNTYgMzIsNTAgMzIsNzQgNDQsOTgiIGZpbGw9InVybCgjYnIpIi8+Cjwvc3ZnPgo=";
+const LOGO_URL = "https://jobpilotai.co/logo.svg";
 
 const FONT = `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 const FONT_DISPLAY = `'Space Grotesk', 'Segoe UI', Roboto, sans-serif`;
@@ -26,7 +26,7 @@ export function buildWelcomeEmail(firstName: string): string {
   <table role="presentation" cellspacing="0" cellpadding="0" border="0">
   <tr>
     <td valign="middle" style="padding-right: 10px;">
-      <img src="data:image/svg+xml;base64,${LOGO_BASE64}" alt="JobPilot AI" width="24" style="display: block; width: 24px; height: auto;" />
+      <img src="${LOGO_URL}" alt="JobPilot AI" width="28" style="display: block; width: 28px; height: auto;" />
     </td>
     <td valign="middle">
       <span style="font-family: ${FONT_DISPLAY}; font-size: 15px; font-weight: 700; color: #e4e4e7; letter-spacing: -0.3px;">JobPilot AI</span>
