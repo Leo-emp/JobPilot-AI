@@ -59,7 +59,7 @@ export function buildCancellationEmail(firstName: string): string {
   <p style="font-family: ${FONT}; font-size: 15px; font-weight: 500; color: #c4c4d8; margin: 0 0 22px 0; line-height: 1.5; letter-spacing: -0.1px;">What changes on the free plan:</p>
 </td></tr>
 
-<tr><td style="padding: 0 52px 0 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #6366f1;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">AI requests go back to 10 per month (from unlimited)</p></td></tr></table></td></tr>
+<tr><td style="padding: 0 52px 0 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #6366f1;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">AI requests go back to 20 per month (from 1,000)</p></td></tr></table></td></tr>
 
 <tr><td align="center" style="padding: 40px 52px 0 52px;">
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">

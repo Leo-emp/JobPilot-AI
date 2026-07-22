@@ -46,7 +46,7 @@ export function buildUpgradeEmail(firstName: string): string {
 <tr><td style="padding: 52px 52px 0 52px;">
   <p style="font-family: ${FONT}; font-size: 15px; color: #8b8ba0; margin: 0 0 24px 0; line-height: 1.6;">Hey ${firstName},</p>
   <h1 style="font-family: ${FONT_DISPLAY}; font-size: 30px; font-weight: 700; color: #ffffff; margin: 0 0 10px 0; line-height: 1.15; letter-spacing: -0.8px;">You're now on Pro.</h1>
-  <p style="font-family: ${FONT}; font-size: 16px; font-weight: 500; color: #c4c4d8; margin: 0; line-height: 1.5; letter-spacing: -0.2px;">Your usage limits have been lifted &mdash; you now have unlimited AI requests.</p>
+  <p style="font-family: ${FONT}; font-size: 16px; font-weight: 500; color: #c4c4d8; margin: 0; line-height: 1.5; letter-spacing: -0.2px;">Your usage limits have been lifted &mdash; you now have 1,000 AI requests per month.</p>
 </td></tr>
 
 <tr><td style="padding: 36px 52px;"><div style="height: 1px; background: linear-gradient(90deg, #1e1e2e, #2a2a3d, #1e1e2e);"></div></td></tr>
@@ -55,11 +55,11 @@ export function buildUpgradeEmail(firstName: string): string {
   <p style="font-family: ${FONT}; font-size: 15px; font-weight: 500; color: #c4c4d8; margin: 0 0 22px 0; line-height: 1.5; letter-spacing: -0.1px;">What changes with Pro:</p>
 </td></tr>
 
-<tr><td style="padding: 0 52px 16px 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #6366f1;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">Unlimited AI requests &mdash; no more monthly cap</p></td></tr></table></td></tr>
+<tr><td style="padding: 0 52px 16px 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #6366f1;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">1,000 AI requests per month &mdash; up from 20</p></td></tr></table></td></tr>
 
 <tr><td style="padding: 0 52px 16px 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #818cf8;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">Tailor as many resumes and cover letters as you need</p></td></tr></table></td></tr>
 
-<tr><td style="padding: 0 52px 0 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #a78bfa;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">Run unlimited mock interviews and career insights</p></td></tr></table></td></tr>
+<tr><td style="padding: 0 52px 0 52px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="8" valign="top" style="padding-top: 8px;"><div style="width: 6px; height: 6px; border-radius: 6px; background-color: #a78bfa;"></div></td><td style="padding-left: 16px;"><p style="font-family: ${FONT}; font-size: 14.5px; font-weight: 500; color: #d4d4dc; margin: 0; line-height: 1.5; letter-spacing: -0.1px;">Run as many mock interviews and career insights as you need</p></td></tr></table></td></tr>
 
 <tr><td align="center" style="padding: 40px 52px 0 52px;">
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
@@ -72,7 +72,7 @@ export function buildUpgradeEmail(firstName: string): string {
 <tr><td style="padding: 40px 52px 0 52px;"><div style="height: 1px; background: linear-gradient(90deg, #1e1e2e, #2a2a3d, #1e1e2e);"></div></td></tr>
 
 <tr><td style="padding: 36px 52px 52px 52px;">
-  <p style="font-family: ${FONT}; font-size: 14.5px; color: #8b8ba0; margin: 0 0 20px 0; line-height: 1.8; letter-spacing: -0.1px;">No more counting requests. Apply to every role that fits, prep for every interview, and let the AI do the heavy lifting.</p>
+  <p style="font-family: ${FONT}; font-size: 14.5px; color: #8b8ba0; margin: 0 0 20px 0; line-height: 1.8; letter-spacing: -0.1px;">With 1,000 requests a month, you can apply to every role that fits, prep for every interview, and let the AI do the heavy lifting.</p>
   <p style="font-family: ${FONT}; font-size: 15px; font-weight: 500; color: #c4c4d8; margin: 0 0 8px 0; line-height: 1.5; letter-spacing: -0.1px;">Make every application count.</p>
   <p style="font-family: ${FONT_DISPLAY}; font-size: 14px; color: #6366f1; margin: 0; font-weight: 600; letter-spacing: -0.2px;">&mdash; The JobPilot AI Team</p>
 </td></tr>

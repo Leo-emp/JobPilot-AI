@@ -11,6 +11,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 /* ---- Feature rows shown inside each card ---- */
@@ -58,6 +59,43 @@ const cardFade = {
 
 export default function Pricing() {
   const [annual, setAnnual] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const router = useRouter();
+
+  /* # Handle Pro upgrade — check session first, then checkout or login */
+  const handleProUpgrade = async () => {
+    setUpgradeLoading(true);
+    const interval = annual ? "year" : "month";
+    try {
+      /* # Check if user is logged in via next-auth session endpoint */
+      const sessionRes = await fetch("/api/auth/session");
+      const session = await sessionRes.json().catch(() => ({}));
+
+      if (!session?.user) {
+        /* # Not logged in — send to login, auto-checkout after login */
+        const callback = `/dashboard/settings?upgrade=pro&interval=${interval}&tab=billing`;
+        router.push(`/login?callbackUrl=${encodeURIComponent(callback)}`);
+        return;
+      }
+
+      /* # Logged in — go straight to Stripe checkout */
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: "pro", interval }),
+      });
+      const data = await res.json().catch(() => null);
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      /* # Fallback — send to login */
+      const callback = `/dashboard/settings?upgrade=pro&interval=${interval}&tab=billing`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(callback)}`);
+    } finally {
+      setUpgradeLoading(false);
+    }
+  };
 
   return (
     <section id="pricing" className="relative z-10 py-24 sm:py-32 px-4">
@@ -184,9 +222,13 @@ export default function Pricing() {
               ))}
             </div>
 
-            <Link href="/signup?plan=pro" className="btn-primary w-full text-center text-base py-3">
-              Upgrade to Pro
-            </Link>
+            <button
+              onClick={handleProUpgrade}
+              disabled={upgradeLoading}
+              className="btn-primary w-full text-center text-base py-3 disabled:opacity-50"
+            >
+              {upgradeLoading ? "Loading..." : "Upgrade to Pro"}
+            </button>
           </motion.div>
         </motion.div>
 

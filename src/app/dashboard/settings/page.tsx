@@ -103,8 +103,21 @@ export default function SettingsPage() {
     } else if (searchParams.get("cancelled") === "true") {
       setMessage("Checkout was cancelled. No changes were made.");
       setActiveTab("billing");
+    } else if (searchParams.get("tab") === "billing") {
+      setActiveTab("billing");
     }
   }
+
+  /* # Auto-trigger checkout if arriving from signup with upgrade=pro */
+  const [autoUpgradeTriggered, setAutoUpgradeTriggered] = useState(false);
+  useEffect(() => {
+    if (autoUpgradeTriggered) return;
+    if (searchParams.get("upgrade") !== "pro") return;
+    setAutoUpgradeTriggered(true);
+    const interval = (searchParams.get("interval") === "year" ? "year" : "month") as "month" | "year";
+    handleUpgrade("pro", interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, autoUpgradeTriggered]);
 
   /* # Fetch plan data — .then() callback avoids synchronous setState in effect */
   useEffect(() => {
@@ -1033,7 +1046,7 @@ export default function SettingsPage() {
                       disabled={upgradeLoading}
                       className="btn-primary text-sm disabled:opacity-50"
                     >
-                      {upgradeLoading ? "Loading..." : billingInterval === "year" ? "Upgrade — £8/mo" : "Upgrade — £10/mo"}
+                      {upgradeLoading ? "Loading..." : billingInterval === "year" ? "Upgrade — £199/yr" : "Upgrade — £29/mo"}
                     </button>
                   </div>
                 </div>

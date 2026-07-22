@@ -11,7 +11,7 @@
 
 import { useState, useCallback } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Turnstile from "@/components/Turnstile";
 
@@ -27,7 +27,20 @@ export default function SignupPage() {
   const [oauthLoading, setOauthLoading] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const handleTurnstile = useCallback((token: string) => setTurnstileToken(token), []);
+
+  /* # Check if user came from pricing — redirect to checkout after signup */
+  const planIntent = searchParams.get("plan");
+  const intervalIntent = searchParams.get("interval") || "month";
+
+  /* # After signup, redirect to settings with upgrade params if plan=pro */
+  const getPostSignupRedirect = () => {
+    if (planIntent === "pro") {
+      return `/dashboard/settings?upgrade=pro&interval=${intervalIntent}&tab=billing`;
+    }
+    return "/dashboard";
+  };
 
   /* Handle email/password form submission */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +88,7 @@ export default function SignupPage() {
       if (result?.error) {
         router.push("/login");
       } else {
-        router.push("/dashboard");
+        router.push(getPostSignupRedirect());
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -87,7 +100,8 @@ export default function SignupPage() {
   /* Handle OAuth sign up (Google or LinkedIn) */
   const handleOAuth = (provider: string) => {
     setOauthLoading(provider);
-    signIn(provider, { callbackUrl: "/dashboard" });
+    /* # If user came from pricing with plan=pro, send them to billing after OAuth */
+    signIn(provider, { callbackUrl: getPostSignupRedirect() });
   };
 
   return (

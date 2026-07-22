@@ -98,7 +98,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
           getResend().emails.send({
             from: "JobPilot AI <noreply@jobpilotai.co>",
             to: upgradedUser.email,
-            subject: "You're now on Pro — unlimited AI requests are live",
+            subject: "You're now on Pro — 1,000 AI requests per month",
             html: buildUpgradeEmail(upgradedUser.name || "there"),
           }).catch((err) => { console.error(`Upgrade email failed for ${upgradedUser.email}:`, err); })
         }
