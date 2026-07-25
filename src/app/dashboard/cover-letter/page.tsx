@@ -33,6 +33,8 @@ export default function CoverLetterPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  /* Custom instructions for the AI (tone, rules, specific content) */
+  const [customInstructions, setCustomInstructions] = useState("");
   /* PDF upload state */
   const [fileName, setFileName] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -137,6 +139,7 @@ export default function CoverLetterPage() {
       jobTitle,
       company,
       jobDescription,
+      ...(customInstructions.trim() && { customInstructions: customInstructions.trim() }),
     });
 
     /* Save the generated cover letter to the database */
@@ -328,6 +331,36 @@ export default function CoverLetterPage() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Custom instructions (optional) */}
+          <div className="glass-card p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold">Custom Instructions</h2>
+              <span className="text-xs text-text-muted">Optional</span>
+            </div>
+            <p className="text-xs text-text-secondary mb-3">
+              Set the tone, highlight specific skills, or add rules the AI should follow.
+            </p>
+            <textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder={'e.g. "Use a confident but warm tone. Emphasize my leadership experience. Keep it concise — no fluff. Mention my relocation flexibility."'}
+              rows={3}
+              maxLength={1000}
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
+            />
+            {customInstructions.length > 0 && (
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-text-muted">{customInstructions.length}/1,000</span>
+                <button
+                  onClick={() => setCustomInstructions("")}
+                  className="text-xs text-text-muted hover:text-white transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Generate button */}

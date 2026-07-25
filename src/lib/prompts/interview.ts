@@ -87,7 +87,7 @@ ${payload.resume}
 
 Job Title: ${payload.jobTitle}
 Company: ${payload.company}
-Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (emphasize these matching skills):\n${payload.careerContext}` : ""}`;
+Job Description: ${payload.jobDescription}${payload.customInstructions ? `\n\nUSER'S CUSTOM INSTRUCTIONS (follow these as additional rules — they override default tone/style when specified):\n${payload.customInstructions}` : ""}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (emphasize these matching skills):\n${payload.careerContext}` : ""}`;
 }
 
 export function interviewQuestions(payload: Record<string, any>): string {
