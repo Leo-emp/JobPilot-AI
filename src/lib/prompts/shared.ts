@@ -51,7 +51,7 @@ STRUCTURE (follow this EXACT order):
    Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username
 2. ## Professional Summary (3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns. NEVER start with "I am". START with a strong adjective + their actual role title. Use "I" sparingly mid-sentence only. NEVER claim they already hold the target title.)
 3. ## Core Skills
-   Bullet points grouped by category:
+   EVERY category MUST be a markdown list item starting with "- " on its own line. NEVER output skills as plain text without bullet points.
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has — never invent. Each category MUST fit on a single line.)
 4. ## Work Experience (if the resume has work experience)
