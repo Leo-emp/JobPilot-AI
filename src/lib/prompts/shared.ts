@@ -41,7 +41,7 @@ FORMATTING RULES:
 - NEVER bold skill category names in Core Skills — write them as plain text like "Category Name: Skill, Skill" with NO ** markers
 - Use bold for job title lines under Work Experience: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
 - For Education entries, keep title as plain text but bold ONLY the dates: Degree, Institution, Location — **MM/YYYY – MM/YYYY**
-- For Certifications entries, keep title as plain text but bold ONLY the dates: Certification Name, Institution — **MM/YYYY – MM/YYYY**
+- For Certifications entries: if the original resume includes dates, format as: Certification Name, Institution — **MM/YYYY – MM/YYYY**. If the original resume has NO dates for a certification, output it as plain text WITHOUT any date
 - ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names. Use "Current" for ongoing roles.
 - Do NOT use ### headings — use **bold** inline text only where specified above
 - LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
@@ -56,11 +56,12 @@ STRUCTURE (follow this EXACT order):
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has — never invent. Each category MUST fit on a single line.)
 4. ## Work Experience (if the resume has work experience)
    For EACH role: **Job Title, Company, Location — MM/YYYY – MM/YYYY**
-   Exactly 4 bullet points per role — only the highest-impact achievements. ALL bullet text must be plain text.
+   Then EXACTLY 4 bullet points per role. Every bullet MUST be a markdown list item starting with "- " on its own line. NEVER output work experience as plain paragraphs or numbered lists — ALWAYS use bullet points. ALL bullet text must be plain text.
    If NO work experience, replace with ## Projects or ## Relevant Experience using academic/volunteer/freelance projects.
 5. ## Education
    For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY** (use "Current" for ongoing: **MM/YYYY – Current**)
 6. ## Certifications and Trainings (if applicable): Certification Name, Institution — **MM/YYYY – MM/YYYY** (use "Current" for ongoing: **MM/YYYY – Current**)
+   IMPORTANT: Only include dates on certifications if the original resume provides them. If a certification has NO date in the original resume, output it WITHOUT any date — NEVER invent or guess dates.
 7. ## Languages (each with proficiency level)
 
 Return the COMPLETE resume in clean markdown format.`;
