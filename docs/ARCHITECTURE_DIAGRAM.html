@@ -1,0 +1,441 @@
+<title>JobPilot AI Architecture</title>
+<style>
+:root {
+  --bg: #0A0E1A;
+  --surface: #111728;
+  --surface-raised: #181F34;
+  --text: #B4C1D4;
+  --text-dim: #586880;
+  --text-bright: #E2E9F2;
+  --indigo: #6C5CE7;
+  --teal: #00CEC9;
+  --coral: #E17055;
+  --blue: #4A8FD9;
+  --green: #00B894;
+  --amber: #FDCB6E;
+  --connector: #283248;
+}
+
+*,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  padding: 2rem 1.25rem;
+  min-height: 100vh;
+}
+
+.page { max-width: 1140px; margin: 0 auto; }
+
+header { text-align: center; margin-bottom: 1.5rem; }
+.eyebrow {
+  font-size: 0.6rem; font-weight: 600; letter-spacing: 0.22em;
+  color: var(--indigo); margin-bottom: 0.25rem;
+}
+h1 {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 1.3rem; font-weight: 300; color: var(--text-bright);
+}
+.subtitle { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+.diagram-wrap { overflow-x: auto; margin-bottom: 1.25rem; }
+svg.arch {
+  display: block; width: 100%; min-width: 740px; height: auto;
+}
+.node rect { transition: filter 0.2s ease; cursor: default; }
+.node:hover rect { filter: brightness(1.4) saturate(1.15); }
+.node text { pointer-events: none; user-select: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .flow-dash { stroke-dasharray: 6 4; animation: flowAnim 1.5s linear infinite; }
+  @keyframes flowAnim { to { stroke-dashoffset: -10; } }
+}
+
+.security-bar {
+  display: flex; align-items: center; gap: 0.35rem;
+  padding: 0.5rem 0.85rem; background: #120D1A; border: 1px solid #2A1840;
+  border-radius: 7px; margin-bottom: 1.2rem; overflow-x: auto;
+  font-size: 0.65rem;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+}
+.sec-label { font-weight: 700; color: var(--indigo); letter-spacing: 0.1em; white-space: nowrap; margin-right: 0.2rem; }
+.sec-item {
+  color: var(--text-dim); white-space: nowrap; padding: 0.15rem 0.45rem;
+  background: #140E1C; border-radius: 3px; border: 1px solid #221838;
+}
+
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 0.55rem; margin-bottom: 1.2rem;
+}
+.stat {
+  background: var(--surface); border: 1px solid #1C2840; border-radius: 5px;
+  padding: 0.55rem 0.65rem; text-align: center;
+}
+.stat-val {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 1rem; font-weight: 600; color: var(--text-bright);
+  font-variant-numeric: tabular-nums;
+}
+.stat-lbl { display: block; font-size: 0.58rem; color: var(--text-dim); margin-top: 0.1rem; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 0.85rem;
+  justify-content: center; font-size: 0.65rem; color: var(--text-dim);
+}
+.legend-item { display: flex; align-items: center; gap: 0.3rem; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.footer {
+  text-align: center; margin-top: 1.4rem; font-size: 0.58rem;
+  color: var(--text-dim); opacity: 0.5;
+}
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">JOBPILOT AI</p>
+    <h1>System Architecture</h1>
+    <p class="subtitle">Full-stack SaaS: 32 API routes, 10 DB models, 6-model AI fallback, 8 security layers</p>
+  </header>
+
+  <div class="diagram-wrap">
+    <svg class="arch" viewBox="0 0 1080 620" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse">
+          <path d="M22 0L0 0 0 22" fill="none" stroke="#121A28" stroke-width="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+
+      <!-- === LAYER LABELS === -->
+      <text transform="rotate(-90,18,72)" x="18" y="72" text-anchor="middle"
+            fill="#4A8FD9" font-size="7.5" font-weight="700" letter-spacing="0.14em"
+            font-family="system-ui" opacity="0.5">CLIENTS</text>
+      <text transform="rotate(-90,18,172)" x="18" y="172" text-anchor="middle"
+            fill="#6C5CE7" font-size="7.5" font-weight="700" letter-spacing="0.14em"
+            font-family="system-ui" opacity="0.5">EDGE PROXY</text>
+      <text transform="rotate(-90,18,290)" x="18" y="290" text-anchor="middle"
+            fill="#00CEC9" font-size="7.5" font-weight="700" letter-spacing="0.14em"
+            font-family="system-ui" opacity="0.5">APPLICATION</text>
+      <text transform="rotate(-90,18,460)" x="18" y="460" text-anchor="middle"
+            fill="#E17055" font-size="7.5" font-weight="700" letter-spacing="0.14em"
+            font-family="system-ui" opacity="0.5">SERVICES</text>
+
+      <!-- === CLIENTS (3 boxes) === -->
+      <g class="node">
+        <title>Next.js 16 browser app with App Router, React Server Components, space theme</title>
+        <rect x="140" y="15" width="195" height="42" rx="5"
+              fill="#121E35" stroke="#4A8FD9" stroke-width="1.4"/>
+        <text x="237" y="34" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Browser (Next.js 16)</text>
+        <text x="237" y="48" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">26 pages · space theme</text>
+      </g>
+      <g class="node">
+        <title>Chrome Extension (Manifest V3): one-click job save from any job board</title>
+        <rect x="355" y="15" width="195" height="42" rx="5"
+              fill="#121E35" stroke="#4A8FD9" stroke-width="1.4"/>
+        <text x="452" y="34" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Chrome Extension</text>
+        <text x="452" y="48" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">manifest v3 · 40+ sites</text>
+      </g>
+      <g class="node">
+        <title>Stripe Webhooks: payment events for subscription management</title>
+        <rect x="570" y="15" width="155" height="42" rx="5"
+              fill="#121E35" stroke="#4A8FD9" stroke-width="1.4"/>
+        <text x="647" y="34" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Stripe Webhooks</text>
+        <text x="647" y="48" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">payment events</text>
+      </g>
+
+      <!-- === EDGE PROXY === -->
+      <g class="node">
+        <title>Vercel Edge Proxy (proxy.ts): 9 security controls on every request before it reaches any route</title>
+        <rect x="140" y="100" width="585" height="48" rx="6"
+              fill="#16112A" stroke="#6C5CE7" stroke-width="1.8"/>
+        <text x="432" y="121" text-anchor="middle" fill="#E2E9F2"
+              font-size="12" font-weight="700" font-family="system-ui">VERCEL EDGE PROXY</text>
+        <text x="432" y="138" text-anchor="middle" fill="#586880"
+              font-size="8" font-family="ui-monospace, monospace">CSRF · rate limit · auth gate · CSP · CORS · body size · tracing</text>
+      </g>
+
+      <!-- === APPLICATION LAYER (3 columns) === -->
+      <!-- Marketing Pages -->
+      <g class="node">
+        <title>10 marketing pages with ISR (1hr revalidation): Homepage, About, Blog, Contact, etc.</title>
+        <rect x="60" y="200" width="170" height="58" rx="5"
+              fill="#0C1E22" stroke="#00CEC9" stroke-width="1.4"/>
+        <text x="145" y="222" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Marketing Pages</text>
+        <text x="145" y="236" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">10 pages · ISR · SEO</text>
+        <text x="145" y="250" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">blog · landing · legal</text>
+      </g>
+      <!-- Dashboard -->
+      <g class="node">
+        <title>14 dashboard pages: Resume, Jobs, Cover Letter, Interview, Tracker, Network, Settings, Admin</title>
+        <rect x="250" y="200" width="170" height="58" rx="5"
+              fill="#0C1E22" stroke="#00CEC9" stroke-width="1.4"/>
+        <text x="335" y="222" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Dashboard</text>
+        <text x="335" y="236" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">14 pages · protected</text>
+        <text x="335" y="250" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">resume · jobs · interview</text>
+      </g>
+      <!-- API Routes -->
+      <g class="node">
+        <title>32 API routes: AI (6), auth (4), stripe (4), applications (6), extension (3), and more</title>
+        <rect x="440" y="200" width="170" height="58" rx="5"
+              fill="#0C1E22" stroke="#00CEC9" stroke-width="1.4"/>
+        <text x="525" y="222" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">32 API Routes</text>
+        <text x="525" y="236" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">/ai · /auth · /stripe</text>
+        <text x="525" y="250" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">/jobs · /extension · /admin</text>
+      </g>
+      <!-- Auth -->
+      <g class="node">
+        <title>NextAuth v5: Google OAuth, LinkedIn OAuth, Email/Password with bcrypt, JWT sessions (7-day)</title>
+        <rect x="630" y="200" width="170" height="58" rx="5"
+              fill="#0C1E22" stroke="#00CEC9" stroke-width="1.4"/>
+        <text x="715" y="222" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Auth (NextAuth v5)</text>
+        <text x="715" y="236" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">Google · LinkedIn · PW</text>
+        <text x="715" y="250" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">JWT · bcrypt · lockout</text>
+      </g>
+
+      <!-- === AI BRAIN (special highlight) === -->
+      <g class="node">
+        <title>Gemini AI Engine: 6-model fallback chain, 8 prompt templates, SSE streaming, dead-model tracking</title>
+        <rect x="60" y="310" width="240" height="62" rx="6"
+              fill="#1A1510" stroke="#FDCB6E" stroke-width="1.8"/>
+        <text x="180" y="332" text-anchor="middle" fill="#E2E9F2"
+              font-size="12" font-weight="700" font-family="system-ui">Gemini AI Engine</text>
+        <text x="180" y="347" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">6-model fallback · 8 prompts</text>
+        <text x="180" y="361" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">SSE streaming · 30s timeout</text>
+      </g>
+
+      <!-- === SERVICES ROW === -->
+      <!-- Database -->
+      <g class="node">
+        <title>Prisma v7 with SQLite (dev) / Turso libSQL (prod): 10 models, RLS wrapper, db-retry, cursor paging</title>
+        <rect x="60" y="420" width="175" height="58" rx="5"
+              fill="#1A1012" stroke="#E17055" stroke-width="1.4"/>
+        <text x="147" y="442" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Database</text>
+        <text x="147" y="456" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">Prisma v7 · Turso libSQL</text>
+        <text x="147" y="470" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">10 models · RLS · retry</text>
+      </g>
+      <!-- Stripe -->
+      <g class="node">
+        <title>Stripe: Checkout sessions, billing portal, webhook-driven plan management, reconciliation</title>
+        <rect x="252" y="420" width="155" height="58" rx="5"
+              fill="#1A1012" stroke="#E17055" stroke-width="1.4"/>
+        <text x="329" y="442" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Stripe</text>
+        <text x="329" y="456" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">checkout · portal</text>
+        <text x="329" y="470" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">webhooks · reconcile</text>
+      </g>
+      <!-- Redis -->
+      <g class="node">
+        <title>Upstash Redis: rate limiting (burst + monthly), plan cache (60s TTL), job search cache (15m TTL)</title>
+        <rect x="424" y="420" width="155" height="58" rx="5"
+              fill="#1A1012" stroke="#E17055" stroke-width="1.4"/>
+        <text x="501" y="442" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Upstash Redis</text>
+        <text x="501" y="456" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">rate limit · plan cache</text>
+        <text x="501" y="470" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">job search · 15m TTL</text>
+      </g>
+      <!-- Observability -->
+      <g class="node">
+        <title>Sentry (errors + breadcrumbs), PostHog (analytics), structured audit logs</title>
+        <rect x="596" y="420" width="155" height="58" rx="5"
+              fill="#1A1012" stroke="#E17055" stroke-width="1.4"/>
+        <text x="673" y="442" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Observability</text>
+        <text x="673" y="456" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">Sentry · PostHog</text>
+        <text x="673" y="470" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">audit logs · tracing</text>
+      </g>
+
+      <!-- Job APIs -->
+      <g class="node">
+        <title>Job Search APIs: Adzuna, Remotive, RemoteOK, WeWorkRemotely — parallel aggregation</title>
+        <rect x="340" y="310" width="190" height="52" rx="5"
+              fill="#0C1A12" stroke="#00B894" stroke-width="1.4"/>
+        <text x="435" y="330" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Job Search APIs</text>
+        <text x="435" y="346" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">Adzuna · Remotive · RemoteOK · WWR</text>
+      </g>
+
+      <!-- Email -->
+      <g class="node">
+        <title>Resend email: onboarding, lifecycle, password reset, upgrade confirmation</title>
+        <rect x="560" y="310" width="155" height="52" rx="5"
+              fill="#0C1A12" stroke="#00B894" stroke-width="1.4"/>
+        <text x="637" y="330" text-anchor="middle" fill="#E2E9F2"
+              font-size="10.5" font-weight="600" font-family="system-ui">Resend Email</text>
+        <text x="637" y="346" text-anchor="middle" fill="#586880"
+              font-size="7.5" font-family="ui-monospace, monospace">onboarding · lifecycle · pw</text>
+      </g>
+
+      <!-- AI actions side panel -->
+      <text x="830" y="195" fill="#FDCB6E" font-size="7.5" font-weight="700"
+            letter-spacing="0.12em" font-family="system-ui" opacity="0.5">AI ACTIONS</text>
+      <g class="node">
+        <rect x="830" y="208" width="200" height="38" rx="4"
+              fill="#1A1510" stroke="#FDCB6E" stroke-width="1"/>
+        <text x="930" y="231" text-anchor="middle" fill="#E2E9F2"
+              font-size="9.5" font-weight="600" font-family="system-ui">Resume Analysis + ATS Score</text>
+      </g>
+      <g class="node">
+        <rect x="830" y="254" width="200" height="38" rx="4"
+              fill="#1A1510" stroke="#FDCB6E" stroke-width="1"/>
+        <text x="930" y="277" text-anchor="middle" fill="#E2E9F2"
+              font-size="9.5" font-weight="600" font-family="system-ui">Full Rebuild + Deep Tailor</text>
+      </g>
+      <g class="node">
+        <rect x="830" y="300" width="200" height="38" rx="4"
+              fill="#1A1510" stroke="#FDCB6E" stroke-width="1"/>
+        <text x="930" y="323" text-anchor="middle" fill="#E2E9F2"
+              font-size="9.5" font-weight="600" font-family="system-ui">Cover Letter Generator</text>
+      </g>
+      <g class="node">
+        <rect x="830" y="346" width="200" height="38" rx="4"
+              fill="#1A1510" stroke="#FDCB6E" stroke-width="1"/>
+        <text x="930" y="369" text-anchor="middle" fill="#E2E9F2"
+              font-size="9.5" font-weight="600" font-family="system-ui">Interview Prep + Job Match</text>
+      </g>
+      <g class="node">
+        <rect x="830" y="392" width="200" height="38" rx="4"
+              fill="#1A1510" stroke="#FDCB6E" stroke-width="1"/>
+        <text x="930" y="415" text-anchor="middle" fill="#E2E9F2"
+              font-size="9.5" font-weight="600" font-family="system-ui">LinkedIn Outreach + Pivot</text>
+      </g>
+
+      <!-- DB Schema side -->
+      <text x="830" y="445" fill="#E17055" font-size="7.5" font-weight="700"
+            letter-spacing="0.12em" font-family="system-ui" opacity="0.5">DATABASE MODELS</text>
+      <g>
+        <rect x="830" y="455" width="200" height="100" rx="4"
+              fill="#1A1012" stroke="#E17055" stroke-width="1" opacity="0.6"/>
+        <text x="845" y="472" fill="#B4C1D4" font-size="8.5"
+              font-family="ui-monospace, monospace">User         Account</text>
+        <text x="845" y="486" fill="#B4C1D4" font-size="8.5"
+              font-family="ui-monospace, monospace">Resume       SavedJob</text>
+        <text x="845" y="500" fill="#B4C1D4" font-size="8.5"
+              font-family="ui-monospace, monospace">Application  Contact</text>
+        <text x="845" y="514" fill="#B4C1D4" font-size="8.5"
+              font-family="ui-monospace, monospace">Company      AiResult</text>
+        <text x="845" y="528" fill="#B4C1D4" font-size="8.5"
+              font-family="ui-monospace, monospace">CoverLetter  PwdReset</text>
+        <text x="845" y="548" fill="#586880" font-size="7.5"
+              font-family="ui-monospace, monospace">10 models · 12 migrations</text>
+      </g>
+
+      <!-- === CONNECTIONS === -->
+      <!-- Clients down to Proxy -->
+      <path d="M237,57 V100 M452,57 V100 M647,57 V100"
+            stroke="#283248" stroke-width="1.2" fill="none" class="flow-dash"/>
+      <polygon points="432,98 428,90 436,90" fill="#283248" opacity="0.7"/>
+
+      <!-- Proxy down to App layer -->
+      <path d="M432,148 V175" stroke="#283248" stroke-width="1.2" fill="none" class="flow-dash"/>
+      <path d="M145,175 H715" stroke="#283248" stroke-width="0.8" fill="none" opacity="0.35"/>
+      <path d="M145,175 V200 M335,175 V200 M525,175 V200 M715,175 V200"
+            stroke="#283248" stroke-width="1.2" fill="none" class="flow-dash"/>
+      <polygon points="432,173 428,165 436,165" fill="#283248" opacity="0.7"/>
+
+      <!-- API Routes down to AI Engine -->
+      <path d="M525,258 V285 M180,285 H525 M180,285 V310"
+            stroke="#283248" stroke-width="1" fill="none" opacity="0.4"/>
+      <path d="M525,258 V285 M435,285 H525 M435,285 V310"
+            stroke="#283248" stroke-width="1" fill="none" opacity="0.4"/>
+      <path d="M525,258 V285 M637,285 H525 M637,285 V310"
+            stroke="#283248" stroke-width="1" fill="none" opacity="0.4"/>
+
+      <!-- AI Engine to AI Actions -->
+      <path d="M300,341 H830" stroke="#FDCB6E" stroke-width="0.8" stroke-dasharray="4 3" fill="none" opacity="0.3"/>
+      <text x="570" y="337" text-anchor="middle" fill="#FDCB6E" font-size="6.5"
+            font-family="ui-monospace, monospace" opacity="0.4">8 prompt templates</text>
+
+      <!-- Services connections down -->
+      <path d="M145,258 V420 M335,258 V285 M335,362 V420"
+            stroke="#283248" stroke-width="1" fill="none" opacity="0.35"/>
+      <path d="M525,258 V285 M501,285 V420"
+            stroke="#283248" stroke-width="1" fill="none" opacity="0.35"/>
+      <path d="M715,258 V285 M673,362 V420"
+            stroke="#283248" stroke-width="1" fill="none" opacity="0.35"/>
+
+      <!-- DB to models -->
+      <path d="M235,449 H830" stroke="#E17055" stroke-width="0.8" stroke-dasharray="4 3" fill="none" opacity="0.2"/>
+
+      <!-- Compliance bar at bottom -->
+      <rect x="60" y="520" width="740" height="35" rx="5"
+            fill="#0F0F18" stroke="#283248" stroke-width="0.8"/>
+      <text x="430" y="542" text-anchor="middle" fill="#586880" font-size="8"
+            font-family="ui-monospace, monospace">COMPLIANCE: cookie consent · GDPR export · AI disclosure · privacy policy · terms of service</text>
+
+      <!-- Deployment label -->
+      <rect x="60" y="572" width="740" height="30" rx="5"
+            fill="#0F0F18" stroke="#283248" stroke-width="0.8"/>
+      <text x="430" y="591" text-anchor="middle" fill="#586880" font-size="8"
+            font-family="ui-monospace, monospace">DEPLOYMENT: Vercel (edge proxy + serverless functions) · Turso (libSQL cloud) · Upstash (Redis)</text>
+
+    </svg>
+  </div>
+
+  <div class="security-bar">
+    <span class="sec-label">8-LAYER SECURITY</span>
+    <span class="sec-item">Edge Proxy</span>
+    <span class="sec-item">Auth</span>
+    <span class="sec-item">Acct Lock</span>
+    <span class="sec-item">Zod</span>
+    <span class="sec-item">RLS</span>
+    <span class="sec-item">Rate Limit</span>
+    <span class="sec-item">AI Safety</span>
+    <span class="sec-item">GDPR</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-val">28,000+</span><span class="stat-lbl">Lines of TypeScript</span></div>
+    <div class="stat"><span class="stat-val">248</span><span class="stat-lbl">Source Files</span></div>
+    <div class="stat"><span class="stat-val">32</span><span class="stat-lbl">API Routes</span></div>
+    <div class="stat"><span class="stat-val">26</span><span class="stat-lbl">Pages</span></div>
+    <div class="stat"><span class="stat-val">42</span><span class="stat-lbl">Components</span></div>
+    <div class="stat"><span class="stat-val">10</span><span class="stat-lbl">DB Models</span></div>
+    <div class="stat"><span class="stat-val">164</span><span class="stat-lbl">Tests</span></div>
+    <div class="stat"><span class="stat-val">8</span><span class="stat-lbl">Security Layers</span></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#4A8FD9"></span>Clients</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#6C5CE7"></span>Edge Proxy</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#00CEC9"></span>Application</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#FDCB6E"></span>AI Engine</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#00B894"></span>External APIs</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#E17055"></span>Infrastructure</div>
+  </div>
+
+  <p class="footer">JobPilot AI &middot; jobpilotai.co &middot; github.com/Leo-emp/JobPilot-AI</p>
+</div>
