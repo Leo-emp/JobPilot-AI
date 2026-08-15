@@ -437,5 +437,82 @@ svg.arch {
     <div class="legend-item"><span class="legend-dot" style="background:#E17055"></span>Infrastructure</div>
   </div>
 
+  <style>
+    .justifications { margin-top: 2rem; border-top: 1px solid #1C2838; padding-top: 1.5rem; }
+    .justifications h2 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; color: var(--indigo); margin-bottom: 1rem; }
+    .just-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+    .just-card { background: var(--surface); border: 1px solid #1C2838; border-radius: 6px; padding: 0.85rem 1rem; }
+    .just-card h3 { font-size: 0.8rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.3rem; }
+    .just-card .tech { font-size: 0.65rem; color: var(--indigo); font-family: ui-monospace, monospace; margin-bottom: 0.4rem; }
+    .just-card p { font-size: 0.72rem; line-height: 1.55; color: var(--text); }
+    .just-card .alt { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.35rem; font-style: italic; }
+  </style>
+
+  <div class="justifications">
+    <h2>TECHNOLOGY JUSTIFICATIONS</h2>
+    <div class="just-grid">
+      <div class="just-card">
+        <h3>Next.js 16 (App Router)</h3>
+        <div class="tech">Framework</div>
+        <p>Full-stack monolith on a single deployment: SSR marketing pages for SEO, API routes for backend logic, and React Server Components for dashboard performance. The App Router's streaming and parallel data fetching eliminate waterfall requests. Vercel's edge network handles global CDN without configuration.</p>
+        <p class="alt">Rejected: separate frontend/backend (deployment complexity, CORS), Remix (smaller ecosystem), SvelteKit (team hiring pool)</p>
+      </div>
+      <div class="just-card">
+        <h3>6-Model Gemini Fallback Chain</h3>
+        <div class="tech">AI Reliability</div>
+        <p>LLM APIs are inherently unreliable at the individual model level. The fallback chain (gemini-2.5-flash → 2.5-flash-preview → 2.0-flash → 2.0-flash-lite → 1.5-pro → 1.5-flash) with dead-model tracking achieves near-100% availability. If a model returns 3 consecutive errors, it's skipped for 5 minutes — the system degrades gracefully rather than failing.</p>
+        <p class="alt">Rejected: single model (fragile), OpenAI (higher cost per token), local LLM (insufficient quality for resume analysis)</p>
+      </div>
+      <div class="just-card">
+        <h3>SQLite via Turso</h3>
+        <div class="tech">Database</div>
+        <p>SQLite eliminates connection pooling complexity, cold starts, and the operational overhead of managed Postgres. Turso distributes SQLite globally with automatic replication — read latency matches the user's nearest edge location. Row-Level Security wrapper enforces user isolation at the ORM layer, preventing multi-tenant data leaks structurally.</p>
+        <p class="alt">Rejected: Postgres/Neon (connection pooling overhead for serverless), PlanetScale (MySQL quirks), Supabase (over-provisioned for early stage)</p>
+      </div>
+      <div class="just-card">
+        <h3>Edge Proxy (9 Security Controls)</h3>
+        <div class="tech">Security Architecture</div>
+        <p>A single proxy.ts file runs before every request — maintenance mode, auth gate, rate limiting, CSRF, CSP headers, CORS, body size limits, request tracing, and API protection. This architecture guarantees security controls can't be bypassed by adding new routes. New endpoints inherit all 9 controls automatically.</p>
+        <p class="alt">Rejected: per-route middleware (inconsistent coverage), WAF-only (no app-layer auth), third-party proxy (latency + cost)</p>
+      </div>
+      <div class="just-card">
+        <h3>Redis (Upstash)</h3>
+        <div class="tech">Rate Limiting + Caching</div>
+        <p>Serverless Redis via Upstash provides sub-millisecond rate limit checks without persistent connections. Burst rate limiting (30 req/min on auth routes) and monthly plan caps (free tier: 10 AI requests/month) are enforced atomically. The serverless pricing model means zero cost when idle.</p>
+        <p class="alt">Rejected: in-memory (resets on cold start), database counters (too slow for per-request checks), Cloudflare KV (eventual consistency)</p>
+      </div>
+      <div class="just-card">
+        <h3>Chrome Extension (Manifest V3)</h3>
+        <div class="tech">Job Board Integration</div>
+        <p>Instead of building scrapers for every job board, the extension meets users where they already browse. A floating badge on supported sites captures structured job data with one click and syncs to the user's tracker via 3 dedicated API endpoints. Manifest V3 ensures Chrome Web Store compliance and service worker lifecycle.</p>
+        <p class="alt">Rejected: web scrapers (brittle, ToS violations), browser bookmarklet (limited capabilities), manual entry (friction kills adoption)</p>
+      </div>
+      <div class="just-card">
+        <h3>Stripe (Hosted Checkout)</h3>
+        <div class="tech">Billing</div>
+        <p>Stripe's hosted checkout eliminates PCI compliance scope — payment details never touch the application. Webhook-driven state management ensures the database plan state stays in sync even when webhook delivery fails (reconciliation endpoint as safety net). Supports subscription lifecycle: creation, renewal, cancellation, and payment failure recovery.</p>
+        <p class="alt">Rejected: Paddle (lower market penetration), LemonSqueezy (limited payment methods), self-hosted (PCI nightmare)</p>
+      </div>
+      <div class="just-card">
+        <h3>8 Prompt Templates</h3>
+        <div class="tech">AI Architecture</div>
+        <p>Each AI action (resume analysis, full rebuild, deep tailor, career pivot, cover letter, interview prep, job match, LinkedIn outreach) uses a domain-specific prompt with structured output requirements. This produces consistent, parseable responses rather than free-form text. Prompt engineering is the most cost-effective way to improve AI quality — no fine-tuning required.</p>
+        <p class="alt">Rejected: single generic prompt (inconsistent output), fine-tuned model (expensive, fragile), multiple providers (integration complexity)</p>
+      </div>
+      <div class="just-card">
+        <h3>Sentry + PostHog</h3>
+        <div class="tech">Observability</div>
+        <p>Sentry captures every error with full stack traces, request context, and user session replay — essential for debugging AI failures in production. PostHog provides product analytics (feature usage, funnel conversion, A/B testing) without sending data to Google. Both have generous free tiers for early-stage SaaS.</p>
+        <p class="alt">Rejected: LogRocket (expensive at scale), Datadog (enterprise pricing), self-hosted (operational overhead)</p>
+      </div>
+      <div class="just-card">
+        <h3>Vercel Deployment</h3>
+        <div class="tech">Infrastructure</div>
+        <p>Vercel provides zero-config deployment with automatic HTTPS, global CDN, serverless functions that scale to zero, preview deployments per PR, and native Next.js optimization. The serverless model means no idle cost — the application handles traffic spikes automatically without capacity planning.</p>
+        <p class="alt">Rejected: AWS (operational complexity), Railway (less Next.js optimization), self-hosted (DevOps overhead for solo founder)</p>
+      </div>
+    </div>
+  </div>
+
   <p class="footer">JobPilot AI &middot; jobpilotai.co &middot; github.com/Leo-emp/JobPilot-AI</p>
 </div>
