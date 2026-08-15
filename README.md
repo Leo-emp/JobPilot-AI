@@ -9,59 +9,30 @@ Built as a full-stack SaaS with **28,000+ lines of TypeScript**, 32 API routes, 
 ## Architecture
 
 ```mermaid
-graph TB
-    subgraph Clients["CLIENTS"]
-        BR[Browser<br/>Next.js 16 App]
-        CE[Chrome Extension<br/>Manifest V3]
-        SW[Stripe Webhooks]
-    end
+graph TD
+    BR[Browser - Next.js 16] --> PX[Edge Proxy - CSRF, rate limit, CSP, auth gate]
+    CE[Chrome Extension] --> PX
+    SW[Stripe Webhooks] --> PX
 
-    subgraph Edge["VERCEL EDGE PROXY"]
-        PX[proxy.ts<br/>CSRF · IP rate limit · Auth gate<br/>CSP · CORS · Body limit · Tracing]
-    end
+    PX --> MK[Marketing - 10 pages, ISR]
+    PX --> DASH[Dashboard - 14 pages]
+    PX --> API[32 API Routes]
 
-    subgraph Pages["PAGES"]
-        MK[Marketing<br/>10 pages · ISR 1hr]
-        DB[Dashboard<br/>14 pages · Dynamic]
-    end
+    API --> AI[AI Engine - 6 Gemini models fallback]
+    API --> AUTH[Auth - Google, LinkedIn, Email]
+    API --> STRIPE[Stripe - Checkout, Portal]
+    API --> APPS[Applications - CRUD, Pipeline]
+    API --> EXT[Extension - Save, AI tools]
 
-    subgraph API["32 API ROUTES"]
-        AI[/api/ai — 6 actions<br/>Resume · Cover · Interview<br/>Match · Pivot · Outreach]
-        AU[/api/auth — 4 routes<br/>Google · LinkedIn · Email/PW]
-        ST[/api/stripe — 4 routes<br/>Checkout · Portal · Webhooks]
-        AP[/api/applications — 6<br/>CRUD · Pipeline · Notes]
-        EX[/api/extension — 3<br/>Auth · Save · AI tools]
-    end
+    AI --> GM[Gemini 2.5-flash --> 2.0-flash --> 1.5-pro --> 1.5-flash]
 
-    subgraph Security["8-LAYER SECURITY"]
-        S1[NextAuth v5 + Bcrypt]
-        S2[Account lockout · Audit logs]
-        S3[Zod validation — 15 routes]
-        S4[Row-Level Security wrapper]
-        S5[Redis burst + monthly caps]
-    end
+    API --> SEC[8-Layer Security]
+    SEC --> ZOD[Zod validation - 15 routes]
+    SEC --> RLS[Row-Level Security]
+    SEC --> REDIS[Redis rate limiting]
 
-    subgraph External["EXTERNAL SERVICES"]
-        GM[Gemini AI<br/>6-model fallback chain]
-        SR[Stripe<br/>Checkout + Portal]
-        RS[Resend · Sentry<br/>PostHog · Redis]
-    end
-
-    subgraph Data["DATABASE"]
-        PR[(Prisma v7<br/>SQLite / Turso<br/>10 models · 10 indexes)]
-    end
-
-    BR & CE & SW --> PX
-    PX --> MK & DB & API
-    API --> Security
-    API --> External
-    API --> Data
-    AI --> GM
-
-    style Edge fill:#1a1a2e,stroke:#818CF8,color:#fff
-    style Security fill:#1a1a2e,stroke:#EF4444,color:#fff
-    style External fill:#1a1a2e,stroke:#10B981,color:#fff
-    style API fill:#1a1a2e,stroke:#F59E0B,color:#fff
+    API --> DB[(Prisma v7 - SQLite/Turso - 10 models)]
+    API --> SVC[Resend, Sentry, PostHog]
 ```
 
 ## Problem Statement
