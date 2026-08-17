@@ -157,9 +157,24 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        {/* Section 7 */}
+        {/* Section 7 — Browser Extension */}
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">7. Cookies</h2>
+          <h2 className="text-xl font-bold text-white mb-4">7. Browser Extension</h2>
+          <p className="mb-3">
+            The JobPilot AI Chrome extension enhances your job search experience by working alongside your browser.
+            Here is what it does and does not do:
+          </p>
+          <ul className="list-disc list-inside space-y-2 ml-4">
+            <li><strong className="text-white">What it reads:</strong> When you visit a supported job board (LinkedIn, Indeed, Glassdoor, and others), the extension reads the job title, company name, location, and description from that page so you can save the job to your dashboard with one click.</li>
+            <li><strong className="text-white">What it stores locally:</strong> The extension temporarily stores extracted job details in your browser&apos;s local storage so the popup can display them. This data stays on your device and is overwritten each time you visit a new job listing.</li>
+            <li><strong className="text-white">What it sends to our servers:</strong> Only when you click &ldquo;Save to JobPilot&rdquo; or use an AI feature (Match Score, Cover Letter) is the job data sent to our API. It is then stored in your account like any other saved job.</li>
+            <li><strong className="text-white">What it does NOT do:</strong> The extension does not track your browsing history, collect personal information, run in the background, or send any data without your explicit action.</li>
+          </ul>
+        </section>
+
+        {/* Section 8 */}
+        <section>
+          <h2 className="text-xl font-bold text-white mb-4">8. Cookies</h2>
           <p>
             We use <strong className="text-white">essential cookies only</strong> for authentication session management.
             We do not use tracking cookies, advertising pixels, third-party analytics (no Google Analytics),
@@ -168,9 +183,9 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        {/* Section 8 */}
+        {/* Section 9 */}
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">8. Children&apos;s Privacy</h2>
+          <h2 className="text-xl font-bold text-white mb-4">9. Children&apos;s Privacy</h2>
           <p>
             Our service is not directed at individuals under 16 years of age. We do not knowingly collect
             personal data from children. If we discover that a user is under 16, we will delete their
@@ -178,9 +193,9 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        {/* Section 9 */}
+        {/* Section 10 */}
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">9. International Data Transfers</h2>
+          <h2 className="text-xl font-bold text-white mb-4">10. International Data Transfers</h2>
           <p>
             Our servers and third-party processors may be located outside your country of residence.
             By using our service, you consent to the transfer of your data to these locations.
@@ -188,9 +203,9 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        {/* Section 10 */}
+        {/* Section 11 */}
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">10. Changes to This Policy</h2>
+          <h2 className="text-xl font-bold text-white mb-4">11. Changes to This Policy</h2>
           <p>
             We may update this policy from time to time. Material changes will be communicated via
             email to registered users at least 14 days before taking effect. Your continued use of
@@ -198,9 +213,9 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        {/* Section 11 */}
+        {/* Section 12 */}
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">11. Contact Us</h2>
+          <h2 className="text-xl font-bold text-white mb-4">12. Contact Us</h2>
           <p>
             For privacy-related questions, data access requests, or to exercise any of your rights,
             contact us at:{" "}
