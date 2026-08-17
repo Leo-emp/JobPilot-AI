@@ -12,14 +12,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
-import { audit } from "@/lib/audit";
+import { audit, getClientIp } from "@/lib/audit";
 import { isB2BEnabled } from "@/lib/b2b-gate";
+import { createRateLimiter } from "@/lib/rate-limit";
+
+/* # Rate limit: 10 opt-outs per minute per IP — prevents mass suppression abuse */
+const optOutLimit = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
 /* # GET — Confirm opt-out (landing page for email link) */
 export async function GET(req: NextRequest) {
   if (!isB2BEnabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  /* # Rate limit by IP */
+  const ip = getClientIp(req.headers) || "unknown";
+  const { allowed } = await optOutLimit.check(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   const email = req.nextUrl.searchParams.get("email");
 
   if (!email) {
@@ -65,6 +80,17 @@ export async function POST(req: NextRequest) {
   if (!isB2BEnabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  /* # Rate limit by IP */
+  const ip = getClientIp(req.headers) || "unknown";
+  const { allowed } = await optOutLimit.check(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   const body = await req.json().catch(() => ({}));
   const email = body.email;
 

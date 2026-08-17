@@ -20,15 +20,30 @@ export async function POST(req: NextRequest) {
   if (!isB2BEnabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  /* # Verify webhook authenticity via Resend webhook secret */
+  /* # Verify webhook authenticity via Resend webhook secret.
+     Resend uses Svix to sign webhooks — we verify the HMAC to
+     ensure this request actually came from Resend, not an attacker. */
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
-  if (webhookSecret) {
-    const signature = req.headers.get("svix-signature");
-    if (!signature) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
-    }
-    /* # In production, verify the Svix signature properly.
-       For now, we check that the secret is configured. */
+  if (!webhookSecret) {
+    /* # Webhook secret not configured — reject all webhook calls */
+    console.error("RESEND_WEBHOOK_SECRET not configured — rejecting webhook");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+
+  /* # Svix sends these three headers for signature verification */
+  const svixId = req.headers.get("svix-id");
+  const svixTimestamp = req.headers.get("svix-timestamp");
+  const svixSignature = req.headers.get("svix-signature");
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    return NextResponse.json({ error: "Missing webhook signature headers" }, { status: 401 });
+  }
+
+  /* # Reject if timestamp is too old (5 minutes) to prevent replay attacks */
+  const now = Math.floor(Date.now() / 1000);
+  const ts = parseInt(svixTimestamp, 10);
+  if (isNaN(ts) || Math.abs(now - ts) > 300) {
+    return NextResponse.json({ error: "Webhook timestamp expired" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => null);

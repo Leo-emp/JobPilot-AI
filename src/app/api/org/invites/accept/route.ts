@@ -118,6 +118,18 @@ export const POST = safeHandler(async (req: NextRequest) => {
     });
   }
 
+  /* # Verify the logged-in user's email matches the invite recipient.
+     Without this, anyone with the token link could accept on behalf
+     of a different account and gain unauthorized org access. */
+  if (
+    session.user.email?.toLowerCase() !== invite.email.toLowerCase()
+  ) {
+    return NextResponse.json(
+      { error: "This invite was sent to a different email address. Please log in with the correct account." },
+      { status: 403 }
+    );
+  }
+
   /* # Check if already a member */
   const existingMember = await dbRetry(() =>
     prisma.organizationMember.findUnique({
