@@ -97,7 +97,10 @@ export function proxy(req: NextRequest) {
     pathname.startsWith("/api/auth/") ||
     pathname === "/api/health" ||
     pathname === "/api/newsletter" ||
-    pathname.startsWith("/api/extension/")
+    pathname.startsWith("/api/extension/") ||
+    pathname.startsWith("/api/org/invites/accept") ||
+    pathname.startsWith("/api/roles") ||
+    pathname.startsWith("/api/companies-public/")
   );
 
   if (isPublicApi) {
@@ -129,8 +132,13 @@ export function proxy(req: NextRequest) {
 
   const isLoggedIn = !!token;
 
-  /* ---- Protect /dashboard routes ---- */
-  if (pathname.startsWith("/dashboard") && !isLoggedIn) {
+  /* ---- Protect /dashboard, /org, /employer routes ---- */
+  if (
+    (pathname.startsWith("/dashboard") ||
+     pathname.startsWith("/org") ||
+     pathname.startsWith("/employer")) &&
+    !isLoggedIn
+  ) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
@@ -143,8 +151,12 @@ export function proxy(req: NextRequest) {
       pathname.startsWith("/api/stripe/webhook") ||
       pathname.startsWith("/api/portfolio/public/") ||
       pathname.startsWith("/api/cron/") ||
+      pathname.startsWith("/api/extension/") ||
       pathname === "/api/newsletter" ||
-      pathname === "/api/health";
+      pathname === "/api/health" ||
+      pathname.startsWith("/api/org/invites/accept") ||
+      pathname.startsWith("/api/roles") ||
+      pathname.startsWith("/api/companies-public/");
 
     if (!isPublic) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -191,7 +203,7 @@ export function proxy(req: NextRequest) {
     );
     const isChromeExtension = ALLOWED_EXTENSION_ID
       ? requestOrigin === `chrome-extension://${ALLOWED_EXTENSION_ID}`
-      : (process.env.NODE_ENV !== "production" && requestOrigin?.startsWith("chrome-extension://"));
+      : requestOrigin?.startsWith("chrome-extension://");
     const isAuthCallback = pathname.startsWith("/api/auth");
     const isWebhook = pathname.startsWith("/api/stripe/webhook");
     const isServerCall = !origin && !referer;
@@ -270,7 +282,7 @@ export function proxy(req: NextRequest) {
       /* Chrome extension gets its own CORS — locked to specific ID when configured */
       const isAllowedExtension = ALLOWED_EXTENSION_ID
         ? origin === `chrome-extension://${ALLOWED_EXTENSION_ID}`
-        : (process.env.NODE_ENV !== "production" && origin?.startsWith("chrome-extension://"));
+        : origin?.startsWith("chrome-extension://");
       if (origin && isAllowedExtension) {
         response.headers.set("Access-Control-Allow-Origin", origin);
         response.headers.set("Access-Control-Allow-Credentials", "true");
