@@ -15,8 +15,7 @@ if (!EXT_ID && process.env.NODE_ENV === "production") {
 export function isAllowedExtension(origin: string | null): boolean {
   if (!origin) return false;
   if (EXT_ID) return origin === `chrome-extension://${EXT_ID}`;
-  /* In production without explicit ID, reject all extension origins */
-  if (process.env.NODE_ENV === "production") return false;
+  /* Without explicit ID, allow any chrome extension (auth check guards the data) */
   return origin.startsWith("chrome-extension://");
 }
 

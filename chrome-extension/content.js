@@ -66,19 +66,39 @@ const extractors = {
   linkedin: {
     test: () => window.location.hostname.includes("linkedin.com"),
     title: () => queryText(
+      /* LinkedIn changes class names often — try many variations */
       ".job-details-jobs-unified-top-card__job-title a",
+      ".job-details-jobs-unified-top-card__job-title h1",
+      ".job-details-jobs-unified-top-card__job-title",
       ".jobs-unified-top-card__job-title a",
-      "h1.t-24", "h1"
+      ".t-24.job-details-jobs-unified-top-card__job-title",
+      "h1.t-24",
+      ".jobs-search__job-details--wrapper h2",
+      /* Broader selectors for newer LinkedIn layouts */
+      ".job-details-jobs-unified-top-card__job-title-link",
+      "[data-job-title]",
+      ".artdeco-entity-lockup__title",
+      ".jobs-details__main-content h1",
+      ".scaffold-layout__detail h1"
     ),
     company: () => queryText(
       ".job-details-jobs-unified-top-card__company-name a",
+      ".job-details-jobs-unified-top-card__primary-description-container a",
+      ".job-details-jobs-unified-top-card__company-name",
       ".jobs-unified-top-card__company-name a",
-      ".jobs-unified-top-card__subtitle-primary-grouping span"
+      ".jobs-unified-top-card__subtitle-primary-grouping span",
+      ".jobs-unified-top-card__subtitle-primary-grouping a",
+      ".artdeco-entity-lockup__subtitle",
+      ".job-details-jobs-unified-top-card__primary-description a"
     ),
     description: () => queryText(
       ".jobs-description__content",
+      ".jobs-description-content__text",
       "#job-details",
-      ".jobs-box__html-content"
+      ".jobs-box__html-content",
+      "[class*='jobs-description']",
+      ".jobs-description",
+      ".scaffold-layout__detail [class*='description']"
     ),
     source: "linkedin",
   },
@@ -405,18 +425,80 @@ function getExtractor() {
   return genericExtractor;
 }
 
+/* ---- Parse page title for job info (works on LinkedIn, Indeed, etc.) ---- */
+/* LinkedIn format: "Job Title - Company Name | LinkedIn" */
+/* LinkedIn format: "(3) Job Title - Company Name | LinkedIn" */
+function parsePageTitle() {
+  const raw = document.title || "";
+  /* Strip leading notification count like "(3) " */
+  const cleaned = raw.replace(/^\(\d+\)\s*/, "");
+  /* Try "Title - Company | Site" pattern */
+  const dashParts = cleaned.split(" - ");
+  if (dashParts.length >= 2) {
+    const titlePart = dashParts[0].trim();
+    /* Company is everything after first dash, before last pipe */
+    const rest = dashParts.slice(1).join(" - ");
+    const pipeParts = rest.split("|");
+    const companyPart = pipeParts.length > 1 ? pipeParts.slice(0, -1).join("|").trim() : pipeParts[0].trim();
+    if (titlePart && companyPart) return { title: titlePart, company: companyPart };
+  }
+  /* Try "Title | Company | Site" pattern (some sites) */
+  const pipeParts = cleaned.split("|").map(s => s.trim());
+  if (pipeParts.length >= 3) {
+    return { title: pipeParts[0], company: pipeParts[1] };
+  }
+  return null;
+}
+
 /* ---- Extract job data from current page ---- */
 function extractJobData() {
   const ext = getExtractor();
 
-  const title = ext.title();
-  const company = ext.company();
+  let title = ext.title();
+  let company = ext.company();
+  let description = ext.description();
+
+  /* Fallback 1: JSON-LD structured data */
+  if (!title || !company) {
+    const ld = getJsonLd();
+    if (ld) {
+      if (!title) title = ld.title || "";
+      if (!company) {
+        company = typeof ld.hiringOrganization === "object"
+          ? ld.hiringOrganization.name || ""
+          : ld.hiringOrganization || "";
+      }
+      if (!description) description = stripTags(ld.description || "");
+    }
+  }
+
+  /* Fallback 2: meta tags (og:title often has "Job Title | Company") */
+  if (!title) title = metaContent("og:title");
+  if (!company) {
+    const ogSiteName = metaContent("og:site_name");
+    /* og:site_name is usually the site itself, not company — skip if it's LinkedIn/Indeed/etc */
+    if (ogSiteName && !["linkedin", "indeed", "glassdoor"].some(s => ogSiteName.toLowerCase().includes(s))) {
+      company = ogSiteName;
+    }
+  }
+
+  /* Fallback 3: parse the page <title> (most reliable on LinkedIn) */
+  if (!title || !company) {
+    const fromTitle = parsePageTitle();
+    if (fromTitle) {
+      if (!title) title = fromTitle.title;
+      if (!company) company = fromTitle.company;
+    }
+  }
+
+  console.log("[JobPilot] Extracted:", { title, company, description: description?.slice(0, 50) });
+
   if (!title && !company) return null;
 
   return {
     title,
     company,
-    description: ext.description(),
+    description,
     url: window.location.href,
     source: ext.source,
   };
@@ -677,11 +759,24 @@ function escapeHtml(text) {
 
 /* ---- Main: Initialize on page load ---- */
 async function init() {
-  /* Wait a moment for dynamic content to render (SPAs like LinkedIn) */
-  await new Promise(r => setTimeout(r, 2000));
+  console.log("[JobPilot] Content script running on:", window.location.href);
 
-  const jobData = extractJobData();
-  if (!jobData) return;
+  /* Wait for dynamic content to render (SPAs like LinkedIn load job panels lazily) */
+  let jobData = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await new Promise(r => setTimeout(r, 2000));
+    jobData = extractJobData();
+    console.log("[JobPilot] Attempt", attempt + 1, "result:", jobData ? "found" : "nothing");
+    if (jobData) break;
+  }
+  if (!jobData) {
+    console.log("[JobPilot] No job data found after 5 attempts");
+    return;
+  }
+
+  /* Always store job data for popup, even if not logged in */
+  const skills = extractSkills(jobData.description);
+  storeJobDataForPopup(jobData, skills);
 
   const loggedIn = await checkAuth();
   if (!loggedIn) return;

@@ -41,29 +41,302 @@ const jobUrlInput = document.getElementById("job-url");
 const descriptionInput = document.getElementById("description");
 
 /* ============================================================
+   EXTRACT JOB DATA - Runs directly in the active tab via
+   chrome.scripting.executeScript (no content script needed)
+   ============================================================ */
+async function extractFromTab(tabId) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        /* --- This runs inside the job page itself --- */
+
+        /* Try multiple CSS selectors, return first match */
+        function q(...sels) {
+          for (const s of sels) {
+            const el = document.querySelector(s);
+            const t = el?.textContent?.trim();
+            if (t) return t;
+          }
+          return "";
+        }
+
+        /* Parse structured data (JSON-LD) */
+        function jsonLd() {
+          for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+            try {
+              let d = JSON.parse(s.textContent);
+              if (Array.isArray(d)) d = d.find(x => x["@type"] === "JobPosting") || d[0];
+              if (d?.["@graph"]) d = d["@graph"].find(x => x["@type"] === "JobPosting") || d;
+              if (d?.["@type"] === "JobPosting") return d;
+            } catch {}
+          }
+          return null;
+        }
+
+        /* Parse the browser tab title — most reliable on LinkedIn */
+        /* Format: "Job Title - Company | LinkedIn" or "(3) Job Title - Company | Site" */
+        function fromTitle() {
+          const raw = (document.title || "").replace(/^\(\d+\)\s*/, "");
+          const dash = raw.split(" - ");
+          if (dash.length >= 2) {
+            const t = dash[0].trim();
+            const rest = dash.slice(1).join(" - ");
+            const pipes = rest.split("|");
+            const c = pipes.length > 1 ? pipes.slice(0, -1).join("|").trim() : pipes[0].trim();
+            if (t && c) return { title: t, company: c };
+          }
+          const pipes = raw.split("|").map(s => s.trim());
+          if (pipes.length >= 3) return { title: pipes[0], company: pipes[1] };
+          return null;
+        }
+
+        /* Meta tag helper */
+        function meta(name) {
+          const el = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+          return el?.getAttribute("content")?.trim() || "";
+        }
+
+        let title = "", company = "", location_ = "", description = "";
+        const host = location.hostname;
+
+        /* Site-specific CSS selectors */
+        if (host.includes("linkedin.com")) {
+          title = q(
+            ".job-details-jobs-unified-top-card__job-title a",
+            ".job-details-jobs-unified-top-card__job-title h1",
+            ".job-details-jobs-unified-top-card__job-title",
+            ".jobs-unified-top-card__job-title a",
+            ".artdeco-entity-lockup__title",
+            ".jobs-details__main-content h1",
+            ".scaffold-layout__detail h1",
+            ".t-24.job-details-jobs-unified-top-card__job-title",
+            "h1.t-24"
+          );
+          company = q(
+            ".job-details-jobs-unified-top-card__company-name a",
+            ".job-details-jobs-unified-top-card__company-name",
+            ".job-details-jobs-unified-top-card__primary-description a",
+            ".job-details-jobs-unified-top-card__primary-description-container a",
+            ".jobs-unified-top-card__company-name a",
+            ".artdeco-entity-lockup__subtitle"
+          );
+
+          /* --- Location: find text with bullet separator near the title --- */
+          /* LinkedIn subtitle format: "Company · Location · Time ago" */
+          /* Scan all elements for text containing a bullet near the company name */
+          const allEls = document.querySelectorAll("div, span, li");
+          for (const el of allEls) {
+            const t = (el.textContent || "").trim();
+            /* Look for "company · location" pattern — must contain bullet and company name */
+            if (t.includes("·") && company && t.toLowerCase().includes(company.toLowerCase())) {
+              const parts = t.split("·").map(s => s.trim());
+              /* Location is the part after company, skip time-related parts */
+              for (let i = 1; i < parts.length; i++) {
+                const p = parts[i];
+                if (p && !p.match(/^\d+\s+(second|minute|hour|day|week|month|year)/i) && !p.match(/^\d+\s+applicant/i) && p.length > 2) {
+                  location_ = p;
+                  break;
+                }
+              }
+              if (location_) break;
+            }
+          }
+
+          /* --- Description & Requirements --- */
+          /* Strategy: get all text from the job detail panel, then filter to
+             keep only job description / requirements / qualifications content */
+
+          /* Step 1: Try LinkedIn's known description container */
+          const descEl = document.getElementById("job-details")
+            || document.querySelector(".jobs-description__content")
+            || document.querySelector(".jobs-description-content__text")
+            || document.querySelector(".jobs-box__html-content")
+            || document.querySelector("[class*='jobs-description']");
+          if (descEl) description = (descEl.innerText || "").trim();
+
+          /* Step 2: If that failed, grab text from the job detail panel and filter */
+          if (!description) {
+            /* Get ALL text visible on the right/detail panel */
+            let fullText = "";
+            /* Try various panel containers */
+            const panelSelectors = [
+              ".jobs-search__job-details",
+              ".scaffold-layout__detail",
+              ".job-view-layout",
+              "main",
+              "[role='main']"
+            ];
+            for (const sel of panelSelectors) {
+              const el = document.querySelector(sel);
+              if (el && (el.innerText || "").length > 200) {
+                fullText = el.innerText;
+                break;
+              }
+            }
+
+            if (fullText) {
+              const lines = fullText.split("\n").map(l => l.trim()).filter(Boolean);
+
+              /* Lines to cut: LinkedIn UI, profile prompts, company overview section */
+              const skipPatterns = [
+                /^your profile/i, /^beta/i, /^people you can/i,
+                /^school alum/i, /^is this information/i,
+                /^show (more|less|fewer)/i, /^see who/i,
+                /^repost$/i, /^save$/i, /^share$/i, /^apply$/i, /^easy apply$/i,
+                /^report this/i, /^message$/i, /^follow$/i,
+                /^\d+ applicant/i, /^\d+ (day|week|hour|minute|month|year)s? ago$/i,
+                /^(am|pm)$/i, /^promoted$/i, /^viewed$/i
+              ];
+
+              /* Markers where the description ends */
+              const endMarkers = [
+                /^about the company$/i, /^about .+ company$/i,
+                /^company size/i, /^headquarters/i, /^founded/i,
+                /^specialties/i, /^people also viewed/i, /^similar jobs/i,
+                /^show more jobs/i
+              ];
+
+              /* Find where the role-specific content starts (skip company overview) */
+              /* These indicate the text is about the ROLE, not the company */
+              const roleStartMarkers = [
+                /^(about|the)\s+(role|position|opportunity|job)/i,
+                /^position\s+(overview|summary|description)/i,
+                /^job\s+(description|summary|overview)/i,
+                /^(key\s+)?responsibilities/i, /^what\s+you'?ll\s+do/i,
+                /^requirements$/i, /^qualifications$/i,
+                /^must[\s-]have/i, /^nice[\s-]to[\s-]have/i,
+                /^what\s+we'?re\s+looking\s+for/i,
+                /^who\s+you\s+are/i, /^what\s+you\s+(bring|need)/i,
+                /^about\s+you/i, /^ideal\s+candidate/i,
+                /^skills/i, /^experience/i,
+                /we'?re\s+(hiring|looking\s+for|seeking)/i,
+                /^in\s+this\s+role/i, /^as\s+(a|an|the)\s+/i,
+                /^you\s+will/i, /^you'?ll\s+(be|own|lead|work|manage|build|drive)/i
+              ];
+              let startIdx = 0;
+              for (let i = 0; i < lines.length; i++) {
+                if (roleStartMarkers.some(r => r.test(lines[i]))) {
+                  startIdx = i;
+                  break;
+                }
+              }
+              /* If no marker found, fall back to first long paragraph */
+              if (startIdx === 0) {
+                for (let i = 0; i < lines.length; i++) {
+                  if (lines[i].length > 60 && !skipPatterns.some(r => r.test(lines[i]))) {
+                    startIdx = i;
+                    break;
+                  }
+                }
+              }
+
+              /* Find where to stop: "About the company" or similar */
+              let endIdx = lines.length;
+              for (let i = startIdx; i < lines.length; i++) {
+                if (endMarkers.some(r => r.test(lines[i]))) {
+                  endIdx = i;
+                  break;
+                }
+              }
+
+              /* Filter the description range, remove noise lines */
+              const filtered = lines
+                .slice(startIdx, endIdx)
+                .filter(l => !skipPatterns.some(r => r.test(l)))
+                .filter(l => l.length > 3);
+
+              description = filtered.join("\n").trim();
+              if (description.length > 5000) description = description.slice(0, 5000);
+            }
+          }
+        } else if (host.includes("indeed.com")) {
+          title = q(".jobsearch-JobInfoHeader-title", "h1[data-testid='jobsearch-JobInfoHeader-title']", "h1");
+          company = q("[data-testid='inlineHeader-companyName']", ".jobsearch-InlineCompanyRating div:first-child a");
+          location_ = q("[data-testid='inlineHeader-companyLocation']", ".jobsearch-JobInfoHeader-subtitle div:last-child");
+          description = q("#jobDescriptionText", ".jobsearch-jobDescriptionText");
+        } else if (host.includes("glassdoor.com")) {
+          title = q("[data-test='job-title']", "h1");
+          company = q("[data-test='employer-name']");
+          location_ = q("[data-test='emp-location']");
+          description = q(".jobDescriptionContent", "[data-test='job-description']");
+        } else {
+          /* Generic: try common patterns */
+          title = q("h1", "[itemprop='title']");
+          company = q("[itemprop='hiringOrganization'] [itemprop='name']", "[itemprop='name']");
+          location_ = q("[itemprop='jobLocation']", ".location");
+          description = q("[itemprop='description']", ".job-description", "#job-description");
+        }
+
+        /* Fallback 1: JSON-LD structured data */
+        const ld = jsonLd();
+        if (ld) {
+          if (!title) title = ld.title || "";
+          if (!company) company = typeof ld.hiringOrganization === "object" ? ld.hiringOrganization.name || "" : ld.hiringOrganization || "";
+          if (!description) description = ld.description?.replace(/<[^>]*>/g, " ").trim() || "";
+          if (!location_ && ld.jobLocation) {
+            const jl = ld.jobLocation;
+            location_ = typeof jl === "object" ? (jl.address?.addressLocality || jl.name || "") : jl;
+          }
+        }
+
+        /* Fallback 2: meta tags */
+        if (!title) title = meta("og:title");
+        if (!description) description = meta("og:description");
+
+        /* Fallback 3: page title (most reliable for LinkedIn) */
+        if (!title || !company) {
+          const pt = fromTitle();
+          if (pt) {
+            if (!title) title = pt.title;
+            if (!company) company = pt.company;
+          }
+        }
+
+        if (!title && !company) return null;
+        return { title, company, location: location_, description, url: location.href };
+      },
+    });
+
+    if (results?.[0]?.result) return results[0].result;
+  } catch {}
+  return null;
+}
+
+/* ============================================================
    INITIALIZATION - Check login status on popup open
    ============================================================ */
 document.addEventListener("DOMContentLoaded", async () => {
-  /* Auto-fill from content script extracted data if on a supported job page */
   let autoFilled = false;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const stored = await chrome.storage.local.get("jp_current_job");
-    const job = stored.jp_current_job;
 
-    /* Auto-fill if we have extracted data matching the current tab (within 30 min) */
-    if (job && tab?.url && job.url === tab.url && (Date.now() - job.timestamp) < 1800000) {
+    /* Extract job data directly from the tab (most reliable) */
+    let job = null;
+    if (tab?.id && tab.url && !tab.url.startsWith("chrome://")) {
+      job = await extractFromTab(tab.id);
+    }
+
+    /* Fallback: check content script's stored data */
+    if (!job) {
+      const stored = await chrome.storage.local.get("jp_current_job");
+      const cached = stored.jp_current_job;
+      if (cached && (Date.now() - cached.timestamp) < 1800000) {
+        job = cached;
+      }
+    }
+
+    /* Auto-fill the form */
+    if (job) {
       if (job.title) { jobTitleInput.value = job.title; autoFilled = true; }
       if (job.company) { companyInput.value = job.company; autoFilled = true; }
+      if (job.location) { locationInput.value = job.location; autoFilled = true; }
       if (job.description) { descriptionInput.value = job.description; autoFilled = true; }
-      if (job.url) jobUrlInput.value = job.url;
+      jobUrlInput.value = job.url || tab?.url || "";
     } else if (tab?.url && !tab.url.startsWith("chrome://")) {
-      /* Fall back to just the URL */
       jobUrlInput.value = tab.url;
     }
-  } catch {
-    /* Can't access tab or storage — that's fine */
-  }
+  } catch {}
 
   /* Enable/disable save button based on required fields */
   jobTitleInput.addEventListener("input", toggleSaveButton);

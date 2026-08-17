@@ -3,7 +3,7 @@
   "name": "JobPilot AI",
   "version": "1.1.0",
   "description": "Save jobs from any page to your JobPilot AI dashboard. Get AI match scores, track applications, and build career intelligence.",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
     "http://localhost:3000/*",
     "https://jobpilotai.co/*"
