@@ -18,18 +18,15 @@ import { safeHandler } from "@/lib/api-handler";
 import { computeWeeklyStats } from "@/lib/weekly-stats";
 import { buildWeeklyDigestEmail } from "@/lib/weekly-digest-email";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { verifyCronSecret } from "@/lib/cron-auth";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BATCH_SIZE = 50;
 
 export const POST = safeHandler(async (req: NextRequest) => {
-  /* Auth: only allow requests with the correct cron secret */
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  /* # Auth: timing-safe verification of cron secret */
+  const authError = verifyCronSecret(req);
+  if (authError) return authError;
 
   /* # Idempotency lock — prevents duplicate emails if Vercel retries the cron */
   const lockKey = `cron:weekly-digest:${new Date().toISOString().slice(0, 10)}`;

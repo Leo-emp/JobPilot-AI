@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { deleteUserSchema, formatZodError } from "@/lib/validations";
 import { audit, getClientIp } from "@/lib/audit";
 import { authHandler } from "@/lib/api-handler";
-import { cacheSet } from "@/lib/redis";
+import { cacheSet, cacheDel } from "@/lib/redis";
 import { dbRetry } from "@/lib/db-retry";
 
 export const DELETE = authHandler(async (req, session) => {
@@ -43,6 +43,34 @@ export const DELETE = authHandler(async (req, session) => {
     );
   }
 
+  /* # Block deletion if user is sole owner of any org */
+  const ownedOrgs = await dbRetry(() =>
+    prisma.organizationMember.findMany({
+      where: { userId: session.user.id, role: "owner" },
+      select: {
+        organizationId: true,
+        organization: { select: { name: true } },
+      },
+    })
+  );
+
+  for (const ownership of ownedOrgs) {
+    /* # Check if there are other owners */
+    const otherOwners = await prisma.organizationMember.count({
+      where: {
+        organizationId: ownership.organizationId,
+        role: "owner",
+        userId: { not: session.user.id },
+      },
+    });
+    if (otherOwners === 0) {
+      return NextResponse.json(
+        { error: `You are the sole owner of ${ownership.organization.name}. Transfer ownership before deleting your account.` },
+        { status: 409 }
+      );
+    }
+  }
+
   /* Soft-delete: set deletedAt timestamp instead of destroying data */
   /* Account data is preserved for 30 days for recovery requests */
   await dbRetry(() =>
@@ -51,6 +79,16 @@ export const DELETE = authHandler(async (req, session) => {
       data: { deletedAt: new Date() },
     })
   );
+
+  /* # Invalidate org membership caches so coaches see updated roster */
+  const memberships = await prisma.organizationMember.findMany({
+    where: { userId: session.user.id },
+    select: { organizationId: true },
+  });
+  for (const m of memberships) {
+    await cacheDel(`org:member:${m.organizationId}:${session.user.id}`);
+  }
+  await cacheDel(`effectivePlan:${session.user.id}`);
 
   /* # Invalidate session cache so auth check blocks this user immediately */
   await cacheSet(`session:active:${session.user.id}`, "0", 300);

@@ -21,6 +21,7 @@ import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 import { safeHandler } from "@/lib/api-handler";
 import { PLAN_LIMITS } from "@/lib/plan-limits";
+import { getEffectivePlan } from "@/lib/effective-plan";
 import * as Sentry from "@sentry/nextjs";
 
 function hashText(text: string): string {
@@ -131,6 +132,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
+    /* # Resolve effective plan — considers org sponsorship */
+    const effectivePlan = await getEffectivePlan(session.user.id);
+
     /* Reset monthly counter if needed */
     const now = new Date();
     if (user.usageResetDate < now) {
@@ -150,12 +154,12 @@ export const POST = safeHandler(async (req: NextRequest) => {
     /* # Atomic limit check + increment — prevents race condition where
        two concurrent requests both pass the check before either increments */
     if (!admin) {
-      const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
+      const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
       if (user.aiUsageCount >= limit) {
-        const upgradeMsg = user.plan === "free"
+        const upgradeMsg = effectivePlan === "free"
           ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 1,000 calls/month.`
           : `You've reached your monthly limit of ${limit} calls. Contact support if you need more.`;
-        audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action });
+        audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action });
         return NextResponse.json(
           { error: upgradeMsg },
           { status: 429 }
@@ -179,7 +183,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
             data: { aiUsageCount: { decrement: 1 } },
           })
         );
-        audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action, detail: "concurrent_race" });
+        audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action, detail: "concurrent_race" });
         return NextResponse.json(
           { error: "You've reached your monthly AI limit." },
           { status: 429 }
@@ -240,7 +244,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
             })
           ).then(() => cacheDel(`plan:${session.user.id}`)).catch(() => {});
         }
-        const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
+        const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
         const remaining = admin ? "unlimited" : Math.max(0, limit - user.aiUsageCount);
         return NextResponse.json({ result: cached.result, remaining, model: cached.model });
       }
@@ -270,7 +274,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
     }).catch(() => {});
 
     /* Calculate remaining calls */
-    const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
+    const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
     const remaining = admin ? "unlimited" : Math.max(0, limit - user.aiUsageCount - 1);
 
     return NextResponse.json({ result, remaining, model: gemini.model });

@@ -54,6 +54,16 @@ model User {
   feedbacks      Feedback[]
   portfolio      Portfolio?
 
+  // B2B: back-references (purely additive)
+  memberships         OrganizationMember[]
+  employerMemberships EmployerMember[]
+  candidatePreference CandidatePreference?
+  employerBookmarks   EmployerBookmark[]   // Bookmarks received from employers
+  candidateBookmarks  CandidateBookmark[]  // Bookmarks the user gave
+  candidateThreads    MessageThread[]      // Messaging threads as candidate
+  notifications       Notification[]       // In-app notifications
+  emailNotifications  Boolean @default(true) // Opt-out for transactional emails
+
   @@index([stripeSubId])
   @@index([deletedAt])
 }
@@ -333,4 +343,457 @@ model BlogPost {
   @@index([status])
   @@index([publishedAt])
   @@index([category])
+}
+
+// ============================================================
+// B2B ORG LAYER — Career Services Platform
+// ============================================================
+// Organizations (bootcamps, universities, agencies) purchase
+// seat-based access. Their candidates get sponsored pro plans.
+// Coaches see activity dashboards. Data stays candidate-owned.
+// ============================================================
+
+// ---- Organization ----
+// A B2B customer: recruitment agency, bootcamp, university career office,
+// or outplacement provider. Billing and seat limits live here, not on User.
+model Organization {
+  id               String    @id @default(cuid())
+  name             String                          // Display name, e.g. "Northcoders"
+  slug             String    @unique               // For org-scoped URLs
+  type             String    @default("agency")    // agency, bootcamp, university, outplacement
+  plan             String    @default("pilot")     // pilot, team, business (B2B tiers)
+  seatLimit        Int       @default(25)          // Max candidate members
+  billingEmail     String                          // Where invoices go
+  stripeCustomerId String?                         // Org-level Stripe customer (null while manual)
+  stripeSubId      String?                         // Org-level subscription
+  logoUrl          String?                         // For the coach dashboard header
+  deletedAt        DateTime?                       // Soft-delete, same pattern as User
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  members OrganizationMember[]
+  invites OrganizationInvite[]
+
+  @@index([deletedAt])
+}
+
+// ---- Organization Membership ----
+// Links a User to an Organization with a role. Authorization pivot for B2B layer.
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String   @default("candidate")  // owner, admin, coach, candidate
+  cohort         String?                         // Free-text grouping, e.g. "March 2027 cohort"
+  dataVisibility String   @default("metrics")    // metrics = activity counts only, full = resume content
+  invitedById    String?                         // Which admin/coach invited them
+  joinedAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])             // One membership per user per org
+  @@index([userId])                              // "which orgs am I in" lookup
+  @@index([organizationId, role])                // "list all candidates" lookup
+}
+
+// ---- Organization Invite ----
+// Time-limited invite tokens for bulk candidate onboarding.
+// Token stored HASHED (same pattern as PasswordReset).
+model OrganizationInvite {
+  id             String    @id @default(cuid())
+  organizationId String
+  email          String                          // Invitee email
+  role           String    @default("candidate")
+  cohort         String?
+  tokenHash      String    @unique               // SHA-256 of raw token sent by email
+  expiresAt      DateTime                        // 14 days from creation
+  acceptedAt     DateTime?                       // Null until accepted
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([expiresAt])
+}
+
+// ============================================================
+// B2B EMPLOYER LAYER — AI Recruiter-as-a-Service
+// ============================================================
+// Employers post roles, AI matches candidates from the pool.
+// Premium tiers get full recruiting pipeline with sourcing,
+// screening, ranking, outreach, and shortlist delivery.
+// ============================================================
+
+// ---- Employer ----
+// A company account on the demand side. Separate from User's personal
+// Company model (which tracks companies the job seeker is targeting).
+model Employer {
+  id               String    @id @default(cuid())
+  name             String                          // Company display name
+  slug             String    @unique               // For public URLs: /companies-public/[slug]
+  industry         String?                         // Primary industry
+  size             String?                         // startup, small, medium, large, enterprise
+  website          String?                         // Company website URL
+  description      String?                         // Public company description (markdown)
+  location         String?                         // HQ location
+  remoteFriendly   Boolean   @default(false)       // Whether they hire remote
+  logoUrl          String?                         // Company logo for public profile
+  plan             String    @default("free")      // free, pro, enterprise
+  verifiedAt       DateTime?                       // Admin verifies before roles go public
+  stripeCustomerId String?                         // Employer-level Stripe customer
+  stripeSubId      String?                         // Employer-level subscription
+  deletedAt        DateTime?                       // Soft-delete
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  members            EmployerMember[]
+  roles              Role[]
+  bookmarks          EmployerBookmark[]   // Candidate bookmarks by this employer
+  candidateBookmarks CandidateBookmark[]  // Bookmarks from candidates
+  threads            MessageThread[]      // Messaging threads with candidates
+
+  @@index([deletedAt])
+  @@index([verifiedAt])
+}
+
+// ---- Employer Membership ----
+// Links a User to an Employer with a role. One user can be a member
+// of multiple employers (e.g., a recruiter working for several clients).
+model EmployerMember {
+  id         String   @id @default(cuid())
+  employerId String
+  userId     String
+  role       String   @default("recruiter")  // owner, admin, recruiter
+  joinedAt   DateTime @default(now())
+
+  employer Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([employerId, userId])             // One membership per user per employer
+  @@index([userId])                          // "which employers am I on" lookup
+  @@index([employerId, role])                // "list all team members" lookup
+}
+
+// ---- Role (Job Posting) ----
+// A position an employer is hiring for. Published roles appear on the
+// public job board and are matchable against candidate preferences.
+model Role {
+  id              String    @id @default(cuid())
+  employerId      String
+  title           String                          // Job title
+  description     String                          // Full job description (markdown)
+  requirements    String?                         // Required qualifications
+  skills          String?                         // JSON array of required skills
+  niceToHaveSkills String?                        // JSON array of bonus skills
+  experienceMin   Int?                            // Minimum years experience
+  experienceMax   Int?                            // Maximum years experience
+  salaryMin       Int?                            // Minimum salary
+  salaryMax       Int?                            // Maximum salary
+  salaryCurrency  String    @default("USD")       // Currency code
+  locationType    String    @default("remote")    // remote, hybrid, onsite
+  location        String?                         // Specific location if onsite/hybrid
+  employmentType  String    @default("full-time") // full-time, part-time, contract
+  industry        String?                         // Industry for this specific role
+  education       String?                         // Education requirements
+  urgency         String    @default("normal")    // normal, urgent, critical
+  candidatesNeeded Int      @default(1)           // How many hires they need
+  status          String    @default("draft")     // draft, active, paused, filled, cancelled
+  publishedAt     DateTime?                       // When the role went live
+  filledAt        DateTime?                       // When all positions were filled
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  employer           Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  matches            CandidateMatch[]
+  candidateBookmarks CandidateBookmark[]  // Bookmarks from candidates
+  shortlists         Shortlist[]          // Delivered shortlists for this role
+
+  @@index([employerId])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([status, publishedAt])                  // Active published roles query
+}
+
+// ---- Candidate Preference ----
+// Job seeker's preferences for matching. One per user.
+// openToWork = false means they won't appear in employer searches.
+model CandidatePreference {
+  id             String   @id @default(cuid())
+  userId         String   @unique                // One preference record per user
+  openToWork     Boolean  @default(true)         // Whether to include in matching
+  desiredTitle   String?                         // Preferred job title
+  desiredSkills  String?                         // JSON array of skills they want to use
+  locationPref   String   @default("remote")     // remote, hybrid, onsite, any
+  locations      String?                         // JSON array of preferred locations
+  salaryMin      Int?                            // Minimum acceptable salary
+  salaryCurrency String   @default("USD")        // Currency for salary preference
+  employmentType String   @default("full-time")  // full-time, part-time, contract, any
+  industries     String?                         // JSON array of preferred industries
+  companySizes   String?                         // JSON array of preferred company sizes
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches CandidateMatch[]
+}
+
+// ---- Candidate Match ----
+// Persisted match result between a candidate and a role.
+// Created in batch when a role is published, or incrementally
+// when a candidate updates their preferences/resume.
+// Stores the full score breakdown so we don't recompute on read.
+// candidateId is null for external candidates; externalId is null for internal.
+model CandidateMatch {
+  id             String   @id @default(cuid())
+  candidateId    String?                         // User ID (null for external candidates)
+  externalId     String?                         // ExternalCandidate ID (null for internal)
+  roleId         String                          // The Role being matched against
+  prefId         String?                         // CandidatePreference used (null for external)
+  score          Int                             // 0-100 total match score
+  breakdown      String                          // JSON: per-dimension score breakdown
+  matchedSkills  String?                         // JSON array of skills that matched
+  missingSkills  String?                         // JSON array of required skills missing
+  source         String   @default("internal")   // internal, github, stackoverflow, portfolio
+  status         String   @default("new")        // new, shortlisted, rejected, contacted, hired, withdrawn
+  feedback       String?                         // thumbs_up, thumbs_down, null
+  feedbackNote   String?                         // Optional employer note on why
+  candidateVisible Boolean @default(true)        // Whether candidate sees this in /opportunities
+  candidateHidden  Boolean @default(false)       // Candidate chose to hide this match
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  preference        CandidatePreference? @relation(fields: [prefId], references: [id], onDelete: Cascade)
+  role              Role                 @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  externalCandidate ExternalCandidate?   @relation(fields: [externalId], references: [id], onDelete: SetNull)
+
+  @@unique([candidateId, roleId])               // One match per internal candidate per role
+  @@unique([roleId, externalId])                // One match per external candidate per role
+  @@index([roleId, score])                      // "top candidates for this role" query
+  @@index([candidateId, status])                // "my opportunities" query
+  @@index([roleId, status])                     // "role pipeline" query
+  @@index([feedback])                           // Feedback analytics
+  @@index([externalId])                         // External candidate lookups
+}
+
+// ---- External Candidate ----
+// A person found outside JobPilot (GitHub, Stack Overflow, portfolio sites).
+// Stored separately until they accept an invite and become a User.
+// convertedUserId links to User if they join through the conversion flow.
+model ExternalCandidate {
+  id              String    @id @default(cuid())
+  name            String                               // Full name
+  email           String?                              // Contact email (if found)
+  profileUrl      String                               // Source URL (GitHub profile, portfolio, etc.)
+  source          String                               // github, stackoverflow, portfolio
+  skills          String?                              // JSON: extracted skills array
+  experience      String?                              // JSON: parsed experience summary
+  rawData         String?                              // JSON: full fetched profile data
+  convertedUserId String?   @unique                    // Links to User if they join JobPilot
+  inviteToken     String?   @unique                    // Hashed token for conversion link
+  inviteExpiresAt DateTime?                            // Token expiry (7 days from creation)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  matches CandidateMatch[]
+
+  @@unique([source, profileUrl])                       // Deduplicate by source + URL
+  @@index([email])                                     // Lookup by email for dedup vs Users
+  @@index([convertedUserId])                           // Conversion lookup
+}
+
+// ---- Employer Bookmark ----
+// An employer bookmarks a candidate they're interested in.
+// Mutual interest (employer bookmarks candidate + candidate bookmarks employer)
+// unlocks messaging and contact info.
+model EmployerBookmark {
+  id          String   @id @default(cuid())
+  employerId  String                              // Which employer bookmarked
+  candidateId String                              // User ID of the bookmarked candidate
+  roleId      String?                             // Specific role context (optional)
+  createdAt   DateTime @default(now())
+
+  employer  Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  candidate User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([employerId, candidateId])             // One bookmark per employer-candidate pair
+  @@index([candidateId])                          // "who bookmarked me" lookup
+}
+
+// ---- Candidate Bookmark ----
+// A candidate bookmarks an employer or a specific role.
+// At least one of employerId or roleId must be set (enforced at API layer).
+model CandidateBookmark {
+  id         String   @id @default(cuid())
+  userId     String                               // The candidate who bookmarked
+  employerId String?                              // Bookmarked company
+  roleId     String?                              // Bookmarked specific role
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employer Employer? @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  role     Role?     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, employerId])                  // One bookmark per user per employer
+  @@unique([userId, roleId])                      // One bookmark per user per role
+  @@index([employerId])                           // "who bookmarked this employer" lookup
+  @@index([roleId])                               // "who bookmarked this role" lookup
+}
+
+// ---- Message Thread ----
+// A conversation between a candidate and an employer, optionally tied to a role.
+// Created on mutual interest or enterprise employer initiation.
+// One thread per candidate-employer-role triple.
+model MessageThread {
+  id            String    @id @default(cuid())
+  candidateId   String                            // The candidate in this conversation
+  employerId    String                            // The employer in this conversation
+  roleId        String?                           // Optionally scoped to a specific role
+  status        String    @default("active")      // active, archived, blocked
+  blockedById   String?                           // User ID who blocked (either side)
+  lastMessageAt DateTime?                         // For inbox sort order
+  createdAt     DateTime  @default(now())
+
+  candidate User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  employer  Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@unique([candidateId, employerId, roleId])     // One thread per triple
+  @@index([candidateId, lastMessageAt])           // Candidate inbox sorted by recency
+  @@index([employerId, lastMessageAt])            // Employer inbox sorted by recency
+}
+
+// ---- Message ----
+// Individual message within a MessageThread.
+// Not open DMs — requires mutual interest or enterprise tier.
+model Message {
+  id         String    @id @default(cuid())
+  threadId   String                               // FK to MessageThread
+  senderId   String                               // User ID of sender
+  senderType String                               // "candidate" or "employer"
+  content    String                               // Message text (max 5000 chars)
+  readAt     DateTime?                            // When recipient read the message
+  createdAt  DateTime  @default(now())
+
+  thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])                  // Messages in thread order
+  @@index([senderId])                             // "my sent messages" lookup
+}
+
+// ---- Notification ----
+// In-app notification for candidates and employers.
+// Rendered in a bell icon dropdown. Types: match, message, bookmark,
+// interview, system. Linked to a relevant page via linkUrl.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String                                // Who gets the notification
+  type      String                                // match, message, bookmark, interview, system
+  title     String                                // Notification headline
+  body      String?                               // Optional detail text
+  linkUrl   String?                               // Deep link to relevant page
+  readAt    DateTime?                             // Null = unread
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])                       // "unread notifications" query
+  @@index([userId, createdAt])                    // "all notifications" sorted
+}
+
+// ---- Outreach ----
+// AI-generated recruiting emails sent to external candidates.
+// Tracks delivery, opens, and responses for the pipeline.
+// NOTE: roleId, externalCandidateId, candidateMatchId are intentionally
+// bare strings (no @relation) so outreach audit trail survives if the
+// role/candidate/match is deleted.
+model Outreach {
+  id                  String    @id @default(cuid())
+  roleId              String                         // Which role this outreach is for
+  externalCandidateId String?                        // External candidate (bare string)
+  candidateMatchId    String?                        // CandidateMatch link (bare string)
+  email               String                         // Recipient email
+  subject             String                         // Email subject
+  body                String                         // Email body (personalized by AI)
+  status              String    @default("queued")   // queued, sent, delivered, opened, replied, bounced, cancelled
+  followUpNumber      Int       @default(0)          // 0 = initial, 1 = first follow-up, 2 = second
+  sentAt              DateTime?
+  openedAt            DateTime?
+  repliedAt           DateTime?
+  bouncedAt           DateTime?
+  replyClassification String?                        // positive, negative, neutral, uncertain
+  inviteToken         String?   @unique              // Platform invite token (hashed)
+  createdAt           DateTime  @default(now())
+
+  @@index([roleId])
+  @@index([externalCandidateId])
+  @@index([status])
+  @@index([roleId, status])                          // "pending outreach for role" query
+  @@index([email])                                   // Lookup by email for dedup
+}
+
+// ---- Email Suppression ----
+// Global opt-out list for outreach. Checked before every external
+// email send. Once an email is on this list, no outreach is ever sent.
+model EmailSuppression {
+  id        String   @id @default(cuid())
+  email     String   @unique                         // Suppressed email (lowercased)
+  reason    String                                   // opt_out, bounce, complaint, manual
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+// ---- Shortlist ----
+// A delivered set of candidates for a role. This is the "product"
+// employers pay for. Uses ShortlistEntry junction table.
+model Shortlist {
+  id          String    @id @default(cuid())
+  roleId      String
+  employerId  String
+  name        String    @default("Shortlist")        // "Round 1", "Final candidates"
+  status      String    @default("draft")            // draft, delivered, reviewed
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  role    Role             @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  entries ShortlistEntry[]
+
+  @@index([roleId])
+  @@index([employerId])
+}
+
+// ---- Shortlist Entry ----
+// Junction linking shortlists to candidate matches with ordering.
+model ShortlistEntry {
+  id               String  @id @default(cuid())
+  shortlistId      String
+  candidateMatchId String                            // Bare string (no relation for flexibility)
+  position         Int                               // Sort order in the shortlist
+  employerNote     String?                           // Employer's note about this candidate
+
+  shortlist Shortlist @relation(fields: [shortlistId], references: [id], onDelete: Cascade)
+
+  @@unique([shortlistId, candidateMatchId])          // No duplicate entries
+  @@index([shortlistId, position])
+}
+
+// ---- Employer Usage ----
+// Tracks monthly usage per employer for plan limit enforcement and analytics.
+// One row per employer per month. Reset on the 1st of each month.
+model EmployerUsage {
+  id                  String   @id @default(cuid())
+  employerId          String
+  month               String                         // "2026-08" format for easy grouping
+  rolesPosted         Int      @default(0)            // Roles created this month
+  candidatesContacted Int      @default(0)            // Outreach emails sent
+  matchesViewed       Int      @default(0)            // Match profile views
+  bookmarksUsed       Int      @default(0)            // Bookmarks created
+  shortlistsDelivered Int      @default(0)            // Shortlists delivered to team
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([employerId, month])                       // One usage record per employer per month
+  @@index([employerId])
 }

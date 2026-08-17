@@ -168,6 +168,22 @@ export const GET = authHandler(async (_req, session) => {
       ])
     );
 
+  /* # Include org memberships in GDPR export */
+  const orgMemberships = await dbRetry(() =>
+    prisma.organizationMember.findMany({
+      where: { userId },
+      select: {
+        role: true,
+        cohort: true,
+        dataVisibility: true,
+        joinedAt: true,
+        organization: {
+          select: { name: true, type: true, slug: true },
+        },
+      },
+    })
+  );
+
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -184,6 +200,7 @@ export const GET = authHandler(async (_req, session) => {
     contacts,
     companies,
     aiHistory,
+    organizationMemberships: orgMemberships,
   };
 
   /* # Return as a downloadable JSON file */

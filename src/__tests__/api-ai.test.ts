@@ -16,6 +16,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     aiResult: {
       create: vi.fn(() => Promise.resolve({})),
+      findFirst: vi.fn(() => Promise.resolve(null)),
     },
   },
 }));
@@ -59,6 +60,11 @@ vi.mock("@/lib/prompts", () => ({
 /* Mock audit */
 vi.mock("@/lib/audit", () => ({
   audit: vi.fn(),
+}));
+
+/* Mock effective plan — B2B org sponsorship resolver */
+vi.mock("@/lib/effective-plan", () => ({
+  getEffectivePlan: vi.fn(async () => "free"),
 }));
 
 import { POST } from "@/app/api/ai/route";

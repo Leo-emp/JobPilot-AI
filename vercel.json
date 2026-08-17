@@ -15,6 +15,14 @@
     {
       "path": "/api/cron/health-monitor",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/source-external",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/outreach",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

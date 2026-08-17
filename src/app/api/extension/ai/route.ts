@@ -19,6 +19,7 @@ import { extensionCorsHeaders as corsHeaders } from "@/lib/extension-cors";
 import { checkGlobalDailyCap } from "@/lib/redis";
 import { scrubPlaceholders } from "@/lib/ai-post-process";
 import { PLAN_LIMITS } from "@/lib/plan-limits";
+import { getEffectivePlan } from "@/lib/effective-plan";
 import { cacheDel } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 
@@ -184,6 +185,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
     );
   }
 
+  /* # Resolve effective plan — considers org sponsorship */
+  const effectivePlan = await getEffectivePlan(session.user.id);
+
   /* Reset usage counter if needed */
   const now = new Date();
   if (user.usageResetDate < now) {
@@ -196,7 +200,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
     user.aiUsageCount = 0;
   }
 
-  const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
+  const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
 
   if (user.aiUsageCount >= limit) {
     return NextResponse.json(
@@ -220,7 +224,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
         data: { aiUsageCount: { decrement: 1 } },
       })
     );
-    audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action, detail: "extension_concurrent_race" });
+    audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action, detail: "extension_concurrent_race" });
     return NextResponse.json(
       { error: "You've reached your monthly AI limit." },
       { status: 429, headers: corsHeaders(origin) }

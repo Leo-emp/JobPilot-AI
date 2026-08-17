@@ -44,7 +44,55 @@ export type AuditEvent =
   | "security.waf.query_blocked"
   | "gdpr.hard_delete"
   | "auth.2fa.enabled"
-  | "auth.2fa.disabled";
+  | "auth.2fa.disabled"
+  // B2B: organization events
+  | "org.created"
+  | "org.updated"
+  | "org.deleted"
+  | "org.member.invited"
+  | "org.member.accepted"
+  | "org.member.removed"
+  | "org.member.role_changed"
+  // B2B: employer events
+  | "employer.created"
+  | "employer.updated"
+  | "employer.verified"
+  | "employer.role.created"
+  | "employer.role.published"
+  | "employer.role.deleted"
+  | "employer.member.added"
+  | "employer.member.removed"
+  | "employer.candidate.status_changed"
+  // B2B: bookmark + messaging events
+  | "employer.bookmark.created"
+  | "employer.bookmark.deleted"
+  | "candidate.bookmark.created"
+  | "candidate.bookmark.deleted"
+  | "message.thread.created"
+  | "message.sent"
+  | "message.thread.blocked"
+  // B2B: external sourcing events
+  | "sourcing.started"
+  | "sourcing.completed"
+  | "sourcing.candidate.found"
+  | "sourcing.candidate.converted"
+  // B2B: outreach + recruiting agent events
+  | "outreach.queued"
+  | "outreach.sent"
+  | "outreach.bounced"
+  | "outreach.replied"
+  | "outreach.followup.queued"
+  | "outreach.suppressed"
+  | "outreach.cancelled"
+  | "shortlist.created"
+  | "shortlist.delivered"
+  | "shortlist.entry.added"
+  | "shortlist.entry.removed"
+  // B2B: employer billing events
+  | "employer.billing.checkout"
+  | "employer.billing.upgraded"
+  | "employer.billing.cancelled"
+  | "employer.billing.updated";
 
 /* # Structured audit log entry */
 interface AuditPayload {

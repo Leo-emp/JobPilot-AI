@@ -1,0 +1,67 @@
+{
+  "engineering": [
+    "JavaScript", "TypeScript", "Python", "Java", "Go", "Rust", "C++", "C#", "Ruby", "PHP", "Swift", "Kotlin",
+    "React", "Next.js", "Vue.js", "Angular", "Svelte", "Node.js", "Express", "Django", "Flask", "Spring Boot",
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "DynamoDB", "SQLite",
+    "AWS", "GCP", "Azure", "Docker", "Kubernetes", "Terraform", "CI/CD", "GitHub Actions",
+    "REST APIs", "GraphQL", "gRPC", "WebSockets", "Microservices",
+    "Git", "Linux", "Nginx", "Webpack", "Vite",
+    "TDD", "Unit Testing", "Integration Testing", "E2E Testing",
+    "System Design", "Data Structures", "Algorithms"
+  ],
+  "data": [
+    "SQL", "Python", "R", "Pandas", "NumPy", "Spark", "Hadoop",
+    "Tableau", "Power BI", "Looker", "Metabase",
+    "ETL", "Data Warehousing", "Data Modeling", "dbt",
+    "BigQuery", "Snowflake", "Redshift", "Databricks",
+    "Machine Learning", "Deep Learning", "NLP", "Computer Vision",
+    "TensorFlow", "PyTorch", "Scikit-learn", "Keras",
+    "A/B Testing", "Statistical Analysis", "Bayesian Methods"
+  ],
+  "design": [
+    "Figma", "Sketch", "Adobe XD", "InVision", "Framer",
+    "UI Design", "UX Design", "UX Research", "Wireframing", "Prototyping",
+    "Design Systems", "Responsive Design", "Accessibility", "WCAG",
+    "Typography", "Color Theory", "Interaction Design", "Motion Design",
+    "User Testing", "Heuristic Evaluation", "Information Architecture",
+    "Adobe Photoshop", "Adobe Illustrator", "After Effects"
+  ],
+  "product": [
+    "Product Strategy", "Roadmapping", "OKRs", "KPIs",
+    "Agile", "Scrum", "Kanban", "JIRA", "Linear", "Notion",
+    "User Stories", "PRDs", "Market Research", "Competitive Analysis",
+    "A/B Testing", "Analytics", "Mixpanel", "Amplitude", "PostHog",
+    "Stakeholder Management", "Cross-functional Leadership",
+    "Go-to-Market", "Pricing Strategy", "Feature Prioritization"
+  ],
+  "marketing": [
+    "SEO", "SEM", "Google Ads", "Facebook Ads", "LinkedIn Ads",
+    "Content Marketing", "Copywriting", "Email Marketing",
+    "Social Media", "Community Management", "Influencer Marketing",
+    "Google Analytics", "HubSpot", "Mailchimp", "Marketo",
+    "Brand Strategy", "Growth Hacking", "Conversion Optimization",
+    "Content Strategy", "Video Marketing", "Podcast Production"
+  ],
+  "sales": [
+    "B2B Sales", "B2C Sales", "SaaS Sales", "Enterprise Sales",
+    "Lead Generation", "Cold Outreach", "Pipeline Management",
+    "Salesforce", "HubSpot CRM", "Pipedrive", "Close.io",
+    "Negotiation", "Account Management", "Customer Success",
+    "Revenue Forecasting", "Territory Planning", "Sales Enablement"
+  ],
+  "operations": [
+    "Project Management", "Process Optimization", "Lean", "Six Sigma",
+    "Supply Chain", "Logistics", "Vendor Management",
+    "Budgeting", "Financial Modeling", "P&L Management",
+    "HR", "Recruiting", "People Operations", "Compensation",
+    "Compliance", "Risk Management", "Legal Operations"
+  ],
+  "devops": [
+    "AWS", "GCP", "Azure", "DigitalOcean", "Vercel",
+    "Docker", "Kubernetes", "Helm", "Terraform", "Pulumi",
+    "CI/CD", "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI",
+    "Monitoring", "Prometheus", "Grafana", "Datadog", "New Relic", "Sentry",
+    "Linux", "Bash", "Networking", "DNS", "Load Balancing",
+    "Security", "IAM", "SSL/TLS", "Vault", "SOC 2"
+  ]
+}

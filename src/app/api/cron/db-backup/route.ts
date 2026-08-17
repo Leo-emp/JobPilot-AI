@@ -20,6 +20,7 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { safeHandler } from "@/lib/api-handler";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { verifyCronSecret } from "@/lib/cron-auth";
 
 /* # Max backups to keep — 7 days of daily snapshots */
 const MAX_BACKUPS = 7;
@@ -45,13 +46,9 @@ async function exportTable<T extends { id: string }>(
 }
 
 export const POST = safeHandler(async (req: NextRequest) => {
-  /* # Auth: only allow requests with the correct cron secret */
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  /* # Auth: timing-safe verification of cron secret */
+  const authError = verifyCronSecret(req);
+  if (authError) return authError;
 
   /* # Idempotency lock — prevents duplicate backups if Vercel retries */
   const lockKey = `cron:db-backup:${new Date().toISOString().slice(0, 10)}`;

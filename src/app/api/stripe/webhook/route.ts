@@ -21,6 +21,11 @@ import { buildCancellationEmail } from "@/lib/cancellation-email";
 import { buildUpgradeEmail } from "@/lib/upgrade-email";
 import Stripe from "stripe";
 import { safeHandler } from "@/lib/api-handler";
+import {
+  handleEmployerCheckout,
+  handleEmployerCancellation,
+  handleEmployerUpdate,
+} from "@/lib/employer-webhook";
 
 /* # Lazy-init so missing env var doesn't crash the module on import */
 let _resend: Resend | null = null;
@@ -56,9 +61,16 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
   /* ---- Handle Different Event Types ---- */
   switch (event.type) {
-    /* A checkout session was completed — user paid successfully */
+    /* A checkout session was completed — user or employer paid successfully */
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      /* # Route employer checkouts to the employer webhook handler */
+      if (session.metadata?.type === "employer") {
+        await handleEmployerCheckout(session, getStripe());
+        break;
+      }
+
       const userId = session.metadata?.userId;
       /* # Type guard: Stripe can return string OR Subscription object */
       const subscriptionId = typeof session.subscription === "string"
@@ -149,6 +161,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
             }
           })();
         }
+      } else {
+        /* # No user found — try employer subscription */
+        await handleEmployerCancellation(subscription);
       }
       break;
     }
@@ -170,6 +185,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
           prisma.user.update({ where: { id: user.id }, data: { plan } })
         );
         await cacheDel(`plan:${user.id}`);
+      } else {
+        /* # No user found — try employer subscription */
+        await handleEmployerUpdate(subscription);
       }
       break;
     }

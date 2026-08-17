@@ -18,6 +18,7 @@ import { safeHandler } from "@/lib/api-handler";
 import { audit } from "@/lib/audit";
 import { getStripe } from "@/lib/stripe";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { verifyCronSecret } from "@/lib/cron-auth";
 
 /* # 30-day retention period before permanent deletion */
 const RETENTION_DAYS = 30;
@@ -26,13 +27,9 @@ const RETENTION_DAYS = 30;
 const BATCH_SIZE = 50;
 
 export const POST = safeHandler(async (req: NextRequest) => {
-  /* Auth: only allow requests with the correct cron secret */
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  /* # Auth: timing-safe verification of cron secret */
+  const authError = verifyCronSecret(req);
+  if (authError) return authError;
 
   /* # Idempotency lock — prevents duplicate runs if Vercel retries */
   const lockKey = `cron:gdpr-cleanup:${new Date().toISOString().slice(0, 10)}`;

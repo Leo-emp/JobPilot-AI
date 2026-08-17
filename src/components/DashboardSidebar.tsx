@@ -8,10 +8,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import NotificationBell from "@/components/NotificationBell";
 
 
 /* ---- SVG Icons for Navigation ---- */
@@ -103,7 +104,11 @@ const navItems = [
   { href: "/dashboard/linkedin", icon: icons.linkedin, label: "LinkedIn Optimizer" },
   { href: "/dashboard/network", icon: icons.network, label: "AI Outreach Hub" },
   { href: "/dashboard/portfolio", icon: icons.portfolio, label: "Portfolio Builder" },
+  { href: "/dashboard/opportunities", icon: icons.jobs, label: "My Opportunities" },
+  { href: "/dashboard/bookmarks", icon: icons.portfolio, label: "Bookmarks" },
+  { href: "/dashboard/messages", icon: icons.coverLetter, label: "Messages" },
   { href: "/dashboard/history", icon: icons.history, label: "AI History" },
+  { href: "/dashboard/preferences", icon: icons.network, label: "Job Preferences" },
   { href: "/dashboard/settings", icon: icons.settings, label: "Settings" },
 ];
 
@@ -118,6 +123,18 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
   /* Get current path to highlight the active nav item */
   const pathname = usePathname();
 
+  /* # B2B: fetch org + employer memberships for sidebar links */
+  const [hasOrgs, setHasOrgs] = useState(false);
+  const [hasEmployers, setHasEmployers] = useState(false);
+  useEffect(() => {
+    fetch("/api/org").then(r => r.json()).then(d => {
+      if (d.memberships?.length > 0) setHasOrgs(true);
+    }).catch(() => {});
+    fetch("/api/employer").then(r => r.json()).then(d => {
+      if (d.employers?.length > 0) setHasEmployers(true);
+    }).catch(() => {});
+  }, []);
+
   /* Check if a nav item is currently active */
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -127,13 +144,14 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
   /* The sidebar content — shared between desktop and mobile */
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      {/* ---- Brand Logo ---- */}
-      <div className="p-6 border-b border-card-border">
+      {/* ---- Brand Logo + Notification Bell ---- */}
+      <div className="flex items-center justify-between p-6 border-b border-card-border">
         <Link href="/dashboard" className="flex items-center">
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
             JobPilot AI
           </span>
         </Link>
+        <NotificationBell />
       </div>
 
       {/* ---- Navigation Links ---- */}
@@ -154,6 +172,43 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
             {item.label}
           </Link>
         ))}
+
+        {/* ---- B2B links — org/employer dashboards ---- */}
+        {(hasOrgs || hasEmployers) && (
+          <>
+            <div className="my-2 border-t border-card-border/50" />
+            {hasOrgs && (
+              <Link
+                href="/org"
+                prefetch={true}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-indigo-400/70 hover:text-indigo-300 hover:bg-indigo-500/10 transition-all"
+              >
+                <span className="shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </span>
+                Organization
+              </Link>
+            )}
+            {hasEmployers && (
+              <Link
+                href="/employer"
+                prefetch={true}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-purple-400/70 hover:text-purple-300 hover:bg-purple-500/10 transition-all"
+              >
+                <span className="shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M3.41 7.41L2 9v9a2 2 0 002 2h16a2 2 0 002-2V9l-1.41-1.59A2 2 0 0019.17 7H4.83a2 2 0 00-1.42.59z" />
+                  </svg>
+                </span>
+                Employer Portal
+              </Link>
+            )}
+          </>
+        )}
 
         {/* ---- Admin link (only visible to admin users) ---- */}
         {isAdmin && (

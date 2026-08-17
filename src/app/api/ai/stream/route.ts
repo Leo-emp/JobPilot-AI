@@ -20,6 +20,7 @@ import { cacheDel, checkGlobalDailyCap } from "@/lib/redis";
 import { audit } from "@/lib/audit";
 import { safeHandler } from "@/lib/api-handler";
 import { PLAN_LIMITS } from "@/lib/plan-limits";
+import { getEffectivePlan } from "@/lib/effective-plan";
 import * as Sentry from "@sentry/nextjs";
 
 function hashText(text: string): string {
@@ -100,6 +101,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
     if (!user) return jsonError("User not found.", 404);
 
+    /* # Resolve effective plan — considers org sponsorship */
+    const effectivePlan = await getEffectivePlan(session.user.id);
+
     /* Reset monthly counter if needed */
     const now = new Date();
     if (user.usageResetDate < now) {
@@ -117,12 +121,12 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
     /* # Atomic limit check + increment — prevents race condition */
     if (!admin) {
-      const limit = PLAN_LIMITS[user.plan] ?? PLAN_LIMITS.free;
+      const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
       if (user.aiUsageCount >= limit) {
-        const msg = user.plan === "free"
+        const msg = effectivePlan === "free"
           ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 1,000/month.`
           : `Monthly limit of ${limit} reached.`;
-        audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action });
+        audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action });
         return jsonError(msg, 429);
       }
 
@@ -141,7 +145,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
             data: { aiUsageCount: { decrement: 1 } },
           })
         );
-        audit("ai.limit.reached", { userId: session.user.id, plan: user.plan, action, detail: "concurrent_race" });
+        audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action, detail: "concurrent_race" });
         return jsonError("You've reached your monthly AI limit.", 429);
       }
       await cacheDel(`plan:${session.user.id}`);

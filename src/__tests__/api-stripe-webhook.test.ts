@@ -27,6 +27,7 @@ vi.mock("@/lib/prisma", () => ({
     user: {
       update: vi.fn(() => Promise.resolve({})),
       findFirst: vi.fn(() => Promise.resolve(null)),
+      findUnique: vi.fn(() => Promise.resolve(null)),
     },
   },
 }));
