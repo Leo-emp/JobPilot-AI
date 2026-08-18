@@ -15,38 +15,28 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { audit } from "@/lib/audit";
 import { isB2BEnabled } from "@/lib/b2b-gate";
+import { verifySvixWebhook } from "@/lib/svix-verify";
 
 export async function POST(req: NextRequest) {
   if (!isB2BEnabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  /* # Verify webhook authenticity via Resend webhook secret.
-     Resend uses Svix to sign webhooks — we verify the HMAC to
-     ensure this request actually came from Resend, not an attacker. */
+
+  /* # Verify webhook authenticity — Resend signs payloads via Svix HMAC */
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    /* # Webhook secret not configured — reject all webhook calls */
     console.error("RESEND_WEBHOOK_SECRET not configured — rejecting webhook");
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  /* # Svix sends these three headers for signature verification */
-  const svixId = req.headers.get("svix-id");
-  const svixTimestamp = req.headers.get("svix-timestamp");
-  const svixSignature = req.headers.get("svix-signature");
-
-  if (!svixId || !svixTimestamp || !svixSignature) {
-    return NextResponse.json({ error: "Missing webhook signature headers" }, { status: 401 });
+  /* # Cryptographically verify the Svix signature (HMAC-SHA256) */
+  const verification = await verifySvixWebhook(req, webhookSecret);
+  if (!verification.ok) {
+    return verification.errorResponse!;
   }
 
-  /* # Reject if timestamp is too old (5 minutes) to prevent replay attacks */
-  const now = Math.floor(Date.now() / 1000);
-  const ts = parseInt(svixTimestamp, 10);
-  if (isNaN(ts) || Math.abs(now - ts) > 300) {
-    return NextResponse.json({ error: "Webhook timestamp expired" }, { status: 401 });
-  }
-
-  const body = await req.json().catch(() => null);
+  /* # Parse the verified body */
+  const body = (() => { try { return JSON.parse(verification.body!); } catch { return null; } })();
   if (!body || !body.type || !body.data) {
     return NextResponse.json({ error: "Invalid webhook payload" }, { status: 400 });
   }

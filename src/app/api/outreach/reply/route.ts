@@ -18,13 +18,14 @@ import { classifyReply } from "@/lib/reply-classifier";
 import { audit } from "@/lib/audit";
 import { notify } from "@/lib/notifications";
 import { isB2BEnabled } from "@/lib/b2b-gate";
+import { verifySvixWebhook } from "@/lib/svix-verify";
 
 export async function POST(req: NextRequest) {
   if (!isB2BEnabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  /* # Verify webhook authenticity — same Svix verification as outreach/webhook.
+  /* # Verify webhook authenticity — Resend signs payloads via Svix HMAC.
      Without this, anyone could POST fake replies to manipulate outreach status. */
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
   if (!webhookSecret) {
@@ -32,21 +33,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  const svixId = req.headers.get("svix-id");
-  const svixTimestamp = req.headers.get("svix-timestamp");
-  const svixSignature = req.headers.get("svix-signature");
-
-  if (!svixId || !svixTimestamp || !svixSignature) {
-    return NextResponse.json({ error: "Missing webhook signature headers" }, { status: 401 });
+  /* # Cryptographically verify the Svix signature (HMAC-SHA256) */
+  const verification = await verifySvixWebhook(req, webhookSecret);
+  if (!verification.ok) {
+    return verification.errorResponse!;
   }
 
-  const now = Math.floor(Date.now() / 1000);
-  const ts = parseInt(svixTimestamp, 10);
-  if (isNaN(ts) || Math.abs(now - ts) > 300) {
-    return NextResponse.json({ error: "Webhook timestamp expired" }, { status: 401 });
-  }
-
-  const body = await req.json().catch(() => null);
+  /* # Parse the verified body */
+  const body = (() => { try { return JSON.parse(verification.body!); } catch { return null; } })();
   if (!body) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
