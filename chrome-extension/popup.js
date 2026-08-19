@@ -122,25 +122,46 @@ async function extractFromTab(tabId) {
             ".artdeco-entity-lockup__subtitle"
           );
 
-          /* --- Location: find text with bullet separator near the title --- */
-          /* LinkedIn subtitle format: "Company · Location · Time ago" */
-          /* Scan all elements for text containing a bullet near the company name */
-          const allEls = document.querySelectorAll("div, span, li");
+          /* --- Location: find the subtitle line in the detail pane --- */
+          /* LinkedIn detail subtitle: "Location · Time ago · Applicants" */
+          /* Only scan inside the detail/main pane, NOT the sidebar job cards */
+
+          /* Helper: returns true if a string is a time/noise fragment, not a location */
+          function isNoise(s) {
+            return /^\d+\s+(second|minute|hour|day|week|month|year)/i.test(s)
+              || /^\d+\s+applicant/i.test(s)
+              || /^posted\s/i.test(s)
+              || /^over\s+\d+/i.test(s)
+              || /^easy\s+apply/i.test(s)
+              || /^reposted/i.test(s)
+              || /^(am|pm)$/i.test(s)
+              || /^promoted$/i.test(s)
+              || /^viewed$/i.test(s)
+              || /^actively\s+recruiting/i.test(s)
+              || /^\d+\s+(of|\/)\s+\d+/i.test(s)
+              || s.length <= 2;
+          }
+
+          /* Step A: Try to find the subtitle inside the detail pane only */
+          const detailPane = document.querySelector(
+            ".jobs-search__job-details, .scaffold-layout__detail, .job-view-layout, [role='main'], main"
+          );
+          const scanRoot = detailPane || document;
+          const allEls = scanRoot.querySelectorAll("div, span, li");
           for (const el of allEls) {
             const t = (el.textContent || "").trim();
-            /* Look for "company · location" pattern — must contain bullet and company name */
-            if (t.includes("·") && company && t.toLowerCase().includes(company.toLowerCase())) {
-              const parts = t.split("·").map(s => s.trim());
-              /* Location is the part after company, skip time-related parts */
-              for (let i = 1; i < parts.length; i++) {
-                const p = parts[i];
-                if (p && !p.match(/^\d+\s+(second|minute|hour|day|week|month|year)/i) && !p.match(/^\d+\s+applicant/i) && p.length > 2) {
-                  location_ = p;
-                  break;
-                }
-              }
-              if (location_) break;
+            if (!t.includes("·")) continue;
+            const parts = t.split("·").map(s => s.trim());
+            if (parts.length < 2) continue;
+            /* Pick the first non-noise, non-company part as location */
+            for (const p of parts) {
+              if (!p) continue;
+              if (company && p.toLowerCase() === company.toLowerCase()) continue;
+              if (isNoise(p)) continue;
+              location_ = p;
+              break;
             }
+            if (location_) break;
           }
 
           /* --- Description & Requirements --- */
@@ -296,25 +317,6 @@ async function extractFromTab(tabId) {
         /* Fallback 4: meta tags for location */
         if (!location_) {
           location_ = meta("og:locality") || meta("geo.placename") || "";
-        }
-
-        /* Retry location extraction if company was resolved via fallback */
-        if (!location_ && company && host.includes("linkedin.com")) {
-          const allEls2 = document.querySelectorAll("div, span, li");
-          for (const el of allEls2) {
-            const t = (el.textContent || "").trim();
-            if (t.includes("·") && t.toLowerCase().includes(company.toLowerCase())) {
-              const parts = t.split("·").map(s => s.trim());
-              for (let i = 1; i < parts.length; i++) {
-                const p = parts[i];
-                if (p && !p.match(/^\d+\s+(second|minute|hour|day|week|month|year)/i) && !p.match(/^\d+\s+applicant/i) && p.length > 2) {
-                  location_ = p;
-                  break;
-                }
-              }
-              if (location_) break;
-            }
-          }
         }
 
         if (!title && !company) return null;
