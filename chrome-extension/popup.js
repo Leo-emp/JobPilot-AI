@@ -154,21 +154,19 @@ async function extractFromTab(tabId) {
             "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
             "Zambia","Zimbabwe","UAE","UK","US","USA","Remote"
           ];
-          /* Grab text from around the H1 title only — not the whole page */
+          /* Walk up from the H1, check each parent level for a country.
+             The subtitle with the country is near the H1 so the closest
+             parent that contains it wins — before we reach the sidebar. */
           const h1El = document.querySelector("h1");
           if (h1El) {
-            let box = h1El.parentElement;
-            for (let i = 0; i < 4 && box && box !== document.body; i++) box = box.parentElement;
-            const nearText = (box || h1El.parentElement || h1El).innerText || "";
-            /* Take the first 500 chars after the title text to find the subtitle */
-            const titleIdx = nearText.indexOf(title || h1El.textContent.trim());
-            const searchZone = titleIdx >= 0 ? nearText.slice(titleIdx, titleIdx + 500) : nearText.slice(0, 800);
-            for (const c of COUNTRIES) {
-              const regex = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
-              if (regex.test(searchZone)) {
-                location_ = c;
-                break;
+            let el = h1El.parentElement;
+            for (let lvl = 0; lvl < 6 && el && el !== document.body && !location_; lvl++) {
+              const txt = el.innerText || "";
+              for (const c of COUNTRIES) {
+                const re = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+                if (re.test(txt)) { location_ = c; break; }
               }
+              el = el.parentElement;
             }
           }
 
