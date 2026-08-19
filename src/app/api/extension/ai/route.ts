@@ -34,7 +34,7 @@ export async function OPTIONS(req: NextRequest) {
 
 /* ---- Max input size ---- */
 const MAX_PAYLOAD_SIZE = 50_000;
-const AI_TIMEOUT_MS = 15_000;
+const AI_TIMEOUT_MS = 25_000;
 const MAX_RESUME_CHARS = 3000;
 const MAX_DESC_CHARS = 2000;
 
