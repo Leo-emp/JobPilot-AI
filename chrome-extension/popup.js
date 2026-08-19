@@ -142,7 +142,10 @@ async function extractFromTab(tabId) {
               || s.length <= 2;
           }
 
-          /* Step A: Try to find the subtitle inside the detail pane only */
+          /* Step A: Find the subtitle line inside the detail pane only */
+          /* The real subtitle element is short (< 150 chars), e.g.
+             "United Kingdom · 6 days ago · Over 100 applicants"
+             Skip large parent containers whose textContent is everything */
           const detailPane = document.querySelector(
             ".jobs-search__job-details, .scaffold-layout__detail, .job-view-layout, [role='main'], main"
           );
@@ -150,12 +153,12 @@ async function extractFromTab(tabId) {
           const allEls = scanRoot.querySelectorAll("div, span, li");
           for (const el of allEls) {
             const t = (el.textContent || "").trim();
-            if (!t.includes("·")) continue;
+            if (t.length > 150 || !t.includes("·")) continue;
             const parts = t.split("·").map(s => s.trim());
             if (parts.length < 2) continue;
-            /* Pick the first non-noise, non-company part as location */
+            /* Pick the first non-noise, non-company, short part as location */
             for (const p of parts) {
-              if (!p) continue;
+              if (!p || p.length > 60) continue;
               if (company && p.toLowerCase() === company.toLowerCase()) continue;
               if (isNoise(p)) continue;
               location_ = p;
