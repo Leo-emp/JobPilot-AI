@@ -34,11 +34,13 @@ export async function OPTIONS(req: NextRequest) {
 
 /* ---- Max input size ---- */
 const MAX_PAYLOAD_SIZE = 50_000;
-const AI_TIMEOUT_MS = 30_000;
+const AI_TIMEOUT_MS = 15_000;
+const MAX_RESUME_CHARS = 3000;
+const MAX_DESC_CHARS = 2000;
 
 /* ---- Gemini Model Fallback List ---- */
+/* 2.0-flash is fast (~3-5s). 2.5-flash is a thinking model (~15-30s) — only as fallback. */
 const GEMINI_MODELS = [
-  "gemini-2.5-flash",
   "gemini-2.0-flash",
   "gemini-2.0-flash-lite",
 ];
@@ -62,7 +64,7 @@ async function callGemini(prompt: string): Promise<string> {
           headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
+            generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
           }),
           signal: controller.signal,
         }
@@ -232,22 +234,26 @@ export const POST = safeHandler(async (req: NextRequest) => {
   }
   await cacheDel(`plan:${session.user.id}`);
 
+  /* ---- Trim inputs for speed ---- */
+  const trimmedResume = resumeText.slice(0, MAX_RESUME_CHARS);
+  const trimmedDesc = (description || "").slice(0, MAX_DESC_CHARS);
+
   /* ---- Build prompt based on action ---- */
   let prompt: string;
 
   if (action === "match_score") {
-    prompt = `Analyze how well this resume matches the job description below.
-Return a MATCH_SCORE: X/100 on the first line (just the number).
-Then provide:
-1. **Matching Skills** (what aligns)
-2. **Missing Skills** (gaps to address)
-3. **Recommendations** (how to improve the match)
+    prompt = `Analyze how well this resume matches the job. Be concise.
+Return MATCH_SCORE: X/100 on the first line.
+Then 3 short bullet lists:
+1. **Matching Skills**
+2. **Missing Skills**
+3. **Recommendations**
 
 Resume:
-${resumeText}
+${trimmedResume}
 
 Job Description:
-${description}`;
+${trimmedDesc}`;
   } else if (action === "cover_letter") {
     prompt = `Write a compelling cover letter for this job application.
 
@@ -258,11 +264,11 @@ CRITICAL RULES:
 - Keep it under 350 words
 
 Resume:
-${resumeText}
+${trimmedResume}
 
 Job Title: ${jobTitle || "Not specified"}
 Company: ${company || "Not specified"}
-Job Description: ${description}`;
+Job Description: ${trimmedDesc}`;
   } else {
     return NextResponse.json(
       { error: "Unsupported action. Use match_score or cover_letter." },
