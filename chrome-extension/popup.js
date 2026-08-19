@@ -122,61 +122,6 @@ async function extractFromTab(tabId) {
             ".artdeco-entity-lockup__subtitle"
           );
 
-          /* --- Location: find country name near the job title --- */
-          const COUNTRIES = [
-            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
-            "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
-            "Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
-            "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso",
-            "Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic",
-            "Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba",
-            "Cyprus","Czech Republic","Czechia","Denmark","Djibouti","Dominica",
-            "Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea",
-            "Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia",
-            "Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
-            "Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland",
-            "Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya",
-            "Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho",
-            "Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi",
-            "Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
-            "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
-            "Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand",
-            "Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman",
-            "Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru",
-            "Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
-            "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa",
-            "San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles",
-            "Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia",
-            "South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname",
-            "Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand",
-            "Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan",
-            "Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States",
-            "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
-            "Zambia","Zimbabwe","UAE","UK","US","USA",
-            "Remote","EMEA","APAC","LATAM","Europe","Asia","Worldwide","Global"
-          ];
-          /* Find the title occurrence that ends its line (the real heading),
-             then check the next 2-3 lines for a country name. Skip inline
-             mentions like "AI Product Manager in United Kingdom" (search bar)
-             or "AI Product Manager  at Quectel" (match section). */
-          if (title) {
-            const bodyText = document.body.innerText || "";
-            let sf = 0;
-            while (!location_) {
-              const pos = bodyText.indexOf(title, sf);
-              if (pos < 0) break;
-              const after = bodyText.slice(pos + title.length, pos + title.length + 200);
-              const sameLine = after.split("\n")[0].trim();
-              if (sameLine.length > 3) { sf = pos + 1; continue; }
-              const nextLines = after.split("\n").slice(1, 6).join(" ");
-              for (const c of COUNTRIES) {
-                const re = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
-                if (re.test(nextLines)) { location_ = c; break; }
-              }
-              if (!location_) { sf = pos + 1; continue; }
-            }
-          }
-
           /* --- Description & Requirements --- */
           /* Strategy: get all text from the job detail panel, then filter to
              keep only job description / requirements / qualifications content */
@@ -330,6 +275,58 @@ async function extractFromTab(tabId) {
         /* Fallback 4: meta tags for location */
         if (!location_) {
           location_ = meta("og:locality") || meta("geo.placename") || "";
+        }
+
+        /* Fallback 5: scan page text near the job title for a country name.
+           Runs AFTER all title fallbacks so `title` is guaranteed resolved. */
+        if (!location_ && title && host.includes("linkedin.com")) {
+          const COUNTRIES = [
+            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
+            "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
+            "Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
+            "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso",
+            "Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic",
+            "Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba",
+            "Cyprus","Czech Republic","Czechia","Denmark","Djibouti","Dominica",
+            "Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea",
+            "Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia",
+            "Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+            "Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland",
+            "Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya",
+            "Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho",
+            "Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi",
+            "Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
+            "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
+            "Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand",
+            "Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman",
+            "Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru",
+            "Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+            "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa",
+            "San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles",
+            "Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia",
+            "South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname",
+            "Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand",
+            "Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan",
+            "Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States",
+            "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
+            "Zambia","Zimbabwe","UAE","UK","US","USA",
+            "Remote","EMEA","APAC","LATAM","Europe","Asia","Worldwide","Global"
+          ];
+          const bodyText = document.body.innerText || "";
+          let sf = 0;
+          while (!location_) {
+            const pos = bodyText.indexOf(title, sf);
+            if (pos < 0) break;
+            const after = bodyText.slice(pos + title.length, pos + title.length + 200);
+            const sameLine = after.split("\n")[0].trim();
+            if (sameLine.length > 3) { sf = pos + 1; continue; }
+            const nextLines = after.split("\n").slice(1, 6).join(" ");
+            for (const c of COUNTRIES) {
+              const re = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+              if (re.test(nextLines)) { location_ = c; break; }
+            }
+            if (!location_) { sf = pos + 1; continue; }
+          }
         }
 
         if (!title && !company) return null;
