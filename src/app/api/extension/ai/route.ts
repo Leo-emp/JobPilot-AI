@@ -45,7 +45,7 @@ const GEMINI_MODELS = [
 ];
 
 /* ---- Call Gemini with automatic fallback and timeout ---- */
-async function callGemini(prompt: string): Promise<string> {
+async function callGemini(prompt: string, temperature = 0.7): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("AI features are not configured yet.");
@@ -63,7 +63,7 @@ async function callGemini(prompt: string): Promise<string> {
           headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+            generationConfig: { temperature, maxOutputTokens: 2048 },
           }),
           signal: controller.signal,
         }
@@ -241,12 +241,19 @@ export const POST = safeHandler(async (req: NextRequest) => {
   let prompt: string;
 
   if (action === "match_score") {
-    prompt = `Analyze how well this resume matches the job. Be concise.
-Return MATCH_SCORE: X/100 on the first line.
-Then 3 short bullet lists:
-1. **Matching Skills**
-2. **Missing Skills**
-3. **Recommendations**
+    prompt = `You are a precise job-matching scorer. Score how well this resume matches the job.
+
+SCORING RULES (follow exactly):
+- Count skills/technologies in the job description that appear in the resume → matched
+- Count skills/technologies in the job description missing from the resume → missing
+- Score = (matched / (matched + missing)) * 100, rounded to nearest integer
+- Adjust ±5 points max for years of experience fit and education match
+
+Return EXACTLY this format:
+MATCH_SCORE: X/100
+**Matching Skills:** skill1, skill2, skill3
+**Missing Skills:** skill1, skill2
+**Recommendation:** One sentence on how to improve the match.
 
 Resume:
 ${trimmedResume}
@@ -276,7 +283,7 @@ Job Description: ${trimmedDesc}`;
   }
 
   try {
-    const raw = await callGemini(prompt);
+    const raw = await callGemini(prompt, action === "match_score" ? 0 : 0.7);
     const result = scrubPlaceholders(raw);
 
     /* # Usage already incremented atomically above */
