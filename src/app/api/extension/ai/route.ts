@@ -39,10 +39,9 @@ const MAX_RESUME_CHARS = 3000;
 const MAX_DESC_CHARS = 2000;
 
 /* ---- Gemini Model Fallback List ---- */
-/* 2.0-flash is fast (~3-5s). 2.5-flash is a thinking model (~15-30s) — only as fallback. */
 const GEMINI_MODELS = [
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
+  "gemini-3.6-flash",
+  "gemini-2.5-flash",
 ];
 
 /* ---- Call Gemini with automatic fallback and timeout ---- */

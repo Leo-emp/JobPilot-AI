@@ -12,12 +12,9 @@
 import * as Sentry from "@sentry/nextjs";
 
 const GEMINI_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-3-flash-preview",
+  "gemini-3.6-flash",
   "gemini-3.1-flash-lite",
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
+  "gemini-2.5-flash",
 ];
 
 /* Models that returned 404 — skip them for 1 hour, then retry */
