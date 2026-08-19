@@ -636,3 +636,233 @@ function escapeHtml(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+/* ============================================================
+   TAB NAVIGATION — Switch between Jobs and Profile tabs
+   ============================================================ */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    /* # Deactivate all tabs */
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    /* # Show the target tab, hide the other */
+    const target = btn.getAttribute("data-tab");
+    document.getElementById("jobs-tab").style.display = target === "jobs-tab" ? "block" : "none";
+    document.getElementById("profile-tab").style.display = target === "profile-tab" ? "block" : "none";
+
+    /* # Load profile data when switching to profile tab */
+    if (target === "profile-tab") loadProfileEditor();
+  });
+});
+
+/* ============================================================
+   AUTOFILL PROFILE EDITOR — Load / Save / Sync
+   ============================================================ */
+
+/* # All profile fields that map to form inputs by id="pf-{key}" */
+const PROFILE_FIELDS = [
+  "firstName", "lastName", "email", "phone",
+  "address", "city", "state", "zip", "country",
+  "linkedinUrl", "githubUrl", "website",
+  "currentTitle", "currentCompany", "yearsOfExperience", "desiredSalary",
+  "school", "degree", "fieldOfStudy", "graduationYear", "gpa",
+  "workAuthorized", "sponsorshipNeeded", "eighteenOrOlder", "willingToRelocate", "startDate",
+  "gender", "race", "veteranStatus", "disabilityStatus",
+];
+
+/* # Default profile values (same as autofill.js DEFAULT_PROFILE) */
+const DEFAULT_PROFILE_VALS = {
+  firstName: "", lastName: "", email: "", phone: "",
+  address: "", city: "", state: "", zip: "", country: "United States",
+  linkedinUrl: "", githubUrl: "", website: "",
+  currentTitle: "", currentCompany: "", yearsOfExperience: "", desiredSalary: "",
+  school: "", degree: "", fieldOfStudy: "", graduationYear: "", gpa: "",
+  workAuthorized: "Yes", sponsorshipNeeded: "No", eighteenOrOlder: "Yes",
+  willingToRelocate: "Yes", startDate: "Immediately",
+  gender: "Decline to self-identify", race: "Decline to self-identify",
+  veteranStatus: "I am not a protected veteran", disabilityStatus: "I do not want to answer",
+  resumeDataUrl: "", resumeFileName: "",
+};
+
+/* # Load profile from chrome.storage and populate the form */
+async function loadProfileEditor() {
+  let profile = { ...DEFAULT_PROFILE_VALS };
+  try {
+    const stored = await chrome.storage.local.get("jp_autofill_profile");
+    if (stored.jp_autofill_profile) {
+      profile = { ...profile, ...stored.jp_autofill_profile };
+    }
+  } catch {}
+
+  /* # Populate every input/select */
+  for (const key of PROFILE_FIELDS) {
+    const el = document.getElementById("pf-" + key);
+    if (!el) continue;
+    el.value = profile[key] || DEFAULT_PROFILE_VALS[key] || "";
+  }
+
+  /* # Show resume file name if one is stored */
+  const resumeName = document.getElementById("resume-file-name");
+  if (profile.resumeFileName) {
+    resumeName.textContent = "Attached: " + profile.resumeFileName;
+  } else {
+    resumeName.textContent = "No resume attached";
+  }
+
+  /* # Update completeness bar */
+  updateCompleteness(profile);
+}
+
+/* # Save all profile fields from the form to chrome.storage */
+async function saveProfileEditor() {
+  let profile = { ...DEFAULT_PROFILE_VALS };
+  try {
+    const stored = await chrome.storage.local.get("jp_autofill_profile");
+    if (stored.jp_autofill_profile) profile = { ...profile, ...stored.jp_autofill_profile };
+  } catch {}
+
+  /* # Read values from every input/select */
+  for (const key of PROFILE_FIELDS) {
+    const el = document.getElementById("pf-" + key);
+    if (!el) continue;
+    profile[key] = el.value.trim();
+  }
+
+  /* # Build fullName from first + last */
+  profile.fullName = (profile.firstName + " " + profile.lastName).trim();
+
+  try {
+    await chrome.storage.local.set({ jp_autofill_profile: profile });
+    showToast("Profile saved", "success");
+    updateCompleteness(profile);
+  } catch {
+    showToast("Failed to save profile", "error");
+  }
+}
+
+/* # Update the completeness percentage bar */
+function updateCompleteness(p) {
+  const fields = [
+    p.firstName, p.lastName, p.email, p.phone,
+    p.city, p.linkedinUrl, p.currentTitle, p.school,
+    p.degree, p.workAuthorized, p.resumeDataUrl,
+  ];
+  const filled = fields.filter(Boolean).length;
+  const pct = Math.round((filled / fields.length) * 100);
+
+  const pctEl = document.getElementById("profile-pct");
+  const barEl = document.getElementById("profile-bar-fill");
+  if (pctEl) pctEl.textContent = pct + "%";
+  if (barEl) barEl.style.width = pct + "%";
+}
+
+/* # Sync profile from JobPilot API (overwrites empty fields only) */
+async function syncProfileFromAPI() {
+  const btnSync = document.getElementById("btn-sync-profile");
+  btnSync.disabled = true;
+  btnSync.textContent = "Syncing...";
+
+  try {
+    let data = null;
+    for (const url of API_URLS) {
+      try {
+        const res = await fetch(`${url}/api/extension/autofill-profile`, { credentials: "include" });
+        if (res.ok) { data = await res.json(); break; }
+      } catch {}
+    }
+
+    if (!data?.profile) {
+      showToast("Could not sync — make sure you're logged in", "error");
+      return;
+    }
+
+    /* # Load existing profile */
+    let profile = { ...DEFAULT_PROFILE_VALS };
+    try {
+      const stored = await chrome.storage.local.get("jp_autofill_profile");
+      if (stored.jp_autofill_profile) profile = { ...profile, ...stored.jp_autofill_profile };
+    } catch {}
+
+    const api = data.profile;
+    const names = (api.fullName || "").trim().split(/\s+/);
+
+    /* # Only fill empty fields — user edits take priority */
+    if (!profile.firstName && names[0]) profile.firstName = names[0];
+    if (!profile.lastName && names.length > 1) profile.lastName = names.slice(1).join(" ");
+    if (!profile.fullName) profile.fullName = api.fullName || "";
+    if (!profile.email) profile.email = api.email || "";
+    if (!profile.phone) profile.phone = api.phone || "";
+    if (!profile.linkedinUrl) profile.linkedinUrl = api.linkedinUrl || "";
+    if (!profile.githubUrl) profile.githubUrl = api.githubUrl || "";
+    if (!profile.website) profile.website = api.website || "";
+    if (!profile.currentTitle) profile.currentTitle = api.currentTitle || "";
+    if (!profile.skills) profile.skills = api.skills || "";
+
+    /* # Parse location from API */
+    if (!profile.city && api.location) {
+      const parts = api.location.split(",").map(s => s.trim());
+      profile.city = parts[0] || "";
+      if (parts[1]) profile.state = parts[1];
+    }
+
+    profile.lastSynced = Date.now();
+    await chrome.storage.local.set({ jp_autofill_profile: profile });
+
+    /* # Reload the form with synced data */
+    loadProfileEditor();
+    showToast("Profile synced from your account", "success");
+  } catch {
+    showToast("Sync failed", "error");
+  } finally {
+    btnSync.disabled = false;
+    btnSync.textContent = "Sync from JobPilot Account";
+  }
+}
+
+/* # Resume file upload handler */
+document.getElementById("btn-upload-resume")?.addEventListener("click", () => {
+  document.getElementById("pf-resume-file").click();
+});
+
+document.getElementById("pf-resume-file")?.addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  /* # Limit to 5MB */
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("Resume must be under 5MB", "error");
+    return;
+  }
+
+  try {
+    /* # Read file as data URL for storage */
+    const reader = new FileReader();
+    reader.onload = async () => {
+      let profile = { ...DEFAULT_PROFILE_VALS };
+      try {
+        const stored = await chrome.storage.local.get("jp_autofill_profile");
+        if (stored.jp_autofill_profile) profile = { ...profile, ...stored.jp_autofill_profile };
+      } catch {}
+
+      profile.resumeDataUrl = reader.result;
+      profile.resumeFileName = file.name;
+
+      await chrome.storage.local.set({ jp_autofill_profile: profile });
+
+      const nameEl = document.getElementById("resume-file-name");
+      if (nameEl) nameEl.textContent = "Attached: " + file.name;
+      updateCompleteness(profile);
+      showToast("Resume attached for autofill", "success");
+    };
+    reader.readAsDataURL(file);
+  } catch {
+    showToast("Failed to read file", "error");
+  }
+});
+
+/* # Save profile button */
+document.getElementById("btn-save-profile")?.addEventListener("click", saveProfileEditor);
+
+/* # Sync button */
+document.getElementById("btn-sync-profile")?.addEventListener("click", syncProfileFromAPI);

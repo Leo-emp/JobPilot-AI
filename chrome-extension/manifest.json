@@ -49,9 +49,27 @@
         "https://apply.workable.com/*",
         "https://*.icims.com/*",
         "https://*.bamboohr.com/*",
-        "https://jobs.jobvite.com/*"
+        "https://jobs.jobvite.com/*",
+
+        "https://*.taleo.net/*",
+        "https://*.successfactors.com/*",
+        "https://*.breezy.hr/*",
+        "https://*.jazz.co/*",
+        "https://*.recruitee.com/*",
+        "https://*.pinpointhq.com/*",
+        "https://*.applytojob.com/*",
+        "https://*.rippling.com/*",
+        "https://*.dover.com/*",
+        "https://*.ycombinator.com/companies/*/jobs/*",
+        "https://angel.co/*/jobs/*",
+        "https://www.workatastartup.com/*",
+        "https://careers.google.com/*",
+        "https://www.metacareers.com/*",
+        "https://www.amazon.jobs/*",
+        "https://jobs.apple.com/*",
+        "https://careers.microsoft.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["content.js", "autofill.js"],
       "css": ["content-badge.css"],
       "run_at": "document_idle"
     }
