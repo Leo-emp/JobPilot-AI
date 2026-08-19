@@ -293,6 +293,30 @@ async function extractFromTab(tabId) {
           }
         }
 
+        /* Fallback 4: meta tags for location */
+        if (!location_) {
+          location_ = meta("og:locality") || meta("geo.placename") || "";
+        }
+
+        /* Retry location extraction if company was resolved via fallback */
+        if (!location_ && company && host.includes("linkedin.com")) {
+          const allEls2 = document.querySelectorAll("div, span, li");
+          for (const el of allEls2) {
+            const t = (el.textContent || "").trim();
+            if (t.includes("·") && t.toLowerCase().includes(company.toLowerCase())) {
+              const parts = t.split("·").map(s => s.trim());
+              for (let i = 1; i < parts.length; i++) {
+                const p = parts[i];
+                if (p && !p.match(/^\d+\s+(second|minute|hour|day|week|month|year)/i) && !p.match(/^\d+\s+applicant/i) && p.length > 2) {
+                  location_ = p;
+                  break;
+                }
+              }
+              if (location_) break;
+            }
+          }
+        }
+
         if (!title && !company) return null;
         return { title, company, location: location_, description, url: location.href };
       },
