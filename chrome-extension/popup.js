@@ -122,88 +122,44 @@ async function extractFromTab(tabId) {
             ".artdeco-entity-lockup__subtitle"
           );
 
-          /* --- Location extraction --- */
-          /* LinkedIn shows "Location · Time ago · Applicants" in the subtitle.
-             Strategy: try targeted selectors first, then scan only the
-             top-card area. Extract only the country from the location text. */
-
-          /* Helper: true if a string is NOT a real location */
-          function isNoise(s) {
-            return /\d+\s+(second|minute|hour|day|week|month|year)/i.test(s)
-              || /\d+\s+applicant/i.test(s)
-              || /^posted\s/i.test(s)
-              || /^over\s+\d+/i.test(s)
-              || /^easy\s+apply/i.test(s)
-              || /^reposted/i.test(s)
-              || /^(am|pm)$/i.test(s)
-              || /^promoted$/i.test(s)
-              || /^viewed$/i.test(s)
-              || /^actively\s+(reviewing|recruiting)/i.test(s)
-              || /^be\s+an?\s+(early\s+)?applicant/i.test(s)
-              || /^responses?\s+managed/i.test(s)
-              || /^alumni/i.test(s)
-              || /^show\s+(more|less)/i.test(s)
-              || /^\d+\s+(of|\/)\s+\d+/i.test(s)
-              || /^(apply|save|share|follow|report|message|block)$/i.test(s)
-              || /^learn\s+more/i.test(s)
-              || /results$/i.test(s)
-              || s.length <= 2;
-          }
-
-          /* Clean raw location text → extract just the country/region */
-          function cleanLocation(raw) {
-            /* Strip "(Hybrid)", "(Remote)", "(On-site)" tags */
-            let loc = raw.replace(/\s*\((hybrid|remote|on-?site)\)\s*/gi, "").trim();
-            /* If it has a comma (e.g. "London Area, United Kingdom"), take last part */
-            if (loc.includes(",")) {
-              const last = loc.split(",").pop().trim();
-              if (last.length > 2) loc = last;
-            }
-            return loc;
-          }
-
-          /* Step A: Try LinkedIn's specific top-card subtitle selectors */
-          const topCardSels = [
-            ".job-details-jobs-unified-top-card__primary-description-container",
-            ".job-details-jobs-unified-top-card__primary-description",
-            ".jobs-unified-top-card__subtitle-primary-grouping",
-            ".job-details-jobs-unified-top-card__tertiary-description-container"
+          /* --- Location: scan page text for a country name --- */
+          const COUNTRIES = [
+            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
+            "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
+            "Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
+            "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso",
+            "Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic",
+            "Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba",
+            "Cyprus","Czech Republic","Czechia","Denmark","Djibouti","Dominica",
+            "Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea",
+            "Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia",
+            "Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+            "Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland",
+            "Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kazakhstan","Kenya",
+            "Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho",
+            "Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi",
+            "Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
+            "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
+            "Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand",
+            "Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman",
+            "Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru",
+            "Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+            "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa",
+            "San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles",
+            "Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia",
+            "South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname",
+            "Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand",
+            "Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan",
+            "Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States",
+            "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
+            "Zambia","Zimbabwe","UAE","UK","US","USA","Remote"
           ];
-          for (const sel of topCardSels) {
-            const el = document.querySelector(sel);
-            if (!el) continue;
-            const t = (el.textContent || "").trim();
-            if (!t.includes("·")) continue;
-            const parts = t.split("·").map(s => s.trim());
-            for (const p of parts) {
-              if (!p || p.length > 60 || isNoise(p)) continue;
-              if (company && p.toLowerCase() === company.toLowerCase()) continue;
-              location_ = cleanLocation(p);
+          const pageText = (document.body.innerText || "");
+          for (const c of COUNTRIES) {
+            const regex = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+            if (regex.test(pageText)) {
+              location_ = c;
               break;
-            }
-            if (location_) break;
-          }
-
-          /* Step B: Fallback — scan short elements with · inside the detail pane */
-          if (!location_) {
-            const detailPane = document.querySelector(
-              ".jobs-search__job-details, .scaffold-layout__detail, .job-view-layout"
-            );
-            if (detailPane) {
-              const allEls = detailPane.querySelectorAll("span, li");
-              for (const el of allEls) {
-                const t = (el.textContent || "").trim();
-                if (t.length > 120 || t.length < 5 || !t.includes("·")) continue;
-                const parts = t.split("·").map(s => s.trim());
-                if (parts.length < 2) continue;
-                for (const p of parts) {
-                  if (!p || p.length > 60 || isNoise(p)) continue;
-                  if (company && p.toLowerCase() === company.toLowerCase()) continue;
-                  location_ = cleanLocation(p);
-                  break;
-                }
-                if (location_) break;
-              }
             }
           }
 
