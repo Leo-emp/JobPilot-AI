@@ -152,20 +152,28 @@ async function extractFromTab(tabId) {
             "Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan",
             "Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States",
             "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
-            "Zambia","Zimbabwe","UAE","UK","US","USA","Remote"
+            "Zambia","Zimbabwe","UAE","UK","US","USA",
+            "Remote","EMEA","APAC","LATAM","Europe","Asia","Worldwide","Global"
           ];
-          /* Search page text right after the last occurrence of the job title.
-             The detail pane renders after the sidebar, so lastIndexOf finds
-             the title in the detail view. Country is in the next ~300 chars. */
+          /* Find the title occurrence that ends its line (the real heading),
+             then check the next 2-3 lines for a country name. Skip inline
+             mentions like "AI Product Manager in United Kingdom" (search bar)
+             or "AI Product Manager  at Quectel" (match section). */
           if (title) {
             const bodyText = document.body.innerText || "";
-            const pos = bodyText.lastIndexOf(title);
-            if (pos >= 0) {
-              const after = bodyText.slice(pos + title.length, pos + title.length + 300);
+            let sf = 0;
+            while (!location_) {
+              const pos = bodyText.indexOf(title, sf);
+              if (pos < 0) break;
+              const after = bodyText.slice(pos + title.length, pos + title.length + 200);
+              const sameLine = after.split("\n")[0].trim();
+              if (sameLine.length > 3) { sf = pos + 1; continue; }
+              const nextLines = after.split("\n").slice(1, 6).join(" ");
               for (const c of COUNTRIES) {
                 const re = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
-                if (re.test(after)) { location_ = c; break; }
+                if (re.test(nextLines)) { location_ = c; break; }
               }
+              if (!location_) { sf = pos + 1; continue; }
             }
           }
 
