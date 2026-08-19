@@ -122,14 +122,15 @@ async function extractFromTab(tabId) {
             ".artdeco-entity-lockup__subtitle"
           );
 
-          /* --- Location: find the subtitle line in the detail pane --- */
-          /* LinkedIn detail subtitle: "Location · Time ago · Applicants" */
-          /* Only scan inside the detail/main pane, NOT the sidebar job cards */
+          /* --- Location extraction --- */
+          /* LinkedIn shows "Location · Time ago · Applicants" in the subtitle.
+             Strategy: try targeted selectors first, then scan only the
+             top-card area. Extract only the country from the location text. */
 
-          /* Helper: returns true if a string is a time/noise fragment, not a location */
+          /* Helper: true if a string is NOT a real location */
           function isNoise(s) {
-            return /^\d+\s+(second|minute|hour|day|week|month|year)/i.test(s)
-              || /^\d+\s+applicant/i.test(s)
+            return /\d+\s+(second|minute|hour|day|week|month|year)/i.test(s)
+              || /\d+\s+applicant/i.test(s)
               || /^posted\s/i.test(s)
               || /^over\s+\d+/i.test(s)
               || /^easy\s+apply/i.test(s)
@@ -137,34 +138,73 @@ async function extractFromTab(tabId) {
               || /^(am|pm)$/i.test(s)
               || /^promoted$/i.test(s)
               || /^viewed$/i.test(s)
-              || /^actively\s+recruiting/i.test(s)
+              || /^actively\s+(reviewing|recruiting)/i.test(s)
+              || /^be\s+an?\s+(early\s+)?applicant/i.test(s)
+              || /^responses?\s+managed/i.test(s)
+              || /^alumni/i.test(s)
+              || /^show\s+(more|less)/i.test(s)
               || /^\d+\s+(of|\/)\s+\d+/i.test(s)
+              || /^(apply|save|share|follow|report|message|block)$/i.test(s)
+              || /^learn\s+more/i.test(s)
+              || /results$/i.test(s)
               || s.length <= 2;
           }
 
-          /* Step A: Find the subtitle line inside the detail pane only */
-          /* The real subtitle element is short (< 150 chars), e.g.
-             "United Kingdom · 6 days ago · Over 100 applicants"
-             Skip large parent containers whose textContent is everything */
-          const detailPane = document.querySelector(
-            ".jobs-search__job-details, .scaffold-layout__detail, .job-view-layout, [role='main'], main"
-          );
-          const scanRoot = detailPane || document;
-          const allEls = scanRoot.querySelectorAll("div, span, li");
-          for (const el of allEls) {
+          /* Clean raw location text → extract just the country/region */
+          function cleanLocation(raw) {
+            /* Strip "(Hybrid)", "(Remote)", "(On-site)" tags */
+            let loc = raw.replace(/\s*\((hybrid|remote|on-?site)\)\s*/gi, "").trim();
+            /* If it has a comma (e.g. "London Area, United Kingdom"), take last part */
+            if (loc.includes(",")) {
+              const last = loc.split(",").pop().trim();
+              if (last.length > 2) loc = last;
+            }
+            return loc;
+          }
+
+          /* Step A: Try LinkedIn's specific top-card subtitle selectors */
+          const topCardSels = [
+            ".job-details-jobs-unified-top-card__primary-description-container",
+            ".job-details-jobs-unified-top-card__primary-description",
+            ".jobs-unified-top-card__subtitle-primary-grouping",
+            ".job-details-jobs-unified-top-card__tertiary-description-container"
+          ];
+          for (const sel of topCardSels) {
+            const el = document.querySelector(sel);
+            if (!el) continue;
             const t = (el.textContent || "").trim();
-            if (t.length > 150 || !t.includes("·")) continue;
+            if (!t.includes("·")) continue;
             const parts = t.split("·").map(s => s.trim());
-            if (parts.length < 2) continue;
-            /* Pick the first non-noise, non-company, short part as location */
             for (const p of parts) {
-              if (!p || p.length > 60) continue;
+              if (!p || p.length > 60 || isNoise(p)) continue;
               if (company && p.toLowerCase() === company.toLowerCase()) continue;
-              if (isNoise(p)) continue;
-              location_ = p;
+              location_ = cleanLocation(p);
               break;
             }
             if (location_) break;
+          }
+
+          /* Step B: Fallback — scan short elements with · inside the detail pane */
+          if (!location_) {
+            const detailPane = document.querySelector(
+              ".jobs-search__job-details, .scaffold-layout__detail, .job-view-layout"
+            );
+            if (detailPane) {
+              const allEls = detailPane.querySelectorAll("span, li");
+              for (const el of allEls) {
+                const t = (el.textContent || "").trim();
+                if (t.length > 120 || t.length < 5 || !t.includes("·")) continue;
+                const parts = t.split("·").map(s => s.trim());
+                if (parts.length < 2) continue;
+                for (const p of parts) {
+                  if (!p || p.length > 60 || isNoise(p)) continue;
+                  if (company && p.toLowerCase() === company.toLowerCase()) continue;
+                  location_ = cleanLocation(p);
+                  break;
+                }
+                if (location_) break;
+              }
+            }
           }
 
           /* --- Description & Requirements --- */
