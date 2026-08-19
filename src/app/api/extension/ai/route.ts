@@ -38,23 +38,26 @@ const AI_TIMEOUT_MS = 25_000;
 const MAX_RESUME_CHARS = 3000;
 const MAX_DESC_CHARS = 2000;
 
-/* ---- Gemini Model Fallback List ---- */
+/* ---- Gemini Model Fallback List (fastest first) ---- */
 const GEMINI_MODELS = [
+  "gemini-3.1-flash-lite",
   "gemini-3.6-flash",
   "gemini-2.5-flash",
 ];
 
-/* ---- Call Gemini with automatic fallback and timeout ---- */
+/* ---- Call Gemini — tries every model, never throws on timeout ---- */
 async function callGemini(prompt: string, temperature = 0.7): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("AI features are not configured yet.");
   }
 
+  let lastError = "";
+
   for (const model of GEMINI_MODELS) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+      const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -69,30 +72,43 @@ async function callGemini(prompt: string, temperature = 0.7): Promise<string> {
         }
       );
 
-      clearTimeout(timeout);
+      clearTimeout(timer);
 
-      if (response.status === 429) {
-        await new Promise((r) => setTimeout(r, 2000));
+      if (response.status === 429 || response.status === 503) {
+        console.log(`[ext-ai] ${model} rate-limited (${response.status}), trying next`);
+        continue;
+      }
+
+      if (response.status === 404) {
+        console.log(`[ext-ai] ${model} not found (404), trying next`);
         continue;
       }
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Gemini API error");
+        const errorData = await response.json().catch(() => ({}));
+        lastError = `${model}: ${(errorData as Record<string, { message?: string }>).error?.message || response.status}`;
+        console.log(`[ext-ai] ${model} error: ${lastError}, trying next`);
+        continue;
       }
 
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes("429")) {
-        await new Promise((r) => setTimeout(r, 2000));
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        lastError = `${model}: empty response`;
+        console.log(`[ext-ai] ${model} returned empty, trying next`);
         continue;
       }
-      throw error;
+
+      console.log(`[ext-ai] success with ${model}`);
+      return text;
+    } catch (error: unknown) {
+      lastError = `${model}: ${error instanceof Error ? error.message : "unknown"}`;
+      console.log(`[ext-ai] ${model} failed: ${lastError}, trying next`);
+      continue;
     }
   }
 
-  throw new Error("AI is at capacity. Please try again later.");
+  throw new Error(lastError || "All AI models failed. Please try again.");
 }
 
 /* ---- POST: Run AI tool from extension ---- */
