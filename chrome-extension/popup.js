@@ -154,19 +154,18 @@ async function extractFromTab(tabId) {
             "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
             "Zambia","Zimbabwe","UAE","UK","US","USA","Remote"
           ];
-          /* Walk up from the H1, check each parent level for a country.
-             The subtitle with the country is near the H1 so the closest
-             parent that contains it wins — before we reach the sidebar. */
-          const h1El = document.querySelector("h1");
-          if (h1El) {
-            let el = h1El.parentElement;
-            for (let lvl = 0; lvl < 6 && el && el !== document.body && !location_; lvl++) {
-              const txt = el.innerText || "";
+          /* Search page text right after the last occurrence of the job title.
+             The detail pane renders after the sidebar, so lastIndexOf finds
+             the title in the detail view. Country is in the next ~300 chars. */
+          if (title) {
+            const bodyText = document.body.innerText || "";
+            const pos = bodyText.lastIndexOf(title);
+            if (pos >= 0) {
+              const after = bodyText.slice(pos + title.length, pos + title.length + 300);
               for (const c of COUNTRIES) {
                 const re = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
-                if (re.test(txt)) { location_ = c; break; }
+                if (re.test(after)) { location_ = c; break; }
               }
-              el = el.parentElement;
             }
           }
 
