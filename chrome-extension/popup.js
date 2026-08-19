@@ -122,7 +122,7 @@ async function extractFromTab(tabId) {
             ".artdeco-entity-lockup__subtitle"
           );
 
-          /* --- Location: scan page text for a country name --- */
+          /* --- Location: find country name near the job title --- */
           const COUNTRIES = [
             "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
             "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
@@ -154,12 +154,21 @@ async function extractFromTab(tabId) {
             "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
             "Zambia","Zimbabwe","UAE","UK","US","USA","Remote"
           ];
-          const pageText = (document.body.innerText || "");
-          for (const c of COUNTRIES) {
-            const regex = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
-            if (regex.test(pageText)) {
-              location_ = c;
-              break;
+          /* Grab text from around the H1 title only — not the whole page */
+          const h1El = document.querySelector("h1");
+          if (h1El) {
+            let box = h1El.parentElement;
+            for (let i = 0; i < 4 && box && box !== document.body; i++) box = box.parentElement;
+            const nearText = (box || h1El.parentElement || h1El).innerText || "";
+            /* Take the first 500 chars after the title text to find the subtitle */
+            const titleIdx = nearText.indexOf(title || h1El.textContent.trim());
+            const searchZone = titleIdx >= 0 ? nearText.slice(titleIdx, titleIdx + 500) : nearText.slice(0, 800);
+            for (const c of COUNTRIES) {
+              const regex = new RegExp("\\b" + c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+              if (regex.test(searchZone)) {
+                location_ = c;
+                break;
+              }
             }
           }
 
