@@ -28,6 +28,7 @@ const SCHEMA = {
     goal: "TEXT",
     referralSource: "TEXT",
     defaultResumeId: "TEXT",
+    emailNotifications: "BOOLEAN DEFAULT 1",
     createdAt: "DATETIME",
     updatedAt: "DATETIME",
   },
