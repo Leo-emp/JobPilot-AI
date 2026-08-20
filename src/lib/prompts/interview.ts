@@ -383,23 +383,29 @@ Set isComplete to true ONLY when wrapping up after covering all categories and t
 }
 
 export function mockInterviewStart(payload: Record<string, any>): string {
-  return `You are a professional interviewer conducting a real job interview. Generate exactly 6 interview questions for this candidate.
+  return `You are a professional interviewer conducting a real job interview. Generate exactly 15 interview questions for this candidate.
 
 ROLE: ${payload.role}
 INDUSTRY: ${payload.industry}
 EXPERIENCE LEVEL: ${payload.experience}
 INTERVIEW TYPE: ${payload.interviewType}
 ${payload.company ? `COMPANY: ${payload.company}` : ""}
+${payload.jobDescription ? `JOB DESCRIPTION:\n${payload.jobDescription}` : ""}
 ${payload.resume ? `CANDIDATE RESUME:\n${payload.resume}` : ""}
 
 RULES:
+- Question 1 MUST be "Tell me about yourself" — always start here
+- ALL questions must be specifically relevant to the ${payload.role} role at the ${payload.experience} level
+- ${payload.interviewType} interview focus: tailor every question to this interview style
 - Mix of behavioral, technical, and situational questions appropriate for the role and level
 - If a company is specified, include company-specific questions (e.g., Amazon leadership principles, Google problem-solving)
-- If a resume is provided, include 1-2 questions about specific experiences mentioned
+- If a job description is provided, derive at least 40% of questions from its specific requirements
+- If a resume is provided, include 2-3 questions about specific experiences mentioned
 - Questions should progressively increase in difficulty
 - Make questions feel natural and conversational, like a real interviewer would ask
+- Do NOT include generic questions that could apply to any role — every question must be specific to ${payload.role}
 
-Return ONLY a JSON array of strings, no other text. Example:
+Return ONLY a JSON array of 15 strings, no other text. Example:
 ["Tell me about yourself and why you're interested in this role.", "Describe a time you led a project under pressure."]`;
 }
 
