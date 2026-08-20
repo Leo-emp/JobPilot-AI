@@ -751,7 +751,7 @@ export default function MockInterviewPage() {
   const handleFinishInterview = async (finalMessages?: ChatMessage[]) => {
     stopWebcam();
     stopListening();
-    window.speechSynthesis?.cancel();
+    cancelTTS();
     if (timerRef.current) clearInterval(timerRef.current);
     setLoadingResults(true);
     setPhase("results");
@@ -798,7 +798,7 @@ export default function MockInterviewPage() {
     return () => {
       stopWebcam();
       stopListening();
-      window.speechSynthesis?.cancel();
+      cancelTTS();
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [stopWebcam, stopListening]);
