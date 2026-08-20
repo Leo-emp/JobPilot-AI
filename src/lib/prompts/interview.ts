@@ -422,22 +422,60 @@ Evaluate the answer and return ONLY valid JSON (no markdown, no code fences) in 
 }
 
 export function mockInterviewSummary(payload: Record<string, any>): string {
-  return `You are a senior interview coach providing a detailed final assessment after a mock interview.
+  const answered = parseInt(payload.questionsAnswered || "0");
+  const skipped = parseInt(payload.skippedCount || "0");
+
+  return `You are a brutally honest senior interview coach providing a realistic final assessment. You score like a REAL hiring manager — not a cheerleader. Most candidates should score 40-60. Only exceptional, detailed, structured answers earn 70+.
 
 ROLE: ${payload.role}
 EXPERIENCE LEVEL: ${payload.experience || "Mid-level"}
 INTERVIEW TYPE: ${payload.interviewType}
+QUESTIONS ANSWERED: ${answered}
+QUESTIONS SKIPPED: ${skipped}
+INTERVIEW DURATION: ${payload.interviewDuration ? Math.round(parseInt(payload.interviewDuration) / 60) + " minutes" : "Unknown"}
 ${payload.jobDescription ? `JOB DESCRIPTION:\n${payload.jobDescription}` : ""}
 
 FULL INTERVIEW TRANSCRIPT:
 ${payload.transcript}
 
-IMPORTANT RULES:
-- ONLY score questions the candidate actually answered. If a candidate responded with "[SKIPPED — moved to next question]", do NOT include that question in questionScores.
-- ${payload.skippedCount && payload.skippedCount !== "0" ? `The candidate skipped ${payload.skippedCount} question(s). Note this in overallFeedback but do NOT penalize the overall score for skipping.` : "Score all questions that were answered."}
-- The overallScore should reflect ONLY the quality of answered questions, not the total number.
+SCORING CALIBRATION (CRITICAL — follow this exactly):
+
+The overallScore is out of 100. Use this rubric strictly:
+- 0-15: Candidate gave almost no meaningful content (one-word answers, left early, answered 1-2 questions with no depth)
+- 16-30: Very weak — short/vague answers, no examples, no structure, answered very few questions
+- 31-45: Below average — some substance but lacks depth, specifics, or structure. Generic answers without real examples
+- 46-60: Average — decent answers with some examples but room for improvement. This is where MOST candidates land
+- 61-75: Good — clear, structured answers with specific examples and measurable results
+- 76-85: Very strong — excellent depth, STAR method used well, concrete metrics, strong communication
+- 86-100: Exceptional — reserved for truly outstanding interviews with compelling stories, perfect structure, and deep insight
+
+INCOMPLETE INTERVIEW PENALTY:
+- A full interview covers 8-12 questions. The candidate answered ${answered} question(s)${skipped > 0 ? ` and skipped ${skipped}` : ""}.
+- If the candidate answered fewer than 5 questions, the MAXIMUM possible overallScore is 40 regardless of answer quality. An interviewer who walks out early does not get a passing grade.
+- If the candidate answered only 1-2 questions, the MAXIMUM possible overallScore is 20.
+- If the candidate ended the interview very early (under 3 minutes), note this prominently.
+
+ANSWER QUALITY SCORING (per question, 1-10):
+- 1-2: One-word or one-sentence answer with zero substance ("I'm a hard worker", "Yes", "I like coding")
+- 3-4: Short answer with no specific examples, no structure, vague and generic
+- 5-6: Decent answer with some substance but missing specifics, metrics, or the STAR structure
+- 7-8: Good structured answer with a concrete example and clear impact
+- 9-10: Excellent — compelling story, clear STAR method, quantified results, connects to the role
+
+ANTI-INFLATION RULES:
+- Do NOT give credit for "potential" or "enthusiasm." Score ONLY what was actually said.
+- A short, vague answer is a 2-4 no matter how confident the delivery.
+- "Tell me about yourself" answered with one sentence is a 2, not a 5.
+- If an answer has zero specific examples or metrics, it cannot score above 5.
+- If the candidate didn't use STAR method for behavioral questions, cap those at 5.
+- Do NOT pad topStrengths with generic compliments. If the answers were weak, say so.
+- readinessLevel should match the score: <30 = "Not Ready", 30-50 = "Needs Work", 51-70 = "Almost There", 71-85 = "Interview Ready", 86+ = "Excellent"
+
+RULES:
+- ONLY score questions the candidate actually answered. Skip "[SKIPPED]" responses.
+- Reference the candidate's ACTUAL words in feedback — quote them.
+- Be specific about what was missing (e.g., "You said 'I'm good at teamwork' but gave no example — name a specific project, your role, and the outcome").
 - For each answered question, provide specific, actionable feedback — not generic praise.
-- Reference the candidate's actual words in your feedback.
 ${payload.jobDescription ? "- Evaluate how well the candidate's answers demonstrate they meet the specific JD requirements." : ""}
 
 Return ONLY valid JSON (no markdown, no code fences):

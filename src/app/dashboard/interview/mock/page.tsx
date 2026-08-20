@@ -741,6 +741,9 @@ export default function MockInterviewPage() {
         .map(m => `${m.role === "ai" ? "Sarah (Interviewer)" : "Candidate"}: ${m.text}`)
         .join("\n\n");
 
+      /* Count how many questions the candidate actually answered */
+      const candidateAnswers = msgs.filter(m => m.role === "user" && !m.text.includes("[SKIPPED")).length;
+
       const result = await callAI("mock_interview_summary", {
         role,
         experience,
@@ -748,6 +751,8 @@ export default function MockInterviewPage() {
         jobDescription,
         transcript,
         skippedCount: String(skippedQuestions.length),
+        questionsAnswered: String(candidateAnswers),
+        interviewDuration: String(elapsedTime),
       });
       const score = parseAIJson<FinalScore>(result);
       setFinalScore(score);
