@@ -274,9 +274,11 @@ export default function MockInterviewPage() {
   const spokenLenRef = useRef(0);                                       /* chars already sent to TTS */
   const submittedRef = useRef(false);                                   /* guard: ignore late recognition results after submit */
   const questionBankRef = useRef<string[]>([]);                          /* pre-generated question bank for faster responses */
+  const userAnswerRef = useRef("");                                      /* mirrors userAnswer for use in recognition closures */
 
-  /* Keep messagesRef in sync with messages state */
+  /* Keep refs in sync with state */
   useEffect(() => { messagesRef.current = messages; }, [messages]);
+  useEffect(() => { userAnswerRef.current = userAnswer; }, [userAnswer]);
 
   /* ---- Preload browser voices and cache the best one ---- */
   /* Chrome loads voices asynchronously — this ensures they're ready before the interview starts */
@@ -423,6 +425,8 @@ export default function MockInterviewPage() {
     recognition.interimResults = true;
     (recognition as unknown as Record<string, unknown>).maxAlternatives = 1;
     recognition.lang = "en-US";
+    /* Snapshot whatever the user already typed — speech appends after it */
+    const baseText = userAnswerRef.current;
     let finalTranscript = "";
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       /* Ignore late results after user has submitted their answer */
@@ -435,7 +439,7 @@ export default function MockInterviewPage() {
           interim = event.results[i][0].transcript;
         }
       }
-      setUserAnswer(finalTranscript + interim);
+      setUserAnswer(baseText + finalTranscript + interim);
     };
 
     recognition.onerror = (e: Event) => {
@@ -477,13 +481,12 @@ export default function MockInterviewPage() {
   }, []);
 
   /* ---- Mic watchdog: keeps trying to start mic every 3s during interview ---- */
-  /* Catches cases where the mic should be on but isn't — Chrome throttle,
-     TTS timing issues, or recognition dying silently. Also resets isListening
-     if the recognition ref is gone (recognition died without triggering onend). */
+  /* Only starts mic when it's the user's turn AND TTS is finished — prevents
+     mic from picking up AI speech. Also resets isListening if recognition died. */
   useEffect(() => {
     if (phase !== "interview") return;
     const watchdog = setInterval(() => {
-      if (waitingForUser && !submittedRef.current) {
+      if (waitingForUser && !submittedRef.current && !isAISpeaking) {
         if (!recognitionRef.current) {
           setIsListening(false);
           startListening();
@@ -491,7 +494,7 @@ export default function MockInterviewPage() {
       }
     }, 3000);
     return () => clearInterval(watchdog);
-  }, [phase, waitingForUser, startListening]);
+  }, [phase, waitingForUser, isAISpeaking, startListening]);
 
   /* ---- Format conversation history as a string for the AI prompt ---- */
   const formatHistory = (msgs: ChatMessage[]) => {
@@ -662,19 +665,18 @@ export default function MockInterviewPage() {
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        /* Enable user input immediately — don't block on TTS finishing.
-           User can read the question and start answering while Sarah speaks.
-           Submitting cancels any remaining TTS. */
+        /* Enable typing immediately — user can read the question and type while Sarah speaks */
         setUserAnswer("");
         setWaitingForUser(true);
         submittedRef.current = false;
-        startListening();
 
-        /* TTS continues in background — speaking indicator clears when done */
+        /* Wait for TTS to finish BEFORE starting mic — prevents mic from catching AI speech */
         if (ttsDrainPromise) {
           await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
         }
         setIsAISpeaking(false);
+        /* Now start mic — TTS is done, no echo */
+        if (!submittedRef.current) startListening();
       }
     } catch {
       setIsAIThinking(false);
@@ -727,16 +729,16 @@ export default function MockInterviewPage() {
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        /* Enable user input immediately — TTS continues in background */
+        /* Enable typing immediately — wait for TTS before starting mic */
         setUserAnswer("");
         setWaitingForUser(true);
         submittedRef.current = false;
-        startListening();
 
         if (ttsDrainPromise) {
           await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
         }
         setIsAISpeaking(false);
+        if (!submittedRef.current) startListening();
       }
     } catch {
       setIsAIThinking(false);
