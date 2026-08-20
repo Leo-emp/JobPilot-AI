@@ -177,27 +177,36 @@ function speakText(text: string): Promise<void> {
   });
 }
 
-/* ---- Shared TTS sentence queue ---- */
-/* Instead of queuing multiple utterances to Chrome (which breaks onend/speaking),
-   we maintain our OWN queue and speak one sentence at a time via speakText.
-   speakText uses a single utterance with onend — proven reliable by the greeting. */
+/* ---- Shared TTS sentence queue with cancellation ---- */
+/* Generation counter prevents stale drain loops from interfering after cancel */
 const ttsQueue: string[] = [];
 let ttsDrainPromise: Promise<void> | null = null;
+let ttsGeneration = 0;
 
-/* Process sentences one at a time — each waits for onend before the next */
-async function drainTTSQueue(): Promise<void> {
-  while (ttsQueue.length > 0) {
+/* Cancel all pending TTS — increments generation so old drain loops stop */
+function cancelTTS() {
+  ttsGeneration++;
+  ttsQueue.length = 0;
+  ttsDrainPromise = null;
+  window.speechSynthesis?.cancel();
+}
+
+/* Process sentences one at a time — stops immediately if generation changes */
+async function drainTTSQueue(gen: number): Promise<void> {
+  while (ttsQueue.length > 0 && ttsGeneration === gen) {
     const sentence = ttsQueue.shift()!;
+    if (ttsGeneration !== gen) break;
     await speakText(sentence);
   }
-  ttsDrainPromise = null;
+  if (ttsGeneration === gen) ttsDrainPromise = null;
 }
 
 /* Add a sentence and start draining if not already running */
 function enqueueTTS(sentence: string) {
+  const gen = ttsGeneration;
   ttsQueue.push(sentence);
   if (!ttsDrainPromise) {
-    ttsDrainPromise = drainTTSQueue();
+    ttsDrainPromise = drainTTSQueue(gen);
   }
 }
 
@@ -404,9 +413,9 @@ export default function MockInterviewPage() {
       const old = recognitionRef.current;
       recognitionRef.current = null;
       try { old.stop(); } catch { /* ignore */ }
-      /* Brief pause lets Chrome finalize the old session before starting a new one.
-         Without this, Chrome throttles after ~5 rapid start/stop cycles. */
-      await new Promise(r => setTimeout(r, 150));
+      /* Longer pause lets Chrome finalize the old session before starting a new one.
+         Chrome throttles SpeechRecognition after ~5 rapid start/stop cycles. */
+      await new Promise(r => setTimeout(r, 400));
     }
 
     const recognition = new SR();
@@ -467,16 +476,20 @@ export default function MockInterviewPage() {
     try { ref?.stop(); } catch { /* already stopped */ }
   }, []);
 
-  /* ---- Mic watchdog: keeps trying to start mic every 2s during interview ---- */
-  /* This catches ALL cases where the mic should be on but isn't, regardless
-     of what went wrong with Chrome's audio system or TTS timing. */
+  /* ---- Mic watchdog: keeps trying to start mic every 3s during interview ---- */
+  /* Catches cases where the mic should be on but isn't — Chrome throttle,
+     TTS timing issues, or recognition dying silently. Also resets isListening
+     if the recognition ref is gone (recognition died without triggering onend). */
   useEffect(() => {
     if (phase !== "interview") return;
     const watchdog = setInterval(() => {
-      if (waitingForUser && !recognitionRef.current && !submittedRef.current) {
-        startListening();
+      if (waitingForUser && !submittedRef.current) {
+        if (!recognitionRef.current) {
+          setIsListening(false);
+          startListening();
+        }
       }
-    }, 2000);
+    }, 3000);
     return () => clearInterval(watchdog);
   }, [phase, waitingForUser, startListening]);
 
@@ -612,10 +625,13 @@ export default function MockInterviewPage() {
 
   /* ---- Submit the user's answer and get the AI's next response ---- */
   const handleSubmitAnswer = async () => {
-    if (!userAnswer.trim() || isAIThinking || isAISpeaking) return;
+    if (!userAnswer.trim() || isAIThinking) return;
     submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
+    /* Kill any leftover TTS from previous response immediately */
+    cancelTTS();
+    setIsAISpeaking(false);
 
     /* Add the user's message to conversation */
     const userMsg: ChatMessage = { role: "user", text: userAnswer.trim() };
@@ -632,8 +648,6 @@ export default function MockInterviewPage() {
     setIsAIThinking(true);
     setIsAISpeaking(true);
     spokenLenRef.current = 0;
-    ttsQueue.length = 0;
-    ttsDrainPromise = null;
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
@@ -641,30 +655,31 @@ export default function MockInterviewPage() {
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
 
-      /* Flush any trailing text that wasn't a complete sentence during streaming */
+      /* Flush remaining text to TTS */
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) enqueueTTS(remaining);
-
-      /* Wait for our sentence queue to finish (NOT Chrome's broken queue).
-         drainTTSQueue speaks one sentence at a time via speakText, which
-         resolves via onend — the same mechanism that works for the greeting. */
-      if (ttsDrainPromise) await ttsDrainPromise;
-      setIsAISpeaking(false);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
+        /* Enable user input immediately — don't block on TTS finishing.
+           User can read the question and start answering while Sarah speaks.
+           Submitting cancels any remaining TTS. */
         setUserAnswer("");
         setWaitingForUser(true);
         submittedRef.current = false;
         startListening();
+
+        /* TTS continues in background — speaking indicator clears when done */
+        if (ttsDrainPromise) {
+          await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
+        }
+        setIsAISpeaking(false);
       }
     } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
-      ttsQueue.length = 0;
-      ttsDrainPromise = null;
-      window.speechSynthesis.cancel();
+      cancelTTS();
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setUserAnswer("");
       setWaitingForUser(true);
@@ -675,10 +690,12 @@ export default function MockInterviewPage() {
 
   /* ---- Skip current question and move to the next ---- */
   const handleSkipQuestion = async () => {
-    if (isAIThinking || isAISpeaking) return;
+    if (isAIThinking) return;
     submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
+    cancelTTS();
+    setIsAISpeaking(false);
 
     /* Record the skipped question (last AI message) */
     const lastAI = messagesRef.current.filter(m => m.role === "ai").pop();
@@ -693,12 +710,10 @@ export default function MockInterviewPage() {
     const nextExchange = exchangeNumber + 1;
     setExchangeNumber(nextExchange);
 
-    /* Get AI's next response — text streams to screen, sentences speak one at a time */
+    /* Get AI's next response */
     setIsAIThinking(true);
     setIsAISpeaking(true);
     spokenLenRef.current = 0;
-    ttsQueue.length = 0;
-    ttsDrainPromise = null;
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
@@ -708,23 +723,25 @@ export default function MockInterviewPage() {
 
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) enqueueTTS(remaining);
-      if (ttsDrainPromise) await ttsDrainPromise;
-      setIsAISpeaking(false);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
+        /* Enable user input immediately — TTS continues in background */
         setUserAnswer("");
         setWaitingForUser(true);
         submittedRef.current = false;
         startListening();
+
+        if (ttsDrainPromise) {
+          await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
+        }
+        setIsAISpeaking(false);
       }
     } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
-      ttsQueue.length = 0;
-      ttsDrainPromise = null;
-      window.speechSynthesis.cancel();
+      cancelTTS();
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setUserAnswer("");
       setWaitingForUser(true);
