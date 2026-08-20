@@ -450,11 +450,76 @@ export default function MockInterviewPage() {
   }, []);
 
   /* ---- Auto-start mic: called explicitly after AI finishes speaking ---- */
+  /* Self-contained — kills TTS, stops old recognition, waits for Chrome to
+     release the audio system, then starts a fresh recognition with retries. */
   const autoStartMic = useCallback(() => {
     submittedRef.current = false;
-    stopListening();
-    setTimeout(() => { startListening(); }, 200);
-  }, [startListening, stopListening]);
+
+    /* Force-cancel any lingering TTS so Chrome releases the audio system */
+    window.speechSynthesis?.cancel();
+
+    /* Kill any existing recognition instance cleanly */
+    if (recognitionRef.current) {
+      const old = recognitionRef.current;
+      recognitionRef.current = null;
+      try { old.stop(); } catch { /* already stopped */ }
+    }
+    setIsListening(false);
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+
+    let attempts = 0;
+    const tryStart = () => {
+      attempts++;
+      const recognition = new SR();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      (recognition as unknown as Record<string, unknown>).maxAlternatives = 1;
+      recognition.lang = "en-US";
+      let finalTranscript = "";
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        if (submittedRef.current) return;
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript + " ";
+          } else {
+            interim = event.results[i][0].transcript;
+          }
+        }
+        setUserAnswer(finalTranscript + interim);
+      };
+
+      recognition.onerror = (e: Event) => {
+        const err = (e as unknown as { error?: string }).error || "";
+        if (err === "no-speech" || err === "aborted") return;
+        setIsListening(false);
+        /* Retry on transient errors */
+        if (attempts < 3) setTimeout(tryStart, 500);
+      };
+
+      recognition.onend = () => {
+        /* Auto-restart if recognition dies while user is still talking */
+        if (recognitionRef.current === recognition && !submittedRef.current) {
+          try { recognition.start(); } catch { setIsListening(false); }
+        }
+      };
+
+      try {
+        recognition.start();
+        recognitionRef.current = recognition;
+        setIsListening(true);
+      } catch {
+        /* Chrome wasn't ready — retry after a delay */
+        if (attempts < 3) setTimeout(tryStart, 500);
+      }
+    };
+
+    /* Wait 300ms for Chrome to fully release the audio system before starting */
+    setTimeout(tryStart, 300);
+  }, []);
 
   /* ---- Format conversation history as a string for the AI prompt ---- */
   const formatHistory = (msgs: ChatMessage[]) => {
