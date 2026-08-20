@@ -328,77 +328,6 @@ export default function MockInterviewPage() {
   /* Silently attempts to start — if mic permission was already granted via */
   /* the webcam setup (audio:true), this works instantly. If not, fails */
   /* silently and user can click the mic button manually. */
-  useEffect(() => {
-    if (!waitingForUser || phase !== "interview") return;
-    console.log("[INTERVIEW] auto-start mic — waitingForUser became true");
-
-    /* Reset the submitted guard so new speech can flow through */
-    submittedRef.current = false;
-
-    /* Stop any lingering recognition before creating a fresh one */
-    if (recognitionRef.current) {
-      const old = recognitionRef.current;
-      recognitionRef.current = null;
-      try { old.stop(); } catch { /* already stopped */ }
-    }
-    setIsListening(false);
-
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-
-    /* Small delay lets Chrome fully release the previous mic session */
-    const startTimer = setTimeout(() => {
-      const recognition = new SR();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      (recognition as unknown as Record<string, unknown>).maxAlternatives = 1;
-      recognition.lang = "en-US";
-      let finalTranscript = "";
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        if (submittedRef.current) return;
-        let interim = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript + " ";
-          } else {
-            interim = event.results[i][0].transcript;
-          }
-        }
-        setUserAnswer(finalTranscript + interim);
-      };
-
-      recognition.onerror = (e: Event) => {
-        const err = (e as unknown as { error?: string }).error || "";
-        if (err === "no-speech" || err === "aborted") return;
-        setIsListening(false);
-      };
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onend = () => {
-        if (recognitionRef.current === recognition) {
-          try { recognition.start(); } catch { setIsListening(false); }
-        }
-      };
-
-      try {
-        recognition.start();
-        recognitionRef.current = recognition;
-      } catch {
-        /* Silent fail — mic button is still available */
-      }
-    }, 150);
-
-    /* Cleanup: stop recognition if waitingForUser flips back to false */
-    return () => {
-      clearTimeout(startTimer);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waitingForUser, phase]);
-
   /* ---- Timer: count seconds while in interview phase ---- */
   useEffect(() => {
     if (phase === "interview") {
@@ -520,6 +449,13 @@ export default function MockInterviewPage() {
     try { ref?.stop(); } catch { /* already stopped */ }
   }, []);
 
+  /* ---- Auto-start mic: called explicitly after AI finishes speaking ---- */
+  const autoStartMic = useCallback(() => {
+    submittedRef.current = false;
+    stopListening();
+    setTimeout(() => { startListening(); }, 200);
+  }, [startListening, stopListening]);
+
   /* ---- Format conversation history as a string for the AI prompt ---- */
   const formatHistory = (msgs: ChatMessage[]) => {
     if (msgs.length === 0) return "";
@@ -635,6 +571,7 @@ export default function MockInterviewPage() {
       await speakText(greetingText);
       setIsAISpeaking(false);
       setWaitingForUser(true);
+      autoStartMic();
     } catch {
       setError("Could not start the interview. Please check your camera/mic permissions and try again.");
       setPhase("setup");
@@ -646,7 +583,6 @@ export default function MockInterviewPage() {
   /* ---- Submit the user's answer and get the AI's next response ---- */
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim() || isAIThinking || isAISpeaking) return;
-    console.log("[INTERVIEW] handleSubmitAnswer — starting");
     submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
@@ -671,9 +607,7 @@ export default function MockInterviewPage() {
       if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
     }, 5000);
     try {
-      console.log("[INTERVIEW] calling getAIResponse, exchange:", nextExchange);
       const response = await getAIResponse(updatedMessages, nextExchange);
-      console.log("[INTERVIEW] AI responded, isComplete:", response.isComplete);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
       setMessages(prev => [...prev, aiMsg]);
       setCurrentAIMessage(response.message);
@@ -684,15 +618,11 @@ export default function MockInterviewPage() {
       if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
 
       /* Wait for the speech queue to finish (max 25s to prevent Chrome hang) */
-      console.log("[INTERVIEW] waiting for TTS to finish");
       await new Promise<void>(resolve => {
         const deadline = Date.now() + 25000;
         const check = () => {
           if (!window.speechSynthesis.speaking || Date.now() > deadline) {
-            if (Date.now() > deadline) {
-              console.log("[INTERVIEW] TTS deadline hit, force cancelling");
-              window.speechSynthesis.cancel();
-            }
+            if (Date.now() > deadline) window.speechSynthesis.cancel();
             resolve();
             return;
           }
@@ -702,19 +632,15 @@ export default function MockInterviewPage() {
       });
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setIsAISpeaking(false);
-      console.log("[INTERVIEW] TTS done, isComplete:", response.isComplete, "exchange:", nextExchange, "max:", MAX_EXCHANGES);
-
       /* If AI says interview is complete or we hit the safety limit */
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
-        console.log("[INTERVIEW] interview complete — calling handleFinishInterview");
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        console.log("[INTERVIEW] setting waitingForUser = true");
         setUserAnswer("");
         setWaitingForUser(true);
+        autoStartMic();
       }
-    } catch (err) {
-      console.error("[INTERVIEW] handleSubmitAnswer error:", err);
+    } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
       window.speechSynthesis.cancel();
@@ -722,6 +648,7 @@ export default function MockInterviewPage() {
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setUserAnswer("");
       setWaitingForUser(true);
+      autoStartMic();
     }
   };
 
@@ -779,7 +706,9 @@ export default function MockInterviewPage() {
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
+        setUserAnswer("");
         setWaitingForUser(true);
+        autoStartMic();
       }
     } catch {
       setIsAIThinking(false);
@@ -787,7 +716,9 @@ export default function MockInterviewPage() {
       window.speechSynthesis.cancel();
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setError("Sarah had trouble responding. Please try again or skip this question.");
+      setUserAnswer("");
       setWaitingForUser(true);
+      autoStartMic();
     }
   };
 
