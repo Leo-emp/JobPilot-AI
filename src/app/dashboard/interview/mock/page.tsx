@@ -330,6 +330,7 @@ export default function MockInterviewPage() {
   /* silently and user can click the mic button manually. */
   useEffect(() => {
     if (!waitingForUser || phase !== "interview") return;
+    console.log("[INTERVIEW] auto-start mic — waitingForUser became true");
 
     /* Reset the submitted guard so new speech can flow through */
     submittedRef.current = false;
@@ -645,6 +646,7 @@ export default function MockInterviewPage() {
   /* ---- Submit the user's answer and get the AI's next response ---- */
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim() || isAIThinking || isAISpeaking) return;
+    console.log("[INTERVIEW] handleSubmitAnswer — starting");
     submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
@@ -669,7 +671,9 @@ export default function MockInterviewPage() {
       if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
     }, 5000);
     try {
+      console.log("[INTERVIEW] calling getAIResponse, exchange:", nextExchange);
       const response = await getAIResponse(updatedMessages, nextExchange);
+      console.log("[INTERVIEW] AI responded, isComplete:", response.isComplete);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
       setMessages(prev => [...prev, aiMsg]);
       setCurrentAIMessage(response.message);
@@ -680,11 +684,15 @@ export default function MockInterviewPage() {
       if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
 
       /* Wait for the speech queue to finish (max 25s to prevent Chrome hang) */
+      console.log("[INTERVIEW] waiting for TTS to finish");
       await new Promise<void>(resolve => {
         const deadline = Date.now() + 25000;
         const check = () => {
           if (!window.speechSynthesis.speaking || Date.now() > deadline) {
-            if (Date.now() > deadline) window.speechSynthesis.cancel();
+            if (Date.now() > deadline) {
+              console.log("[INTERVIEW] TTS deadline hit, force cancelling");
+              window.speechSynthesis.cancel();
+            }
             resolve();
             return;
           }
@@ -694,15 +702,19 @@ export default function MockInterviewPage() {
       });
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setIsAISpeaking(false);
+      console.log("[INTERVIEW] TTS done, isComplete:", response.isComplete, "exchange:", nextExchange, "max:", MAX_EXCHANGES);
 
       /* If AI says interview is complete or we hit the safety limit */
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
+        console.log("[INTERVIEW] interview complete — calling handleFinishInterview");
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
+        console.log("[INTERVIEW] setting waitingForUser = true");
         setUserAnswer("");
         setWaitingForUser(true);
       }
-    } catch {
+    } catch (err) {
+      console.error("[INTERVIEW] handleSubmitAnswer error:", err);
       setIsAIThinking(false);
       setIsAISpeaking(false);
       window.speechSynthesis.cancel();
