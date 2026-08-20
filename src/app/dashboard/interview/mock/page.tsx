@@ -328,24 +328,24 @@ export default function MockInterviewPage() {
     setWebcamReady(false);
   }, []);
 
-  /* ---- Connect webcam stream to video element after DOM renders ---- */
-  /* Runs on phase change AND webcamReady change. Also retries after a
-     short delay to handle cases where the video element isn't in the
-     DOM yet when the stream becomes available. */
+  /* ---- Connect webcam stream to video element ---- */
+  /* Checks every second that the video element has the stream attached.
+     Handles element recreation from re-renders and stream disconnects. */
   useEffect(() => {
+    if (phase !== "interview") return;
     const connect = () => {
       if (videoRef.current && streamRef.current) {
-        videoRef.current.srcObject = streamRef.current;
-        videoRef.current.muted = true;
-        videoRef.current.play().catch(() => {});
+        if (videoRef.current.srcObject !== streamRef.current) {
+          videoRef.current.srcObject = streamRef.current;
+          videoRef.current.muted = true;
+          videoRef.current.play().catch(() => {});
+        }
       }
     };
-    if (phase === "interview" && (webcamReady || streamRef.current)) {
-      connect();
-      const retry = setTimeout(connect, 500);
-      return () => clearTimeout(retry);
-    }
-  }, [webcamReady, phase]);
+    connect();
+    const interval = setInterval(connect, 1000);
+    return () => clearInterval(interval);
+  }, [phase, webcamReady]);
 
   /* ---- Auto-start mic when it's the user's turn ---- */
   /* Silently attempts to start — if mic permission was already granted via */
@@ -1197,15 +1197,7 @@ export default function MockInterviewPage() {
 
           {/* ---- RIGHT TILE: User's Webcam ---- */}
           <div className="relative rounded-2xl overflow-hidden bg-space-800 border border-card-border aspect-video">
-            <video ref={(el) => {
-              videoRef.current = el;
-              /* Connect stream immediately when video element mounts */
-              if (el && streamRef.current && !el.srcObject) {
-                el.srcObject = streamRef.current;
-                el.muted = true;
-                el.play().catch(() => {});
-              }
-            }} autoPlay muted playsInline
+            <video ref={videoRef} autoPlay muted playsInline
               className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
             {/* Fallback if no webcam — hint how to enable it */}
             {!webcamReady && (
