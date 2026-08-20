@@ -153,7 +153,7 @@ function speakText(text: string): Promise<void> {
     if (!text.trim()) { resolve(); return; }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.12;
+    utterance.rate = 1.05;
     utterance.pitch = 1.15;
     utterance.volume = 1.0;
     if (cachedVoice) utterance.voice = cachedVoice;
@@ -181,7 +181,7 @@ function speakText(text: string): Promise<void> {
 function makeUtterance(text: string): SpeechSynthesisUtterance {
   if (!cachedVoice) cachedVoice = getBestVoice();
   const u = new SpeechSynthesisUtterance(text);
-  u.rate = 1.12;
+  u.rate = 1.05;
   u.pitch = 1.15;
   u.volume = 1.0;
   if (cachedVoice) u.voice = cachedVoice;
@@ -251,6 +251,8 @@ export default function MockInterviewPage() {
   const messagesRef = useRef<ChatMessage[]>([]);                        /* sync ref for messages in closures */
   const spokenLenRef = useRef(0);                                       /* chars already sent to TTS */
   const ttsKeepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const submittedRef = useRef(false);                                   /* guard: ignore late recognition results after submit */
+  const questionBankRef = useRef<string[]>([]);                          /* pre-generated question bank for faster responses */
 
   /* Keep messagesRef in sync with messages state */
   useEffect(() => { messagesRef.current = messages; }, [messages]);
@@ -328,6 +330,9 @@ export default function MockInterviewPage() {
   /* silently and user can click the mic button manually. */
   useEffect(() => {
     if (waitingForUser && phase === "interview" && !isListening) {
+      /* Reset the submitted guard so new speech can flow through */
+      submittedRef.current = false;
+
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) return;
 
@@ -339,6 +344,8 @@ export default function MockInterviewPage() {
       let finalTranscript = "";
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
+        /* Ignore late results after user has submitted their answer */
+        if (submittedRef.current) return;
         let interim = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
@@ -446,6 +453,8 @@ export default function MockInterviewPage() {
     recognition.lang = "en-US";
     let finalTranscript = "";
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      /* Ignore late results after user has submitted their answer */
+      if (submittedRef.current) return;
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -518,6 +527,12 @@ export default function MockInterviewPage() {
 
   /* ---- Send a message to AI and get the next response (streaming) ---- */
   const getAIResponse = useCallback(async (currentMessages: ChatMessage[], exchNum: number) => {
+    /* Pass the pre-generated question bank so AI can pick the next question
+       instead of generating from scratch — dramatically reduces response time */
+    const bankForExchange = questionBankRef.current.length > 0
+      ? JSON.stringify(questionBankRef.current)
+      : "";
+
     const result = await streamAI("mock_interview_respond", {
       role,
       industry,
@@ -531,6 +546,7 @@ export default function MockInterviewPage() {
       exchangeNumber: String(exchNum),
       questionNumber: String(questionNumber),
       skippedQuestions: JSON.stringify(skippedQuestions),
+      questionBank: bankForExchange,
     }, (partial) => {
       let msgText = "";
       try {
@@ -579,6 +595,25 @@ export default function MockInterviewPage() {
       setMessages([aiMsg]);
       setCurrentAIMessage(greetingText);
 
+      /* Pre-generate all interview questions in the background while greeting plays.
+         This runs in parallel with TTS so questions are ready before the user finishes responding. */
+      streamAI("mock_interview_start", {
+        role,
+        industry,
+        experience,
+        interviewType,
+        company,
+        resume,
+        jobDescription,
+      }, () => {}).then(result => {
+        try {
+          const questions = parseAIJson<string[]>(result);
+          if (Array.isArray(questions) && questions.length > 0) {
+            questionBankRef.current = questions;
+          }
+        } catch { /* non-critical — AI will generate questions on the fly if this fails */ }
+      }).catch(() => { /* silently ignore — fallback to on-the-fly generation */ });
+
       /* Speak the greeting immediately */
       setIsAISpeaking(true);
       await speakText(greetingText);
@@ -595,6 +630,7 @@ export default function MockInterviewPage() {
   /* ---- Submit the user's answer and get the AI's next response ---- */
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim() || isAIThinking || isAISpeaking) return;
+    submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
 
@@ -648,6 +684,7 @@ export default function MockInterviewPage() {
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
+        setUserAnswer("");
         setWaitingForUser(true);
       }
     } catch {
@@ -656,6 +693,7 @@ export default function MockInterviewPage() {
       window.speechSynthesis.cancel();
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setError("Sarah had trouble responding. Please try again or skip this question.");
+      setUserAnswer("");
       setWaitingForUser(true);
     }
   };
@@ -663,6 +701,7 @@ export default function MockInterviewPage() {
   /* ---- Skip current question and move to the next ---- */
   const handleSkipQuestion = async () => {
     if (isAIThinking || isAISpeaking) return;
+    submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
 

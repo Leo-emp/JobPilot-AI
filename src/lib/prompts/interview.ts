@@ -351,6 +351,11 @@ INTERVIEW FLOW:
 - When the candidate says "[SKIPPED — moved to next question]": acknowledge briefly ("No worries, let's move on!") and ask a completely different question from a different category
 - When you've covered all major categories thoroughly (usually 8-15 questions depending on depth), transition to: "Do you have any questions for me about the role, the team, or the company?" Answer their questions naturally.
 - After they finish their questions to you, wrap up warmly and set isComplete to true.
+${payload.questionBank ? `
+PRE-PLANNED QUESTION BANK (USE THESE — CRITICAL FOR SPEED):
+${payload.questionBank}
+INSTRUCTIONS: For exchange 1, use "Tell me about yourself" as always. For exchange 2+, pick the next unused question from the bank above in order. You MUST still add a 1-sentence warm reaction to the candidate's answer before asking the question. Using these pre-planned questions means you only need to write a brief reaction — keep your response short and fast.
+If all bank questions have been used, generate new ones naturally.` : ""}
 
 ${payload.jobDescription ? `JOB DESCRIPTION INTEGRATION (CRITICAL):
 - Extract specific skills, tools, certifications, and responsibilities from the JD
