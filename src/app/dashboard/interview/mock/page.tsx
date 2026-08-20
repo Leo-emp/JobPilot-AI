@@ -153,8 +153,8 @@ function speakText(text: string): Promise<void> {
     if (!text.trim()) { resolve(); return; }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.2;
+    utterance.rate = 1.12;
+    utterance.pitch = 1.15;
     utterance.volume = 1.0;
     if (cachedVoice) utterance.voice = cachedVoice;
 
@@ -163,8 +163,15 @@ function speakText(text: string): Promise<void> {
       if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
     }, 5000);
 
-    utterance.onend = () => { clearInterval(keepAlive); resolve(); };
-    utterance.onerror = () => { clearInterval(keepAlive); resolve(); };
+    /* Safety timeout: if TTS hangs (Chrome bug), force-resolve after 30s */
+    const timeout = setTimeout(() => {
+      clearInterval(keepAlive);
+      window.speechSynthesis.cancel();
+      resolve();
+    }, 30000);
+
+    utterance.onend = () => { clearTimeout(timeout); clearInterval(keepAlive); resolve(); };
+    utterance.onerror = () => { clearTimeout(timeout); clearInterval(keepAlive); resolve(); };
 
     window.speechSynthesis.speak(utterance);
   });
@@ -174,8 +181,8 @@ function speakText(text: string): Promise<void> {
 function makeUtterance(text: string): SpeechSynthesisUtterance {
   if (!cachedVoice) cachedVoice = getBestVoice();
   const u = new SpeechSynthesisUtterance(text);
-  u.rate = 1.0;
-  u.pitch = 1.2;
+  u.rate = 1.12;
+  u.pitch = 1.15;
   u.volume = 1.0;
   if (cachedVoice) u.voice = cachedVoice;
   return u;
@@ -567,7 +574,7 @@ export default function MockInterviewPage() {
       setElapsedTime(0);
 
       /* Instant greeting — no AI call needed */
-      const greetingText = `Hey! How are you doing today? Thanks so much for joining — I'm Sarah, and I'll be your interviewer for the ${role} position${company ? ` at ${company}` : ""}. Ready to get started?`;
+      const greetingText = `Hey! Great to have you here! I'm Sarah, and I'm really excited to be your interviewer today for the ${role} position${company ? ` at ${company}` : ""}. I've been looking forward to this — let's have a great conversation! Ready to dive in?`;
       const aiMsg: ChatMessage = { role: "ai", text: greetingText };
       setMessages([aiMsg]);
       setCurrentAIMessage(greetingText);
@@ -621,10 +628,15 @@ export default function MockInterviewPage() {
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
 
-      /* Wait for the speech queue to finish */
+      /* Wait for the speech queue to finish (max 25s to prevent Chrome hang) */
       await new Promise<void>(resolve => {
+        const deadline = Date.now() + 25000;
         const check = () => {
-          if (!window.speechSynthesis.speaking) { resolve(); return; }
+          if (!window.speechSynthesis.speaking || Date.now() > deadline) {
+            if (Date.now() > deadline) window.speechSynthesis.cancel();
+            resolve();
+            return;
+          }
           setTimeout(check, 200);
         };
         setTimeout(check, 200);
@@ -684,8 +696,13 @@ export default function MockInterviewPage() {
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
       await new Promise<void>(resolve => {
+        const deadline = Date.now() + 25000;
         const check = () => {
-          if (!window.speechSynthesis.speaking) { resolve(); return; }
+          if (!window.speechSynthesis.speaking || Date.now() > deadline) {
+            if (Date.now() > deadline) window.speechSynthesis.cancel();
+            resolve();
+            return;
+          }
           setTimeout(check, 200);
         };
         setTimeout(check, 200);
