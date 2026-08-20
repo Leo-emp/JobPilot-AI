@@ -8,6 +8,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { trackEvent } from "@/lib/track-event";
 
 /* # Thread from the API */
 interface Thread {
@@ -62,7 +63,7 @@ export default function MessagesPage() {
         setThreads(data.threads || []);
         setUnreadCount(data.unreadCount || 0);
       })
-      .catch(() => {})
+      .catch(() => { trackEvent("messages.load_inbox_failed"); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -79,7 +80,7 @@ export default function MessagesPage() {
       const data = await res.json();
       setMessages(data.messages || []);
     } catch {
-      /* # Ignore */
+      trackEvent("messages.load_thread_failed");
     } finally {
       setThreadLoading(false);
     }
@@ -101,7 +102,7 @@ export default function MessagesPage() {
         setNewMessage("");
       }
     } catch {
-      /* # Ignore */
+      trackEvent("messages.send_failed");
     } finally {
       setSending(false);
     }
@@ -122,7 +123,7 @@ export default function MessagesPage() {
       setSelectedThread(null);
       setMessages([]);
     } catch {
-      /* # Ignore */
+      trackEvent("messages.block_failed");
     }
   }
 

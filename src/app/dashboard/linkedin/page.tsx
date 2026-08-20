@@ -23,6 +23,7 @@ import Image from "next/image";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { useAIStream } from "@/hooks/useAIStream";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Action tab configuration ---- */
 const actionTabs = [
@@ -111,6 +112,7 @@ export default function LinkedInPage() {
       setPdfText(text);
     } catch {
       setPdfError("Failed to read this PDF. Please try pasting your profile text manually instead.");
+      trackEvent("linkedin.pdf_parse_failed");
     } finally {
       setPdfParsing(false);
     }

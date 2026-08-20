@@ -15,6 +15,7 @@ import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { useAIStream } from "@/hooks/useAIStream";
 import { useDefaultResume } from "@/hooks/useDefaultResume";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Type for saved cover letters ---- */
 interface SavedLetter {
@@ -74,7 +75,7 @@ export default function CoverLetterPage() {
           if (data?.data) setSavedLetters(data.data);
         }
       } catch {
-        /* Silent fail — list will just be empty */
+        trackEvent("cover_letter.load_saved_failed");
       }
     };
     loadSaved();
@@ -154,7 +155,9 @@ export default function CoverLetterPage() {
           const saved = await saveRes.json().catch(() => null);
           if (saved) setSavedLetters((prev) => [saved, ...prev]);
         }
-      } catch {}
+      } catch {
+        trackEvent("cover_letter.save_failed");
+      }
     }
   };
 

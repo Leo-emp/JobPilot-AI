@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/track-event";
 
 /* # Bookmark type from the API */
 interface Bookmark {
@@ -44,7 +45,7 @@ export default function BookmarksPage() {
     fetch("/api/user/bookmarks")
       .then((r) => r.json())
       .then((data) => setBookmarks(data.bookmarks || []))
-      .catch(() => {})
+      .catch(() => { trackEvent("bookmarks.load_failed"); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -55,7 +56,7 @@ export default function BookmarksPage() {
       await fetch(`/api/user/bookmarks?id=${id}`, { method: "DELETE" });
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
     } catch {
-      /* # Ignore — UI stays consistent */
+      trackEvent("bookmarks.remove_failed");
     } finally {
       setRemoving(null);
     }

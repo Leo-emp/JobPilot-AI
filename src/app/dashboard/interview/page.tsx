@@ -14,6 +14,7 @@ import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
 import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Minimal SpeechRecognition interface (avoids `any` for vendor-prefixed API) ---- */
 interface MinimalSpeechRecognition {
@@ -134,7 +135,7 @@ export default function InterviewPage() {
           }
         }
       } catch {
-        /* Network error — ignore */
+        trackEvent("interview_prep.load_resumes_failed");
       } finally {
         if (!cancelled) setResumesLoading(false);
       }

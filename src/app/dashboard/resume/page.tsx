@@ -18,6 +18,7 @@ import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { useAIStream } from "@/hooks/useAIStream";
+import { trackEvent } from "@/lib/track-event";
 import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Tab names for the feature sub-sections ---- */
@@ -93,6 +94,7 @@ export default function ResumePage() {
         }
       } catch {
         setUploadError("Failed to parse PDF. Please paste your resume text instead.");
+        trackEvent("resume.pdf_parse_failed");
         setResumeText("");
       } finally {
         setUploading(false);
@@ -116,7 +118,7 @@ export default function ResumePage() {
         }),
       });
     } catch {
-      /* Save failure shouldn't block the user */
+      trackEvent("resume.save_failed");
     }
   };
 

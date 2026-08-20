@@ -14,6 +14,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { trackEvent } from "@/lib/track-event";
 import type {
   PortfolioSection, TemplateName, SectionType,
   ExperienceEntry, EducationEntry, ProjectEntry,
@@ -412,7 +413,7 @@ export default function PortfolioPage() {
           setAvatarUrl(portfolio.avatarUrl || "");
           setPublished(portfolio.published);
         }
-      } catch { /* # No portfolio yet — that's fine */ }
+      } catch { trackEvent("portfolio.load_failed"); }
       setLoading(false);
     }
     load();
@@ -456,7 +457,7 @@ export default function PortfolioPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
-    } catch { /* # Silent fail — will retry on next change */ }
+    } catch { trackEvent("portfolio.autosave_failed"); }
     setSaving(false);
   }, [hasPortfolio]);
 
@@ -540,7 +541,7 @@ export default function PortfolioPage() {
         body: JSON.stringify({ published: newState }),
       });
       if (res.ok) setPublished(newState);
-    } catch { /* # Network error */ }
+    } catch { trackEvent("portfolio.publish_toggle_failed"); }
   }, [published]);
 
   /* ---- Copy link ---- */
@@ -562,7 +563,7 @@ export default function PortfolioPage() {
         setSections(imported);
         debouncedSave({ sections: JSON.stringify(imported) });
       }
-    } catch { /* # No resume to import */ }
+    } catch { trackEvent("portfolio.import_resume_failed"); }
     setImportLoading(false);
   }, [debouncedSave]);
 

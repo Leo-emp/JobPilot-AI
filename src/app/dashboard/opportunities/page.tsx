@@ -15,6 +15,7 @@ import {
   STATUS_COLORS,
 } from "@/lib/match-pipeline";
 import type { MatchStatus } from "@/lib/match-pipeline";
+import { trackEvent } from "@/lib/track-event";
 
 interface Opportunity {
   matchId: string;
@@ -79,7 +80,7 @@ export default function OpportunitiesPage() {
         setTotal(data.pagination?.total || 0);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { trackEvent("opportunities.load_failed"); setLoading(false); });
   }
 
   /* # Hide or withdraw from a match */

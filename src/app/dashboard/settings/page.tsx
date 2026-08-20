@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Types ---- */
 interface UserPlan {
@@ -124,7 +125,7 @@ export default function SettingsPage() {
     fetch("/api/user/plan")
       .then(res => res.ok ? res.json().catch(() => null) : null)
       .then(data => { if (data) setUserPlan(data); })
-      .catch(() => {});
+      .catch(() => { trackEvent("settings.plan_load_failed"); });
   }, []);
 
   /* Sync weeklyDigest from plan data (render-time sync) */
@@ -139,7 +140,7 @@ export default function SettingsPage() {
     fetch("/api/auth/two-factor/status")
       .then(r => r.ok ? r.json().catch(() => null) : null)
       .then(d => { if (d) setTwoFAEnabled(d?.enabled); })
-      .catch(() => {});
+      .catch(() => { trackEvent("settings.2fa_status_load_failed"); });
   }, []);
 
   /* Fetch default resume + all saved resumes on mount */
@@ -152,7 +153,7 @@ export default function SettingsPage() {
         if (defRes?.data) setDefaultResume({ id: defRes.data.id, fileName: defRes.data.fileName });
         setSavedResumes(allRes?.data || []);
       })
-      .catch(() => {})
+      .catch(() => { trackEvent("settings.resumes_load_failed"); })
       .finally(() => setResumesLoading(false));
   }, []);
 
@@ -219,6 +220,7 @@ export default function SettingsPage() {
       else setMessage(data?.error || "Failed to start checkout.");
     } catch {
       setMessage("Failed to connect to payment system.");
+      trackEvent("settings.stripe_checkout_failed");
     } finally {
       setUpgradeLoading(false);
     }
@@ -234,6 +236,7 @@ export default function SettingsPage() {
       else setMessage(data?.error || "Failed to open billing portal.");
     } catch {
       setMessage("Failed to connect to billing system.");
+      trackEvent("settings.billing_portal_failed");
     } finally {
       setPortalLoading(false);
     }
@@ -448,6 +451,7 @@ export default function SettingsPage() {
       setExportMessage("Data exported successfully!");
     } catch {
       setExportMessage("Failed to export data.");
+      trackEvent("settings.export_data_failed");
     } finally {
       setExportLoading(false);
     }
@@ -468,6 +472,7 @@ export default function SettingsPage() {
       await signOut({ callbackUrl: "/" });
     } catch {
       setDeleteError("Failed to connect to server.");
+      trackEvent("settings.delete_account_failed");
     } finally {
       setDeleteLoading(false);
     }

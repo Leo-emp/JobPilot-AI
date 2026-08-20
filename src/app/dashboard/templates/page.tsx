@@ -15,6 +15,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { trackEvent } from "@/lib/track-event";
 import { injectPdfAttributes, measureBlocks } from "@/lib/pdf-engine";
 
 /* ============================================================
@@ -1418,6 +1419,7 @@ export default function TemplatesPage() {
         parsed = JSON.parse(cleaned);
       } catch {
         setUploadError("Couldn't parse that resume. Please try a different PDF file.");
+        trackEvent("templates.resume_parse_failed");
         setUploadStatus("error");
         return;
       }

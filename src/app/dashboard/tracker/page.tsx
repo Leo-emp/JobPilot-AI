@@ -9,6 +9,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Status options with colors ---- */
 const STATUSES = [
@@ -51,7 +52,7 @@ export default function TrackerPage() {
         if (data?.data) setApps(data.data);
       }
     } catch {
-      /* Silently fail — empty list is fine for now */
+      trackEvent("tracker.load_apps_failed");
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function TrackerPage() {
           const data = await res.json();
           if (!cancelled) setApps(data.data);
         }
-      } catch { /* Silently fail */ }
+      } catch { trackEvent("tracker.load_apps_failed"); }
       finally { if (!cancelled) setLoading(false); }
     })();
     return () => { cancelled = true; };
@@ -125,7 +126,7 @@ export default function TrackerPage() {
       });
       fetchApps();
     } catch {
-      /* Handle error silently */
+      trackEvent("tracker.status_update_failed", { status });
     }
   };
 
@@ -145,7 +146,7 @@ export default function TrackerPage() {
       setInterviewDateInput("");
       fetchApps();
     } catch {
-      /* Handle error silently */
+      trackEvent("tracker.interview_confirm_failed");
     }
   };
 
@@ -155,7 +156,7 @@ export default function TrackerPage() {
       await fetch(`/api/applications/${id}`, { method: "DELETE" });
       fetchApps();
     } catch {
-      /* Handle error silently */
+      trackEvent("tracker.delete_failed");
     }
   };
 

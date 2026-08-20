@@ -10,6 +10,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Types ---- */
 interface UserRow {
@@ -142,7 +143,7 @@ export default function AdminDashboardPage() {
         setFeedbackPages(data.pagination?.totalPages);
         setFeedbackPage(page);
       }
-    } catch { /* ignore */ } finally { setFeedbackLoading(false); }
+    } catch { trackEvent("admin.load_failed"); } finally { setFeedbackLoading(false); }
   };
 
   useEffect(() => { fetchFeedback(1, feedbackFilter); }, [feedbackFilter]);

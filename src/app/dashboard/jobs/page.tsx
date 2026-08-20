@@ -13,6 +13,7 @@ import { useState, useEffect, useRef } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { AUSTRALIAN_CITIES, isRegionalCity } from "@/lib/australian-sponsors";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Type for job search results ---- */
 interface JobResult {
@@ -73,7 +74,7 @@ export default function JobsPage() {
     fetch("/api/resumes?limit=20&sort=createdAt&order=desc")
       .then(r => r.ok ? r.json().catch(() => ({ data: [] })) : { data: [] })
       .then(d => setSavedResumes(d?.data || []))
-      .catch(() => {})
+      .catch(() => { trackEvent("jobs.load_resumes_failed"); })
       .finally(() => setResumesLoading(false));
   }, []);
 
@@ -171,7 +172,7 @@ export default function JobsPage() {
         setSavedJobs((prev) => new Set(prev).add(job.id));
       }
     } catch {
-      /* Silently fail — user can retry */
+      trackEvent("jobs.save_job_failed");
     } finally {
       setSavingJobId(null);
     }

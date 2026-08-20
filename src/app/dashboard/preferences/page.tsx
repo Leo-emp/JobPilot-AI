@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import skillsTaxonomy from "@/lib/skills-taxonomy.json";
+import { trackEvent } from "@/lib/track-event";
 import industryTaxonomy from "@/lib/industry-taxonomy.json";
 
 interface Preferences {
@@ -70,7 +71,7 @@ export default function PreferencesPage() {
         try { setSelectedLocations(JSON.parse(p.locations || "[]")); } catch { setSelectedLocations([]); }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { trackEvent("preferences.load_failed"); setLoading(false); });
   }, []);
 
   /* # Save preferences */

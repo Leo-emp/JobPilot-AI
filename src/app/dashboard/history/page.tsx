@@ -9,6 +9,7 @@
 
 import { useState, useEffect } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
+import { trackEvent } from "@/lib/track-event";
 
 interface HistoryItem {
   id: string;
@@ -57,7 +58,7 @@ export default function HistoryPage() {
           if (!cancelled && data?.data) setItems(data.data);
         }
       } catch {
-        /* Network error — ignore */
+        trackEvent("history.load_failed");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -75,6 +76,7 @@ export default function HistoryPage() {
         if (data) setFullResult(data);
       }
     } catch {
+      trackEvent("history.view_result_failed");
     } finally {
       setResultLoading(false);
     }

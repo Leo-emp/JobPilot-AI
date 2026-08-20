@@ -21,6 +21,7 @@ import { useState, useRef, useCallback } from "react";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { usePlan } from "@/hooks/usePlan";
 import { useDefaultResume } from "@/hooks/useDefaultResume";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Max resume PDF size ---- */
 import { extractTextFromPdf } from "@/lib/pdf-extract";
@@ -175,6 +176,7 @@ export default function OutreachHubPage() {
       setResumeText(text);
     } catch {
       setResumeError("Failed to read this PDF. Please type your background manually below.");
+      trackEvent("network.pdf_parse_failed");
     } finally {
       setResumeParsing(false);
     }
@@ -291,6 +293,7 @@ export default function OutreachHubPage() {
       }, ...prev]);
     } catch {
       setError("Failed to connect to AI. Please try again.");
+      trackEvent("network.ai_generate_failed");
     } finally {
       setLoading(false);
     }

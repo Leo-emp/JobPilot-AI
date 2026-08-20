@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { usePlan } from "./usePlan";
+import { trackEvent } from "@/lib/track-event";
 
 interface UseAIStreamReturn {
   result: string;
@@ -62,6 +63,7 @@ export function useAIStream(): UseAIStreamReturn {
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         setError(data?.error || "AI request failed.");
+        trackEvent("ai.stream_error", { action, status: String(res.status) });
         setLoading(false);
         return null;
       }
@@ -99,6 +101,7 @@ export function useAIStream(): UseAIStreamReturn {
       }
 
       /* Fallback to non-streaming endpoint */
+      trackEvent("ai.stream_fallback", { action });
       try {
         const fallbackRes = await fetch("/api/ai", {
           method: "POST",
@@ -119,6 +122,7 @@ export function useAIStream(): UseAIStreamReturn {
         return data?.result || null;
       } catch {
         setError("Failed to connect to AI. Please try again.");
+        trackEvent("ai.both_endpoints_failed", { action });
         setLoading(false);
         return null;
       }

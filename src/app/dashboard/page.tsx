@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Onboarding from "@/components/Onboarding";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Types from the stats API ---- */
 interface RecentActivity {
@@ -217,12 +218,12 @@ export default function DashboardPage() {
     fetch("/api/dashboard/stats")
       .then(res => res.ok ? res.json().catch(() => null) : null)
       .then(data => { if (data) setStats(data); })
-      .catch(() => {});
+      .catch(() => { trackEvent("dashboard.stats_load_failed"); });
 
     fetch("/api/career-insights")
       .then(res => res.ok ? res.json().catch(() => null) : null)
       .then(data => { if (data) setInsights(data); })
-      .catch(() => {});
+      .catch(() => { trackEvent("dashboard.insights_load_failed"); });
   }, []);
 
   const hasActivity = stats

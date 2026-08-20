@@ -19,6 +19,7 @@ import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
 import { useDefaultResume } from "@/hooks/useDefaultResume";
+import { trackEvent } from "@/lib/track-event";
 
 /* ---- Types ---- */
 /* Each message in the conversation (AI or user) */
@@ -318,7 +319,7 @@ export default function MockInterviewPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
       streamRef.current = stream;
       return;
-    } catch { /* all media blocked — interview continues without */ }
+    } catch { trackEvent("mock_interview.media_blocked"); }
   }, []);
 
   /* ---- Webcam: stop user's camera ---- */
@@ -603,8 +604,8 @@ export default function MockInterviewPage() {
           if (Array.isArray(questions) && questions.length > 0) {
             questionBankRef.current = questions;
           }
-        } catch { /* non-critical — AI will generate questions on the fly if this fails */ }
-      }).catch(() => { /* silently ignore — fallback to on-the-fly generation */ });
+        } catch { trackEvent("mock_interview.question_prefetch_parse_failed"); }
+      }).catch(() => { trackEvent("mock_interview.question_prefetch_failed"); });
 
       /* Speak the greeting immediately */
       setIsAISpeaking(true);
@@ -615,6 +616,7 @@ export default function MockInterviewPage() {
       startListening();
     } catch {
       setError("Could not start the interview. Please check your camera/mic permissions and try again.");
+      trackEvent("mock_interview.start_failed");
       setPhase("setup");
     } finally {
       setLoading(false);
@@ -678,6 +680,7 @@ export default function MockInterviewPage() {
       setIsAISpeaking(false);
       cancelTTS();
       setError("Sarah had trouble responding. Please try again or skip this question.");
+      trackEvent("mock_interview.ai_response_failed", { exchange: String(exchangeNumber) });
       setUserAnswer("");
       setWaitingForUser(true);
       submittedRef.current = false;
@@ -740,6 +743,7 @@ export default function MockInterviewPage() {
       setIsAISpeaking(false);
       cancelTTS();
       setError("Sarah had trouble responding. Please try again or skip this question.");
+      trackEvent("mock_interview.skip_response_failed", { exchange: String(exchangeNumber) });
       setUserAnswer("");
       setWaitingForUser(true);
       submittedRef.current = false;
@@ -779,6 +783,7 @@ export default function MockInterviewPage() {
       const score = parseAIJson<FinalScore>(result);
       setFinalScore(score);
     } catch {
+      trackEvent("mock_interview.summary_generation_failed");
       setFinalScore({
         overallScore: 0,
         categories: {},
