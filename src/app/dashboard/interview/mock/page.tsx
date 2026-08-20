@@ -455,9 +455,6 @@ export default function MockInterviewPage() {
   const autoStartMic = useCallback(() => {
     submittedRef.current = false;
 
-    /* Cancel any leftover TTS — Chrome can't run recognition + synthesis together */
-    window.speechSynthesis?.cancel();
-
     /* Kill any existing recognition instance cleanly */
     if (recognitionRef.current) {
       const old = recognitionRef.current;
@@ -677,34 +674,15 @@ export default function MockInterviewPage() {
       setMessages(prev => [...prev, aiMsg]);
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
-
-      /* Speak any remaining text not yet sent to TTS */
-      const remaining = response.message.slice(spokenLenRef.current).trim();
-      if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
-
-      /* Wait for ALL speech to finish — require 600ms of continuous silence
-         so we don't exit early during brief gaps between queued utterances */
-      await new Promise<void>(resolve => {
-        const deadline = Date.now() + 25000;
-        let silentSince = 0;
-        const check = () => {
-          if (Date.now() > deadline) {
-            window.speechSynthesis.cancel();
-            resolve();
-            return;
-          }
-          if (!window.speechSynthesis.speaking) {
-            if (!silentSince) silentSince = Date.now();
-            if (Date.now() - silentSince >= 600) { resolve(); return; }
-          } else {
-            silentSince = 0;
-          }
-          setTimeout(check, 100);
-        };
-        setTimeout(check, 100);
-      });
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
+
+      /* Cancel progressive TTS and re-speak remaining text as a single
+         utterance via speakText — it resolves reliably via onend, not polling */
+      window.speechSynthesis.cancel();
+      const remaining = response.message.slice(spokenLenRef.current).trim();
+      if (remaining) await speakText(remaining);
       setIsAISpeaking(false);
+
       /* If AI says interview is complete or we hit the safety limit */
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
@@ -758,29 +736,11 @@ export default function MockInterviewPage() {
       setMessages(prev => [...prev, aiMsg]);
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
-
-      const remaining = response.message.slice(spokenLenRef.current).trim();
-      if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
-      await new Promise<void>(resolve => {
-        const deadline = Date.now() + 25000;
-        let silentSince = 0;
-        const check = () => {
-          if (Date.now() > deadline) {
-            window.speechSynthesis.cancel();
-            resolve();
-            return;
-          }
-          if (!window.speechSynthesis.speaking) {
-            if (!silentSince) silentSince = Date.now();
-            if (Date.now() - silentSince >= 600) { resolve(); return; }
-          } else {
-            silentSince = 0;
-          }
-          setTimeout(check, 100);
-        };
-        setTimeout(check, 100);
-      });
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
+
+      window.speechSynthesis.cancel();
+      const remaining = response.message.slice(spokenLenRef.current).trim();
+      if (remaining) await speakText(remaining);
       setIsAISpeaking(false);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
