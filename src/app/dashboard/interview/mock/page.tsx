@@ -455,9 +455,6 @@ export default function MockInterviewPage() {
   const autoStartMic = useCallback(() => {
     submittedRef.current = false;
 
-    /* Force-cancel any lingering TTS so Chrome releases the audio system */
-    window.speechSynthesis?.cancel();
-
     /* Kill any existing recognition instance cleanly */
     if (recognitionRef.current) {
       const old = recognitionRef.current;
