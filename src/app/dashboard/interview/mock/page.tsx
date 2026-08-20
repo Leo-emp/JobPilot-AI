@@ -455,6 +455,9 @@ export default function MockInterviewPage() {
   const autoStartMic = useCallback(() => {
     submittedRef.current = false;
 
+    /* Cancel any leftover TTS — Chrome can't run recognition + synthesis together */
+    window.speechSynthesis?.cancel();
+
     /* Kill any existing recognition instance cleanly */
     if (recognitionRef.current) {
       const old = recognitionRef.current;
@@ -679,18 +682,26 @@ export default function MockInterviewPage() {
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
 
-      /* Wait for the speech queue to finish (max 25s to prevent Chrome hang) */
+      /* Wait for ALL speech to finish — require 600ms of continuous silence
+         so we don't exit early during brief gaps between queued utterances */
       await new Promise<void>(resolve => {
         const deadline = Date.now() + 25000;
+        let silentSince = 0;
         const check = () => {
-          if (!window.speechSynthesis.speaking || Date.now() > deadline) {
-            if (Date.now() > deadline) window.speechSynthesis.cancel();
+          if (Date.now() > deadline) {
+            window.speechSynthesis.cancel();
             resolve();
             return;
           }
-          setTimeout(check, 200);
+          if (!window.speechSynthesis.speaking) {
+            if (!silentSince) silentSince = Date.now();
+            if (Date.now() - silentSince >= 600) { resolve(); return; }
+          } else {
+            silentSince = 0;
+          }
+          setTimeout(check, 100);
         };
-        setTimeout(check, 200);
+        setTimeout(check, 100);
       });
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setIsAISpeaking(false);
@@ -752,15 +763,22 @@ export default function MockInterviewPage() {
       if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
       await new Promise<void>(resolve => {
         const deadline = Date.now() + 25000;
+        let silentSince = 0;
         const check = () => {
-          if (!window.speechSynthesis.speaking || Date.now() > deadline) {
-            if (Date.now() > deadline) window.speechSynthesis.cancel();
+          if (Date.now() > deadline) {
+            window.speechSynthesis.cancel();
             resolve();
             return;
           }
-          setTimeout(check, 200);
+          if (!window.speechSynthesis.speaking) {
+            if (!silentSince) silentSince = Date.now();
+            if (Date.now() - silentSince >= 600) { resolve(); return; }
+          } else {
+            silentSince = 0;
+          }
+          setTimeout(check, 100);
         };
-        setTimeout(check, 200);
+        setTimeout(check, 100);
       });
       if (ttsKeepAliveRef.current) clearInterval(ttsKeepAliveRef.current);
       setIsAISpeaking(false);
