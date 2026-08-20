@@ -425,21 +425,16 @@ export default function MockInterviewPage() {
     recognition.interimResults = true;
     (recognition as unknown as Record<string, unknown>).maxAlternatives = 1;
     recognition.lang = "en-US";
-    /* Snapshot whatever the user already typed — speech appends after it */
-    const baseText = userAnswerRef.current;
-    let finalTranscript = "";
+    /* Append-only: each final result is added to whatever is in the textarea.
+       Never replaces the full content — so deleting/editing text works normally. */
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      /* Ignore late results after user has submitted their answer */
       if (submittedRef.current) return;
-      let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + " ";
-        } else {
-          interim = event.results[i][0].transcript;
+          const text = event.results[i][0].transcript;
+          setUserAnswer(prev => prev + text + " ");
         }
       }
-      setUserAnswer(baseText + finalTranscript + interim);
     };
 
     recognition.onerror = (e: Event) => {
