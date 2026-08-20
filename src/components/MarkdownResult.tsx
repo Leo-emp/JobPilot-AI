@@ -540,14 +540,16 @@ interface MarkdownResultProps {
 export default function MarkdownResult({ result, showDownload = true, editable = true }: MarkdownResultProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editedMarkdownState, setEditedMarkdownState] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const cleaned = stripCodeFences(result);
-  const html = parseMarkdown(cleaned);
+  const source = editedMarkdownState ?? cleaned;
+  const html = parseMarkdown(source);
 
   /* # No useCallback needed — React Compiler handles memoization automatically */
   const getEditedMarkdown = (): string => {
-    if (!contentRef.current) return cleaned;
-    return domToMarkdown(contentRef.current);
+    if (editing && contentRef.current) return domToMarkdown(contentRef.current);
+    return editedMarkdownState ?? cleaned;
   };
 
   /* Download as PDF — matches reference resume layout exactly */
@@ -883,7 +885,10 @@ export default function MarkdownResult({ result, showDownload = true, editable =
             <button
               onClick={() => {
                 setEditing((prev) => {
-                  if (prev && contentRef.current) contentRef.current.blur();
+                  if (prev && contentRef.current) {
+                    setEditedMarkdownState(domToMarkdown(contentRef.current));
+                    contentRef.current.blur();
+                  }
                   if (!prev && contentRef.current) contentRef.current.focus();
                   return !prev;
                 });
@@ -919,8 +924,11 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         </div>
       </div>
 
-      {/* Rendered markdown content — editable so users can tweak text before downloading */}
+      {/* Rendered markdown content — editable so users can tweak text before downloading.
+         key forces React to remount (and apply dangerouslySetInnerHTML) only when source changes,
+         so edits inside contentEditable are never overwritten by a re-render mid-editing. */}
       <div
+        key={source}
         ref={contentRef}
         contentEditable={editable && editing}
         suppressContentEditableWarning
