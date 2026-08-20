@@ -1263,7 +1263,7 @@ export default function MockInterviewPage() {
             {/* Text input */}
             <textarea
               value={userAnswer}
-              onChange={e => setUserAnswer(e.target.value)}
+              onChange={e => { setUserAnswer(e.target.value); if (recognitionRef.current) stopListening(); }}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmitAnswer(); } }}
               placeholder={
                 isAIThinking ? "Sarah is responding..."
