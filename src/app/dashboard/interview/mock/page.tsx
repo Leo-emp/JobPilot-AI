@@ -177,44 +177,28 @@ function speakText(text: string): Promise<void> {
   });
 }
 
-/* ---- Helper: create a single TTS utterance with the cached voice ---- */
-function makeUtterance(text: string): SpeechSynthesisUtterance {
-  if (!cachedVoice) cachedVoice = getBestVoice();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate = 1.05;
-  u.pitch = 1.15;
-  u.volume = 1.0;
-  if (cachedVoice) u.voice = cachedVoice;
-  return u;
+/* ---- Shared TTS sentence queue ---- */
+/* Instead of queuing multiple utterances to Chrome (which breaks onend/speaking),
+   we maintain our OWN queue and speak one sentence at a time via speakText.
+   speakText uses a single utterance with onend — proven reliable by the greeting. */
+const ttsQueue: string[] = [];
+let ttsDrainPromise: Promise<void> | null = null;
+
+/* Process sentences one at a time — each waits for onend before the next */
+async function drainTTSQueue(): Promise<void> {
+  while (ttsQueue.length > 0) {
+    const sentence = ttsQueue.shift()!;
+    await speakText(sentence);
+  }
+  ttsDrainPromise = null;
 }
 
-/* ---- Helper: wait for all queued TTS to finish playing ---- */
-/* Queues a tiny sentinel utterance at the end of the queue.
-   When its onend fires, everything before it has finished. */
-function waitForTTSDone(): Promise<void> {
-  return new Promise((resolve) => {
-    if (!window.speechSynthesis) { resolve(); return; }
-    /* If nothing is playing or pending, resolve immediately */
-    if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
-      resolve(); return;
-    }
-    /* Chrome bug workaround: resume every 5s to prevent stalling */
-    const keepAlive = setInterval(() => {
-      if (window.speechSynthesis.speaking) window.speechSynthesis.resume();
-    }, 5000);
-    /* Safety timeout: 45s max wait, then force-resolve */
-    const timeout = setTimeout(() => {
-      clearInterval(keepAlive);
-      window.speechSynthesis.cancel();
-      resolve();
-    }, 45000);
-    /* Queue a sentinel — when it finishes, all prior utterances are done */
-    const sentinel = makeUtterance(".");
-    sentinel.volume = 0.01;
-    sentinel.onend = () => { clearTimeout(timeout); clearInterval(keepAlive); resolve(); };
-    sentinel.onerror = () => { clearTimeout(timeout); clearInterval(keepAlive); resolve(); };
-    window.speechSynthesis.speak(sentinel);
-  });
+/* Add a sentence and start draining if not already running */
+function enqueueTTS(sentence: string) {
+  ttsQueue.push(sentence);
+  if (!ttsDrainPromise) {
+    ttsDrainPromise = drainTTSQueue();
+  }
 }
 
 /* ============================================================
@@ -414,9 +398,15 @@ export default function MockInterviewPage() {
       return;
     }
 
-    /* Stop any existing recognition session */
+    /* Fully clean up any existing recognition session.
+       Null the ref FIRST so the old onend handler won't auto-restart. */
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch { /* ignore */ }
+      const old = recognitionRef.current;
+      recognitionRef.current = null;
+      try { old.stop(); } catch { /* ignore */ }
+      /* Brief pause lets Chrome finalize the old session before starting a new one.
+         Without this, Chrome throttles after ~5 rapid start/stop cycles. */
+      await new Promise(r => setTimeout(r, 150));
     }
 
     const recognition = new SR();
@@ -497,8 +487,9 @@ export default function MockInterviewPage() {
   };
 
   /* ---- Feed new complete sentences to TTS as they stream in ---- */
-  /* Queues each sentence to speechSynthesis as soon as it's complete.
-     Chrome plays them in order — user hears Sarah while text is still streaming. */
+  /* Extracts complete sentences and adds them to our own queue.
+     drainTTSQueue speaks them one at a time via speakText (single utterance, reliable onend).
+     No Chrome queue bugs because only 1 utterance is ever active. */
   const feedProgressiveTTS = useCallback((messageText: string) => {
     const already = spokenLenRef.current;
     const newText = messageText.slice(already);
@@ -507,7 +498,7 @@ export default function MockInterviewPage() {
     let consumed = 0;
     while ((match = sentenceRe.exec(newText)) !== null) {
       const sentence = match[0].trim();
-      if (sentence) window.speechSynthesis.speak(makeUtterance(sentence));
+      if (sentence) enqueueTTS(sentence);
       consumed = match.index + match[0].length;
     }
     if (consumed > 0) spokenLenRef.current = already + consumed;
@@ -637,10 +628,12 @@ export default function MockInterviewPage() {
     setExchangeNumber(nextExchange);
     setQuestionNumber(prev => prev + 1);
 
-    /* Get AI's next response — text streams to screen, sentences speak as they arrive */
+    /* Get AI's next response — text streams to screen, sentences speak one at a time */
     setIsAIThinking(true);
     setIsAISpeaking(true);
     spokenLenRef.current = 0;
+    ttsQueue.length = 0;
+    ttsDrainPromise = null;
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
@@ -648,22 +641,19 @@ export default function MockInterviewPage() {
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
 
-      /* Flush any remaining text that wasn't a complete sentence during streaming
-         (e.g. trailing text without .!? punctuation) */
+      /* Flush any trailing text that wasn't a complete sentence during streaming */
       const remaining = response.message.slice(spokenLenRef.current).trim();
-      if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
+      if (remaining) enqueueTTS(remaining);
 
-      /* Wait for ALL queued speech to finish — NO cancel().
-         Previous bug: cancel() killed speech mid-sentence. Now we let
-         the queue drain naturally via a sentinel utterance. */
-      await waitForTTSDone();
+      /* Wait for our sentence queue to finish (NOT Chrome's broken queue).
+         drainTTSQueue speaks one sentence at a time via speakText, which
+         resolves via onend — the same mechanism that works for the greeting. */
+      if (ttsDrainPromise) await ttsDrainPromise;
       setIsAISpeaking(false);
 
-      /* If AI says interview is complete or we hit the safety limit */
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        /* Enable user input + start mic */
         setUserAnswer("");
         setWaitingForUser(true);
         submittedRef.current = false;
@@ -672,6 +662,8 @@ export default function MockInterviewPage() {
     } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
+      ttsQueue.length = 0;
+      ttsDrainPromise = null;
       window.speechSynthesis.cancel();
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setUserAnswer("");
@@ -701,10 +693,12 @@ export default function MockInterviewPage() {
     const nextExchange = exchangeNumber + 1;
     setExchangeNumber(nextExchange);
 
-    /* Get AI's next response — text streams to screen, sentences speak as they arrive */
+    /* Get AI's next response — text streams to screen, sentences speak one at a time */
     setIsAIThinking(true);
     setIsAISpeaking(true);
     spokenLenRef.current = 0;
+    ttsQueue.length = 0;
+    ttsDrainPromise = null;
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
       const aiMsg: ChatMessage = { role: "ai", text: response.message };
@@ -712,10 +706,9 @@ export default function MockInterviewPage() {
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
 
-      /* Flush remaining text + wait for queue to drain (no cancel) */
       const remaining = response.message.slice(spokenLenRef.current).trim();
-      if (remaining) window.speechSynthesis.speak(makeUtterance(remaining));
-      await waitForTTSDone();
+      if (remaining) enqueueTTS(remaining);
+      if (ttsDrainPromise) await ttsDrainPromise;
       setIsAISpeaking(false);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
@@ -729,6 +722,8 @@ export default function MockInterviewPage() {
     } catch {
       setIsAIThinking(false);
       setIsAISpeaking(false);
+      ttsQueue.length = 0;
+      ttsDrainPromise = null;
       window.speechSynthesis.cancel();
       setError("Sarah had trouble responding. Please try again or skip this question.");
       setUserAnswer("");
