@@ -329,13 +329,24 @@ export default function MockInterviewPage() {
   /* the webcam setup (audio:true), this works instantly. If not, fails */
   /* silently and user can click the mic button manually. */
   useEffect(() => {
-    if (waitingForUser && phase === "interview" && !isListening) {
-      /* Reset the submitted guard so new speech can flow through */
-      submittedRef.current = false;
+    if (!waitingForUser || phase !== "interview") return;
 
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) return;
+    /* Reset the submitted guard so new speech can flow through */
+    submittedRef.current = false;
 
+    /* Stop any lingering recognition before creating a fresh one */
+    if (recognitionRef.current) {
+      const old = recognitionRef.current;
+      recognitionRef.current = null;
+      try { old.stop(); } catch { /* already stopped */ }
+    }
+    setIsListening(false);
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+
+    /* Small delay lets Chrome fully release the previous mic session */
+    const startTimer = setTimeout(() => {
       const recognition = new SR();
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -344,7 +355,6 @@ export default function MockInterviewPage() {
       let finalTranscript = "";
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
-        /* Ignore late results after user has submitted their answer */
         if (submittedRef.current) return;
         let interim = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -379,9 +389,14 @@ export default function MockInterviewPage() {
       } catch {
         /* Silent fail — mic button is still available */
       }
-    }
+    }, 150);
+
+    /* Cleanup: stop recognition if waitingForUser flips back to false */
+    return () => {
+      clearTimeout(startTimer);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waitingForUser]);
+  }, [waitingForUser, phase]);
 
   /* ---- Timer: count seconds while in interview phase ---- */
   useEffect(() => {
