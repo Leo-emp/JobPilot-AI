@@ -694,18 +694,17 @@ export default function MockInterviewPage() {
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        /* Enable typing + mic after TTS finishes */
         setUserAnswer("");
-        setWaitingForUser(true);
-        submittedRef.current = false;
 
-        /* Wait for TTS to finish BEFORE starting mic — prevents mic from catching AI speech */
+        /* Wait for TTS to finish — user can only respond after AI stops speaking */
         if (ttsDrainPromise) {
           await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
         }
         setIsAISpeaking(false);
-        /* Now start mic — TTS is done, no echo. Set inputMode to mic so watchdog can
-           restart if recognition dies. User can switch to typing by clicking the textarea. */
+
+        /* NOW enable input — AI is done speaking */
+        setWaitingForUser(true);
+        submittedRef.current = false;
         if (!submittedRef.current) {
           setInputMode("mic");
           startListening();
@@ -765,15 +764,17 @@ export default function MockInterviewPage() {
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        /* Enable typing immediately — wait for TTS before starting mic */
         setUserAnswer("");
-        setWaitingForUser(true);
-        submittedRef.current = false;
 
+        /* Wait for TTS to finish — user can only respond after AI stops speaking */
         if (ttsDrainPromise) {
           await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
         }
         setIsAISpeaking(false);
+
+        /* NOW enable input — AI is done speaking */
+        setWaitingForUser(true);
+        submittedRef.current = false;
         if (!submittedRef.current) {
           setInputMode("mic");
           startListening();
@@ -1321,7 +1322,7 @@ export default function MockInterviewPage() {
             {/* Skip question button */}
             <button
               onClick={handleSkipQuestion}
-              disabled={!waitingForUser || exchangeNumber === 0}
+              disabled={(!waitingForUser && !isAISpeaking) || exchangeNumber === 0}
               className="px-3 py-3.5 rounded-xl bg-space-600 border border-card-border text-text-secondary hover:text-amber-400 hover:border-amber-400/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0 text-xs font-medium"
               title="Skip this question"
             >
