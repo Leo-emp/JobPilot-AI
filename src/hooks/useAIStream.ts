@@ -42,6 +42,9 @@ export function useAIStream(): UseAIStreamReturn {
     }
   }, []);
 
+  const remainingRef = useRef<number | "unlimited" | null>(null);
+  remainingRef.current = remaining;
+
   const callAI = useCallback(async (action: string, payload: Record<string, unknown>): Promise<string | null> => {
     setLoading(true);
     setStreaming(false);
@@ -85,9 +88,10 @@ export function useAIStream(): UseAIStreamReturn {
         setResult(fullText);
       }
 
-      /* Update remaining count (decrement locally) */
-      if (typeof remaining === "number") {
-        updateRemaining(Math.max(0, remaining - 1));
+      /* Update remaining count (decrement locally via ref to avoid stale closure) */
+      const cur = remainingRef.current;
+      if (typeof cur === "number") {
+        updateRemaining(Math.max(0, cur - 1));
       }
 
       setStreaming(false);
@@ -127,7 +131,7 @@ export function useAIStream(): UseAIStreamReturn {
         return null;
       }
     }
-  }, [remaining, updateRemaining]);
+  }, [updateRemaining]);
 
   return { result, loading, streaming, error, plan, remaining, callAI, reset };
 }
