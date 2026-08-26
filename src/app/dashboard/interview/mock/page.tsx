@@ -522,49 +522,72 @@ export default function MockInterviewPage() {
   }, []);
 
   /* ---- Send a message to AI and get the next response (streaming) ---- */
+  /* Returns as soon as the JSON response is fully parsed from the stream,
+     WITHOUT waiting for the HTTP connection to close. Gemini's SSE stream
+     often hangs open for seconds after the last content token — this
+     prevents the UI from being blocked during that dead time. */
   const getAIResponse = useCallback(async (currentMessages: ChatMessage[], exchNum: number) => {
-    /* Pass only the NEXT question from the bank — remove it so it can never be repeated.
-       The AI gets one question at a time; once used, it's gone from the bank. */
     const nextQuestion = questionBankRef.current.length > 0
       ? questionBankRef.current.shift()!
       : "";
 
-    const result = await streamAI("mock_interview_respond", {
-      role,
-      industry,
-      experience,
-      interviewType,
-      company,
-      companyPromptBlock,
-      jobDescription,
-      resume,
-      history: formatHistory(currentMessages),
-      exchangeNumber: String(exchNum),
-      questionNumber: String(questionNumber),
-      skippedQuestions: JSON.stringify(skippedQuestions),
-      nextQuestion,
-    }, (partial) => {
-      /* Show text on screen AND queue complete sentences to TTS as they arrive.
-         User hears Sarah speak while text is still streaming in. */
-      let msgText = "";
-      try {
-        const parsed = parseAIJson<{ message: string }>(partial);
-        if (parsed.message) msgText = parsed.message;
-      } catch {
-        const m = partial.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-        if (m) msgText = m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
-      }
-      if (msgText) {
-        setCurrentAIMessage(msgText);
-        feedProgressiveTTS(msgText);
-      }
-    });
+    return new Promise<{ message: string; isComplete: boolean }>((resolve) => {
+      let resolved = false;
+      let lastParsed: { message: string; isComplete: boolean } | null = null;
 
-    try {
-      return parseAIJson<{ message: string; isComplete: boolean }>(result);
-    } catch {
-      return { message: result, isComplete: false };
-    }
+      streamAI("mock_interview_respond", {
+        role,
+        industry,
+        experience,
+        interviewType,
+        company,
+        companyPromptBlock,
+        jobDescription,
+        resume,
+        history: formatHistory(currentMessages),
+        exchangeNumber: String(exchNum),
+        questionNumber: String(questionNumber),
+        skippedQuestions: JSON.stringify(skippedQuestions),
+        nextQuestion,
+      }, (partial) => {
+        let msgText = "";
+        try {
+          const parsed = parseAIJson<{ message: string; isComplete: boolean }>(partial);
+          if (parsed.message) {
+            msgText = parsed.message;
+            lastParsed = parsed;
+          }
+        } catch {
+          const m = partial.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+          if (m) msgText = m[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+        }
+        if (msgText) {
+          setCurrentAIMessage(msgText);
+          feedProgressiveTTS(msgText);
+        }
+        /* Resolve as soon as we have a complete JSON parse — don't wait for stream close.
+           The closing brace means all content has been generated. */
+        if (lastParsed && !resolved) {
+          resolved = true;
+          resolve(lastParsed);
+        }
+      }).then((fullResult) => {
+        /* Stream closed — if we never got a clean JSON parse, resolve with raw text */
+        if (!resolved) {
+          resolved = true;
+          try {
+            resolve(parseAIJson<{ message: string; isComplete: boolean }>(fullResult));
+          } catch {
+            resolve({ message: fullResult, isComplete: false });
+          }
+        }
+      }).catch(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve({ message: lastParsed?.message || "", isComplete: false });
+        }
+      });
+    });
   }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions, feedProgressiveTTS]);
 
   /* ---- Start the interview: instant greeting, no AI wait ---- */
@@ -653,7 +676,7 @@ export default function MockInterviewPage() {
 
     /* Get AI's next response — text streams to screen, sentences speak one at a time.
        isAIThinking = streaming text from API. isAISpeaking = TTS playing audio.
-       These are separate: thinking ends when stream completes, speaking ends when TTS finishes. */
+       User can start typing as soon as the first text appears (waitingForUser = true). */
     setIsAIThinking(true);
     spokenLenRef.current = 0;
     try {
@@ -664,14 +687,14 @@ export default function MockInterviewPage() {
       setIsAIThinking(false);
 
       /* Flush remaining text to TTS — mark as speaking only if there's audio to play */
-      const remaining = response.message.slice(spokenLenRef.current).trim();
-      if (remaining) enqueueTTS(remaining);
+      const remainingText = response.message.slice(spokenLenRef.current).trim();
+      if (remainingText) enqueueTTS(remainingText);
       setIsAISpeaking(!!ttsDrainPromise);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
       } else {
-        /* Enable typing immediately — user can read the question and type while Sarah speaks */
+        /* Enable typing + mic after TTS finishes */
         setUserAnswer("");
         setWaitingForUser(true);
         submittedRef.current = false;
