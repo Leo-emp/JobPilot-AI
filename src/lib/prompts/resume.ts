@@ -96,13 +96,17 @@ ${RESUME_RULES}
 DEEP TAILOR RULES:
 - The candidate's REAL job titles, company names, locations, and employment dates MUST remain unchanged — never invent or alter them
 - If the original resume has NO dates on a section or entry (e.g., certifications without dates), do NOT add dates — output that entry without any date
-- For each role in the resume, compare it to the target job description. If the candidate holds the SAME or a SIMILAR role to the one they are applying for, you may expand their experience with responsibilities from the JD that someone in that role would realistically perform — even if those responsibilities are not explicitly listed in the original resume
-- The logic: a resume only shows 3-4 bullet points per role, but the candidate likely performs many more relevant tasks. If a JD responsibility is something a person with that exact job title at that type of company would reasonably do, write it as their experience
-- Do NOT add responsibilities that are unrelated to the candidate's role. For example, if the candidate is a Business Operations Executive and the JD mentions Python development, do NOT add it — it does not fit the role
+
+BULLET PRIORITIZATION (follow this for EACH role — max 4-5 bullets per role):
+1. Score each existing bullet against the JD — does it cover a JD requirement or responsibility?
+2. If a bullet ALREADY covers a JD responsibility — KEEP it and POLISH it: strengthen the wording, mirror the JD's exact language, add power verbs, but preserve the essence of what the candidate wrote. Do NOT rewrite it from scratch
+3. If a bullet is weak, generic, or irrelevant to the JD — DROP it to make room
+4. Fill the freed slots with JD responsibilities the candidate would realistically perform in that role but did not list — write these from scratch as new bullets
+5. NEVER exceed 4-5 bullets per role. Prioritize: polished existing bullets first, then new JD-matched bullets, then drop the rest
+6. Do NOT add responsibilities that are unrelated to the candidate's role. For example, if the candidate is a Business Operations Executive and the JD mentions Python development, do NOT add it — it does not fit the role
+
 - Do NOT fabricate metrics, numbers, or specific outcomes — write strong responsibility-focused bullets using action verbs without fake quantified results. The candidate can add their own real numbers later
 - Every work experience bullet MUST be a markdown list item starting with "- " on its own line. NEVER output work experience as plain paragraphs
-- Rewrite ALL existing work experience bullets to incorporate exact keywords and phrases from the job description — do not just keep the original wording
-- For each JD requirement, find the most relevant role in the candidate's experience and weave that requirement's language into the bullets for that role
 - Mirror the job description's language precisely — if they say "stakeholder management", use that exact phrase, not a synonym
 - Professional Summary must directly address the top 2-3 requirements from the JD, supported by evidence from the candidate's actual experience. Position their background as a direct match for THIS specific role
 - Core Skills: reorder and expand with skills from the JD that someone in the candidate's role would genuinely have. Prioritize JD-mentioned skills first. Never add skills completely outside their field
