@@ -254,6 +254,7 @@ export default function MockInterviewPage() {
   const [isListening, setIsListening] = useState(false);                /* mic is recording */
   const [elapsedTime, setElapsedTime] = useState(0);                    /* seconds since interview started */
   const [waitingForUser, setWaitingForUser] = useState(false);          /* AI finished speaking, user's turn */
+  const [inputMode, setInputMode] = useState<"mic" | "typing" | null>(null); /* tracks whether user chose mic or typing — prevents watchdog from restarting mic while typing */
 
   /* ---- Results state ---- */
   const [finalScore, setFinalScore] = useState<FinalScore | null>(null);
@@ -476,13 +477,13 @@ export default function MockInterviewPage() {
     try { ref?.stop(); } catch { /* already stopped */ }
   }, []);
 
-  /* ---- Mic watchdog: keeps trying to start mic every 3s during interview ---- */
-  /* Only starts mic when it's the user's turn AND TTS is finished — prevents
-     mic from picking up AI speech. Also resets isListening if recognition died. */
+  /* ---- Mic watchdog: restarts mic only if user chose mic mode ---- */
+  /* Skips when user is typing (inputMode === "typing") so mic doesn't interfere.
+     Only restarts if recognition died unexpectedly while mic mode was active. */
   useEffect(() => {
     if (phase !== "interview") return;
     const watchdog = setInterval(() => {
-      if (waitingForUser && !submittedRef.current && !isAISpeaking) {
+      if (waitingForUser && !submittedRef.current && !isAISpeaking && inputMode !== "typing") {
         if (!recognitionRef.current) {
           setIsListening(false);
           startListening();
@@ -490,7 +491,7 @@ export default function MockInterviewPage() {
       }
     }, 3000);
     return () => clearInterval(watchdog);
-  }, [phase, waitingForUser, isAISpeaking, startListening]);
+  }, [phase, waitingForUser, isAISpeaking, inputMode, startListening]);
 
   /* ---- Format conversation history as a string for the AI prompt ---- */
   const formatHistory = (msgs: ChatMessage[]) => {
@@ -501,7 +502,8 @@ export default function MockInterviewPage() {
   /* ---- Feed new complete sentences to TTS as they stream in ---- */
   /* Extracts complete sentences and adds them to our own queue.
      drainTTSQueue speaks them one at a time via speakText (single utterance, reliable onend).
-     No Chrome queue bugs because only 1 utterance is ever active. */
+     No Chrome queue bugs because only 1 utterance is ever active.
+     Sets isAISpeaking=true as soon as the first sentence starts playing. */
   const feedProgressiveTTS = useCallback((messageText: string) => {
     const already = spokenLenRef.current;
     const newText = messageText.slice(already);
@@ -510,7 +512,10 @@ export default function MockInterviewPage() {
     let consumed = 0;
     while ((match = sentenceRe.exec(newText)) !== null) {
       const sentence = match[0].trim();
-      if (sentence) enqueueTTS(sentence);
+      if (sentence) {
+        enqueueTTS(sentence);
+        setIsAISpeaking(true);
+      }
       consumed = match.index + match[0].length;
     }
     if (consumed > 0) spokenLenRef.current = already + consumed;
@@ -518,10 +523,10 @@ export default function MockInterviewPage() {
 
   /* ---- Send a message to AI and get the next response (streaming) ---- */
   const getAIResponse = useCallback(async (currentMessages: ChatMessage[], exchNum: number) => {
-    /* Pass the pre-generated question bank so AI can pick the next question
-       instead of generating from scratch — dramatically reduces response time */
-    const bankForExchange = questionBankRef.current.length > 0
-      ? JSON.stringify(questionBankRef.current)
+    /* Pass only the NEXT question from the bank — remove it so it can never be repeated.
+       The AI gets one question at a time; once used, it's gone from the bank. */
+    const nextQuestion = questionBankRef.current.length > 0
+      ? questionBankRef.current.shift()!
       : "";
 
     const result = await streamAI("mock_interview_respond", {
@@ -537,7 +542,7 @@ export default function MockInterviewPage() {
       exchangeNumber: String(exchNum),
       questionNumber: String(questionNumber),
       skippedQuestions: JSON.stringify(skippedQuestions),
-      questionBank: bankForExchange,
+      nextQuestion,
     }, (partial) => {
       /* Show text on screen AND queue complete sentences to TTS as they arrive.
          User hears Sarah speak while text is still streaming in. */
@@ -613,6 +618,7 @@ export default function MockInterviewPage() {
       setIsAISpeaking(false);
       setWaitingForUser(true);
       submittedRef.current = false;
+      setInputMode("mic");
       startListening();
     } catch {
       setError("Could not start the interview. Please check your camera/mic permissions and try again.");
@@ -629,6 +635,7 @@ export default function MockInterviewPage() {
     submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
+    setInputMode(null);
     /* Kill any leftover TTS from previous response immediately */
     cancelTTS();
     setIsAISpeaking(false);
@@ -644,9 +651,10 @@ export default function MockInterviewPage() {
     setExchangeNumber(nextExchange);
     setQuestionNumber(prev => prev + 1);
 
-    /* Get AI's next response — text streams to screen, sentences speak one at a time */
+    /* Get AI's next response — text streams to screen, sentences speak one at a time.
+       isAIThinking = streaming text from API. isAISpeaking = TTS playing audio.
+       These are separate: thinking ends when stream completes, speaking ends when TTS finishes. */
     setIsAIThinking(true);
-    setIsAISpeaking(true);
     spokenLenRef.current = 0;
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
@@ -655,9 +663,10 @@ export default function MockInterviewPage() {
       setCurrentAIMessage(response.message);
       setIsAIThinking(false);
 
-      /* Flush remaining text to TTS */
+      /* Flush remaining text to TTS — mark as speaking only if there's audio to play */
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) enqueueTTS(remaining);
+      setIsAISpeaking(!!ttsDrainPromise);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
@@ -672,8 +681,12 @@ export default function MockInterviewPage() {
           await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
         }
         setIsAISpeaking(false);
-        /* Now start mic — TTS is done, no echo */
-        if (!submittedRef.current) startListening();
+        /* Now start mic — TTS is done, no echo. Set inputMode to mic so watchdog can
+           restart if recognition dies. User can switch to typing by clicking the textarea. */
+        if (!submittedRef.current) {
+          setInputMode("mic");
+          startListening();
+        }
       }
     } catch {
       setIsAIThinking(false);
@@ -684,6 +697,7 @@ export default function MockInterviewPage() {
       setUserAnswer("");
       setWaitingForUser(true);
       submittedRef.current = false;
+      setInputMode("mic");
       startListening();
     }
   };
@@ -694,6 +708,7 @@ export default function MockInterviewPage() {
     submittedRef.current = true;
     stopListening();
     setWaitingForUser(false);
+    setInputMode(null);
     cancelTTS();
     setIsAISpeaking(false);
 
@@ -712,7 +727,6 @@ export default function MockInterviewPage() {
 
     /* Get AI's next response */
     setIsAIThinking(true);
-    setIsAISpeaking(true);
     spokenLenRef.current = 0;
     try {
       const response = await getAIResponse(updatedMessages, nextExchange);
@@ -723,6 +737,7 @@ export default function MockInterviewPage() {
 
       const remaining = response.message.slice(spokenLenRef.current).trim();
       if (remaining) enqueueTTS(remaining);
+      setIsAISpeaking(!!ttsDrainPromise);
 
       if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
         await handleFinishInterview([...updatedMessages, aiMsg]);
@@ -736,7 +751,10 @@ export default function MockInterviewPage() {
           await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
         }
         setIsAISpeaking(false);
-        if (!submittedRef.current) startListening();
+        if (!submittedRef.current) {
+          setInputMode("mic");
+          startListening();
+        }
       }
     } catch {
       setIsAIThinking(false);
@@ -747,6 +765,7 @@ export default function MockInterviewPage() {
       setUserAnswer("");
       setWaitingForUser(true);
       submittedRef.current = false;
+      setInputMode("mic");
       startListening();
     }
   };
@@ -1190,12 +1209,15 @@ export default function MockInterviewPage() {
               {isAIThinking && <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />}
             </div>
 
-            {/* Speaking/Thinking indicator (top-right) */}
-            {(isAISpeaking || isAIThinking) && (
+            {/* Speaking/Thinking indicator (top-right) — shows only the current state */}
+            {isAIThinking && (
               <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 sm:px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
-                <span className="text-xs text-text-secondary">
-                  {isAIThinking ? "Responding..." : "Speaking..."}
-                </span>
+                <span className="text-xs text-text-secondary">Thinking...</span>
+              </div>
+            )}
+            {!isAIThinking && isAISpeaking && (
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 sm:px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                <span className="text-xs text-text-secondary">Speaking...</span>
               </div>
             )}
           </div>
@@ -1242,7 +1264,7 @@ export default function MockInterviewPage() {
           <div className="flex items-end gap-3">
             {/* Mic toggle button */}
             <button
-              onClick={isListening ? stopListening : startListening}
+              onClick={() => { if (isListening) { stopListening(); setInputMode("typing"); } else { setInputMode("mic"); startListening(); } }}
               disabled={!waitingForUser}
               className={`p-3.5 rounded-xl border transition-all flex-shrink-0 ${
                 isListening
@@ -1260,7 +1282,7 @@ export default function MockInterviewPage() {
             {/* Text input */}
             <textarea
               value={userAnswer}
-              onChange={e => { setUserAnswer(e.target.value); if (recognitionRef.current) stopListening(); }}
+              onChange={e => { setUserAnswer(e.target.value); setInputMode("typing"); if (recognitionRef.current) stopListening(); }}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmitAnswer(); } }}
               placeholder={
                 isAIThinking ? "Sarah is responding..."
