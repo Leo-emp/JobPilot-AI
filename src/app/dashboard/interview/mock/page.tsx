@@ -477,6 +477,54 @@ export default function MockInterviewPage() {
     try { ref?.stop(); } catch { /* already stopped */ }
   }, []);
 
+  /* ---- Centralized input state transitions ---- */
+  /* SINGLE source of truth for enabling/disabling user input.
+     The recurring mic/speaking bugs happened because these transitions were
+     copy-pasted across handleSubmitAnswer, handleSkipQuestion, and handleStartInterview.
+     Every code change risked breaking the ordering. Now there are exactly TWO functions
+     that touch input state — all handlers MUST use these instead of setting state directly. */
+
+  /* Disable all user input — call at the START of any AI action (submit, skip) */
+  const disableUserInput = useCallback(() => {
+    submittedRef.current = true;        /* ignore late speech recognition results */
+    stopListening();                    /* kill mic */
+    setWaitingForUser(false);           /* lock textarea + mic button */
+    setInputMode(null);                 /* clear mode so watchdog doesn't restart mic */
+    cancelTTS();                        /* stop any playing speech immediately */
+    setIsAISpeaking(false);             /* clear speaking indicator */
+  }, [stopListening]);
+
+  /* Enable user input AFTER TTS finishes — the ONLY way to give control back to user.
+     Waits for all queued TTS to finish before enabling anything.
+     If user skipped/submitted during the TTS wait, bails out safely. */
+  const enableUserInput = useCallback(async () => {
+    setUserAnswer("");
+    /* Reset submitted flag — we're preparing to accept new input */
+    submittedRef.current = false;
+    /* Wait for all queued TTS sentences to finish playing */
+    if (ttsDrainPromise) {
+      await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
+    }
+    setIsAISpeaking(false);
+    /* Guard: if user skipped/submitted during TTS wait, another handler already
+       called disableUserInput (setting submittedRef=true). Don't re-enable —
+       that handler is now in control of the state machine. */
+    if (submittedRef.current) return;
+    /* NOW safe to enable — AI is done, no concurrent handler is running */
+    setWaitingForUser(true);
+    setInputMode("mic");
+    startListening();
+  }, [startListening]);
+
+  /* Safety net: structurally prevent user input while AI is active.
+     Even if future code accidentally sets waitingForUser=true during AI activity,
+     this effect immediately corrects it. Belt AND suspenders. */
+  useEffect(() => {
+    if (waitingForUser && (isAIThinking || isAISpeaking)) {
+      setWaitingForUser(false);
+    }
+  }, [waitingForUser, isAIThinking, isAISpeaking]);
+
   /* ---- Mic watchdog: restarts mic only if user chose mic mode ---- */
   /* Skips when user is typing (inputMode === "typing") so mic doesn't interfere.
      Only restarts if recognition died unexpectedly while mic mode was active. */
@@ -590,6 +638,46 @@ export default function MockInterviewPage() {
     });
   }, [role, industry, experience, interviewType, company, companyPromptBlock, jobDescription, resume, questionNumber, skippedQuestions, feedProgressiveTTS]);
 
+  /* ---- Shared: fetch AI response → stream TTS → enable user input ---- */
+  /* Single implementation used by BOTH handleSubmitAnswer and handleSkipQuestion.
+     Eliminates the duplicated AI-turn logic that kept getting out of sync. */
+  const fetchAndPlayAIResponse = async (
+    updatedMessages: ChatMessage[],
+    nextExchange: number,
+    errorEvent: string
+  ) => {
+    setIsAIThinking(true);
+    spokenLenRef.current = 0;
+    try {
+      /* Stream the AI response — progressive TTS plays sentences as they arrive */
+      const response = await getAIResponse(updatedMessages, nextExchange);
+      const aiMsg: ChatMessage = { role: "ai", text: response.message };
+      setMessages(prev => [...prev, aiMsg]);
+      setCurrentAIMessage(response.message);
+      setIsAIThinking(false);
+
+      /* Flush any remaining text that wasn't caught by progressive TTS */
+      const remaining = response.message.slice(spokenLenRef.current).trim();
+      if (remaining) enqueueTTS(remaining);
+      setIsAISpeaking(!!ttsDrainPromise);
+
+      if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
+        /* Interview is over — go to results */
+        await handleFinishInterview([...updatedMessages, aiMsg]);
+      } else {
+        /* enableUserInput waits for TTS to finish, then activates mic + textarea */
+        await enableUserInput();
+      }
+    } catch {
+      setIsAIThinking(false);
+      cancelTTS();
+      setError("Sarah had trouble responding. Please try again or skip this question.");
+      trackEvent(`mock_interview.${errorEvent}`, { exchange: String(nextExchange) });
+      /* Still enable input so user can retry or skip */
+      await enableUserInput();
+    }
+  };
+
   /* ---- Start the interview: instant greeting, no AI wait ---- */
   /* The greeting is hardcoded so the interview starts in <1 second. */
   /* The first AI call happens after the user responds to the greeting. */
@@ -635,14 +723,10 @@ export default function MockInterviewPage() {
         } catch { trackEvent("mock_interview.question_prefetch_parse_failed"); }
       }).catch(() => { trackEvent("mock_interview.question_prefetch_failed"); });
 
-      /* Speak the greeting immediately */
+      /* Speak the greeting, then enable user input via the centralized function */
       setIsAISpeaking(true);
       await speakText(greetingText);
-      setIsAISpeaking(false);
-      setWaitingForUser(true);
-      submittedRef.current = false;
-      setInputMode("mic");
-      startListening();
+      await enableUserInput();
     } catch {
       setError("Could not start the interview. Please check your camera/mic permissions and try again.");
       trackEvent("mock_interview.start_failed");
@@ -655,90 +739,29 @@ export default function MockInterviewPage() {
   /* ---- Submit the user's answer and get the AI's next response ---- */
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim() || isAIThinking) return;
-    submittedRef.current = true;
-    stopListening();
-    setWaitingForUser(false);
-    setInputMode(null);
-    /* Kill any leftover TTS from previous response immediately */
-    cancelTTS();
-    setIsAISpeaking(false);
+    disableUserInput();
 
-    /* Add the user's message to conversation */
     const userMsg: ChatMessage = { role: "user", text: userAnswer.trim() };
     const updatedMessages = [...messagesRef.current, userMsg];
     setMessages(updatedMessages);
     setUserAnswer("");
 
-    /* Increment both exchange and question counters */
     const nextExchange = exchangeNumber + 1;
     setExchangeNumber(nextExchange);
     setQuestionNumber(prev => prev + 1);
 
-    /* Get AI's next response — text streams to screen, sentences speak one at a time.
-       isAIThinking = streaming text from API. isAISpeaking = TTS playing audio.
-       User can start typing as soon as the first text appears (waitingForUser = true). */
-    setIsAIThinking(true);
-    spokenLenRef.current = 0;
-    try {
-      const response = await getAIResponse(updatedMessages, nextExchange);
-      const aiMsg: ChatMessage = { role: "ai", text: response.message };
-      setMessages(prev => [...prev, aiMsg]);
-      setCurrentAIMessage(response.message);
-      setIsAIThinking(false);
-
-      /* Flush remaining text to TTS — mark as speaking only if there's audio to play */
-      const remainingText = response.message.slice(spokenLenRef.current).trim();
-      if (remainingText) enqueueTTS(remainingText);
-      setIsAISpeaking(!!ttsDrainPromise);
-
-      if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
-        await handleFinishInterview([...updatedMessages, aiMsg]);
-      } else {
-        setUserAnswer("");
-
-        /* Wait for TTS to finish — user can only respond after AI stops speaking */
-        if (ttsDrainPromise) {
-          await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
-        }
-        setIsAISpeaking(false);
-
-        /* NOW enable input — AI is done speaking */
-        setWaitingForUser(true);
-        submittedRef.current = false;
-        if (!submittedRef.current) {
-          setInputMode("mic");
-          startListening();
-        }
-      }
-    } catch {
-      setIsAIThinking(false);
-      setIsAISpeaking(false);
-      cancelTTS();
-      setError("Sarah had trouble responding. Please try again or skip this question.");
-      trackEvent("mock_interview.ai_response_failed", { exchange: String(exchangeNumber) });
-      setUserAnswer("");
-      setWaitingForUser(true);
-      submittedRef.current = false;
-      setInputMode("mic");
-      startListening();
-    }
+    /* fetchAndPlayAIResponse handles: AI stream → TTS → enableUserInput */
+    await fetchAndPlayAIResponse(updatedMessages, nextExchange, "ai_response_failed");
   };
 
   /* ---- Skip current question and move to the next ---- */
   const handleSkipQuestion = async () => {
     if (isAIThinking) return;
-    submittedRef.current = true;
-    stopListening();
-    setWaitingForUser(false);
-    setInputMode(null);
-    cancelTTS();
-    setIsAISpeaking(false);
+    disableUserInput();
 
-    /* Record the skipped question (last AI message) */
     const lastAI = messagesRef.current.filter(m => m.role === "ai").pop();
     if (lastAI) setSkippedQuestions(prev => [...prev, lastAI.text]);
 
-    /* Add a skip marker to conversation so AI knows */
     const skipMsg: ChatMessage = { role: "user", text: "[SKIPPED — moved to next question]" };
     const updatedMessages = [...messagesRef.current, skipMsg];
     setMessages(updatedMessages);
@@ -747,51 +770,8 @@ export default function MockInterviewPage() {
     const nextExchange = exchangeNumber + 1;
     setExchangeNumber(nextExchange);
 
-    /* Get AI's next response */
-    setIsAIThinking(true);
-    spokenLenRef.current = 0;
-    try {
-      const response = await getAIResponse(updatedMessages, nextExchange);
-      const aiMsg: ChatMessage = { role: "ai", text: response.message };
-      setMessages(prev => [...prev, aiMsg]);
-      setCurrentAIMessage(response.message);
-      setIsAIThinking(false);
-
-      const remaining = response.message.slice(spokenLenRef.current).trim();
-      if (remaining) enqueueTTS(remaining);
-      setIsAISpeaking(!!ttsDrainPromise);
-
-      if (response.isComplete || nextExchange >= MAX_EXCHANGES - 1) {
-        await handleFinishInterview([...updatedMessages, aiMsg]);
-      } else {
-        setUserAnswer("");
-
-        /* Wait for TTS to finish — user can only respond after AI stops speaking */
-        if (ttsDrainPromise) {
-          await Promise.race([ttsDrainPromise, new Promise<void>(r => setTimeout(r, 45000))]);
-        }
-        setIsAISpeaking(false);
-
-        /* NOW enable input — AI is done speaking */
-        setWaitingForUser(true);
-        submittedRef.current = false;
-        if (!submittedRef.current) {
-          setInputMode("mic");
-          startListening();
-        }
-      }
-    } catch {
-      setIsAIThinking(false);
-      setIsAISpeaking(false);
-      cancelTTS();
-      setError("Sarah had trouble responding. Please try again or skip this question.");
-      trackEvent("mock_interview.skip_response_failed", { exchange: String(exchangeNumber) });
-      setUserAnswer("");
-      setWaitingForUser(true);
-      submittedRef.current = false;
-      setInputMode("mic");
-      startListening();
-    }
+    /* fetchAndPlayAIResponse handles: AI stream → TTS → enableUserInput */
+    await fetchAndPlayAIResponse(updatedMessages, nextExchange, "skip_response_failed");
   };
 
   /* ---- Finish the interview and generate the summary ---- */
