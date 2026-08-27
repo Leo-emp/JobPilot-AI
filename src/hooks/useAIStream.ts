@@ -30,26 +30,28 @@ export function useAIStream(): UseAIStreamReturn {
   const [error, setError] = useState("");
   const { plan, remaining, updateRemaining } = usePlan();
   const abortRef = useRef<AbortController | null>(null);
+  /* Track whether a stream is in flight — prevents stale closures from
+     leaving the loading state stuck when callAI is recreated mid-stream */
+  const activeRef = useRef(false);
 
   const reset = useCallback((prefill?: string) => {
     setResult(prefill ?? "");
     setError("");
     setLoading(false);
     setStreaming(false);
+    activeRef.current = false;
     if (abortRef.current) {
       abortRef.current.abort();
       abortRef.current = null;
     }
   }, []);
 
-  const remainingRef = useRef<number | "unlimited" | null>(null);
-  remainingRef.current = remaining;
-
   const callAI = useCallback(async (action: string, payload: Record<string, unknown>): Promise<string | null> => {
     setLoading(true);
     setStreaming(false);
     setError("");
     setResult("");
+    activeRef.current = true;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -68,6 +70,7 @@ export function useAIStream(): UseAIStreamReturn {
         setError(data?.error || "AI request failed.");
         trackEvent("ai.stream_error", { action, status: String(res.status) });
         setLoading(false);
+        activeRef.current = false;
         return null;
       }
 
@@ -88,19 +91,20 @@ export function useAIStream(): UseAIStreamReturn {
         setResult(fullText);
       }
 
-      /* Update remaining count (decrement locally via ref to avoid stale closure) */
-      const cur = remainingRef.current;
-      if (typeof cur === "number") {
-        updateRemaining(Math.max(0, cur - 1));
+      /* Update remaining count */
+      if (typeof remaining === "number") {
+        updateRemaining(Math.max(0, remaining - 1));
       }
 
       setStreaming(false);
       setLoading(false);
+      activeRef.current = false;
       return fullText;
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
         setLoading(false);
         setStreaming(false);
+        activeRef.current = false;
         return null;
       }
 
@@ -117,21 +121,24 @@ export function useAIStream(): UseAIStreamReturn {
         if (!fallbackRes.ok) {
           setError(data?.error || "AI request failed.");
           setLoading(false);
+          activeRef.current = false;
           return null;
         }
 
         setResult(data?.result || "");
         if (data?.remaining !== undefined) updateRemaining(data.remaining);
         setLoading(false);
+        activeRef.current = false;
         return data?.result || null;
       } catch {
         setError("Failed to connect to AI. Please try again.");
         trackEvent("ai.both_endpoints_failed", { action });
         setLoading(false);
+        activeRef.current = false;
         return null;
       }
     }
-  }, [updateRemaining]);
+  }, [remaining, updateRemaining]);
 
   return { result, loading, streaming, error, plan, remaining, callAI, reset };
 }
