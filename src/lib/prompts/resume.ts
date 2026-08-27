@@ -97,12 +97,12 @@ DEEP TAILOR RULES:
 - The candidate's REAL job titles, company names, locations, and employment dates MUST remain unchanged — never invent or alter them
 - If the original resume has NO dates on a section or entry (e.g., certifications without dates), do NOT add dates — output that entry without any date
 
-BULLET PRIORITIZATION (follow this for EACH role — max 4-5 bullets per role):
+BULLET PRIORITIZATION (follow this for EACH role — max 4 bullets per role):
 1. Score each existing bullet against the JD — does it cover a JD requirement or responsibility?
 2. If a bullet ALREADY covers a JD responsibility — KEEP it and POLISH it: strengthen the wording, mirror the JD's exact language, add power verbs, but preserve the essence of what the candidate wrote. Do NOT rewrite it from scratch
 3. If a bullet is weak, generic, or irrelevant to the JD — DROP it to make room
 4. Fill the freed slots with JD responsibilities the candidate would realistically perform in that role but did not list — write these from scratch as new bullets
-5. NEVER exceed 4-5 bullets per role. Prioritize: polished existing bullets first, then new JD-matched bullets, then drop the rest
+5. NEVER exceed 4 bullets per role. Prioritize: polished existing bullets first, then new JD-matched bullets, then drop the rest
 6. Do NOT add responsibilities that are unrelated to the candidate's role. For example, if the candidate is a Business Operations Executive and the JD mentions Python development, do NOT add it — it does not fit the role
 
 - Do NOT fabricate metrics, numbers, or specific outcomes — write strong responsibility-focused bullets using action verbs without fake quantified results. The candidate can add their own real numbers later
