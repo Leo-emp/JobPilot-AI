@@ -104,11 +104,13 @@ const navItems = [
   { href: "/dashboard/linkedin", icon: icons.linkedin, label: "LinkedIn Optimizer" },
   { href: "/dashboard/network", icon: icons.network, label: "AI Outreach Hub" },
   { href: "/dashboard/portfolio", icon: icons.portfolio, label: "Portfolio Builder" },
+  /* B2B phase — hidden for B2C launch, re-enable when org layer ships
   { href: "/dashboard/opportunities", icon: icons.jobs, label: "My Opportunities" },
   { href: "/dashboard/bookmarks", icon: icons.portfolio, label: "Bookmarks" },
   { href: "/dashboard/messages", icon: icons.coverLetter, label: "Messages" },
-  { href: "/dashboard/history", icon: icons.history, label: "AI History" },
   { href: "/dashboard/preferences", icon: icons.network, label: "Job Preferences" },
+  */
+  { href: "/dashboard/history", icon: icons.history, label: "AI History" },
   { href: "/dashboard/settings", icon: icons.settings, label: "Settings" },
 ];
 
