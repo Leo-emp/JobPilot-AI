@@ -13,7 +13,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
@@ -38,6 +38,24 @@ export default function ResumePage() {
   const [fileName, setFileName] = useState("");
   /* AI streaming hook — result appears token-by-token */
   const { result, loading, streaming, error, plan, remaining, callAI: streamAI, reset: resetAI } = useAIStream();
+  /* Detect when streaming content stops growing — Gemini's SSE connection often
+     hangs open for seconds after the last token. This lets us show download buttons
+     and clear the "Rebuilding..." state without waiting for the HTTP close. */
+  const [streamDone, setStreamDone] = useState(false);
+  const lastResultLen = useRef(0);
+  useEffect(() => {
+    if (!streaming) { setStreamDone(false); lastResultLen.current = 0; return; }
+    if (result.length > lastResultLen.current) {
+      lastResultLen.current = result.length;
+      setStreamDone(false);
+    }
+    const timer = setTimeout(() => {
+      if (streaming && result.length > 0 && result.length === lastResultLen.current) {
+        setStreamDone(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [streaming, result]);
   /* Track file upload/parsing progress */
   const [uploading, setUploading] = useState(false);
   /* File upload error (separate from AI error) */
@@ -240,7 +258,7 @@ export default function ResumePage() {
               disabled={!resumeText || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Analyzing..." : "Analyze Resume"}
+              {loading && !streamDone ? "Analyzing..." : "Analyze Resume"}
             </button>
           </div>
         )}
@@ -272,7 +290,7 @@ export default function ResumePage() {
               disabled={!resumeText || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Optimizing..." : jobDescription ? "Optimize for Job" : "Optimize Resume"}
+              {loading && !streamDone ? "Optimizing..." : jobDescription ? "Optimize for Job" : "Optimize Resume"}
             </button>
           </div>
         )}
@@ -345,7 +363,7 @@ export default function ResumePage() {
               disabled={!resumeText || !jobDescription || !jobTitle || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Rebuilding..." : rebuildMode === "deep" ? "Deep Tailor Resume" : "Rebuild Resume"}
+              {loading && !streamDone ? "Rebuilding..." : rebuildMode === "deep" ? "Deep Tailor Resume" : "Rebuild Resume"}
             </button>
           </div>
         )}
@@ -393,7 +411,7 @@ export default function ResumePage() {
               disabled={!resumeText || !jobDescription || !jobTitle || loading}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Pivoting..." : "Generate Pivot Resume"}
+              {loading && !streamDone ? "Pivoting..." : "Generate Pivot Resume"}
             </button>
           </div>
         )}
@@ -416,8 +434,8 @@ export default function ResumePage() {
         {/* ---- AI Result Display (shows while streaming + after complete) ---- */}
         {result && (
           <div className="relative">
-            <MarkdownResult result={result} showDownload={!streaming} editable={activeTab !== "analyze"} />
-            {streaming && (
+            <MarkdownResult result={result} showDownload={!streaming || streamDone} editable={activeTab !== "analyze"} />
+            {streaming && !streamDone && (
               <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
                 <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
                 <span>Generating...</span>
