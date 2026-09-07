@@ -31,7 +31,7 @@ Key product facts:
 - Country-specific resumes: US (1 page, centered), UK (2 pages, CV format), AU (2-3 pages).
 - Resume modes: Optimize (improve existing), Rebuild (from scratch), Deep Tailor (thorough alignment), Career Pivot (change industries).
 - Security: TLS, bcrypt, JWT, encrypted database, GDPR/CCPA compliant, 2FA available, data export available.
-- Payments: Stripe (Visa, MC, Amex). Cancel anytime, 7-day refund policy.
+- Payments: Stripe (Visa, MC, Amex). Cancel anytime, no refunds — free tier lets users try everything first.
 - Rate limits: 6/minute, 40/hour. AI timeout: 60 seconds.
 - Support: support@jobpilotai.co or /contact page.
 - AI model: Google Gemini with automatic fallback chain.

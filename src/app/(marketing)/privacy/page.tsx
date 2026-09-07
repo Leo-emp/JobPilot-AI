@@ -196,10 +196,15 @@ export default function PrivacyPage() {
         {/* Section 10 */}
         <section>
           <h2 className="text-xl font-bold text-white mb-4">10. International Data Transfers</h2>
-          <p>
+          <p className="mb-3">
             Our servers and third-party processors may be located outside your country of residence.
             By using our service, you consent to the transfer of your data to these locations.
-            We ensure all processors maintain adequate data protection standards.
+          </p>
+          <p>
+            All our processors maintain adequate data protection safeguards. Google operates under
+            Standard Contractual Clauses (SCCs) for international transfers. Vercel, Turso, Stripe,
+            Resend, and Sentry each maintain their own Data Processing Agreements (DPAs) with
+            appropriate safeguards for cross-border transfers as required by UK GDPR and EU GDPR.
           </p>
         </section>
 

@@ -89,7 +89,7 @@ export default function AboutPage() {
               },
               {
                 title: "Quality",
-                desc: "We focus on generating outputs that actually work. Resumes that pass ATS, cover letters worth sending, answers that hold up.",
+                desc: "We focus on generating outputs that actually work. Resumes optimized for ATS, cover letters worth sending, answers that hold up.",
               },
             ].map((value) => (
               <div key={value.title} className="glass-card p-5">
@@ -173,7 +173,7 @@ export default function AboutPage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-brand-light font-bold mt-0.5">02</span>
-                <span><strong className="text-white">Outputs That Actually Work</strong> — Every resume passes ATS checks, every cover letter is role-specific, every interview answer is grounded in your real experience.</span>
+                <span><strong className="text-white">Outputs That Actually Work</strong> — Resumes optimized for ATS compatibility, cover letters tailored to specific roles, interview answers grounded in your real experience.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-brand-light font-bold mt-0.5">03</span>

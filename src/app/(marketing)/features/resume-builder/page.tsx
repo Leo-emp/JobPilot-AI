@@ -153,7 +153,7 @@ export default function ResumeBuilderPage() {
       {/* # Final CTA */}
       <div className="text-center">
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4 glow-text">
-          Ready to Beat the ATS?
+          Ready to Optimize Your Resume?
         </h2>
         <p className="text-text-secondary mb-6">
           Join thousands of job seekers who&apos;ve improved their resume with AI. Free to start, no credit card required.

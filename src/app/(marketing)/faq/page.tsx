@@ -131,7 +131,7 @@ const faqSections: FaqSection[] = [
       },
       {
         q: "Are country-specific resumes ATS friendly?",
-        a: "Absolutely. All country formats are designed to be 100% ATS compatible. We use clean single-column layouts, standard section headings, proper formatting, and keyword optimization. No tables, columns, graphics, or special characters that could confuse ATS parsers.",
+        a: "Yes. All country formats are optimized to be highly ATS-friendly. We use clean single-column layouts, standard section headings, proper formatting, and keyword optimization. No tables, columns, graphics, or special characters that could confuse ATS parsers.",
       },
       {
         q: "Can I download country-specific resumes?",
@@ -275,7 +275,7 @@ const faqSections: FaqSection[] = [
       },
       {
         q: "Do you offer refunds?",
-        a: "We offer full refunds within the first 7 days of a new subscription if you're not satisfied. After that, your subscription continues until the end of the billing period. For any billing issues or special circumstances, email support@jobpilotai.co.",
+        a: "All payments are non-refundable. You can cancel your subscription at any time and retain access until the end of your current billing period. Our free tier gives you full access to every feature so you can evaluate the platform before subscribing. For billing issues, email support@jobpilotai.co.",
       },
       {
         q: "What payment methods do you accept?",

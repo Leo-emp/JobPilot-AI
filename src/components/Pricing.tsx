@@ -240,7 +240,7 @@ export default function Pricing() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-8 text-center text-base text-text-muted"
         >
-          No credit card required to start &bull; Cancel anytime &bull; 7-day money-back guarantee
+          No credit card required to start &bull; Cancel anytime &bull; All features on free tier
         </motion.p>
       </div>
     </section>

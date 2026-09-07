@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 /* # NotificationBell hidden until B2B phase */
@@ -149,7 +150,9 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
     <div className="flex flex-col h-full">
       {/* ---- Brand Logo + Notification Bell ---- */}
       <div className="flex items-center justify-between p-6 border-b border-card-border">
-        <Link href="/dashboard" className="flex items-center">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          {/* # Brand logo icon — matches browser tab favicon */}
+          <Image src="/icon-192.png" alt="JobPilot AI" width={28} height={28} className="rounded-md" />
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
             JobPilot AI
           </span>

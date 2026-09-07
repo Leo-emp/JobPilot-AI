@@ -88,7 +88,7 @@ const faqSections = [
       },
       {
         q: "Do you offer refunds?",
-        a: "We offer refunds within the first 7 days of a new subscription if you're not satisfied. After that, your subscription continues until the end of the billing period. For any billing issues, email support@jobpilotai.co.",
+        a: "All payments are non-refundable. You can cancel your subscription at any time and retain access until the end of your current billing period. Our free tier gives full access to every feature so you can evaluate the platform before subscribing. For billing issues, email support@jobpilotai.co.",
       },
     ],
   },

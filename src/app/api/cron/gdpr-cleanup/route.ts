@@ -71,9 +71,10 @@ export const POST = safeHandler(async (req: NextRequest) => {
         prisma.user.delete({ where: { id: user.id } })
       );
 
+      /* # Log deletion without PII — email is anonymized to comply with GDPR Article 17 */
       audit("gdpr.hard_delete", {
         userId: user.id,
-        email: user.email,
+        email: "[redacted]",
         deletedAt: user.deletedAt?.toISOString(),
         detail: `Permanently removed after ${RETENTION_DAYS}-day retention`,
       });
