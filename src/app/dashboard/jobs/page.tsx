@@ -389,6 +389,7 @@ export default function JobsPage() {
                   <option value="part time">Part Time</option>
                   <option value="contract">Contract</option>
                   <option value="remote">Remote</option>
+                  <option value="remote worldwide">Remote Worldwide</option>
                 </select>
               </div>
             </div>

@@ -2,12 +2,20 @@
    JOB SEARCH API - Multi-Source Job Aggregator
    ============================================================
    GET /api/jobs/search?q=...&location=...&page=1&country=au&sponsorship=true
-   Searches for jobs across multiple free sources in parallel:
-   - Adzuna (requires API keys)
-   - Jooble (requires API key)
-   - Remotive (free, no key)
-   - RemoteOK (free, no key)
-   - We Work Remotely (free RSS feed, no key)
+   Searches for jobs across 13 sources in parallel:
+   - Adzuna (requires API keys, 17 countries)
+   - Jooble (requires API key, global)
+   - JSearch/RapidAPI (requires key, LinkedIn/Indeed/Glassdoor)
+   - Reed (requires key, UK)
+   - Remotive (free, remote jobs)
+   - RemoteOK (free, remote jobs)
+   - We Work Remotely (free RSS, remote jobs)
+   - Arbeitnow (free, EU + remote)
+   - The Muse (free, curated)
+   - Findwork (free, tech/startup)
+   - Himalayas (free, curated remote jobs)
+   - Jobicy (free, remote worldwide)
+   - Internship aggregator (combines Adzuna + Jooble + JSearch)
    Merges, deduplicates, and badges sponsor-friendly results.
    ============================================================ */
 
@@ -378,7 +386,67 @@ async function fetchArbeitnow(query: string): Promise<Job[]> {
 }
 
 /* ============================================================
-   SOURCE 10: GITHUB JOBS (via findwork.dev — free, no key, tech internships)
+   SOURCE 10: HIMALAYAS (free, no key, curated remote jobs)
+   ============================================================ */
+async function fetchHimalayas(query: string): Promise<Job[]> {
+  const params = new URLSearchParams({ limit: "20" });
+  if (query) params.set("search", query);
+
+  const res = await fetchWithTimeout(`https://himalayas.app/jobs/api?${params.toString()}`, {
+    headers: { "Accept": "application/json" },
+  });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.jobs || []).slice(0, 20).map((j: any) => ({
+    id: `himalayas-${j.id || Math.random().toString(36).slice(2)}`,
+    title: j.title || "",
+    company: j.companyName || "Unknown",
+    location: j.location || "Remote",
+    description: stripHTML((j.description || "").slice(0, 500)),
+    url: j.applicationUrl || j.url || "",
+    salary: j.minSalary && j.maxSalary
+      ? formatSalary(j.minSalary, j.maxSalary)
+      : "",
+    category: (j.categories || []).join(", "),
+    contractTime: j.type || "",
+    postedDate: j.pubDate || j.createdAt || "",
+    source: "Himalayas",
+  }));
+}
+
+/* ============================================================
+   SOURCE 11: JOBICY (free, no key, remote worldwide jobs)
+   ============================================================ */
+async function fetchJobicy(query: string): Promise<Job[]> {
+  const params = new URLSearchParams({ count: "20", geo: "anywhere" });
+  if (query) params.set("tag", query);
+
+  const res = await fetchWithTimeout(`https://jobicy.com/api/v2/remote-jobs?${params.toString()}`);
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.jobs || []).slice(0, 20).map((j: any) => ({
+    id: `jobicy-${j.id || Math.random().toString(36).slice(2)}`,
+    title: j.jobTitle || "",
+    company: j.companyName || "Unknown",
+    location: j.jobGeo || "Remote Worldwide",
+    description: stripHTML((j.jobExcerpt || j.jobDescription || "").slice(0, 500)),
+    url: j.url || "",
+    salary: j.annualSalaryMin && j.annualSalaryMax
+      ? formatSalary(Number(j.annualSalaryMin), Number(j.annualSalaryMax))
+      : "",
+    category: j.jobIndustry ? String(j.jobIndustry).replace(/[\[\]"]/g, "") : "",
+    contractTime: j.jobType || "",
+    postedDate: j.pubDate || "",
+    source: "Jobicy",
+  }));
+}
+
+/* ============================================================
+   SOURCE 12: GITHUB JOBS (via findwork.dev — free, no key, tech internships)
    ============================================================ */
 async function fetchFindwork(query: string): Promise<Job[]> {
   const params = new URLSearchParams({ search: query });
@@ -406,7 +474,7 @@ async function fetchFindwork(query: string): Promise<Job[]> {
 }
 
 /* ============================================================
-   SOURCE 11: INTERNSHIPS — Aggregates multiple internship-specific feeds
+   SOURCE 13: INTERNSHIPS — Aggregates multiple internship-specific feeds
    when the user selects "Internship" job type
    ============================================================ */
 /* # Country-specific internship terminology */
@@ -615,9 +683,10 @@ export const GET = safeHandler(async (req: NextRequest) => {
   const sponsorship = searchParams.get("sponsorship") === "true";
   const jobType = searchParams.get("jobType") || "";
 
-  /* # When a job type is selected, prepend it to the search query
-     so all sources return filtered results */
-  const query = jobType ? `${jobType} ${rawQuery}`.trim() : rawQuery;
+  /* # "remote worldwide" is a special job type — don't prepend it
+     to the query, just use the raw query and enable all remote boards */
+  const isRemoteWorldwide = jobType === "remote worldwide";
+  const query = (jobType && !isRemoteWorldwide) ? `${jobType} ${rawQuery}`.trim() : rawQuery;
 
   /* Cache key based on normalized search params (15 min TTL) */
   const cacheKey = `jobs:${query.toLowerCase().trim()}:${location.toLowerCase().trim()}:${page}:${country}:${sponsorship}:${jobType}`;
@@ -633,7 +702,9 @@ export const GET = safeHandler(async (req: NextRequest) => {
        for remote jobs or has no specific location. When searching
        a specific country + city, remote-only boards pollute results
        with irrelevant global listings. */
-    const isRemoteSearch = !location || location.toLowerCase().includes("remote");
+    /* # Remote Worldwide always queries remote boards; regular remote search
+       triggers when no location is set or location mentions "remote" */
+    const isRemoteSearch = isRemoteWorldwide || !location || location.toLowerCase().includes("remote");
 
     /* # Build Jooble location: use user's city + country name so
        Jooble returns results from the correct country */
@@ -646,7 +717,7 @@ export const GET = safeHandler(async (req: NextRequest) => {
     const isUK = country === "gb";
     const isInternship = jobType === "internship";
 
-    const [adzunaJobs, joobleJobs, jsearchJobs, reedJobs, museJobs, findworkJobs, internshipJobs, remotiveJobs, remoteOKJobs, wwrJobs, arbeitnowJobs] = await Promise.all([
+    const [adzunaJobs, joobleJobs, jsearchJobs, reedJobs, museJobs, findworkJobs, internshipJobs, remotiveJobs, remoteOKJobs, wwrJobs, arbeitnowJobs, himalayasJobs, jobicyJobs] = await Promise.all([
       fetchAdzuna(query, location, page, country).catch(() => [] as Job[]),
       fetchJooble(query, joobleLocation, page).catch(() => [] as Job[]),
       fetchJSearch(query, location, page, country).catch(() => [] as Job[]),
@@ -658,6 +729,8 @@ export const GET = safeHandler(async (req: NextRequest) => {
       isRemoteSearch ? fetchRemoteOK(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchWWR(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
       isRemoteSearch ? fetchArbeitnow(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
+      isRemoteSearch ? fetchHimalayas(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
+      isRemoteSearch ? fetchJobicy(query).catch(() => [] as Job[]) : Promise.resolve([] as Job[]),
     ]);
 
     /* Merge all results and deduplicate */
@@ -673,13 +746,18 @@ export const GET = safeHandler(async (req: NextRequest) => {
       ...remoteOKJobs,
       ...wwrJobs,
       ...arbeitnowJobs,
+      ...himalayasJobs,
+      ...jobicyJobs,
     ]);
 
     /* # Filter out jobs that don't match the selected country.
        Adzuna uses the country code in the URL so its results are
        usually correct, but Jooble and remote boards can leak
-       results from other countries. */
-    allJobs = allJobs.filter(job => matchesCountry(job.location, country));
+       results from other countries.
+       Skip country filter for "Remote Worldwide" — show everything. */
+    if (!isRemoteWorldwide) {
+      allJobs = allJobs.filter(job => matchesCountry(job.location, country));
+    }
 
     /* # Detect sponsorship signals from job descriptions (AU, US, UK) */
     if (["au", "us", "gb"].includes(country)) {
@@ -710,6 +788,8 @@ export const GET = safeHandler(async (req: NextRequest) => {
       remoteOKJobs.length > 0 && "RemoteOK",
       wwrJobs.length > 0 && "WeWorkRemotely",
       arbeitnowJobs.length > 0 && "Arbeitnow",
+      himalayasJobs.length > 0 && "Himalayas",
+      jobicyJobs.length > 0 && "Jobicy",
     ].filter(Boolean);
 
     const response = {
