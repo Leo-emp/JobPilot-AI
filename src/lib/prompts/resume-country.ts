@@ -40,7 +40,7 @@ COUNTRY: UNITED STATES
 - Target length: 1 page (strict for under 10 years experience, 2 pages acceptable for 10+ years)
 
 WRITING QUALITY:
-- EVERY bullet across the ENTIRE resume MUST start with a UNIQUE verb — NEVER use the same verb twice. Track which verbs you've used and pick a new one each time. Choose from: Led, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated, Developed, Established, Directed, Pioneered, Redesigned, Consolidated
+- EVERY bullet across the ENTIRE resume MUST start with a UNIQUE verb — NEVER use the same verb twice. Track which verbs you've used and pick a new one each time. Choose from: Led, Orchestrated, Engineered, Transformed, Accelerated, Streamlined, Delivered, Implemented, Optimized, Drove, Launched, Executed, Negotiated, Cultivated, Developed, Established, Directed, Pioneered, Redesigned, Consolidated, Spearheaded, Championed, Architected, Revamped, Initiated, Mobilized, Elevated, Modernized, Automated, Overhauled, Mentored, Expanded, Secured, Maximized, Facilitated, Coordinated, Structured, Governed, Integrated, Devised, Formulated, Authored, Generated, Recovered, Mitigated, Resolved, Aligned, Unified, Scaled, Propelled
 - Remove filler words: "responsible for", "helped with", "assisted in", "worked on" — replace with direct action
 - Every bullet must follow: POWER VERB + WHAT you did + HOW/FOR WHOM + MEASURABLE RESULT
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
@@ -107,7 +107,7 @@ COUNTRY: UNITED KINGDOM
 
 WRITING QUALITY:
 - Implied first person — NEVER start sentences with "I". Write "Delivered..." not "I delivered..."
-- EVERY bullet across the ENTIRE CV MUST start with a UNIQUE verb — NEVER use the same verb twice. Track which verbs you've used and pick a new one each time. Choose from: Delivered, Managed, Implemented, Achieved, Developed, Established, Directed, Coordinated, Streamlined, Negotiated, Redesigned, Consolidated, Facilitated, Produced, Secured, Introduced, Maintained, Reduced, Increased, Generated
+- EVERY bullet across the ENTIRE CV MUST start with a UNIQUE verb — NEVER use the same verb twice. Track which verbs you've used and pick a new one each time. Choose from: Delivered, Managed, Implemented, Achieved, Developed, Established, Directed, Coordinated, Streamlined, Negotiated, Redesigned, Consolidated, Facilitated, Produced, Secured, Introduced, Maintained, Reduced, Increased, Generated, Championed, Revamped, Initiated, Mobilised, Elevated, Modernised, Automated, Overhauled, Mentored, Expanded, Maximised, Structured, Governed, Integrated, Devised, Formulated, Authored, Recovered, Mitigated, Resolved, Aligned, Unified, Scaled, Orchestrated, Led, Launched, Cultivated, Pioneered, Optimised, Transformed
 - Remove filler words: "responsible for", "helped with", "assisted in" — replace with direct action
 - Every bullet must follow: ACTION VERB + context + quantified outcome
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
@@ -174,7 +174,7 @@ COUNTRY: AUSTRALIA
 
 WRITING QUALITY:
 - First person is acceptable but use sparingly. Lead with action verbs.
-- EVERY bullet across the ENTIRE resume MUST start with a UNIQUE verb — NEVER use the same verb twice. Track which verbs you've used and pick a new one each time. Choose from: Delivered, Achieved, Led, Implemented, Developed, Established, Directed, Coordinated, Streamlined, Optimised, Redesigned, Consolidated, Facilitated, Produced, Secured, Introduced, Maintained, Reduced, Increased, Generated
+- EVERY bullet across the ENTIRE resume MUST start with a UNIQUE verb — NEVER use the same verb twice. Track which verbs you've used and pick a new one each time. Choose from: Delivered, Achieved, Led, Implemented, Developed, Established, Directed, Coordinated, Streamlined, Optimised, Redesigned, Consolidated, Facilitated, Produced, Secured, Introduced, Maintained, Reduced, Increased, Generated, Championed, Revamped, Initiated, Mobilised, Elevated, Modernised, Automated, Overhauled, Mentored, Expanded, Maximised, Structured, Governed, Integrated, Devised, Formulated, Authored, Recovered, Mitigated, Resolved, Aligned, Unified, Scaled, Orchestrated, Launched, Cultivated, Pioneered, Transformed, Negotiated, Executed
 - Remove filler words: "responsible for", "helped with", "assisted in" — replace with direct action
 - Every bullet must follow the STAR method: ACTION VERB + Situation/Task context + Result
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
