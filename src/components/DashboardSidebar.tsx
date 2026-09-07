@@ -12,7 +12,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import NotificationBell from "@/components/NotificationBell";
+/* # NotificationBell hidden until B2B phase */
+// import NotificationBell from "@/components/NotificationBell";
 
 
 /* ---- SVG Icons for Navigation ---- */
@@ -153,7 +154,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
             JobPilot AI
           </span>
         </Link>
-        <NotificationBell />
+        {/* <NotificationBell /> — re-enable for B2B phase */}
       </div>
 
       {/* ---- Navigation Links ---- */}
