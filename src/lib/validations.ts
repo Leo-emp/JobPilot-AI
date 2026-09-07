@@ -98,6 +98,8 @@ const aiActions = [
   "career_pivot_us",
   "career_pivot_uk",
   "career_pivot_au",
+  /* Help widget AI fallback */
+  "faq_answer",
 ] as const;
 
 /* POST /api/ai */

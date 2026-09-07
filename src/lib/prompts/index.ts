@@ -19,6 +19,33 @@ import type { ResumeCountry } from "./resume-country";
 
 export type { PromptParts } from "./shared";
 
+/* ---- FAQ AI fallback system prompt ---- */
+/* # Provides product knowledge so the AI can answer questions about JobPilot AI */
+const FAQ_SYSTEM = `You are a helpful customer support assistant for JobPilot AI — an AI-powered career platform.
+Answer questions accurately, concisely, and helpfully. Keep responses under 150 words.
+If you don't know the answer, say so and suggest contacting support@jobpilotai.co.
+
+Key product facts:
+- Free plan: 20 AI calls/month, all features. Pro plan: 1,000 AI calls/month.
+- Features: AI resume analysis/optimization/rebuild, cover letter generator, interview prep, mock interviews, LinkedIn optimizer, job search, application tracker, networking CRM, portfolio builder, Chrome extension.
+- Country-specific resumes: US (1 page, centered), UK (2 pages, CV format), AU (2-3 pages).
+- Resume modes: Optimize (improve existing), Rebuild (from scratch), Deep Tailor (thorough alignment), Career Pivot (change industries).
+- Security: TLS, bcrypt, JWT, encrypted database, GDPR/CCPA compliant, 2FA available, data export available.
+- Payments: Stripe (Visa, MC, Amex). Cancel anytime, 7-day refund policy.
+- Rate limits: 6/minute, 40/hour. AI timeout: 60 seconds.
+- Support: support@jobpilotai.co or /contact page.
+- AI model: Google Gemini with automatic fallback chain.
+- Chrome extension: saves jobs from 40+ sites automatically.
+- Portfolio: templates with public URL, responsive.
+- Data: resume text processed ephemerally (not stored), AI results saved to history, full data export, 30-day deletion window.
+Do NOT make up features that don't exist. Do NOT promise specific upcoming features.`;
+
+/* ---- FAQ answer prompt builder ---- */
+function faqAnswer(payload: Record<string, any>): string {
+  const question = payload.question || "How does JobPilot AI work?";
+  return `User question: ${question}\n\nAnswer this question about JobPilot AI helpfully and concisely.`;
+}
+
 export function buildPrompt(action: string, payload: Record<string, any>): import("./shared").PromptParts {
   switch (action) {
     case "analyze_resume": return { prompt: analyzeResume(payload) };
@@ -54,6 +81,9 @@ export function buildPrompt(action: string, payload: Record<string, any>): impor
     case "career_pivot_us": return careerPivotCountry(payload, "us");
     case "career_pivot_uk": return careerPivotCountry(payload, "uk");
     case "career_pivot_au": return careerPivotCountry(payload, "au");
+
+    /* Help widget AI fallback — answers user questions about JobPilot AI */
+    case "faq_answer": return { system: FAQ_SYSTEM, prompt: faqAnswer(payload) };
 
     default: throw new Error(`Unknown action: ${action}`);
   }

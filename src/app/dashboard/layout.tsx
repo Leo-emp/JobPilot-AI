@@ -17,6 +17,7 @@ import PostHogProvider from "@/components/PostHogProvider";
 
 const StarField = dynamic(() => import("@/components/StarField"));
 const FeedbackWidget = dynamic(() => import("@/components/FeedbackWidget"));
+const HelpWidget = dynamic(() => import("@/components/HelpWidget"));
 
 /* Async inner shell — loads session while outer shell renders instantly */
 async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,7 @@ async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
           </div>
         </main>
 
+        <HelpWidget />
         <FeedbackWidget />
       </PostHogProvider>
     </SessionProvider>
