@@ -15,6 +15,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
+import CountryResumeResult from "@/components/CountryResumeResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { useAIStream } from "@/hooks/useAIStream";
@@ -484,7 +485,11 @@ export default function ResumePage() {
         {/* ---- AI Result Display (shows while streaming + after complete) ---- */}
         {result && (
           <div className="relative">
-            <MarkdownResult result={result} showDownload={!streaming || streamDone} editable={activeTab !== "analyze"} />
+            {countryMode !== "standard" ? (
+              <CountryResumeResult result={result} country={countryMode} showDownload={!streaming || streamDone} editable={activeTab !== "analyze"} />
+            ) : (
+              <MarkdownResult result={result} showDownload={!streaming || streamDone} editable={activeTab !== "analyze"} />
+            )}
             {streaming && !streamDone && (
               <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
                 <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
