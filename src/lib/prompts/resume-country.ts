@@ -73,6 +73,7 @@ MANDATORY SECTIONS (always include, in this order):
    - Category Name: Skill, Skill, Skill
    (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has — never invent. Each category MUST fit on a single line.)
 5. ## Education
+   INCLUDE EVERY education entry from the original resume — NEVER drop any (e.g., if the candidate has a Bachelor's AND an HND, include BOTH).
    For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY** (use "Current" for ongoing: **MM/YYYY – Current**)
 
 OPTIONAL SECTIONS (include ONLY if the original resume has this data AND it fits within 1 page):
@@ -138,6 +139,7 @@ MANDATORY SECTIONS (always include, in this order):
    Explain employment gaps longer than 3 months if apparent.
    Consolidate roles older than 10-15 years into one "Earlier Career" summary line.
 5. ## Education & Qualifications
+   INCLUDE EVERY education entry from the original resume — NEVER drop any (e.g., if the candidate has a degree AND an HND or diploma, include BOTH).
    Degrees: **BSc (Hons) Computer Science, 2:1, University of Manchester — 2018 – 2021**. Include classification ONLY if 2:1 or above.
    A-Levels: A-Levels: Mathematics (A), Economics (B) — College Name, 2015–2017. Include ONLY if present in original resume.
    GCSEs: Summarise (e.g., 10 GCSEs at grades A*–C including Mathematics and English). Include ONLY if present in original resume.
@@ -216,6 +218,7 @@ MANDATORY SECTIONS (always include, in this order):
    Company Name, City, STATE (separate line, plain text)
    Then EXACTLY 4 bullet points per role using STAR method. Every bullet MUST start with "- " on its own line. ALL bullet text must be plain text.
 5. ## Education & Qualifications
+   INCLUDE EVERY education entry from the original resume — NEVER drop any (e.g., if the candidate has a degree AND a diploma, include BOTH).
    For each entry: Degree Name — Institution, Year
    Include major/specialisation if relevant.
    Include WAM or GPA if strong (e.g., WAM: 78, Distinction).
