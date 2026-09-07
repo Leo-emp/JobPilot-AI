@@ -53,7 +53,7 @@ FORMATTING RULES:
 - For Education entries, use bold for the title line: **Degree Name, Institution, City, ST — MM/YYYY – MM/YYYY**
 - For Certifications entries: Certification Name, Institution — **MM/YYYY – MM/YYYY** (if dates exist in original)
 - ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names. Use "Current" for ongoing roles.
-- Do NOT use ### headings — use **bold** inline text only where specified above
+- Do NOT use ### headings. Do NOT add --- horizontal rules under ## section headers — the heading already renders with an underline — use **bold** inline text only where specified above
 - LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
 SECTION RULES — MANDATORY vs OPTIONAL:
@@ -118,7 +118,7 @@ FORMATTING RULES:
 - Use bold for job title lines that include employer, city, and dates ALL ON ONE LINE: **Job Title, Employer, City — Month YYYY – Present**
 - For Education entries, use bold: **Degree Classification, University — YYYY – YYYY**
 - ALL dates MUST use spelled-out month format: Month YYYY (e.g., January 2024). NEVER use MM/DD/YYYY (American format). Use "Present" for ongoing roles
-- Do NOT use ### headings — use ## for section headers only
+- Do NOT use ### headings. Do NOT add --- horizontal rules under ## section headers — the heading already renders with an underline — use ## for section headers only
 - LinkedIn URL must be a full clickable URL
 
 SECTION RULES — MANDATORY vs OPTIONAL:
@@ -185,7 +185,7 @@ FORMATTING RULES:
 - Company name, city, and state abbreviation go on a SEPARATE plain text line below the bold job title
 - Add a one-line company context in italics for organisations that may be unfamiliar in Australia
 - ALL dates MUST use spelled-out month format: Month YYYY (e.g., March 2024). NEVER use MM/DD/YYYY. Use "Present" for ongoing roles
-- Do NOT use ### headings — use ## for section headers only
+- Do NOT use ### headings. Do NOT add --- horizontal rules under ## section headers — the heading already renders with an underline — use ## for section headers only
 - LinkedIn URL must be a full clickable URL
 - Use Australian state abbreviations: NSW, VIC, QLD, WA, SA, TAS, ACT, NT
 
@@ -193,7 +193,7 @@ LAYOUT — AUSTRALIAN RESUME:
 Name is LEFT-ALIGNED and in Title Case (not uppercase) at the top.
 Contact info is LEFT-ALIGNED on one line below the name, separated by bullet (•) characters.
 Work rights/visa status on a separate line below contact info (if mentioned in original resume).
-Section headers are LEFT-ALIGNED, Title Case, and bold with a horizontal rule (---) underneath.
+Section headers are LEFT-ALIGNED, Title Case, and bold. Do NOT add --- under section headers — the ## heading already renders with an underline.
 Job titles are bold with dates on the SAME line: **Job Title — Month YYYY – Present**
 Company name, city, and state go on a SEPARATE plain text line below the job title.
 Company context (if needed) goes on the next line in italics.
@@ -206,20 +206,16 @@ MANDATORY SECTIONS (always include, in this order):
 1. # Name (title case — the candidate's real name)
    Contact info on one line: Suburb, STATE • 04XX XXX XXX • email@domain.com • https://linkedin.com/in/username
 2. ## Professional Summary
-   ---
    3-5 lines, evidence-based tone. Include professional identity, years of experience, key strengths, a quantified achievement, and target role. ALL PLAIN TEXT.
 3. ## Key Skills
-   ---
    6-12 skills separated by pipe characters: Skill One | Skill Two | Skill Three | Skill Four
    Only list skills the candidate ACTUALLY has. Prioritise skills from the job description.
 4. ## Professional Experience
-   ---
    For EACH role: **Job Title — Month YYYY – Present**
    Company Name, City, STATE (separate line, plain text)
    *One-line company context for organisations unfamiliar in Australia* (only if needed, in italics)
    Then EXACTLY 4 bullet points per role using STAR method. Every bullet MUST start with "- " on its own line. ALL bullet text must be plain text.
 5. ## Education & Qualifications
-   ---
    For each entry: Degree Name — Institution, Year
    Include major/specialisation if relevant.
    Include WAM or GPA if strong (e.g., WAM: 78, Distinction).
