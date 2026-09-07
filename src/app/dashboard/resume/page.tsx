@@ -24,6 +24,7 @@ import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Tab names for the feature sub-sections ---- */
 const tabs = [
+  { id: "create", label: "Create from Scratch" },
   { id: "analyze", label: "Analyze Resume" },
   { id: "optimize", label: "Quick Optimize" },
   { id: "rebuild", label: "Full Rebuild" },
@@ -32,7 +33,7 @@ const tabs = [
 
 export default function ResumePage() {
   /* Track which tab is active */
-  const [activeTab, setActiveTab] = useState("analyze");
+  const [activeTab, setActiveTab] = useState("create");
   /* Stored resume text (extracted from uploaded file) */
   const [resumeText, setResumeText] = useState("");
   /* Original file name for database storage */
@@ -82,6 +83,30 @@ export default function ResumePage() {
   const [rebuildMode, setRebuildMode] = useState<"safe" | "deep">("safe");
   /* Country-specific resume mode — "standard" uses existing system, country codes use new system */
   const [countryMode, setCountryMode] = useState<"standard" | "us" | "uk" | "au">("standard");
+
+  /* ---- Create from Scratch fields ---- */
+  const [createStep, setCreateStep] = useState<1 | 2>(1);
+  const [cfFullName, setCfFullName] = useState("");
+  const [cfEmail, setCfEmail] = useState("");
+  const [cfPhone, setCfPhone] = useState("");
+  const [cfLocation, setCfLocation] = useState("");
+  const [cfLinkedin, setCfLinkedin] = useState("");
+  const [cfTargetRole, setCfTargetRole] = useState("");
+  /* Repeatable experience entries: each has title, company, dates, description */
+  const [cfExperience, setCfExperience] = useState([{ title: "", company: "", dates: "", description: "" }]);
+  /* Repeatable education entries */
+  const [cfEducation, setCfEducation] = useState([{ degree: "", school: "", year: "" }]);
+  const [cfSkills, setCfSkills] = useState("");
+  /* Optional sections — raw text */
+  const [cfCertifications, setCfCertifications] = useState("");
+  const [cfProjects, setCfProjects] = useState("");
+  const [cfLanguages, setCfLanguages] = useState("");
+  const [cfVolunteer, setCfVolunteer] = useState("");
+  /* Step 2 checkboxes — which optional sections to include */
+  const [includeCerts, setIncludeCerts] = useState(true);
+  const [includeProjects, setIncludeProjects] = useState(true);
+  const [includeLanguages, setIncludeLanguages] = useState(true);
+  const [includeVolunteer, setIncludeVolunteer] = useState(true);
 
   /* Cache analyze result so the same resume always returns the same score */
   const [analyzeCache, setAnalyzeCache] = useState<{ text: string; result: string } | null>(null);
@@ -175,6 +200,46 @@ export default function ResumePage() {
     }
   };
 
+  /* ---- Call AI for Create from Scratch ---- */
+  /* Assembles structured form data into a payload and sends to AI */
+  const callCreateAI = async () => {
+    /* Build experience text from repeatable entries */
+    const expText = cfExperience
+      .filter((e) => e.title || e.company)
+      .map((e) => `${e.title}${e.company ? ` at ${e.company}` : ""}${e.dates ? ` (${e.dates})` : ""}\n${e.description}`)
+      .join("\n\n");
+
+    /* Build education text from repeatable entries */
+    const eduText = cfEducation
+      .filter((e) => e.degree || e.school)
+      .map((e) => `${e.degree}${e.school ? `, ${e.school}` : ""}${e.year ? ` — ${e.year}` : ""}`)
+      .join("\n");
+
+    const payload: Record<string, string> = {
+      fullName: cfFullName,
+      email: cfEmail,
+      phone: cfPhone,
+      location: cfLocation,
+      linkedin: cfLinkedin,
+      targetRole: cfTargetRole,
+      experience: expText,
+      education: eduText,
+      skills: cfSkills,
+    };
+
+    /* Only include optional sections the user checked */
+    if (includeCerts && cfCertifications.trim()) payload.certifications = cfCertifications;
+    if (includeProjects && cfProjects.trim()) payload.projects = cfProjects;
+    if (includeLanguages && cfLanguages.trim()) payload.languages = cfLanguages;
+    if (includeVolunteer && cfVolunteer.trim()) payload.volunteer = cfVolunteer;
+
+    const action = countryMode !== "standard" ? `create_resume_${countryMode}` : "create_resume";
+    await streamAI(action, payload);
+  };
+
+  /* ---- Check if any optional sections have data (for step 2 checkboxes) ---- */
+  const hasOptionalData = cfCertifications.trim() || cfProjects.trim() || cfLanguages.trim() || cfVolunteer.trim();
+
   /* ---- Country Mode Selector ---- */
   /* Reusable inline component shown on Optimize, Rebuild, and Pivot tabs */
   const countryOptions = [
@@ -220,7 +285,7 @@ export default function ResumePage() {
         Resume Intelligence
       </h1>
       <p className="text-text-secondary mb-8">
-        Upload your resume and let AI optimize it for any job.
+        {activeTab === "create" ? "Build a professional resume from scratch — no existing resume needed." : "Upload your resume and let AI optimize it for any job."}
       </p>
 
       {/* ---- AI Usage / Upgrade Prompt ---- */}
@@ -235,8 +300,8 @@ export default function ResumePage() {
         </div>
       )}
 
-      {/* ---- Resume Upload Section ---- */}
-      <div className="glass-card p-6 mb-8">
+      {/* ---- Resume Upload Section (hidden on Create tab) ---- */}
+      {activeTab !== "create" && <div className="glass-card p-6 mb-8">
         <h2 className="text-lg font-bold mb-4">Your Resume</h2>
         <div className="flex flex-col sm:flex-row gap-4">
           {/* File upload input */}
@@ -271,14 +336,14 @@ export default function ResumePage() {
             Resume loaded ({resumeText.length.toLocaleString()} characters)
           </p>
         )}
-      </div>
+      </div>}
 
       {/* ---- Tab Navigation ---- */}
       <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => { setActiveTab(tab.id); resetAI(); setUploadError(""); }}
+            onClick={() => { setActiveTab(tab.id); resetAI(); setUploadError(""); setCreateStep(1); }}
             className={`px-5 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
@@ -292,6 +357,178 @@ export default function ResumePage() {
 
       {/* ---- Tab Content ---- */}
       <div className="glass-card p-6 sm:p-8">
+
+        {/* ---- Create from Scratch Tab ---- */}
+        {activeTab === "create" && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">Create Resume from Scratch</h2>
+            <p className="text-text-secondary text-sm mb-6">
+              No resume yet? Fill in your details and AI will build a professional, ATS-optimized resume for you.
+            </p>
+
+            <CountrySelector />
+
+            {/* ---- Step 1: Fill in your details ---- */}
+            {createStep === 1 && (
+              <div className="space-y-6">
+                {/* Contact Information */}
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">Contact Information</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" value={cfFullName} onChange={(e) => setCfFullName(e.target.value)} placeholder="Full Name *" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                    <input type="email" value={cfEmail} onChange={(e) => setCfEmail(e.target.value)} placeholder="Email *" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                    <input type="tel" value={cfPhone} onChange={(e) => setCfPhone(e.target.value)} placeholder="Phone Number" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                    <input type="text" value={cfLocation} onChange={(e) => setCfLocation(e.target.value)} placeholder="City, Country" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                  </div>
+                  <input type="url" value={cfLinkedin} onChange={(e) => setCfLinkedin(e.target.value)} placeholder="LinkedIn URL (optional)" className="w-full mt-3 px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                </div>
+
+                {/* Target Role */}
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">Target Role</h3>
+                  <input type="text" value={cfTargetRole} onChange={(e) => setCfTargetRole(e.target.value)} placeholder="What job are you applying for? (e.g., Marketing Manager, Software Engineer) *" className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                </div>
+
+                {/* Work Experience — repeatable */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-white">Work Experience</h3>
+                    <button type="button" onClick={() => setCfExperience([...cfExperience, { title: "", company: "", dates: "", description: "" }])} className="text-xs text-brand-light hover:text-white transition-colors">+ Add another role</button>
+                  </div>
+                  {cfExperience.map((exp, i) => (
+                    <div key={i} className={`space-y-3 ${i > 0 ? "mt-4 pt-4 border-t border-card-border" : ""}`}>
+                      {i > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-text-muted">Role {i + 1}</span>
+                          <button type="button" onClick={() => setCfExperience(cfExperience.filter((_, idx) => idx !== i))} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" value={exp.title} onChange={(e) => { const u = [...cfExperience]; u[i] = { ...u[i], title: e.target.value }; setCfExperience(u); }} placeholder="Job Title *" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                        <input type="text" value={exp.company} onChange={(e) => { const u = [...cfExperience]; u[i] = { ...u[i], company: e.target.value }; setCfExperience(u); }} placeholder="Company Name *" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                      </div>
+                      <input type="text" value={exp.dates} onChange={(e) => { const u = [...cfExperience]; u[i] = { ...u[i], dates: e.target.value }; setCfExperience(u); }} placeholder="Dates (e.g., Jan 2020 – Present)" className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                      <textarea value={exp.description} onChange={(e) => { const u = [...cfExperience]; u[i] = { ...u[i], description: e.target.value }; setCfExperience(u); }} placeholder="What did you do in this role? List your responsibilities, achievements, team size, tools used... (AI will optimize the wording)" rows={3} className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Education — repeatable */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-white">Education</h3>
+                    <button type="button" onClick={() => setCfEducation([...cfEducation, { degree: "", school: "", year: "" }])} className="text-xs text-brand-light hover:text-white transition-colors">+ Add another</button>
+                  </div>
+                  {cfEducation.map((edu, i) => (
+                    <div key={i} className={`grid grid-cols-1 sm:grid-cols-3 gap-3 ${i > 0 ? "mt-3" : ""}`}>
+                      <input type="text" value={edu.degree} onChange={(e) => { const u = [...cfEducation]; u[i] = { ...u[i], degree: e.target.value }; setCfEducation(u); }} placeholder="Degree / Qualification *" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                      <input type="text" value={edu.school} onChange={(e) => { const u = [...cfEducation]; u[i] = { ...u[i], school: e.target.value }; setCfEducation(u); }} placeholder="Institution *" className="px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                      <div className="flex gap-2">
+                        <input type="text" value={edu.year} onChange={(e) => { const u = [...cfEducation]; u[i] = { ...u[i], year: e.target.value }; setCfEducation(u); }} placeholder="Year(s)" className="flex-1 px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo text-sm" />
+                        {i > 0 && <button type="button" onClick={() => setCfEducation(cfEducation.filter((_, idx) => idx !== i))} className="px-3 text-red-400 hover:text-red-300 text-xs">Remove</button>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Skills */}
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">Skills</h3>
+                  <textarea value={cfSkills} onChange={(e) => setCfSkills(e.target.value)} placeholder="List your skills — comma separated or one per line (e.g., Project Management, Excel, Python, Team Leadership...)" rows={3} className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm" />
+                </div>
+
+                {/* Optional Sections */}
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">Optional Sections <span className="text-text-muted font-normal">(leave blank to skip)</span></h3>
+                  <div className="space-y-3">
+                    <textarea value={cfCertifications} onChange={(e) => setCfCertifications(e.target.value)} placeholder="Certifications (e.g., PMP — PMI, 2023 / AWS Solutions Architect — Amazon, 2024)" rows={2} className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm" />
+                    <textarea value={cfProjects} onChange={(e) => setCfProjects(e.target.value)} placeholder="Projects (e.g., Built an e-commerce site using React, handled 500+ orders/month)" rows={2} className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm" />
+                    <textarea value={cfLanguages} onChange={(e) => setCfLanguages(e.target.value)} placeholder="Languages (e.g., English — Native, Spanish — Conversational, Mandarin — Basic)" rows={2} className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm" />
+                    <textarea value={cfVolunteer} onChange={(e) => setCfVolunteer(e.target.value)} placeholder="Volunteer experience (e.g., Mentor at Code.org — taught 30 students web development, 2023–2024)" rows={2} className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm" />
+                  </div>
+                </div>
+
+                {/* Next / Generate button */}
+                <button
+                  onClick={() => {
+                    if (hasOptionalData) {
+                      setCreateStep(2);
+                    } else {
+                      callCreateAI();
+                    }
+                  }}
+                  disabled={!cfFullName || !cfTargetRole || !cfExperience[0]?.title || loading}
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {hasOptionalData ? "Next: Choose Sections" : loading && !streamDone ? "Generating..." : "Generate Resume"}
+                </button>
+              </div>
+            )}
+
+            {/* ---- Step 2: Choose which optional sections to include ---- */}
+            {createStep === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-2">Choose which sections to include in your resume</h3>
+                  <p className="text-text-muted text-xs mb-4">
+                    Uncheck sections that aren&apos;t relevant to your target role. Fewer sections = tighter, more focused resume.
+                  </p>
+                  <div className="space-y-3">
+                    {cfCertifications.trim() && (
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-card-border hover:border-brand-indigo/30 transition-colors cursor-pointer">
+                        <input type="checkbox" checked={includeCerts} onChange={(e) => setIncludeCerts(e.target.checked)} className="mt-1 accent-brand-indigo" />
+                        <div>
+                          <p className="text-sm font-medium text-white">Certifications</p>
+                          <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{cfCertifications}</p>
+                        </div>
+                      </label>
+                    )}
+                    {cfProjects.trim() && (
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-card-border hover:border-brand-indigo/30 transition-colors cursor-pointer">
+                        <input type="checkbox" checked={includeProjects} onChange={(e) => setIncludeProjects(e.target.checked)} className="mt-1 accent-brand-indigo" />
+                        <div>
+                          <p className="text-sm font-medium text-white">Projects</p>
+                          <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{cfProjects}</p>
+                        </div>
+                      </label>
+                    )}
+                    {cfLanguages.trim() && (
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-card-border hover:border-brand-indigo/30 transition-colors cursor-pointer">
+                        <input type="checkbox" checked={includeLanguages} onChange={(e) => setIncludeLanguages(e.target.checked)} className="mt-1 accent-brand-indigo" />
+                        <div>
+                          <p className="text-sm font-medium text-white">Languages</p>
+                          <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{cfLanguages}</p>
+                        </div>
+                      </label>
+                    )}
+                    {cfVolunteer.trim() && (
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-card-border hover:border-brand-indigo/30 transition-colors cursor-pointer">
+                        <input type="checkbox" checked={includeVolunteer} onChange={(e) => setIncludeVolunteer(e.target.checked)} className="mt-1 accent-brand-indigo" />
+                        <div>
+                          <p className="text-sm font-medium text-white">Volunteer Experience</p>
+                          <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{cfVolunteer}</p>
+                        </div>
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button onClick={() => setCreateStep(1)} className="px-5 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-white hover:bg-space-600 border border-card-border transition-all">
+                    Back
+                  </button>
+                  <button
+                    onClick={() => callCreateAI()}
+                    disabled={loading}
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading && !streamDone ? "Generating..." : "Generate Resume"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ---- Analyze Resume Tab ---- */}
         {activeTab === "analyze" && (

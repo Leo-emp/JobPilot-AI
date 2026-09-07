@@ -85,6 +85,11 @@ const aiActions = [
   "mock_interview_summary",
   "craft_outreach",
   "parse_resume_fields",
+  /* Create resume from scratch */
+  "create_resume",
+  "create_resume_us",
+  "create_resume_uk",
+  "create_resume_au",
   /* Country-specific resume actions */
   "optimize_resume_us",
   "optimize_resume_uk",

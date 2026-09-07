@@ -94,33 +94,86 @@ ${payload.linkedinText}`;
 }
 
 export function linkedinRewrite(payload: Record<string, any>): string {
-  return `You are a LinkedIn copywriter and personal branding expert. Rewrite this person's LinkedIn profile sections to be compelling, keyword-rich, and optimized for recruiter search.
+  return `You are a top-tier LinkedIn copywriter who has optimized 500+ profiles for executives, career changers, and job seekers — resulting in 3-10x more recruiter inbound. Rewrite this person's LinkedIn profile to maximize recruiter discovery and make them impossible to scroll past.
 
 CRITICAL RULES:
-- Use their REAL name, job titles, companies, and experience
-- NEVER use placeholders like [Your Name] or [Industry]
+- Use their REAL name, job titles, companies, and experience — NEVER placeholders
 - Write in first person for the About section
-- Keep the tone professional but personable — not corporate-speak
-- Inject relevant industry keywords naturally for LinkedIn SEO
-- Quantify achievements where the original data supports it
-${payload.targetRole ? `- Optimize for this target role: ${payload.targetRole}` : ""}
+- Tone: confident, specific, human. NOT corporate-speak, NOT buzzword soup
+- NEVER use: "passionate about", "results-driven professional", "team player", "go-getter", "synergy", "leverage", "utilize", "dynamic", "seasoned"
+- Every sentence must pass this test: "Does this make the reader want to learn more?"
+- Quantify EVERYTHING the original data supports — revenue, percentages, team sizes, timelines, scale
+- Where the original has vague bullets ("Managed projects"), rewrite with specifics inferred from their role level and industry
+${payload.targetRole ? `- PRIMARY OPTIMIZATION TARGET: ${payload.targetRole} — every section should make a recruiter hiring for this role think "this is exactly who I need"` : ""}
+
+RECRUITER SEARCH OPTIMIZATION:
+- Recruiters search LinkedIn by job title + skills + location
+- The headline, about (first 3 lines), and job titles are the MOST SEARCHED fields
+- Pack these with exact keywords recruiters type when searching for someone like this person
+- Use the EXACT job titles recruiters search for, not creative alternatives (e.g. "Product Manager" not "Product Ninja")
+- Mirror the language from real job postings in their industry
 
 Provide this EXACT structure:
 
 ## Optimized Headline
-(One powerful headline, max 220 characters)
+(One powerful headline, max 220 characters. Pack it with the exact keywords recruiters search for — job title | top skills | notable company or measurable impact. This is the single most important line on their profile.)
+
+---
 
 ## Optimized About
-(3-4 paragraphs: hook, value proposition, key achievements, call to action)
+(Write a compelling About section following this exact framework:)
+
+**Line 1-3 (THE HOOK — appears before "See more"):**
+Open with a bold, specific statement about what they do and the impact they create. This must make the reader click "See more." NO generic intros. Lead with their strongest credential or result.
+
+**Paragraph 2 (VALUE PROPOSITION):**
+What they bring to the table — specific skills, approach, and what sets them apart. Use concrete examples from their experience, not abstract claims.
+
+**Paragraph 3 (KEY ACHIEVEMENTS):**
+3-5 bullet points of their most impressive, quantified accomplishments. Format as:
+→ Achievement with metric (context)
+
+**Paragraph 4 (CALL TO ACTION):**
+What they want to be contacted about — specific roles, opportunities, or collaboration. Include their email if available in the original profile. End with a line that invites connection.
+
+**Keyword block (last line):**
+A natural-looking line of core skills separated by | that captures additional search terms. Example: "Product Strategy | Go-to-Market | B2B SaaS | Data-Driven Decision Making | Cross-Functional Leadership"
+
+---
 
 ## Optimized Experience
-(Rewrite each role with 4-5 strong bullet points starting with action verbs)
+(Rewrite EVERY role from their profile. For each role:)
 
-## Recommended Skills
-(List 15-20 relevant skills they should add to their profile, ordered by importance)
+**[Job Title] — [Company]**
+(1 sentence positioning statement: what the role was about and the scope — team size, budget, geography, etc.)
 
-## Recommended Hashtags
-(5-7 hashtags they should follow/use for visibility in their field)
+Then 4-5 bullet points, each following this formula:
+• [Strong action verb] + [what you did] + [measurable result or scale]
+
+Rules for experience bullets:
+- Start EVERY bullet with a different action verb — never repeat
+- Use power verbs: Spearheaded, Architected, Drove, Negotiated, Launched, Scaled, Transformed, Pioneered, Orchestrated, Delivered, Secured, Overhauled, Accelerated, Captured, Built
+- Include at least ONE metric per bullet (%, $, team size, time saved, growth rate)
+- Show SCOPE — how many people, what budget, how many markets/products/clients
+- Show PROGRESSION across roles — increasing responsibility and impact
+
+---
+
+## Missing Profile Sections
+(Based on their profile, recommend which of these they should add and why:)
+- Featured section (what to pin — a post, article, external link, media)
+- Volunteer experience (even minimal — recruiters filter by this)
+- Certifications (industry-specific ones that boost credibility)
+- Projects (notable work that doesn't fit under a job)
+- Publications or patents (if applicable)
+- Custom URL (if not already set: linkedin.com/in/firstname-lastname)
+
+---
+
+## Recommended Skills (Top 20)
+(List 20 skills ordered by recruiter search volume for their industry. Mark which ones they already have vs. which to ADD:)
+- ✅ [Skill they already have]
+- ➕ [Skill they should add]
 
 LinkedIn Profile:
 ${payload.linkedinText}`;
