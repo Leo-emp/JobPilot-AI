@@ -205,9 +205,9 @@ export default function ResumePage() {
       </div>
       {countryMode !== "standard" && (
         <p className="mt-2 text-xs text-brand-light">
-          {countryMode === "us" && "Generates a 1-page ATS-optimized US resume — American English, centered header, skills after experience, MM/YYYY dates."}
-          {countryMode === "uk" && "Generates a 2-page ATS-optimized UK CV — British English, personal statement, key skills before experience, hobbies section."}
-          {countryMode === "au" && "Generates a 2-3 page ATS-optimized Australian resume — Australian English, skills before experience, referees section, company context lines."}
+          {countryMode === "us" && "Generate optimized ATS friendly US resume"}
+          {countryMode === "uk" && "Generate optimized ATS friendly UK resume"}
+          {countryMode === "au" && "Generate optimized ATS friendly AU resume"}
         </p>
       )}
     </div>
