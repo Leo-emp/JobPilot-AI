@@ -46,49 +46,41 @@ WRITING QUALITY:
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
 
 FORMATTING RULES:
+- Output ONLY pure markdown — NEVER use HTML tags like <center>, <span>, <div>, <br>, or any other HTML. The output is rendered by a markdown parser that does NOT support HTML.
 - NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
-- NEVER bold skill category names in Core Skills — write as plain text: "Category Name: Skill, Skill"
-- Use bold ONLY for job title lines: **Job Title**
-- Company name, location, and dates go on a SEPARATE line below the job title as plain text
-- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names. Use "Current" for ongoing roles
-- Do NOT use ### headings — use ## for section headers only
+- NEVER bold skill category names in Core Skills — write as plain text like "Category Name: Skill, Skill" with NO ** markers
+- Use bold for job title lines under Work Experience: **Job Title, Company Name, City, ST — MM/YYYY – Current**
+- For Education entries, use bold for the title line: **Degree Name, Institution, City, ST — MM/YYYY – MM/YYYY**
+- For Certifications entries: Certification Name, Institution — **MM/YYYY – MM/YYYY** (if dates exist in original)
+- ALL dates MUST be in numeric MM/YYYY format (e.g., 07/2024). NEVER spell out month names. Use "Current" for ongoing roles.
+- Do NOT use ### headings — use **bold** inline text only where specified above
 - LinkedIn URL must be a full clickable URL: https://linkedin.com/in/username
 
-LAYOUT — US RESUME:
-Name is CENTERED and UPPERCASE at the top.
-Contact info is CENTERED on one line below the name, separated by bullet (•) characters.
-Section headers are LEFT-ALIGNED, UPPERCASE, and bold with a horizontal rule (---) underneath.
-Job titles are LEFT-ALIGNED and bold. Dates are RIGHT-ALIGNED on the SAME line using the format: **Job Title** <span style="float:right">MM/YYYY – Current</span>
-Company name, city, and state go on a SEPARATE plain text line below the job title.
+SECTION RULES — MANDATORY vs OPTIONAL:
+The US resume is strictly 1 page. MANDATORY sections MUST always appear. OPTIONAL sections appear ONLY if the candidate's original resume contains that data AND the resume still fits within 1 page. If adding an optional section would push the resume over 1 page, OMIT it. Prioritise mandatory sections first, then add optional sections in the order listed until space runs out.
 
-STRUCTURE (follow this EXACT section order):
-1. # NAME (centered, uppercase — the candidate's real name from the resume)
-   Contact info centered on one line: City, ST • (555) 123-4567 • email@domain.com • https://linkedin.com/in/username
-2. ## PROFESSIONAL SUMMARY
-   ---
-   3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. START with a strong adjective + their actual role title. Use "I" sparingly mid-sentence only.
-3. ## WORK EXPERIENCE
-   ---
-   For EACH role: **Job Title** with dates right-aligned
-   Company Name, City, ST (separate line, plain text)
-   Then EXACTLY 3 bullet points per role. Every bullet MUST start with "- " on its own line. ALL bullet text must be plain text.
-   If NO work experience, replace with ## PROJECTS or ## RELEVANT EXPERIENCE.
-4. ## CORE SKILLS
-   ---
-   Exactly 4 categories with 3-4 skills each, comma-separated. Each category as a bullet: - Category Name: Skill, Skill, Skill
-   Only list skills the candidate ACTUALLY has.
-5. ## EDUCATION
-   ---
-   For each entry: Degree Name with dates right-aligned, then University Name, City, ST on next line.
-   GPA only if 3.5+ and within 3 years of graduation.
-6. ## CERTIFICATIONS (if applicable)
-   ---
-   Cert Name — Issuer, MM/YYYY. Only include dates if the original resume provides them.
-7. ## LANGUAGES (if applicable)
-   ---
-   Each language with proficiency level on one line.
+MANDATORY SECTIONS (always include, in this order):
+1. # Name (the candidate's real name from the resume)
+   Contact info on one line: Location • Phone • Email • https://linkedin.com/in/username
+2. ## Professional Summary
+   3-4 sentences in first person, ALL PLAIN TEXT — no bold. NEVER use the candidate's name. NEVER use third-person pronouns. NEVER start with "I am". START with a strong adjective + their actual role title. Use "I" sparingly mid-sentence only. NEVER claim they already hold the target title.
+3. ## Work Experience
+   For EACH role: **Job Title, Company Name, City, ST — MM/YYYY – MM/YYYY**
+   Then EXACTLY 3 bullet points per role. Every bullet MUST be a markdown list item starting with "- " on its own line. NEVER output work experience as plain paragraphs or numbered lists — ALWAYS use bullet points. ALL bullet text must be plain text.
+   If NO work experience, replace with ## Projects or ## Relevant Experience using academic/volunteer/freelance projects.
+4. ## Core Skills
+   EVERY category MUST be a markdown list item starting with "- " on its own line. NEVER output skills as plain text without bullet points.
+   - Category Name: Skill, Skill, Skill
+   (Exactly 4 categories, 3-4 skills each. Only list skills the candidate ACTUALLY has — never invent. Each category MUST fit on a single line.)
+5. ## Education
+   For each entry: Degree, Institution, Location — **MM/YYYY – MM/YYYY** (use "Current" for ongoing: **MM/YYYY – Current**)
 
-IMPORTANT OMISSIONS — DO NOT include these sections in a US resume:
+OPTIONAL SECTIONS (include ONLY if the original resume has this data AND it fits within 1 page):
+6. ## Certifications and Trainings — Certification Name, Institution — **MM/YYYY – MM/YYYY** (use "Current" for ongoing)
+   IMPORTANT: Only include dates on certifications if the original resume provides them. If a certification has NO date in the original resume, output it WITHOUT any date — NEVER invent or guess dates.
+7. ## Languages — each with proficiency level. Include ONLY if the candidate lists languages in their original resume.
+
+IMPORTANT OMISSIONS — NEVER include these in a US resume regardless of space:
 - NO references or "References available upon request"
 - NO hobbies or interests section
 - NO photo, date of birth, nationality, marital status
@@ -120,55 +112,43 @@ WRITING QUALITY:
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
 
 FORMATTING RULES:
+- Output ONLY pure markdown — NEVER use HTML tags like <center>, <span>, <div>, <br>, or any other HTML. The output is rendered by a markdown parser that does NOT support HTML.
 - NEVER use bold (**text**) in Personal Statement or bullet points — all plain text
 - NEVER bold skill names in Key Skills — plain text only
-- Use bold ONLY for job title lines: **Job Title — Employer, City**
-- Dates go on the SAME line as the job title, right-aligned
+- Use bold for job title lines that include employer, city, and dates ALL ON ONE LINE: **Job Title, Employer, City — Month YYYY – Present**
+- For Education entries, use bold: **Degree Classification, University — YYYY – YYYY**
 - ALL dates MUST use spelled-out month format: Month YYYY (e.g., January 2024). NEVER use MM/DD/YYYY (American format). Use "Present" for ongoing roles
 - Do NOT use ### headings — use ## for section headers only
 - LinkedIn URL must be a full clickable URL
 
-LAYOUT — UK CV:
-Name is LEFT-ALIGNED and in Title Case (not uppercase) at the top.
-Contact info is LEFT-ALIGNED on one line below the name, separated by bullet (•) characters.
-Optional second contact line for: driving licence, notice period, right to work.
-Section headers are LEFT-ALIGNED, Title Case, and bold with a horizontal rule (---) underneath.
-Job title, employer, city, and dates are ALL ON ONE LINE — title and employer bold, dates right-aligned.
+SECTION RULES — MANDATORY vs OPTIONAL:
+The UK CV is 2 pages. MANDATORY sections MUST always appear. OPTIONAL sections appear ONLY if the candidate's original resume contains that data AND the CV still fits within 2 pages. If adding an optional section would push the CV over 2 pages, OMIT it. Prioritise mandatory sections first, then add optional sections in the order listed until space runs out.
 
-STRUCTURE (follow this EXACT section order):
-1. # Name (left-aligned, title case — the candidate's real name)
-   Contact info left-aligned on one line: City, Region • 07XXX XXXXXX • email@domain.com • https://linkedin.com/in/username
-   Optional line: Full UK driving licence • 1 month notice • Eligible to work in the UK (include ONLY if the original resume mentions these)
+MANDATORY SECTIONS (always include, in this order):
+1. # Name (title case — the candidate's real name)
+   Contact info on one line: City, Region • 07XXX XXXXXX • email@domain.com • https://linkedin.com/in/username
 2. ## Personal Statement
-   ---
-   50-120 words in implied first person (no "I" at the start). Tailored to the target role. Include professional identity, key skills, a quantified achievement, and career goal. ALL PLAIN TEXT.
+   50-120 words in implied first person (no "I" at the start). Tailored to the target role. Include professional identity, key skills, a quantified achievement, and career goal. ALL PLAIN TEXT — no bold anywhere.
 3. ## Key Skills
-   ---
-   8-12 skills listed as bullet points: - Skill One, - Skill Two, etc. Only list skills the candidate ACTUALLY has. Prioritise skills from the job description.
+   8-12 skills listed as bullet points. EVERY skill MUST be a markdown list item starting with "- " on its own line. NEVER output skills as plain text without bullet points. Only list skills the candidate ACTUALLY has. Prioritise skills from the job description.
 4. ## Work Experience
-   ---
-   For EACH role: **Job Title — Employer, City** with dates right-aligned as Month YYYY – Present
-   Then EXACTLY 4 bullet points per role. Every bullet MUST start with "- " on its own line. ALL bullet text must be plain text.
+   For EACH role: **Job Title, Employer, City — Month YYYY – Present**
+   Then EXACTLY 4 bullet points per role. Every bullet MUST be a markdown list item starting with "- " on its own line. ALL bullet text must be plain text — no bold.
    Explain employment gaps longer than 3 months if apparent.
    Consolidate roles older than 10-15 years into one "Earlier Career" summary line.
 5. ## Education & Qualifications
-   ---
-   Degrees: Degree Classification — University, Year–Year (e.g., BSc (Hons) Computer Science, 2:1 — University of Manchester, 2018–2021). Include classification ONLY if 2:1 or above.
-   A-Levels: List subjects with grades (e.g., A-Levels: Mathematics (A), Economics (B) — College Name, 2015–2017). Include ONLY if present in original resume.
+   Degrees: **BSc (Hons) Computer Science, 2:1, University of Manchester — 2018 – 2021**. Include classification ONLY if 2:1 or above.
+   A-Levels: A-Levels: Mathematics (A), Economics (B) — College Name, 2015–2017. Include ONLY if present in original resume.
    GCSEs: Summarise (e.g., 10 GCSEs at grades A*–C including Mathematics and English). Include ONLY if present in original resume.
-6. ## Certifications & Professional Memberships (if applicable)
-   ---
-   Cert Name — Awarding Body, Year. Professional body memberships (ACCA, CIPD, PRINCE2, etc.)
-7. ## Hobbies & Interests
-   ---
-   2-3 lines of specific, differentiating interests with active verbs. NOT generic ("reading, travel"). Write things like "Completed the London Marathon in 3:45" or "Captain of local rugby team — organise weekly training for 15 members."
-   If the original resume has NO hobbies data, write: "Include 2-3 specific interests that demonstrate transferable skills."
-8. ## Languages (if applicable)
-   ---
-   Each language with proficiency level.
-9. References available upon request
 
-IMPORTANT OMISSIONS — DO NOT include in a UK CV:
+OPTIONAL SECTIONS (include ONLY if the original resume has this data AND it fits within 2 pages):
+6. Driving licence / notice period / work rights line — add below contact info ONLY if the original resume mentions these: Full UK driving licence • 1 month notice • Eligible to work in the UK
+7. ## Certifications & Professional Memberships — Cert Name — Awarding Body, Year. Professional body memberships (ACCA, CIPD, PRINCE2, etc.). Include ONLY if the original resume lists certifications or memberships.
+8. ## Hobbies & Interests — 2-3 lines of specific, differentiating interests with active verbs. NOT generic ("reading, travel"). Write things like "Completed the London Marathon in 3:45" or "Captain of local rugby team — organise weekly training for 15 members." Include ONLY if the original resume mentions hobbies or interests.
+9. ## Languages — each with proficiency level. Include ONLY if the candidate lists languages in their original resume.
+10. References available upon request — include as a single line at the bottom ONLY if there is remaining space.
+
+IMPORTANT OMISSIONS — NEVER include these in a UK CV regardless of space:
 - NO photo, date of birth, nationality, marital status
 - NO salary expectations
 - NO full postal address (city + region only)
@@ -198,10 +178,11 @@ WRITING QUALITY:
 - For unfamiliar employers, add a one-line company context in italics below the company name
 
 FORMATTING RULES:
+- Output ONLY pure markdown — NEVER use HTML tags like <center>, <span>, <div>, <br>, or any other HTML. The output is rendered by a markdown parser that does NOT support HTML.
 - NEVER use bold (**text**) in Professional Summary or bullet points — all plain text
 - NEVER bold skill names in Key Skills — plain text only
-- Use bold ONLY for job title lines: **Job Title**
-- Company name, city, and state abbreviation go on a SEPARATE line below the job title
+- Use bold for job title lines with dates INLINE: **Job Title — Month YYYY – Present**
+- Company name, city, and state abbreviation go on a SEPARATE plain text line below the bold job title
 - Add a one-line company context in italics for organisations that may be unfamiliar in Australia
 - ALL dates MUST use spelled-out month format: Month YYYY (e.g., March 2024). NEVER use MM/DD/YYYY. Use "Present" for ongoing roles
 - Do NOT use ### headings — use ## for section headers only
@@ -213,15 +194,17 @@ Name is LEFT-ALIGNED and in Title Case (not uppercase) at the top.
 Contact info is LEFT-ALIGNED on one line below the name, separated by bullet (•) characters.
 Work rights/visa status on a separate line below contact info (if mentioned in original resume).
 Section headers are LEFT-ALIGNED, Title Case, and bold with a horizontal rule (---) underneath.
-Job titles are LEFT-ALIGNED and bold. Dates are RIGHT-ALIGNED on the SAME line.
+Job titles are bold with dates on the SAME line: **Job Title — Month YYYY – Present**
 Company name, city, and state go on a SEPARATE plain text line below the job title.
 Company context (if needed) goes on the next line in italics.
 Skills are separated by pipe characters (|).
 
-STRUCTURE (follow this EXACT section order):
-1. # Name (left-aligned, title case — the candidate's real name)
-   Contact info left-aligned on one line: Suburb, STATE • 04XX XXX XXX • email@domain.com • https://linkedin.com/in/username
-   Work rights line (include ONLY if the original resume mentions visa/citizenship): Australian Citizen / Australian Permanent Resident / Visa Subclass XXX — valid until Month YYYY
+SECTION RULES — MANDATORY vs OPTIONAL:
+The Australian resume is 2-3 pages (1-2 for graduates). MANDATORY sections MUST always appear. OPTIONAL sections appear ONLY if the candidate's original resume contains that data AND the resume still fits within the page limit. If adding an optional section would push the resume over the limit, OMIT it. Prioritise mandatory sections first, then add optional sections in the order listed until space runs out.
+
+MANDATORY SECTIONS (always include, in this order):
+1. # Name (title case — the candidate's real name)
+   Contact info on one line: Suburb, STATE • 04XX XXX XXX • email@domain.com • https://linkedin.com/in/username
 2. ## Professional Summary
    ---
    3-5 lines, evidence-based tone. Include professional identity, years of experience, key strengths, a quantified achievement, and target role. ALL PLAIN TEXT.
@@ -231,7 +214,7 @@ STRUCTURE (follow this EXACT section order):
    Only list skills the candidate ACTUALLY has. Prioritise skills from the job description.
 4. ## Professional Experience
    ---
-   For EACH role: **Job Title** with dates right-aligned as Month YYYY – Present
+   For EACH role: **Job Title — Month YYYY – Present**
    Company Name, City, STATE (separate line, plain text)
    *One-line company context for organisations unfamiliar in Australia* (only if needed, in italics)
    Then EXACTLY 4 bullet points per role using STAR method. Every bullet MUST start with "- " on its own line. ALL bullet text must be plain text.
@@ -241,28 +224,19 @@ STRUCTURE (follow this EXACT section order):
    Include major/specialisation if relevant.
    Include WAM or GPA if strong (e.g., WAM: 78, Distinction).
    For overseas qualifications, note Australian equivalent: "Assessed as equivalent to AQF Level 7 by VETASSESS"
-6. ## Licences & Registrations (if applicable)
-   ---
-   List relevant licences: Full Driver's Licence (VIC) • First Aid/CPR • Working with Children Check • RSA • White Card • AHPRA Registration • CPA Australia
-   Include ONLY those mentioned in or inferable from the original resume.
-7. ## Professional Development (if applicable)
-   ---
-   Relevant courses, workshops, conferences: Course Name — Provider, Year
-8. ## Languages (if applicable)
-   ---
-   Each language with proficiency level.
-9. ## Referees
-   ---
-   If the original resume includes referees, format as:
+
+OPTIONAL SECTIONS (include ONLY if the original resume has this data AND it fits within page limit):
+6. Work rights / visa line — add below contact info ONLY if the original resume mentions visa or citizenship: Australian Citizen / Australian Permanent Resident / Visa Subclass XXX — valid until Month YYYY
+7. ## Licences & Registrations — Full Driver's Licence (VIC) • First Aid/CPR • Working with Children Check • RSA • White Card • AHPRA Registration • CPA Australia. Include ONLY those mentioned in or inferable from the original resume.
+8. ## Professional Development — Relevant courses, workshops, conferences: Course Name — Provider, Year. Include ONLY if the original resume lists training or professional development.
+9. ## Languages — each with proficiency level. Include ONLY if the candidate lists languages in their original resume.
+10. ## Referees — If the original resume includes referees, format as:
    Name | Title | Company
    Phone: 04XX XXX XXX | Email: name@company.com.au
+   (list 2-3 with blank line between each)
+   If no referees in original, write: "Professional references available upon request."
 
-   (blank line between referees, list 2-3)
-
-   If the original resume does NOT include referees, write:
-   Professional references available upon request.
-
-IMPORTANT OMISSIONS — DO NOT include in an Australian resume:
+IMPORTANT OMISSIONS — NEVER include these in an Australian resume regardless of space:
 - NO photo, date of birth, nationality (work rights are separate), marital status, religion, health status
 - NO Tax File Number
 - NO full street address (suburb + state only)
