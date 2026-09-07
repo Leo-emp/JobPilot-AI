@@ -79,6 +79,8 @@ export default function ResumePage() {
   /* Optional free-form instructions for AI content decisions */
   const [customInstructions, setCustomInstructions] = useState("");
   const [rebuildMode, setRebuildMode] = useState<"safe" | "deep">("safe");
+  /* Country-specific resume mode — "standard" uses existing system, country codes use new system */
+  const [countryMode, setCountryMode] = useState<"standard" | "us" | "uk" | "au">("standard");
 
   /* Cache analyze result so the same resume always returns the same score */
   const [analyzeCache, setAnalyzeCache] = useState<{ text: string; result: string } | null>(null);
@@ -141,7 +143,13 @@ export default function ResumePage() {
   };
 
   /* ---- Call AI API (streaming) ---- */
+  /* Appends country suffix to action name when a country is selected.
+     "standard" mode passes the original action unchanged (existing system). */
   const callAI = async (action: string) => {
+    const resolvedAction = countryMode !== "standard" && action !== "analyze_resume"
+      ? `${action}_${countryMode}`
+      : action;
+
     const payload: Record<string, string> = { resume: resumeText };
 
     if (action !== "analyze_resume") {
@@ -158,13 +166,51 @@ export default function ResumePage() {
       return;
     }
 
-    const fullResult = await streamAI(action, payload);
+    const fullResult = await streamAI(resolvedAction, payload);
 
     if (fullResult && action === "analyze_resume") {
       setAnalyzeCache({ text: resumeText, result: fullResult });
       await saveResume(fullResult);
     }
   };
+
+  /* ---- Country Mode Selector ---- */
+  /* Reusable inline component shown on Optimize, Rebuild, and Pivot tabs */
+  const countryOptions = [
+    { value: "standard" as const, label: "Standard", flag: "" },
+    { value: "us" as const, label: "US", flag: "🇺🇸" },
+    { value: "uk" as const, label: "UK", flag: "🇬🇧" },
+    { value: "au" as const, label: "AU", flag: "🇦🇺" },
+  ];
+  const CountrySelector = () => (
+    <div className="mb-6">
+      <label className="block text-sm font-medium text-text-secondary mb-2">Resume Format</label>
+      <div className="flex gap-2 flex-wrap">
+        {countryOptions.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setCountryMode(opt.value)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              countryMode === opt.value
+                ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+                : "text-text-secondary hover:text-white hover:bg-space-600 border border-card-border"
+            }`}
+          >
+            {opt.flag && <span className="mr-1.5">{opt.flag}</span>}
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      {countryMode !== "standard" && (
+        <p className="mt-2 text-xs text-brand-light">
+          {countryMode === "us" && "Generates a 1-page ATS-optimized US resume — American English, centered header, skills after experience, MM/YYYY dates."}
+          {countryMode === "uk" && "Generates a 2-page ATS-optimized UK CV — British English, personal statement, key skills before experience, hobbies section."}
+          {countryMode === "au" && "Generates a 2-3 page ATS-optimized Australian resume — Australian English, skills before experience, referees section, company context lines."}
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <div>
@@ -270,6 +316,7 @@ export default function ResumePage() {
             <p className="text-text-secondary text-sm mb-6">
               Optimize your resume — paste a job description for targeted optimization, or leave it blank for a general improvement.
             </p>
+            <CountrySelector />
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
@@ -302,6 +349,8 @@ export default function ResumePage() {
             <p className="text-text-secondary text-sm mb-4">
               Completely rebuild your resume for a specific role with ATS keywords and power verbs.
             </p>
+
+            <CountrySelector />
 
             {/* ---- Rebuild Mode Selection ---- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -375,6 +424,7 @@ export default function ResumePage() {
             <p className="text-text-secondary text-sm mb-6">
               Switching careers? AI will reframe your experience with transferable skills for your target industry.
             </p>
+            <CountrySelector />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"

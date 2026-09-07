@@ -192,8 +192,14 @@ export const POST = safeHandler(async (req: NextRequest) => {
       await cacheDel(`plan:${session.user.id}`);
     }
 
-    /* Inject career intelligence context for relevant actions */
-    const contextActions = ["optimize_resume", "rebuild_resume", "career_pivot", "cover_letter", "interview_questions"];
+    /* Inject career intelligence context for relevant actions (including country-specific variants) */
+    const contextActions = [
+      "optimize_resume", "rebuild_resume", "career_pivot", "cover_letter", "interview_questions",
+      "optimize_resume_us", "optimize_resume_uk", "optimize_resume_au",
+      "rebuild_resume_us", "rebuild_resume_uk", "rebuild_resume_au",
+      "deep_tailor_us", "deep_tailor_uk", "deep_tailor_au",
+      "career_pivot_us", "career_pivot_uk", "career_pivot_au",
+    ];
     if (contextActions.includes(action)) {
       try {
         const userData = await prisma.user.findUnique({ where: { id: session.user.id }, select: { topSkills: true } });

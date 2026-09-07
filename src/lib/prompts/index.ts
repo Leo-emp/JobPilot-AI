@@ -14,6 +14,8 @@ import { RESUME_SYSTEM, SCORING_SYSTEM } from "./shared";
 import { analyzeResume, optimizeResume, rebuildResume, deepTailor, matchScore, careerPivot, parseResumeFields } from "./resume";
 import { coverLetter, interviewQuestions, interviewAnswer, interviewFeedback, mockInterviewRespond, mockInterviewStart, mockInterviewEvaluate, mockInterviewSummary } from "./interview";
 import { linkedinAudit, linkedinRewrite, craftOutreach, linkedinContentStrategy } from "./linkedin";
+import { optimizeResumeCountry, rebuildResumeCountry, deepTailorCountry, careerPivotCountry } from "./resume-country";
+import type { ResumeCountry } from "./resume-country";
 
 export type { PromptParts } from "./shared";
 
@@ -38,6 +40,21 @@ export function buildPrompt(action: string, payload: Record<string, any>): impor
     case "craft_outreach": return { prompt: craftOutreach(payload) };
     case "linkedin_content_strategy": return { prompt: linkedinContentStrategy(payload) };
     case "parse_resume_fields": return { prompt: parseResumeFields(payload) };
+
+    /* Country-specific resume actions — completely separate prompt system */
+    case "optimize_resume_us": return optimizeResumeCountry(payload, "us");
+    case "optimize_resume_uk": return optimizeResumeCountry(payload, "uk");
+    case "optimize_resume_au": return optimizeResumeCountry(payload, "au");
+    case "rebuild_resume_us": return rebuildResumeCountry(payload, "us");
+    case "rebuild_resume_uk": return rebuildResumeCountry(payload, "uk");
+    case "rebuild_resume_au": return rebuildResumeCountry(payload, "au");
+    case "deep_tailor_us": return deepTailorCountry(payload, "us");
+    case "deep_tailor_uk": return deepTailorCountry(payload, "uk");
+    case "deep_tailor_au": return deepTailorCountry(payload, "au");
+    case "career_pivot_us": return careerPivotCountry(payload, "us");
+    case "career_pivot_uk": return careerPivotCountry(payload, "uk");
+    case "career_pivot_au": return careerPivotCountry(payload, "au");
+
     default: throw new Error(`Unknown action: ${action}`);
   }
 }

@@ -85,6 +85,19 @@ const aiActions = [
   "mock_interview_summary",
   "craft_outreach",
   "parse_resume_fields",
+  /* Country-specific resume actions */
+  "optimize_resume_us",
+  "optimize_resume_uk",
+  "optimize_resume_au",
+  "rebuild_resume_us",
+  "rebuild_resume_uk",
+  "rebuild_resume_au",
+  "deep_tailor_us",
+  "deep_tailor_uk",
+  "deep_tailor_au",
+  "career_pivot_us",
+  "career_pivot_uk",
+  "career_pivot_au",
 ] as const;
 
 /* POST /api/ai */
