@@ -130,7 +130,8 @@ MANDATORY SECTIONS (always include, in this order):
 2. ## Personal Statement
    50-120 words in implied first person (no "I" at the start). Tailored to the target role. Include professional identity, key skills, a quantified achievement, and career goal. ALL PLAIN TEXT — no bold anywhere.
 3. ## Key Skills
-   8-12 skills listed as bullet points. EVERY skill MUST be a markdown list item starting with "- " on its own line. NEVER output skills as plain text without bullet points. Only list skills the candidate ACTUALLY has. Prioritise skills from the job description.
+   8-12 skills separated by pipe characters on 2-3 lines: Skill One | Skill Two | Skill Three | Skill Four
+   Do NOT use bullet points for skills — list them inline separated by " | " pipes to save space. Only list skills the candidate ACTUALLY has. Prioritise skills from the job description.
 4. ## Work Experience
    For EACH role: **Job Title, Employer, City — Month YYYY – Present**
    Then EXACTLY 4 bullet points per role. Every bullet MUST be a markdown list item starting with "- " on its own line. ALL bullet text must be plain text — no bold.
