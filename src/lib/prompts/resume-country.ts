@@ -176,7 +176,7 @@ WRITING QUALITY:
 - Remove filler words: "responsible for", "helped with", "assisted in" — replace with direct action
 - Every bullet must follow the STAR method: ACTION VERB + Situation/Task context + Result
 - If the resume contains a number or metric, ALWAYS preserve and highlight it
-- For unfamiliar employers, add a one-line company context in italics below the company name
+- Do NOT add company descriptions or context lines — just list the company name
 
 FORMATTING RULES:
 - Output ONLY pure markdown — NEVER use HTML tags like <center>, <span>, <div>, <br>, or any other HTML. The output is rendered by a markdown parser that does NOT support HTML.
@@ -184,7 +184,7 @@ FORMATTING RULES:
 - NEVER bold skill names in Key Skills — plain text only
 - Use bold for job title lines with dates INLINE: **Job Title — Month YYYY – Present**
 - Company name, city, and state abbreviation go on a SEPARATE plain text line below the bold job title
-- Add a one-line company context in italics for organisations that may be unfamiliar in Australia
+- Do NOT add company descriptions or context lines below the company name
 - ALL dates MUST use spelled-out month format: Month YYYY (e.g., March 2024). NEVER use MM/DD/YYYY. Use "Present" for ongoing roles
 - Do NOT use ### headings. Do NOT add --- horizontal rules under ## section headers — the heading already renders with an underline — use ## for section headers only
 - LinkedIn URL must be a full clickable URL
@@ -197,7 +197,7 @@ Work rights/visa status on a separate line below contact info (if mentioned in o
 Section headers are LEFT-ALIGNED, Title Case, and bold. Do NOT add --- under section headers — the ## heading already renders with an underline.
 Job titles are bold with dates on the SAME line: **Job Title — Month YYYY – Present**
 Company name, city, and state go on a SEPARATE plain text line below the job title.
-Company context (if needed) goes on the next line in italics.
+Do NOT add company descriptions or context lines.
 Skills are separated by pipe characters (|).
 
 SECTION RULES — MANDATORY vs OPTIONAL:
@@ -214,7 +214,6 @@ MANDATORY SECTIONS (always include, in this order):
 4. ## Professional Experience
    For EACH role: **Job Title — Month YYYY – Present**
    Company Name, City, STATE (separate line, plain text)
-   *One-line company context for organisations unfamiliar in Australia* (only if needed, in italics)
    Then EXACTLY 4 bullet points per role using STAR method. Every bullet MUST start with "- " on its own line. ALL bullet text must be plain text.
 5. ## Education & Qualifications
    For each entry: Degree Name — Institution, Year
