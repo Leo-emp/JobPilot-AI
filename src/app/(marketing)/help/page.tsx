@@ -28,7 +28,7 @@ const faqSections = [
       },
       {
         q: "Is JobPilot AI really free?",
-        a: "Yes! The free plan includes 20 AI calls per month, access to all AI tools (resume analysis, cover letter generator, interview prep, LinkedIn optimizer), job search, application tracker, and networking CRM. Upgrade to Pro for 1,000 AI calls/month.",
+        a: "Yes! The free plan includes 20 AI calls per month, access to all AI tools (resume analysis, cover letter generator, interview prep, LinkedIn optimizer), job search, application tracker, and networking CRM. Upgrade to Pro for 500 AI calls/month.",
       },
       {
         q: "What browsers are supported?",

@@ -4,7 +4,7 @@
    POST /api/ai — accepts action + payload, calls Gemini, returns result.
    Protected: requires auth session.
    Rate limited: per-IP, per-user/min, per-user/hour.
-   Usage capped: free (20/mo), pro (1000/mo), admin (unlimited).
+   Usage capped: free (20/mo), pro (500/mo), admin (unlimited).
    ============================================================ */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -157,7 +157,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
       const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
       if (user.aiUsageCount >= limit) {
         const upgradeMsg = effectivePlan === "free"
-          ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 1,000 calls/month.`
+          ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 500 calls/month.`
           : `You've reached your monthly limit of ${limit} calls. Contact support if you need more.`;
         audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action });
         return NextResponse.json(

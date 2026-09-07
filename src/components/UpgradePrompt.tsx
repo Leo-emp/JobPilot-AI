@@ -61,7 +61,7 @@ export default function UpgradePrompt({ remaining, plan }: UpgradePromptProps) {
             }
           </p>
           <p className="text-xs text-text-muted mt-1">
-            Upgrade to Pro for 1,000 calls/month — that&apos;s ~33 per day, effectively unlimited.
+            Upgrade to Pro for 500 calls/month — more than enough to land your dream job.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">

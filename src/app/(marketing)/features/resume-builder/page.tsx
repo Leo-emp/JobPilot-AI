@@ -45,7 +45,7 @@ const benefits = [
   },
   {
     title: "Unlimited Revisions",
-    desc: "Analyze and rebuild your resume as many times as you need. Pro users get 1,000 AI calls per month — enough to perfect multiple versions for different roles.",
+    desc: "Analyze and rebuild your resume as many times as you need. Pro users get 500 AI calls per month — enough to perfect multiple versions for different roles.",
   },
 ];
 

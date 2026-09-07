@@ -207,7 +207,7 @@ export default function Pricing() {
             {annual ? (
               <p className="text-sm text-green-400 mb-6">£16.58/mo — save £149/year</p>
             ) : (
-              <p className="text-text-secondary text-sm mb-6">1,000 AI calls/month — effectively unlimited</p>
+              <p className="text-text-secondary text-sm mb-6">500 AI calls/month — more than enough for active job seekers</p>
             )}
 
             {/* # Feature list — all checked */}

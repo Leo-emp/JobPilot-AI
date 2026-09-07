@@ -8,6 +8,6 @@
 /* # Monthly AI call limits per plan */
 export const PLAN_LIMITS: Record<string, number> = {
   free: 20,
-  pro: 1000,
-  enterprise: 1000, // # Same as pro — enterprise benefits are features, not quota
+  pro: 500,
+  enterprise: 500, // # Same as pro — enterprise benefits are features, not quota
 };

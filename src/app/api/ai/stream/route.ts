@@ -124,7 +124,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
       const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
       if (user.aiUsageCount >= limit) {
         const msg = effectivePlan === "free"
-          ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 1,000/month.`
+          ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 500/month.`
           : `Monthly limit of ${limit} reached.`;
         audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action });
         return jsonError(msg, 429);

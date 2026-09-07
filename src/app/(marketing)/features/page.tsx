@@ -133,7 +133,7 @@ export default function FeaturesPage() {
         </h2>
         <p className="text-text-secondary mb-6 max-w-2xl mx-auto">
           All features included in the free plan — 20 AI calls per month, no credit
-          card required. Upgrade to Pro for 1,000 AI calls and priority support.
+          card required. Upgrade to Pro for 500 AI calls and priority support.
         </p>
         <Link href="/signup" className="btn-primary text-base px-8 py-3">
           Get Started Free

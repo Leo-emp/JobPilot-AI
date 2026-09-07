@@ -479,7 +479,7 @@ export default function SettingsPage() {
   };
 
   /* Usage calculation */
-  const usageLimit = userPlan?.plan === "pro" ? 1000 : 20;
+  const usageLimit = userPlan?.plan === "pro" ? 500 : 20;
   const usagePercent = Math.min((userPlan?.aiUsageCount || 0) / usageLimit * 100, 100);
   /* # Stable timestamp from state to avoid impure Date.now() during render */
   const [now] = useState(() => Date.now());
@@ -1012,7 +1012,7 @@ export default function SettingsPage() {
                   </span>
                   <p className="text-text-secondary text-sm mt-4">
                     {userPlan?.plan === "pro"
-                      ? "Pro plan — 1,000 AI calls/month, priority support."
+                      ? "Pro plan — 500 AI calls/month, priority support."
                       : "Free plan — 20 AI calls/month, all tools included."}
                   </p>
                 </div>
@@ -1023,7 +1023,7 @@ export default function SettingsPage() {
                 <div className="mt-6 p-5 rounded-xl bg-brand-indigo/5 border border-brand-indigo/20">
                   <h3 className="font-semibold text-white mb-3">Upgrade to Pro</h3>
                   <ul className="text-sm text-text-secondary space-y-1.5 mb-4">
-                    <li>✓ 1,000 AI calls per month</li>
+                    <li>✓ 500 AI calls per month</li>
                     <li>✓ Priority AI processing</li>
                     <li>✓ Full AI history access</li>
                   </ul>
@@ -1197,7 +1197,7 @@ export default function SettingsPage() {
               {userPlan?.plan === "free" && (
                 <div className="mt-5 p-4 rounded-xl bg-brand-indigo/5 border border-brand-indigo/20">
                   <p className="text-sm text-text-secondary mb-3">
-                    Need more calls? Upgrade to Pro for 1,000 calls/month.
+                    Need more calls? Upgrade to Pro for 500 calls/month.
                   </p>
                   <button
                     onClick={() => setActiveTab("billing")}
