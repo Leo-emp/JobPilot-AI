@@ -68,12 +68,14 @@ export const metadata: Metadata = {
     title: "JobPilot AI — Your Career Co-Pilot",
     description:
       "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "JobPilot AI — Your AI-Powered Career Co-Pilot" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "JobPilot AI — Your Career Co-Pilot",
     description:
       "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
+    images: ["/og-image.png"],
   },
   alternates: {
     canonical: "https://jobpilotai.co",
