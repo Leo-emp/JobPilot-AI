@@ -9,7 +9,6 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 /* ============================================================
@@ -210,14 +209,9 @@ export default function HelpWidget() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          /* # Mascot wave replaces the ? icon — friendly face invites clicks */
-          <Image
-            src="/mascot/mascot-wave.png"
-            alt="Need help?"
-            width={36}
-            height={36}
-            className="rounded-full object-cover"
-          />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         )}
       </button>
 
@@ -231,8 +225,6 @@ export default function HelpWidget() {
           <div className="px-5 pt-5 pb-3 border-b border-card-border/50">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                {/* # Mascot in panel header — consistent branding */}
-                <Image src="/mascot/mascot-wave.png" alt="" width={20} height={20} className="rounded-full" />
                 Help & FAQ
               </h3>
               <button
@@ -297,11 +289,7 @@ export default function HelpWidget() {
                 {/* AI answer display */}
                 {aiAnswer && (
                   <div className="mt-4 p-3 rounded-lg bg-surface-elevated border border-card-border/50 text-xs text-text-secondary leading-relaxed">
-                    {/* # Mascot thumbsup — AI delivered an answer */}
-                    <div className="flex items-start gap-2">
-                      <Image src="/mascot/mascot-thumbsup.png" alt="" width={24} height={24} className="shrink-0 mt-0.5" />
-                      <span>{aiAnswer}</span>
-                    </div>
+                    {aiAnswer}
                   </div>
                 )}
                 {/* Back to FAQ */}
