@@ -29,6 +29,28 @@ export const PATCH = authHandler(async (
 
   const body = parsed.data;
 
+  /* # Auto-calculate follow-up date based on status transitions:
+     - Applied → follow up in 7 days if no response
+     - Interview → follow up 1 day after (send thank-you note)
+     - Offer/Rejected → clear follow-up (no action needed) */
+  let autoFollowUp: Date | null | undefined = undefined;
+  if (body.status === "Applied") {
+    const followUp = new Date();
+    followUp.setDate(followUp.getDate() + 7);
+    autoFollowUp = followUp;
+  } else if (body.status === "Interview" && body.interviewDate) {
+    const followUp = new Date(body.interviewDate);
+    followUp.setDate(followUp.getDate() + 1);
+    autoFollowUp = followUp;
+  } else if (body.status === "Offer" || body.status === "Rejected") {
+    autoFollowUp = null;
+  }
+
+  /* # Manual followUpDate from the request body takes priority over auto-calculated */
+  const followUpValue = body.followUpDate !== undefined
+    ? (body.followUpDate ? new Date(body.followUpDate) : null)
+    : autoFollowUp;
+
   /* Update only if this application belongs to the logged-in user */
   const result = await dbRetry(() => prisma.application.updateMany({
     where: { id, userId: session.user.id },
@@ -39,6 +61,7 @@ export const PATCH = authHandler(async (
       ...(body.interviewDate !== undefined && {
         interviewDate: body.interviewDate ? new Date(body.interviewDate) : null,
       }),
+      ...(followUpValue !== undefined && { followUpDate: followUpValue }),
     },
   }));
 

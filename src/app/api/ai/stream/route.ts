@@ -95,7 +95,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
     const user = await dbRetry(() =>
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true },
+        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true, bonusCalls: true },
       })
     );
 
@@ -120,35 +120,65 @@ export const POST = safeHandler(async (req: NextRequest) => {
     }
 
     /* # Atomic limit check + increment — prevents race condition */
+    /* # Track whether this request uses a bonus call instead of the monthly quota */
+    let usedBonusCall = false;
+
     if (!admin) {
       const limit = PLAN_LIMITS[effectivePlan] ?? PLAN_LIMITS.free;
+
       if (user.aiUsageCount >= limit) {
-        const msg = effectivePlan === "free"
-          ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 500/month.`
-          : `Monthly limit of ${limit} reached.`;
-        audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action });
-        return jsonError(msg, 429);
+        /* # Monthly quota exhausted — check if user has top-up bonus calls */
+        if (user.bonusCalls > 0) {
+          const bonusResult = await dbRetry(() =>
+            prisma.user.update({
+              where: { id: session.user.id },
+              data: { bonusCalls: { decrement: 1 } },
+              select: { bonusCalls: true },
+            })
+          );
+          if (bonusResult.bonusCalls < 0) {
+            await dbRetry(() =>
+              prisma.user.update({
+                where: { id: session.user.id },
+                data: { bonusCalls: { increment: 1 } },
+              })
+            );
+          } else {
+            usedBonusCall = true;
+            await cacheDel(`plan:${session.user.id}`);
+          }
+        }
+
+        if (!usedBonusCall) {
+          const msg = effectivePlan === "free"
+            ? `You've used all ${limit} free AI calls this month. Upgrade to Pro for 500/month.`
+            : `Monthly limit of ${limit} reached. Buy a top-up pack for more.`;
+          audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action });
+          return jsonError(msg, 429);
+        }
       }
 
-      /* # Atomically increment BEFORE calling Gemini */
-      const updated = await dbRetry(() =>
-        prisma.user.update({
-          where: { id: session.user.id },
-          data: { aiUsageCount: { increment: 1 } },
-          select: { aiUsageCount: true },
-        })
-      );
-      if (updated.aiUsageCount > limit) {
-        await dbRetry(() =>
+      /* # Only increment monthly counter if we're NOT using a bonus call */
+      if (!usedBonusCall) {
+        const updated = await dbRetry(() =>
           prisma.user.update({
             where: { id: session.user.id },
-            data: { aiUsageCount: { decrement: 1 } },
+            data: { aiUsageCount: { increment: 1 } },
+            select: { aiUsageCount: true },
           })
         );
-        audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action, detail: "concurrent_race" });
-        return jsonError("You've reached your monthly AI limit.", 429);
+        if (updated.aiUsageCount > limit) {
+          await dbRetry(() =>
+            prisma.user.update({
+              where: { id: session.user.id },
+              data: { aiUsageCount: { decrement: 1 } },
+            })
+          );
+          audit("ai.limit.reached", { userId: session.user.id, plan: effectivePlan, action, detail: "concurrent_race" });
+          return jsonError("You've reached your monthly AI limit.", 429);
+        }
+        await cacheDel(`plan:${session.user.id}`);
       }
-      await cacheDel(`plan:${session.user.id}`);
     }
 
     /* Inject career intelligence context for relevant actions (including country-specific variants) */

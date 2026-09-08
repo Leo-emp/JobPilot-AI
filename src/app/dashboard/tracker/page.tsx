@@ -28,6 +28,7 @@ interface Application {
   notes: string | null;
   appliedDate: string | null;
   interviewDate: string | null;
+  followUpDate: string | null;
   createdAt: string;
   job?: { url: string | null; description: string | null; salary: string | null } | null;
 }
@@ -160,6 +161,52 @@ export default function TrackerPage() {
     }
   };
 
+  /* ---- Snooze follow-up: push it forward by N days ---- */
+  const handleSnooze = async (id: string, days: number) => {
+    const newDate = new Date();
+    newDate.setDate(newDate.getDate() + days);
+    try {
+      await fetch(`/api/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ followUpDate: newDate.toISOString() }),
+      });
+      fetchApps();
+    } catch {
+      trackEvent("tracker.snooze_failed");
+    }
+  };
+
+  /* ---- Dismiss follow-up: clear the date entirely ---- */
+  const handleDismissFollowUp = async (id: string) => {
+    try {
+      await fetch(`/api/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ followUpDate: null }),
+      });
+      fetchApps();
+    } catch {
+      trackEvent("tracker.dismiss_followup_failed");
+    }
+  };
+
+  /* # Check if a follow-up is overdue or due today */
+  const getFollowUpStatus = (followUpDate: string | null): "overdue" | "today" | "upcoming" | null => {
+    if (!followUpDate) return null;
+    const now = new Date();
+    const due = new Date(followUpDate);
+    const diffDays = Math.floor((due.getTime() - now.getTime()) / 86400000);
+    if (diffDays < 0) return "overdue";
+    if (diffDays === 0) return "today";
+    if (diffDays <= 3) return "upcoming";
+    return null;
+  };
+
+  /* # Count overdue/due follow-ups for the summary bar */
+  const overdueCount = apps.filter(a => getFollowUpStatus(a.followUpDate) === "overdue").length;
+  const dueTodayCount = apps.filter(a => getFollowUpStatus(a.followUpDate) === "today").length;
+
   /* Get the status badge styling */
   const getStatusStyle = (status: string) => {
     return STATUSES.find((s) => s.value === status)?.color || STATUSES[0].color;
@@ -233,6 +280,29 @@ export default function TrackerPage() {
         </div>
       )}
 
+      {/* ---- Follow-up Alert Banner ---- */}
+      {(overdueCount > 0 || dueTodayCount > 0) && (
+        <div className={`p-4 rounded-xl mb-6 flex items-center gap-3 ${
+          overdueCount > 0
+            ? "bg-red-500/10 border border-red-500/20"
+            : "bg-yellow-500/10 border border-yellow-500/20"
+        }`}>
+          <svg className={`w-5 h-5 shrink-0 ${overdueCount > 0 ? "text-red-400" : "text-yellow-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <span className={`text-sm font-medium ${overdueCount > 0 ? "text-red-400" : "text-yellow-400"}`}>
+              {overdueCount > 0 && `${overdueCount} overdue follow-up${overdueCount > 1 ? "s" : ""}`}
+              {overdueCount > 0 && dueTodayCount > 0 && " · "}
+              {dueTodayCount > 0 && `${dueTodayCount} due today`}
+            </span>
+            <p className="text-xs text-text-muted mt-0.5">
+              Following up increases your response rate by 2-3x
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ---- Stats Bar ---- */}
       <div className="grid grid-cols-5 gap-3 mb-8">
         {STATUSES.map((s) => (
@@ -279,6 +349,17 @@ export default function TrackerPage() {
                     {app.interviewDate && (
                       <span className="text-xs text-yellow-400 font-medium">
                         Interview {new Date(app.interviewDate).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                      </span>
+                    )}
+                    {/* # Follow-up date indicator — show when due/overdue */}
+                    {app.followUpDate && getFollowUpStatus(app.followUpDate) && (
+                      <span className={`text-xs font-medium ${
+                        getFollowUpStatus(app.followUpDate) === "overdue" ? "text-red-400" :
+                        getFollowUpStatus(app.followUpDate) === "today" ? "text-yellow-400" : "text-blue-400"
+                      }`}>
+                        {getFollowUpStatus(app.followUpDate) === "overdue" ? "Follow-up overdue" :
+                         getFollowUpStatus(app.followUpDate) === "today" ? "Follow up today" :
+                         `Follow up ${new Date(app.followUpDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
                       </span>
                     )}
                     {app.job?.url && (
@@ -330,6 +411,40 @@ export default function TrackerPage() {
                   <p className="text-sm text-text-secondary whitespace-pre-line leading-relaxed max-h-80 overflow-y-auto">
                     {app.job.description}
                   </p>
+                </div>
+              )}
+
+              {/* # Follow-up action bar — appears when follow-up is due/overdue */}
+              {app.followUpDate && getFollowUpStatus(app.followUpDate) && (
+                <div className={`mt-3 pt-3 border-t flex items-center gap-2 flex-wrap ${
+                  getFollowUpStatus(app.followUpDate) === "overdue"
+                    ? "border-red-500/20"
+                    : "border-card-border"
+                }`}>
+                  <a
+                    href="/dashboard/network"
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-indigo/15 text-brand-light border border-brand-indigo/30 hover:bg-brand-indigo/25 transition-colors"
+                  >
+                    Generate Follow-up
+                  </a>
+                  <button
+                    onClick={() => handleSnooze(app.id, 3)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-space-600 text-text-secondary border border-card-border hover:text-white transition-colors"
+                  >
+                    Snooze 3 days
+                  </button>
+                  <button
+                    onClick={() => handleSnooze(app.id, 7)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-space-600 text-text-secondary border border-card-border hover:text-white transition-colors"
+                  >
+                    Snooze 7 days
+                  </button>
+                  <button
+                    onClick={() => handleDismissFollowUp(app.id)}
+                    className="px-3 py-1.5 rounded-lg text-xs text-text-muted hover:text-red-400 transition-colors"
+                  >
+                    Dismiss
+                  </button>
                 </div>
               )}
             </div>

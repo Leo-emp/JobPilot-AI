@@ -71,6 +71,23 @@ export const POST = safeHandler(async (req: NextRequest) => {
         break;
       }
 
+      /* # Handle top-up pack purchases — add bonus calls to user's account */
+      if (session.metadata?.type === "topup") {
+        const topupUserId = session.metadata.userId;
+        const topupCalls = parseInt(session.metadata.calls || "0");
+        if (topupUserId && topupCalls > 0) {
+          await dbRetry(() =>
+            prisma.user.update({
+              where: { id: topupUserId },
+              data: { bonusCalls: { increment: topupCalls } },
+            })
+          );
+          audit("payment.topup", { userId: topupUserId, detail: `+${topupCalls} calls, pack:${session.metadata.packId}` });
+          await cacheDel(`plan:${topupUserId}`);
+        }
+        break;
+      }
+
       const userId = session.metadata?.userId;
       /* # Type guard: Stripe can return string OR Subscription object */
       const subscriptionId = typeof session.subscription === "string"

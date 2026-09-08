@@ -9,11 +9,13 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import MarkdownResult from "@/components/MarkdownResult";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { AUSTRALIAN_CITIES, isRegionalCity } from "@/lib/australian-sponsors";
 import { trackEvent } from "@/lib/track-event";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
+import { extractKeywords, quickMatchScore } from "@/lib/keyword-matcher";
 
 /* ---- Type for job search results ---- */
 interface JobResult {
@@ -33,6 +35,16 @@ interface JobResult {
 export default function JobsPage() {
   /* ---- Tab state ---- */
   const [activeTab, setActiveTab] = useState<"search" | "match">("search");
+
+  /* ---- Resume matching — load user's default resume for match badges ---- */
+  const { defaultResume } = useDefaultResume();
+  /* # Pre-extract keywords once so we don't re-parse per job card */
+  const resumeKeywords = useMemo(
+    () => defaultResume?.content ? extractKeywords(defaultResume.content) : null,
+    [defaultResume?.content]
+  );
+  /* # Sort mode: "relevance" (default API order) or "match" (best match first) */
+  const [sortMode, setSortMode] = useState<"relevance" | "match">("relevance");
 
   /* ---- Search tab state ---- */
   const [searchQuery, setSearchQuery] = useState("");
@@ -414,6 +426,23 @@ export default function JobsPage() {
               </div>
             )}
 
+            {/* # Resume match indicator — tells users they can see match scores */}
+            {resumeKeywords ? (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-green-500/5 border border-green-500/15 mb-4">
+                <svg className="w-4 h-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs text-green-400/80">Resume loaded — match scores shown on each job</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-space-700/60 border border-card-border mb-4">
+                <svg className="w-4 h-4 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs text-text-muted">Upload a resume in Resume Intelligence to see match scores on search results</span>
+              </div>
+            )}
+
             {/* Source indicator */}
             {searchSource === "sample" && (
               <p className="text-xs text-amber-400/80">
@@ -432,14 +461,38 @@ export default function JobsPage() {
           {/* ---- Search Results ---- */}
           {searchResults.length > 0 && (
             <div>
-              {/* Results count */}
-              <p className="text-sm text-text-muted mb-4">
-                {searchTotal > 0 ? `${searchTotal.toLocaleString()} jobs found` : `${searchResults.length} results`}
-              </p>
+              {/* Results count + sort toggle */}
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-text-muted">
+                  {searchTotal > 0 ? `${searchTotal.toLocaleString()} jobs found` : `${searchResults.length} results`}
+                </p>
+                {/* # Sort toggle — only show when resume is loaded for matching */}
+                {resumeKeywords && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-text-muted">Sort:</span>
+                    <button
+                      onClick={() => setSortMode(sortMode === "relevance" ? "match" : "relevance")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        sortMode === "match"
+                          ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+                          : "bg-space-600 text-text-secondary border border-card-border hover:text-white"
+                      }`}
+                    >
+                      {sortMode === "match" ? "Best Match" : "Relevance"}
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Job cards */}
               <div className="space-y-4 mb-6">
-                {searchResults.map((job) => (
+                {/* # Sort by match score when in "match" mode, otherwise keep API order */}
+                {(sortMode === "match" && resumeKeywords
+                  ? [...searchResults].sort((a, b) =>
+                      quickMatchScore(resumeKeywords, b.description) - quickMatchScore(resumeKeywords, a.description)
+                    )
+                  : searchResults
+                ).map((job) => (
                   <div
                     key={job.id}
                     className="glass-card p-5 hover:border-brand-indigo/30 transition-colors cursor-pointer"
@@ -451,6 +504,26 @@ export default function JobsPage() {
                         <h3 className="font-bold text-lg text-white">{job.title}</h3>
                         <p className="text-text-secondary text-sm">{job.company}</p>
                       </div>
+
+                      {/* # Match score badge — shows % match against user's resume.
+                          Only renders when user has a resume loaded. Color-coded:
+                          green 70%+, yellow 40-69%, red <40% */}
+                      {resumeKeywords && job.description && (() => {
+                        const score = quickMatchScore(resumeKeywords, job.description);
+                        const color = score >= 70
+                          ? "bg-green-500/15 text-green-400 border-green-500/25"
+                          : score >= 40
+                          ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/25"
+                          : "bg-red-500/10 text-red-400/70 border-red-500/20";
+                        return (
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold border shrink-0 ${color}`}
+                            title="Match score based on keywords in your resume vs this job description"
+                          >
+                            {score}% match
+                          </span>
+                        );
+                      })()}
 
                       {/* Save button */}
                       <button

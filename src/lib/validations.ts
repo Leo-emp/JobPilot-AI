@@ -138,9 +138,10 @@ export const updateApplicationSchema = z.object({
   status: z.enum(applicationStatuses).optional(),
   notes: optionalLongText,
   interviewDate: z.string().datetime().optional().nullable(),
+  followUpDate: z.string().datetime().optional().nullable(),
 }).refine(
-  (data) => data.status !== undefined || data.notes !== undefined || data.interviewDate !== undefined,
-  "At least one field (status, notes, or interviewDate) must be provided."
+  (data) => data.status !== undefined || data.notes !== undefined || data.interviewDate !== undefined || data.followUpDate !== undefined,
+  "At least one field (status, notes, interviewDate, or followUpDate) must be provided."
 );
 
 

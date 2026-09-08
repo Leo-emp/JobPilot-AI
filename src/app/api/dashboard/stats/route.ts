@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { dbRetry } from "@/lib/db-retry";
 import { authHandler } from "@/lib/api-handler";
 import { cacheGet, cacheSet } from "@/lib/redis";
+import { PLAN_LIMITS } from "@/lib/plan-limits";
 
 export const GET = authHandler(async (_req, session) => {
   const userId = session.user.id;
@@ -38,6 +39,7 @@ export const GET = authHandler(async (_req, session) => {
     applicationsByStatus,
     upcomingInterviews,
     upcomingFollowUps,
+    dueFollowUps,
   ] = await dbRetry(() =>
     Promise.all([
       prisma.resume.count({ where: { userId } }),
@@ -79,6 +81,17 @@ export const GET = authHandler(async (_req, session) => {
         take: 3,
         select: { id: true, name: true, company: true, role: true, nextFollowUp: true },
       }),
+      /* # Application follow-ups that are due or overdue */
+      prisma.application.findMany({
+        where: {
+          userId,
+          followUpDate: { lte: new Date() },
+          status: { notIn: ["Offer", "Rejected"] },
+        },
+        orderBy: { followUpDate: "asc" },
+        take: 5,
+        select: { id: true, jobTitle: true, company: true, followUpDate: true, appliedDate: true, status: true },
+      }),
     ])
   );
 
@@ -88,10 +101,9 @@ export const GET = authHandler(async (_req, session) => {
     pipeline[row.status] = row._count.status;
   }
 
-  /* # AI usage limits by plan */
-  const planLimits: Record<string, number> = { free: 20, pro: 100, enterprise: 9999 };
+  /* # AI usage limits from single source of truth */
   const plan = user?.plan || "free";
-  const aiLimit = planLimits[plan] || 20;
+  const aiLimit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
   const aiUsed = user?.aiUsageCount || 0;
 
   const result = {
@@ -106,6 +118,7 @@ export const GET = authHandler(async (_req, session) => {
     pipeline,
     upcomingInterviews,
     upcomingFollowUps,
+    dueFollowUps,
   };
 
   /* # Cache for 30 seconds — prevents DB storm when user refreshes dashboard */

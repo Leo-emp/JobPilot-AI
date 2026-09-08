@@ -23,6 +23,7 @@ interface UserPlan {
   aiUsageCount: number;
   usageResetDate: string;
   weeklyDigest: boolean;
+  bonusCalls: number;
 }
 
 /* ---- Tab configuration ---- */
@@ -58,6 +59,9 @@ export default function SettingsPage() {
   /* Weekly digest */
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [digestSaving, setDigestSaving] = useState(false);
+
+  /* Top-up packs */
+  const [topupLoading, setTopupLoading] = useState<string | null>(null);
 
   /* Data export */
   const [exportLoading, setExportLoading] = useState(false);
@@ -104,6 +108,13 @@ export default function SettingsPage() {
     } else if (searchParams.get("cancelled") === "true") {
       setMessage("Checkout was cancelled. No changes were made.");
       setActiveTab("billing");
+    } else if (searchParams.get("topup") === "success") {
+      /* # User returned from Stripe after buying a top-up pack */
+      setMessage(`Top-up purchased! ${searchParams.get("calls") || ""} bonus AI calls added to your account.`);
+      setActiveTab("usage");
+    } else if (searchParams.get("topup") === "cancelled") {
+      setMessage("Top-up purchase was cancelled. No charges were made.");
+      setActiveTab("usage");
     } else if (searchParams.get("tab") === "billing") {
       setActiveTab("billing");
     }
@@ -239,6 +250,26 @@ export default function SettingsPage() {
       trackEvent("settings.billing_portal_failed");
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  /* ---- Buy Top-up Pack ---- */
+  const handleTopup = async (packId: string) => {
+    setTopupLoading(packId);
+    try {
+      const res = await fetch("/api/stripe/topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (data?.url) window.location.href = data.url;
+      else setMessage(data?.error || "Failed to start top-up checkout.");
+    } catch {
+      setMessage("Failed to connect to payment system.");
+      trackEvent("settings.topup_checkout_failed");
+    } finally {
+      setTopupLoading(null);
     }
   };
 
@@ -1171,6 +1202,70 @@ export default function SettingsPage() {
                 </p>
               )}
             </div>
+
+            {/* # Bonus Calls — shows when user has top-up balance */}
+            {(userPlan?.bonusCalls ?? 0) > 0 && (
+              <div className="glass-card p-6">
+                <h2 className="text-lg font-bold mb-3">Bonus AI Calls</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl font-bold text-green-400 font-[family-name:var(--font-space-grotesk)]">
+                    {userPlan?.bonusCalls}
+                  </span>
+                  <span className="text-sm text-text-secondary">
+                    bonus calls remaining<br />
+                    <span className="text-xs text-text-muted">From top-up packs — never expire, never reset</span>
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* # Top-up Packs — shows when user is at 80%+ usage or out of calls */}
+            {usagePercent >= 80 && (
+              <div className="glass-card p-6 border-brand-indigo/30">
+                <h2 className="text-lg font-bold mb-2">Need More AI Calls?</h2>
+                <p className="text-text-secondary text-sm mb-5">
+                  {usagePercent >= 100
+                    ? "You've used all your monthly calls. Buy a top-up pack to keep going."
+                    : "Running low on AI calls. Top-up packs add bonus calls that never expire."}
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* # £5 for 50 calls */}
+                  <button
+                    onClick={() => handleTopup("topup_50")}
+                    disabled={topupLoading !== null}
+                    className="p-5 rounded-xl border border-card-border bg-space-700/50 hover:border-brand-indigo/40 hover:bg-brand-indigo/5 transition-all text-left disabled:opacity-50"
+                  >
+                    <div className="text-2xl font-bold text-white font-[family-name:var(--font-space-grotesk)]">50</div>
+                    <div className="text-sm text-text-secondary mt-1">AI calls</div>
+                    <div className="text-lg font-bold text-brand-light mt-3">£5</div>
+                    <div className="text-xs text-text-muted">One-time purchase</div>
+                    {topupLoading === "topup_50" && (
+                      <div className="text-xs text-brand-light mt-2">Redirecting to checkout...</div>
+                    )}
+                  </button>
+                  {/* # £10 for 120 calls — best value badge */}
+                  <button
+                    onClick={() => handleTopup("topup_120")}
+                    disabled={topupLoading !== null}
+                    className="relative p-5 rounded-xl border border-brand-indigo/30 bg-brand-indigo/5 hover:border-brand-indigo/50 hover:bg-brand-indigo/10 transition-all text-left disabled:opacity-50"
+                  >
+                    <span className="absolute -top-2.5 right-3 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-indigo text-white rounded-full">
+                      Best Value
+                    </span>
+                    <div className="text-2xl font-bold text-white font-[family-name:var(--font-space-grotesk)]">120</div>
+                    <div className="text-sm text-text-secondary mt-1">AI calls</div>
+                    <div className="text-lg font-bold text-brand-light mt-3">£10</div>
+                    <div className="text-xs text-text-muted">One-time purchase</div>
+                    {topupLoading === "topup_120" && (
+                      <div className="text-xs text-brand-light mt-2">Redirecting to checkout...</div>
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-text-muted mt-4">
+                  Bonus calls are used after your monthly quota runs out. They never expire and are not reset monthly.
+                </p>
+              </div>
+            )}
 
             {/* Plan Details */}
             <div className="glass-card p-6">

@@ -42,6 +42,15 @@ interface UpcomingFollowUp {
   nextFollowUp: string;
 }
 
+interface DueFollowUp {
+  id: string;
+  jobTitle: string;
+  company: string;
+  followUpDate: string;
+  appliedDate: string | null;
+  status: string;
+}
+
 interface DashboardStats {
   resumeCount: number;
   jobCount: number;
@@ -54,6 +63,7 @@ interface DashboardStats {
   pipeline: Record<string, number>;
   upcomingInterviews: UpcomingInterview[];
   upcomingFollowUps: UpcomingFollowUp[];
+  dueFollowUps: DueFollowUp[];
 }
 
 /* ---- Human-readable labels for AI action types ---- */
@@ -495,9 +505,39 @@ export default function DashboardPage() {
                 </div>
               )}
 
+              {/* # Application follow-ups that are overdue or due today */}
+              {stats.dueFollowUps && stats.dueFollowUps.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs text-red-400/80 uppercase tracking-wider mb-2">Application Follow-ups Due</p>
+                  <div className="space-y-2">
+                    {stats.dueFollowUps.map(item => {
+                      const daysAgo = item.appliedDate
+                        ? Math.floor((Date.now() - new Date(item.appliedDate).getTime()) / 86400000)
+                        : null;
+                      return (
+                        <div key={item.id} className="p-3 rounded-xl bg-red-500/5 border border-red-500/15">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-white truncate">{item.jobTitle}</p>
+                            <Link
+                              href="/dashboard/tracker"
+                              className="text-xs text-brand-light hover:text-white transition-colors shrink-0 ml-2"
+                            >
+                              View
+                            </Link>
+                          </div>
+                          <p className="text-xs text-text-muted mt-0.5">
+                            {item.company}{daysAgo !== null ? ` — applied ${daysAgo} days ago` : ""}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {stats.upcomingFollowUps.length > 0 && (
                 <div>
-                  <p className="text-xs text-text-muted uppercase tracking-wider mb-2">Follow-ups</p>
+                  <p className="text-xs text-text-muted uppercase tracking-wider mb-2">Network Follow-ups</p>
                   <div className="space-y-2">
                     {stats.upcomingFollowUps.map(item => (
                       <div key={item.id} className="p-3 rounded-xl bg-teal-500/5 border border-teal-500/15">
@@ -518,7 +558,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {stats.upcomingInterviews.length === 0 && stats.upcomingFollowUps.length === 0 && (
+              {stats.upcomingInterviews.length === 0 && stats.upcomingFollowUps.length === 0 && (!stats.dueFollowUps || stats.dueFollowUps.length === 0) && (
                 <div className="text-center py-6">
                   <svg className="w-8 h-8 mx-auto text-text-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

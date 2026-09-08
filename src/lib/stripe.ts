@@ -39,6 +39,20 @@ export const PRICE_IDS = {
   proAnnual: process.env.STRIPE_PRO_ANNUAL_PRICE_ID || "",
 };
 
+/* # Top-up pack price IDs — one-time purchases, not subscriptions.
+   Create these in Stripe Dashboard as one-time price objects:
+   - STRIPE_TOPUP_50_PRICE_ID: £5 for 50 AI calls
+   - STRIPE_TOPUP_120_PRICE_ID: £10 for 120 AI calls */
+export const TOPUP_PRICE_IDS: Record<string, number> = {
+  [process.env.STRIPE_TOPUP_50_PRICE_ID || "topup_50"]: 50,
+  [process.env.STRIPE_TOPUP_120_PRICE_ID || "topup_120"]: 120,
+};
+
+export const TOPUP_PACKS = [
+  { id: "topup_50", calls: 50, price: "£5", priceId: process.env.STRIPE_TOPUP_50_PRICE_ID || "" },
+  { id: "topup_120", calls: 120, price: "£10", priceId: process.env.STRIPE_TOPUP_120_PRICE_ID || "" },
+];
+
 /* ---- Employer Price IDs ---- */
 /* Separate Stripe products for employer B2B plans */
 /* Create these in the Stripe Dashboard under a "JobPilot Employer" product group */

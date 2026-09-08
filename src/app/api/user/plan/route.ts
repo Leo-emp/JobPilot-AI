@@ -38,6 +38,7 @@ export const GET = authHandler(async (_req, session) => {
         aiUsageCount: true,
         usageResetDate: true,
         weeklyDigest: true,
+        bonusCalls: true,
       },
     })
   );
@@ -52,6 +53,7 @@ export const GET = authHandler(async (_req, session) => {
     aiUsageCount: user.aiUsageCount,
     usageResetDate: user.usageResetDate.toISOString(),
     weeklyDigest: user.weeklyDigest,
+    bonusCalls: user.bonusCalls,
   };
   await cacheSet(cacheKey, planData, PLAN_CACHE_TTL);
 
