@@ -17,16 +17,17 @@ import { PLAN_LIMITS } from "@/lib/plan-limits";
 export const GET = authHandler(async (_req, session) => {
   const userId = session.user.id;
 
-  /* # Return cached stats if available (30s TTL) */
+  /* # 5-second cache — feels real-time but protects DB at scale.
+     Invalidated on plan changes via cacheDel in AI/payment routes. */
   const cacheKey = `dashboard:stats:${userId}`;
   const cached = await cacheGet(cacheKey);
   if (cached) {
     return NextResponse.json(cached, {
-      headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" },
+      headers: { "Cache-Control": "private, no-cache" },
     });
   }
 
-  /* # Fetch all data in parallel for speed */
+  /* # All queries run in parallel for speed */
   const [
     resumeCount,
     jobCount,
@@ -126,10 +127,10 @@ export const GET = authHandler(async (_req, session) => {
     dueFollowUps,
   };
 
-  /* # Cache for 30 seconds — prevents DB storm when user refreshes dashboard */
-  await cacheSet(cacheKey, result, 30);
+  /* # Cache for 5 seconds — near real-time, scales to thousands of users */
+  await cacheSet(cacheKey, result, 5);
 
   return NextResponse.json(result, {
-    headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" },
+    headers: { "Cache-Control": "private, no-cache" },
   });
 });
