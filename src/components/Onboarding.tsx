@@ -12,6 +12,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
@@ -317,6 +318,15 @@ export default function Onboarding({ hasActivity }: OnboardingProps) {
                 <div className="w-8 h-1 rounded-full bg-space-600" />
                 <div className="w-8 h-1 rounded-full bg-space-600" />
               </div>
+
+              {/* # Mascot wave — friendly welcome for new users */}
+              <Image
+                src="/mascot/mascot-wave.png"
+                alt="Welcome!"
+                width={100}
+                height={100}
+                className="mb-4 drop-shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+              />
 
               <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-2">
                 Welcome, <span className="glow-text">{firstName}</span>

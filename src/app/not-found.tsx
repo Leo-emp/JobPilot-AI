@@ -7,6 +7,7 @@
    ============================================================ */
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 
 
@@ -34,6 +35,16 @@ export default function NotFound() {
           <h1 className="font-[family-name:var(--font-space-grotesk)] text-8xl sm:text-9xl font-bold glow-text-strong mb-4">
             404
           </h1>
+
+          {/* # Mascot oops — apologetic pose for the lost page */}
+          <Image
+            src="/mascot/mascot-oops.png"
+            alt="Oops! Page not found"
+            width={140}
+            height={140}
+            className="mx-auto mb-4 drop-shadow-[0_0_24px_rgba(139,92,246,0.3)]"
+            priority
+          />
 
           {/* Fun message */}
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">

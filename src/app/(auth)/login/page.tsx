@@ -12,6 +12,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -64,6 +65,17 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md">
       <div className="glass-card p-8 sm:p-10">
+        {/* # Mascot wave — friendly greeting on the login page */}
+        <div className="flex justify-center mb-4">
+          <Image
+            src="/mascot/mascot-wave.png"
+            alt="Welcome back!"
+            width={80}
+            height={80}
+            className="drop-shadow-[0_0_16px_rgba(16,185,129,0.2)]"
+          />
+        </div>
+
         {/* Header */}
         <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold text-center mb-2">
           Welcome Back

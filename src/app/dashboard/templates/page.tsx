@@ -1275,7 +1275,232 @@ function buildStandardATS(d: ResumeData): string {
 
 
 /* ============================================================
-   TEMPLATE REGISTRY — All 21 templates
+   TEMPLATE 22: MINIMALIST — Ultra-clean, hairline rules, generous whitespace
+   ============================================================ */
+function buildMinimalist(d: ResumeData): string {
+  const css = `
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width:720px; margin:0 auto; padding:48px 52px; line-height:1.6; font-size:12.5px; color:#333; }
+    .name { font-size:32px; font-weight:300; letter-spacing:3px; text-transform:uppercase; color:#111; }
+    .title { font-size:11px; font-weight:400; letter-spacing:4px; text-transform:uppercase; color:#999; margin-top:4px; }
+    .contact { font-size:11px; color:#aaa; margin-top:10px; letter-spacing:0.5px; }
+    .divider { border:none; border-top:1px solid #e0e0e0; margin:20px 0; }
+    h2 { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:5px; color:#bbb; margin:24px 0 12px; }
+    .summary { font-size:12.5px; color:#555; line-height:1.7; }
+    .entry { margin-bottom:14px; }
+    .entry-title { font-weight:500; font-size:13px; color:#111; }
+    .entry-sub { font-size:11px; color:#999; margin-bottom:4px; letter-spacing:0.3px; }
+    ul { padding-left:16px; margin:4px 0; list-style:none; }
+    li { font-size:12px; line-height:1.55; margin-bottom:3px; color:#555; }
+    li:before { content:"—"; margin-right:8px; color:#ccc; }
+    .skill-group { font-size:12px; margin-bottom:4px; color:#555; }
+    .skill-group strong { font-weight:500; color:#333; }
+    p { font-size:12px; color:#555; }
+  `;
+  let html = `<div class="name">${esc(d.fullName || "Your Name")}</div>`;
+  if (d.jobTitle) html += `<div class="title">${esc(d.jobTitle)}</div>`;
+  html += `<div class="contact">${contactParts(d).join("  /  ")}</div>`;
+  html += `<hr class="divider">`;
+  if (d.summary) html += `<h2>Profile</h2><div class="summary">${esc(d.summary)}</div>`;
+  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
+  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
+  if (d.skills) html += `<h2>Skills</h2>${skillGroupsHTML(d.skills)}`;
+  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
+  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join("  /  ")}</p>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+}
+
+/* ============================================================
+   TEMPLATE 23: EXECUTIVE — C-suite, achievement-focused, muted navy
+   ============================================================ */
+function buildExecutive(d: ResumeData): string {
+  const css = `
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Georgia, 'Times New Roman', serif; max-width:760px; margin:0 auto; padding:36px 44px; line-height:1.55; font-size:13px; color:#1a1a1a; }
+    .header { border-bottom:3px solid #1e3a5f; padding-bottom:16px; margin-bottom:20px; }
+    .name { font-size:30px; font-weight:700; color:#1e3a5f; letter-spacing:0.5px; }
+    .title { font-size:14px; color:#4a6d8c; font-style:italic; margin-top:3px; }
+    .contact { display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:11px; color:#666; }
+    .contact span { display:flex; align-items:center; gap:4px; }
+    h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:#1e3a5f; margin:20px 0 10px; padding-bottom:4px; border-bottom:1px solid #c5d4e3; }
+    .summary { font-size:13px; color:#333; line-height:1.65; font-style:italic; padding:10px 0; border-left:3px solid #1e3a5f; padding-left:14px; margin-bottom:4px; }
+    .entry { margin-bottom:14px; }
+    .entry-title { font-weight:700; font-size:13.5px; color:#1a1a1a; }
+    .entry-sub { font-size:12px; color:#4a6d8c; margin-bottom:3px; }
+    ul { padding-left:18px; margin:4px 0; }
+    li { font-size:12.5px; line-height:1.5; margin-bottom:3px; color:#333; }
+    .skill-group { font-size:12.5px; margin-bottom:4px; }
+    .skill-group strong { color:#1e3a5f; }
+    p { font-size:12.5px; color:#333; }
+    .footer { margin-top:24px; padding-top:10px; border-top:1px solid #e0e0e0; font-size:10px; color:#aaa; text-align:center; letter-spacing:1px; }
+  `;
+  const icons = [ICONS.location, ICONS.phone, ICONS.email, ICONS.linkedin];
+  let html = `<div class="header">
+    <div class="name">${esc(d.fullName || "Your Name")}</div>
+    ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
+    <div class="contact">${contactParts(d).map((c, i) => `<span>${icons[i] || ""}${esc(c)}</span>`).join("")}</div>
+  </div>`;
+  if (d.summary) html += `<h2>Executive Summary</h2><div class="summary">${esc(d.summary)}</div>`;
+  if (d.experience) html += `<h2>Professional Experience</h2>${entriesHTML(d.experience)}`;
+  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
+  if (d.skills) html += `<h2>Core Competencies</h2>${skillGroupsHTML(d.skills)}`;
+  if (d.certifications) html += `<h2>Professional Development</h2>${certsHTML(d.certifications)}`;
+  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join("  ·  ")}</p>`;
+  html += `<div class="footer">REFERENCES AVAILABLE UPON REQUEST</div>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+}
+
+/* ============================================================
+   TEMPLATE 24: TWO-COLUMN MODERN — Balanced two-column, not sidebar
+   ============================================================ */
+function buildTwoColumn(d: ResumeData): string {
+  const css = `
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', Roboto, sans-serif; max-width:800px; margin:0 auto; padding:32px 36px; line-height:1.5; font-size:12.5px; color:#222; }
+    .header { text-align:center; margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid #2563eb; }
+    .name { font-size:28px; font-weight:700; color:#111; }
+    .title { font-size:13px; color:#2563eb; font-weight:500; margin-top:2px; letter-spacing:1px; }
+    .contact { font-size:11px; color:#777; margin-top:8px; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .col-full { grid-column:1 / -1; }
+    h2 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:#2563eb; margin:16px 0 8px; padding-bottom:4px; border-bottom:1px solid #e5e7eb; }
+    .summary { font-size:12.5px; color:#444; line-height:1.65; }
+    .entry { margin-bottom:12px; }
+    .entry-title { font-weight:600; font-size:13px; color:#111; }
+    .entry-sub { font-size:11.5px; color:#666; margin-bottom:3px; }
+    ul { padding-left:16px; margin:3px 0; }
+    li { font-size:12px; line-height:1.5; margin-bottom:2px; color:#444; }
+    .skill-pill { display:inline-block; padding:3px 10px; margin:2px 3px 2px 0; font-size:11px; background:#eff6ff; color:#2563eb; border-radius:12px; border:1px solid #bfdbfe; }
+    p { font-size:12px; color:#444; }
+    .cert-item { font-size:12px; color:#444; margin-bottom:3px; padding-left:12px; border-left:2px solid #2563eb; }
+  `;
+  let html = `<div class="header">
+    <div class="name">${esc(d.fullName || "Your Name")}</div>
+    ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
+    <div class="contact">${contactParts(d).join("  ·  ")}</div>
+  </div>`;
+  if (d.summary) html += `<div class="col-full"><h2>Summary</h2><div class="summary">${esc(d.summary)}</div></div>`;
+  html += `<div class="two-col">`;
+  html += `<div>`;
+  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
+  html += `</div><div>`;
+  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
+  if (d.skills) {
+    html += `<h2>Skills</h2>`;
+    html += allSkillItems(d.skills).map(s => `<span class="skill-pill">${esc(s)}</span>`).join("");
+  }
+  if (d.certifications) {
+    html += `<h2>Certifications</h2>`;
+    html += d.certifications.split("\n").filter(l => l.trim()).map(l => `<div class="cert-item">${esc(l.replace(/^[-•]\s*/, ""))}</div>`).join("");
+  }
+  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join(" · ")}</p>`;
+  html += `</div></div>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+}
+
+/* ============================================================
+   TEMPLATE 25: INFOGRAPHIC — Metric-driven, percentage rings, data-forward
+   ============================================================ */
+function buildInfographic(d: ResumeData): string {
+  const skills = allSkillItems(d.skills);
+  const css = `
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', Roboto, sans-serif; max-width:800px; margin:0 auto; padding:28px 36px; line-height:1.5; font-size:12.5px; color:#222; }
+    .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #7c3aed; padding-bottom:14px; margin-bottom:16px; }
+    .name { font-size:28px; font-weight:800; color:#111; }
+    .title { font-size:12px; color:#7c3aed; font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+    .contact { text-align:right; font-size:11px; color:#666; line-height:1.8; }
+    h2 { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#7c3aed; margin:18px 0 10px; }
+    .summary { font-size:12.5px; color:#444; line-height:1.65; }
+    .skill-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; }
+    .skill-bar-item { display:flex; align-items:center; gap:8px; }
+    .skill-bar-label { font-size:11px; color:#333; width:100px; text-align:right; flex-shrink:0; }
+    .skill-bar-track { flex:1; height:8px; background:#f3e8ff; border-radius:4px; overflow:hidden; }
+    .skill-bar-fill { height:100%; background:linear-gradient(90deg, #7c3aed, #a78bfa); border-radius:4px; }
+    .entry { margin-bottom:12px; }
+    .entry-title { font-weight:700; font-size:13px; color:#111; }
+    .entry-sub { font-size:11.5px; color:#7c3aed; margin-bottom:3px; }
+    ul { padding-left:16px; margin:3px 0; }
+    li { font-size:12px; line-height:1.5; margin-bottom:2px; color:#444; }
+    .metric-row { display:flex; gap:16px; margin:10px 0 14px; }
+    .metric { text-align:center; flex:1; padding:10px; background:#faf5ff; border-radius:8px; border:1px solid #ede9fe; }
+    .metric-num { font-size:22px; font-weight:800; color:#7c3aed; }
+    .metric-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-top:2px; }
+    p { font-size:12px; color:#444; }
+  `;
+  const expEntries = parseEntries(d.experience);
+  const yearsMatch = d.experience.match(/(\d{4})\s*[-–]/g);
+  const totalYears = yearsMatch ? new Date().getFullYear() - parseInt(yearsMatch[yearsMatch.length - 1]) : 0;
+  let html = `<div class="header"><div>
+    <div class="name">${esc(d.fullName || "Your Name")}</div>
+    ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
+  </div><div class="contact">${contactParts(d).join("<br>")}</div></div>`;
+  if (d.summary) html += `<h2>Profile</h2><div class="summary">${esc(d.summary)}</div>`;
+  html += `<div class="metric-row">
+    <div class="metric"><div class="metric-num">${totalYears || "5"}+</div><div class="metric-label">Years Experience</div></div>
+    <div class="metric"><div class="metric-num">${expEntries.length}</div><div class="metric-label">Roles</div></div>
+    <div class="metric"><div class="metric-num">${skills.length}</div><div class="metric-label">Skills</div></div>
+  </div>`;
+  if (d.skills) {
+    html += `<h2>Skills</h2><div class="skill-grid">`;
+    html += skills.slice(0, 10).map((s, i) => {
+      const pct = Math.max(50, 95 - i * 5);
+      return `<div class="skill-bar-item"><span class="skill-bar-label">${esc(s)}</span><div class="skill-bar-track"><div class="skill-bar-fill" style="width:${pct}%"></div></div></div>`;
+    }).join("");
+    html += `</div>`;
+  }
+  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
+  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
+  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
+  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join("  ·  ")}</p>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+}
+
+/* ============================================================
+   TEMPLATE 26: DARK ELEGANT — Dark background, light text, luxury
+   ============================================================ */
+function buildDarkElegant(d: ResumeData): string {
+  const css = `
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width:800px; margin:0 auto; padding:0; line-height:1.55; font-size:12.5px; color:#d4d4d8; background:#18181b; }
+    .header { background:linear-gradient(135deg, #18181b 0%, #27272a 100%); padding:36px 44px 28px; border-bottom:1px solid #3f3f46; }
+    .name { font-size:30px; font-weight:300; letter-spacing:4px; text-transform:uppercase; color:#fafafa; }
+    .title { font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#a78bfa; margin-top:4px; font-weight:500; }
+    .contact { margin-top:12px; font-size:11px; color:#71717a; }
+    .contact span { margin-right:16px; }
+    .contact svg { color:#71717a; }
+    .body { padding:24px 44px 36px; }
+    h2 { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:4px; color:#a78bfa; margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid #3f3f46; }
+    .summary { font-size:12.5px; color:#a1a1aa; line-height:1.7; }
+    .entry { margin-bottom:14px; }
+    .entry-title { font-weight:600; font-size:13px; color:#fafafa; }
+    .entry-sub { font-size:11.5px; color:#a78bfa; margin-bottom:3px; }
+    ul { padding-left:16px; margin:4px 0; }
+    li { font-size:12px; line-height:1.55; margin-bottom:3px; color:#a1a1aa; }
+    .skill-chip { display:inline-block; padding:4px 12px; margin:3px 4px 3px 0; font-size:11px; color:#e4e4e7; background:#27272a; border:1px solid #3f3f46; border-radius:4px; }
+    p { font-size:12px; color:#a1a1aa; }
+  `;
+  const icons = [ICONS.location, ICONS.phone, ICONS.email, ICONS.linkedin];
+  let html = `<div class="header">
+    <div class="name">${esc(d.fullName || "Your Name")}</div>
+    ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
+    <div class="contact">${contactParts(d).map((c, i) => `<span>${icons[i] || ""}${esc(c)}</span>`).join("")}</div>
+  </div><div class="body">`;
+  if (d.summary) html += `<h2>Profile</h2><div class="summary">${esc(d.summary)}</div>`;
+  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
+  if (d.skills) {
+    html += `<h2>Skills</h2>`;
+    html += allSkillItems(d.skills).map(s => `<span class="skill-chip">${esc(s)}</span>`).join("");
+  }
+  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
+  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
+  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join("  ·  ")}</p>`;
+  html += `</div>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+}
+
+/* ============================================================
+   TEMPLATE REGISTRY — All 26 templates
    ============================================================ */
 const TEMPLATES: Template[] = [
   /* ---- STANDARD ---- */
@@ -1304,6 +1529,19 @@ const TEMPLATES: Template[] = [
   /* ---- SPECIAL ---- */
   { id: "split", name: "Split 50/50", desc: "Equal two-column layout with dark header bar", category: "Special", buildHTML: buildSplit, hasSidebar: true },
   { id: "bands", name: "Alternating Bands", desc: "Full-width colored bands separate each section", category: "Special", buildHTML: buildBands },
+  { id: "compact", name: "Compact", desc: "Dense single-page layout that fits maximum content", category: "Classic", buildHTML: buildCompact },
+  { id: "timeline", name: "Timeline", desc: "Vertical timeline with dotted connector and date markers", category: "Visual", buildHTML: buildTimeline },
+  { id: "banner", name: "Banner", desc: "Bold top banner with large name and accent stripe", category: "Modern", buildHTML: buildBanner },
+  { id: "monogram", name: "Monogram", desc: "Large initial letter watermark behind a clean layout", category: "Modern", buildHTML: buildMonogram },
+  { id: "card-grid", name: "Card Grid", desc: "Each section in its own bordered card on a grid", category: "Visual", buildHTML: buildCardGrid },
+  { id: "right-sidebar", name: "Right Sidebar", desc: "Skills and contact in a right-side sidebar panel", category: "Sidebar", buildHTML: buildRightSidebar, hasSidebar: true },
+
+  /* ---- NEW — 5 unique designs ---- */
+  { id: "minimalist", name: "Minimalist", desc: "Ultra-clean hairline rules and generous whitespace", category: "Classic", buildHTML: buildMinimalist },
+  { id: "executive", name: "Executive", desc: "C-suite layout with navy accents and serif typography", category: "Classic", buildHTML: buildExecutive },
+  { id: "two-column", name: "Two-Column Modern", desc: "Balanced two-column grid with skill pills", category: "Modern", buildHTML: buildTwoColumn },
+  { id: "infographic", name: "Infographic", desc: "Metric-driven layout with skill bars and stat tiles", category: "Visual", buildHTML: buildInfographic },
+  { id: "dark-elegant", name: "Dark Elegant", desc: "Dark background with purple accents and luxury feel", category: "Special", buildHTML: buildDarkElegant },
 ];
 
 /* ============================================================

@@ -9,6 +9,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface UpgradePromptProps {
   remaining: number | "unlimited";
@@ -53,6 +54,14 @@ export default function UpgradePrompt({ remaining, plan }: UpgradePromptProps) {
         : "bg-yellow-500/10 border-yellow-500/20"
     }`}>
       <div className="flex items-start justify-between gap-4">
+        {/* # Mascot oops when out of calls, thinking when running low */}
+        <Image
+          src={isOut ? "/mascot/mascot-oops.png" : "/mascot/mascot-thinking.png"}
+          alt={isOut ? "Out of calls" : "Running low"}
+          width={40}
+          height={40}
+          className="shrink-0 mt-0.5"
+        />
         <div className="flex-1">
           <p className={`text-sm font-medium ${isOut ? "text-red-400" : "text-yellow-400"}`}>
             {isOut
