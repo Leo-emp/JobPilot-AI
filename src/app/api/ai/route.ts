@@ -124,7 +124,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
     const user = await dbRetry(() =>
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true, bonusCalls: true },
+        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true },
       })
     );
 
@@ -159,8 +159,15 @@ export const POST = safeHandler(async (req: NextRequest) => {
       let usedBonusCall = false;
 
       if (user.aiUsageCount >= limit) {
-        /* # Monthly quota exhausted — check if user has top-up bonus calls */
-        if (user.bonusCalls > 0) {
+        /* # Monthly quota exhausted — check if user has top-up bonus calls.
+           Fetched separately so missing column doesn't crash the main query. */
+        let bonusCalls = 0;
+        try {
+          const bc = await dbRetry(() => prisma.user.findUnique({ where: { id: session.user.id }, select: { bonusCalls: true } }));
+          bonusCalls = bc?.bonusCalls ?? 0;
+        } catch { /* # Column doesn't exist yet — no bonus calls available */ }
+
+        if (bonusCalls > 0) {
           /* # Atomically decrement bonusCalls — if two requests race,
              one will see 0 and fall through to the rejection below */
           const bonusResult = await dbRetry(() =>

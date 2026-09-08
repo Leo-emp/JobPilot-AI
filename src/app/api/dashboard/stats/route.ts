@@ -39,7 +39,6 @@ export const GET = authHandler(async (_req, session) => {
     applicationsByStatus,
     upcomingInterviews,
     upcomingFollowUps,
-    dueFollowUps,
   ] = await dbRetry(() =>
     Promise.all([
       prisma.resume.count({ where: { userId } }),
@@ -81,7 +80,13 @@ export const GET = authHandler(async (_req, session) => {
         take: 3,
         select: { id: true, name: true, company: true, role: true, nextFollowUp: true },
       }),
-      /* # Application follow-ups that are due or overdue */
+    ])
+  );
+
+  /* # Follow-up query uses new column — gracefully degrade if migration not yet applied */
+  let dueFollowUps: { id: string; jobTitle: string; company: string; followUpDate: Date | null; appliedDate: Date | null; status: string }[] = [];
+  try {
+    dueFollowUps = await dbRetry(() =>
       prisma.application.findMany({
         where: {
           userId,
@@ -91,9 +96,9 @@ export const GET = authHandler(async (_req, session) => {
         orderBy: { followUpDate: "asc" },
         take: 5,
         select: { id: true, jobTitle: true, company: true, followUpDate: true, appliedDate: true, status: true },
-      }),
-    ])
-  );
+      })
+    );
+  } catch { /* # Column doesn't exist yet in production — return empty */ }
 
   /* # Build application pipeline object */
   const pipeline: Record<string, number> = {};

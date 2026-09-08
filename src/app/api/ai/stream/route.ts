@@ -95,7 +95,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
     const user = await dbRetry(() =>
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true, bonusCalls: true },
+        select: { plan: true, aiUsageCount: true, usageResetDate: true, email: true },
       })
     );
 
@@ -128,7 +128,13 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
       if (user.aiUsageCount >= limit) {
         /* # Monthly quota exhausted — check if user has top-up bonus calls */
-        if (user.bonusCalls > 0) {
+        let bonusCalls = 0;
+        try {
+          const bc = await dbRetry(() => prisma.user.findUnique({ where: { id: session.user.id }, select: { bonusCalls: true } }));
+          bonusCalls = bc?.bonusCalls ?? 0;
+        } catch { /* # Column doesn't exist yet */ }
+
+        if (bonusCalls > 0) {
           const bonusResult = await dbRetry(() =>
             prisma.user.update({
               where: { id: session.user.id },

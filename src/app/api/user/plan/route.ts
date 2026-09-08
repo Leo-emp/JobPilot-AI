@@ -38,7 +38,6 @@ export const GET = authHandler(async (_req, session) => {
         aiUsageCount: true,
         usageResetDate: true,
         weeklyDigest: true,
-        bonusCalls: true,
       },
     })
   );
@@ -48,12 +47,19 @@ export const GET = authHandler(async (_req, session) => {
   }
 
   /* # Cache the result for 60 seconds */
+  /* # Fetch bonusCalls separately — column may not exist in production yet */
+  let bonusCalls = 0;
+  try {
+    const bc = await dbRetry(() => prisma.user.findUnique({ where: { id: session.user.id }, select: { bonusCalls: true } }));
+    bonusCalls = bc?.bonusCalls ?? 0;
+  } catch { /* # Column not yet migrated */ }
+
   const planData = {
     plan: user.plan,
     aiUsageCount: user.aiUsageCount,
     usageResetDate: user.usageResetDate.toISOString(),
     weeklyDigest: user.weeklyDigest,
-    bonusCalls: user.bonusCalls,
+    bonusCalls,
   };
   await cacheSet(cacheKey, planData, PLAN_CACHE_TTL);
 
