@@ -12,7 +12,6 @@
 import { useState, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import Turnstile from "@/components/Turnstile";
 
@@ -108,17 +107,6 @@ export default function SignupPage() {
   return (
     <div className="w-full max-w-md">
       <div className="glass-card p-8 sm:p-10">
-        {/* # Mascot wave — welcoming new signups */}
-        <div className="flex justify-center mb-4">
-          <Image
-            src="/mascot/mascot-wave.png"
-            alt="Join us!"
-            width={80}
-            height={80}
-            className="drop-shadow-[0_0_16px_rgba(99,102,241,0.2)]"
-          />
-        </div>
-
         {/* Header */}
         <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold text-center mb-2">
           Create Account

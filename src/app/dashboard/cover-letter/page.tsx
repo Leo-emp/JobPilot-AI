@@ -11,7 +11,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { useAIStream } from "@/hooks/useAIStream";
@@ -409,8 +408,6 @@ export default function CoverLetterPage() {
           {/* Loading (before stream starts) */}
           {loading && !streaming && !result && (
             <div className="flex flex-col items-center gap-3 text-text-secondary py-8">
-              {/* # Mascot thinking — AI is crafting the cover letter */}
-              <Image src="/mascot/mascot-thinking.png" alt="Writing..." width={64} height={64} className="opacity-90" />
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm">Crafting your cover letter...</span>

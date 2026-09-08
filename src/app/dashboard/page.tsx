@@ -15,7 +15,6 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 import Onboarding from "@/components/Onboarding";
 import { trackEvent } from "@/lib/track-event";
@@ -463,14 +462,6 @@ export default function DashboardPage() {
             </>
           ) : stats ? (
             <div className="text-center py-8">
-              {/* # Mascot wave — encouraging empty state */}
-              <Image
-                src="/mascot/mascot-wave.png"
-                alt="Get started!"
-                width={72}
-                height={72}
-                className="mx-auto mb-3 opacity-90"
-              />
               <p className="text-text-muted text-sm mb-3">No applications yet</p>
               <Link
                 href="/dashboard/tracker"

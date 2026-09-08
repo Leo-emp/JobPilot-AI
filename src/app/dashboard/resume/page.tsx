@@ -14,7 +14,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 import MarkdownResult from "@/components/MarkdownResult";
 import CountryResumeResult from "@/components/CountryResumeResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
@@ -715,8 +714,6 @@ export default function ResumePage() {
         {/* ---- Loading State (before stream starts) ---- */}
         {loading && !streaming && !result && (
           <div className="mt-6 flex flex-col items-center gap-3 text-text-secondary py-6">
-            {/* # Mascot thinking — AI is working on your resume */}
-            <Image src="/mascot/mascot-thinking.png" alt="Analyzing..." width={64} height={64} className="opacity-90" />
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
               <span className="text-sm">Analyzing your resume...</span>

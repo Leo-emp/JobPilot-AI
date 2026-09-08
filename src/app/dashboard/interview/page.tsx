@@ -10,7 +10,6 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
@@ -689,8 +688,6 @@ export default function InterviewPage() {
         {/* Loading indicator (before stream starts) */}
         {loading && !streaming && !streamResult && (
           <div className="mt-6 flex flex-col items-center gap-3 text-text-secondary py-6">
-            {/* # Mascot thinking — AI is preparing interview questions */}
-            <Image src="/mascot/mascot-thinking.png" alt="Preparing..." width={64} height={64} className="opacity-90" />
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin" />
               <span className="text-sm">Preparing your interview questions...</span>
