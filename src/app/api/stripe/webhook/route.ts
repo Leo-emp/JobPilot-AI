@@ -151,7 +151,12 @@ export const POST = safeHandler(async (req: NextRequest) => {
             data: { plan: "free", stripeSubId: null },
           })
         );
-        audit("payment.cancelled", { userId: user.id, detail: `subscription:${subscription.id}` });
+        /* # Include cancellation reason in audit if they filled out the survey */
+        audit("payment.cancelled", {
+          userId: user.id,
+          detail: `subscription:${subscription.id}`,
+          reason: user.cancellationReason || "no_survey",
+        });
         await cacheDel(`plan:${user.id}`);
 
         /* Send cancellation email with retry — user must receive this */

@@ -84,6 +84,12 @@ export default function SettingsPage() {
   const [resumeSaving, setResumeSaving] = useState(false);
   const [resumeMessage, setResumeMessage] = useState("");
 
+  /* Cancellation survey modal */
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelFeedback, setCancelFeedback] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+
   /* Account deletion */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
@@ -250,6 +256,33 @@ export default function SettingsPage() {
       trackEvent("settings.billing_portal_failed");
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  /* ---- Cancel Subscription (with survey) ---- */
+  const handleCancelWithFeedback = async () => {
+    if (!cancelReason) return;
+    setCancelLoading(true);
+    try {
+      const res = await fetch("/api/stripe/cancel-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: cancelReason, feedback: cancelFeedback || undefined }),
+      });
+      const data = await res.json().catch(() => null);
+      if (data?.url) {
+        /* # Redirect to Stripe portal where they complete the cancellation */
+        trackEvent("settings.cancel_survey_submitted", { reason: cancelReason });
+        window.location.href = data.url;
+      } else {
+        setMessage(data?.error || "Failed to process cancellation.");
+        setShowCancelModal(false);
+      }
+    } catch {
+      setMessage("Failed to connect to billing system.");
+      setShowCancelModal(false);
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -1135,7 +1168,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm text-text-secondary">Cancel subscription</span>
                     <button
-                      onClick={handleBillingPortal}
+                      onClick={() => setShowCancelModal(true)}
                       className="text-sm text-red-400 hover:text-red-300 transition-colors"
                     >
                       Cancel →
@@ -1308,6 +1341,73 @@ export default function SettingsPage() {
       </div>
 
       {/* ---- Delete Account Modal ---- */}
+      {/* ---- Cancellation Survey Modal ---- */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => { setShowCancelModal(false); setCancelReason(""); setCancelFeedback(""); }}
+          />
+          <div className="relative w-full max-w-lg bg-space-800 border border-card-border rounded-2xl p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-1">Before you go...</h3>
+            <p className="text-text-secondary text-sm mb-5">
+              Your feedback helps us improve. What&apos;s the main reason you&apos;re cancelling?
+            </p>
+
+            {/* # Reason options — radio-style buttons */}
+            <div className="space-y-2 mb-5">
+              {[
+                { value: "too_expensive", label: "Too expensive for what I get" },
+                { value: "not_using", label: "I'm not using it enough" },
+                { value: "missing_features", label: "Missing features I need" },
+                { value: "found_alternative", label: "Found a better alternative" },
+                { value: "too_complex", label: "Too complex or hard to use" },
+                { value: "other", label: "Other reason" },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setCancelReason(opt.value)}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
+                    cancelReason === opt.value
+                      ? "bg-brand-indigo/15 border-brand-indigo/40 text-white"
+                      : "bg-space-700 border-card-border/50 text-text-secondary hover:border-card-border hover:text-white"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* # Optional free-text feedback */}
+            <textarea
+              value={cancelFeedback}
+              onChange={(e) => setCancelFeedback(e.target.value)}
+              placeholder="Anything else you'd like us to know? (optional)"
+              rows={3}
+              maxLength={1000}
+              className="w-full px-4 py-3 rounded-xl bg-space-700 border border-card-border/50 text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo/50 text-sm mb-5 resize-none"
+            />
+
+            {/* # Action buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowCancelModal(false); setCancelReason(""); setCancelFeedback(""); }}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-text-secondary border border-card-border rounded-xl hover:bg-space-600 transition-colors"
+              >
+                Keep my plan
+              </button>
+              <button
+                onClick={handleCancelWithFeedback}
+                disabled={!cancelReason || cancelLoading}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {cancelLoading ? "Processing..." : "Continue to cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div

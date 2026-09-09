@@ -31,6 +31,9 @@ model User {
   stripeSubId        String?                     // Stripe subscription ID
   twoFactorSecret  String?                       // TOTP secret for 2FA (encrypted base32)
   twoFactorEnabled Boolean  @default(false)      // Whether 2FA is active for this account
+  cancellationReason   String?                    // Why they cancelled: too_expensive, not_using, missing_features, found_alternative, too_complex, other
+  cancellationFeedback String?                    // Optional free-text elaboration on cancellation reason
+  cancellationDate     DateTime?                  // When they submitted cancellation feedback
   deletedAt      DateTime?                       // Soft-delete timestamp (null = active, set = deleted)
   createdAt      DateTime @default(now())        // When the account was created
   updatedAt      DateTime @updatedAt             // Auto-updates on any change

@@ -72,7 +72,7 @@ export function buildCancellationEmail(firstName: string): string {
 <tr><td style="padding: 40px 52px 0 52px;"><div style="height: 1px; background: linear-gradient(90deg, #1e1e2e, #2a2a3d, #1e1e2e);"></div></td></tr>
 
 <tr><td style="padding: 36px 52px 52px 52px;">
-  <p style="font-family: ${FONT}; font-size: 14.5px; color: #8b8ba0; margin: 0 0 20px 0; line-height: 1.8; letter-spacing: -0.1px;">If something wasn&rsquo;t right, we&rsquo;d genuinely love to hear about it. Your feedback helps us build a better product for everyone.</p>
+  <p style="font-family: ${FONT}; font-size: 14.5px; color: #8b8ba0; margin: 0 0 20px 0; line-height: 1.8; letter-spacing: -0.1px;">If something wasn&rsquo;t right, we&rsquo;d genuinely love to hear about it. <a href="https://jobpilotai.co/dashboard/settings?tab=billing" style="color: #6366f1; text-decoration: none; font-weight: 500;">Share your feedback</a> &mdash; it helps us build a better product for everyone.</p>
   <p style="font-family: ${FONT}; font-size: 15px; font-weight: 500; color: #c4c4d8; margin: 0 0 8px 0; line-height: 1.5; letter-spacing: -0.1px;">Thanks for being a Pro member.</p>
   <p style="font-family: ${FONT_DISPLAY}; font-size: 14px; color: #6366f1; margin: 0; font-weight: 600; letter-spacing: -0.2px;">&mdash; The JobPilot AI Team</p>
 </td></tr>

@@ -95,6 +95,10 @@ export default function AdminDashboardPage() {
   const [feedbackPages, setFeedbackPages] = useState(1);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
 
+  /* Churn data */
+  const [churnData, setChurnData] = useState<{ total: number; reasons: { reason: string; count: number }[]; recent: { email: string; cancellationReason: string | null; cancellationFeedback: string | null; cancellationDate: string | null }[] } | null>(null);
+  const [churnLoading, setChurnLoading] = useState(false);
+
   /* ---- Fetch admin stats ---- */
   const fetchStats = async (page: number, initial = false) => {
     if (!initial) setLoadingPage(true);
@@ -147,6 +151,20 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => { fetchFeedback(1, feedbackFilter); }, [feedbackFilter]);
+
+  /* ---- Fetch churn data ---- */
+  const fetchChurnData = async () => {
+    setChurnLoading(true);
+    try {
+      const res = await fetch("/api/stripe/cancel-feedback");
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data) setChurnData(data);
+      }
+    } catch { /* silent */ } finally { setChurnLoading(false); }
+  };
+
+  useEffect(() => { fetchChurnData(); }, []);
 
   const updateFeedbackStatus = async (id: string, status: string) => {
     await fetch("/api/feedback", {
@@ -220,7 +238,12 @@ export default function AdminDashboardPage() {
         </Link>
         <h1 className="font-[family-name:var(--font-space-grotesk)] text-3xl font-bold">Admin Dashboard</h1>
       </div>
-      <p className="text-text-secondary mb-8">Platform analytics and user management</p>
+      <div className="flex items-center gap-3 mb-8">
+        <p className="text-text-secondary">Platform analytics and user management</p>
+        <Link href="/dashboard/admin/blog" className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-indigo/10 border border-brand-indigo/20 text-brand-indigo hover:bg-brand-indigo/20 transition-colors">
+          Blog Manager →
+        </Link>
+      </div>
 
       {/* ---- Overview Cards ---- */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
@@ -488,6 +511,84 @@ export default function AdminDashboardPage() {
                 Next
               </button>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* ---- Churn Reasons ---- */}
+      <div className="rounded-2xl bg-space-700/80 border border-card-border overflow-hidden mt-8">
+        <div className="p-5 border-b border-card-border">
+          <h3 className="font-semibold text-white">Cancellation Reasons {churnData ? `(${churnData.total})` : ""}</h3>
+          <p className="text-xs text-text-muted mt-1">Why users cancelled their Pro subscription</p>
+        </div>
+
+        {churnLoading ? (
+          <div className="p-8 text-center text-text-muted">Loading churn data...</div>
+        ) : !churnData || churnData.total === 0 ? (
+          <div className="p-8 text-center text-text-muted">No cancellations recorded yet</div>
+        ) : (
+          <div className="p-5 space-y-6">
+            {/* # Reason breakdown bars */}
+            <div className="space-y-3">
+              {churnData.reasons.map(r => {
+                const pct = Math.round((r.count / churnData.total) * 100);
+                const labels: Record<string, string> = {
+                  too_expensive: "Too expensive",
+                  not_using: "Not using enough",
+                  missing_features: "Missing features",
+                  found_alternative: "Found alternative",
+                  too_complex: "Too complex",
+                  other: "Other",
+                };
+                return (
+                  <div key={r.reason}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-text-secondary">{labels[r.reason || ""] || r.reason}</span>
+                      <span className="text-sm text-white font-medium">{r.count} ({pct}%)</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-space-600 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-brand-indigo transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* # Recent cancellations with feedback */}
+            {churnData.recent.filter(r => r.cancellationFeedback).length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-white mb-3">Recent feedback from churned users</h4>
+                <div className="space-y-3">
+                  {churnData.recent.filter(r => r.cancellationFeedback).map((r, i) => {
+                    const labels: Record<string, string> = {
+                      too_expensive: "Too expensive",
+                      not_using: "Not using enough",
+                      missing_features: "Missing features",
+                      found_alternative: "Found alternative",
+                      too_complex: "Too complex",
+                      other: "Other",
+                    };
+                    return (
+                      <div key={i} className="p-4 rounded-xl bg-space-600/50 border border-card-border/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
+                            {labels[r.cancellationReason || ""] || r.cancellationReason}
+                          </span>
+                          <span className="text-xs text-text-muted">{r.email}</span>
+                          {r.cancellationDate && (
+                            <span className="text-xs text-text-muted">{timeAgo(r.cancellationDate)}</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-white whitespace-pre-wrap">{r.cancellationFeedback}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

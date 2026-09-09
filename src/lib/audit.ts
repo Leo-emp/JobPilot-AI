@@ -30,6 +30,7 @@ export type AuditEvent =
   | "payment.upgrade"
   | "payment.downgrade"
   | "payment.cancelled"
+  | "cancellation.feedback"
   | "payment.topup"
   | "payment.webhook.received"
   | "payment.webhook.failed"
