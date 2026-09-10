@@ -121,12 +121,19 @@ export const POST = safeHandler(async (req: NextRequest) => {
   audit("auth.signup", { userId: user.id, email: user.email, ip });
 
   /* Send welcome email (fire-and-forget — don't block signup on email delivery) */
-  getResend().emails.send({
-    from: "JobPilot AI <noreply@jobpilotai.co>",
-    to: email,
-    subject: "Welcome to JobPilot AI",
-    html: buildWelcomeEmail(name),
-  }).catch((err) => { Sentry.captureException(err, { tags: { email_type: "welcome" } }); });
+  if (process.env.RESEND_API_KEY) {
+    getResend().emails.send({
+      from: "JobPilot AI <noreply@jobpilotai.co>",
+      to: email,
+      subject: "Welcome to JobPilot AI",
+      html: buildWelcomeEmail(name),
+    }).catch((err) => {
+      console.error("[welcome-email] Signup send failed:", err);
+      Sentry.captureException(err, { tags: { email_type: "welcome", auth: "credentials" } });
+    });
+  } else {
+    console.error("[welcome-email] RESEND_API_KEY not set — skipping welcome email");
+  }
 
   /* Return success with the new user's info (never send password back) */
   return NextResponse.json(

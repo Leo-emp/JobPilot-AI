@@ -44,6 +44,7 @@ import { audit } from "./audit";
 import { isLocked, recordFailure, resetFailures } from "./account-lock";
 import { buildWelcomeEmail } from "./welcome-email";
 import { cacheGet, cacheSet } from "./redis";
+import * as Sentry from "@sentry/nextjs";
 
 /* # Lazy-init so missing env var doesn't crash the module on import */
 let _resend: Resend | null = null;
@@ -191,12 +192,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             });
 
             /* Send welcome email to new OAuth users (fire-and-forget) */
-            getResend().emails.send({
-              from: "JobPilot AI <noreply@jobpilotai.co>",
-              to: user.email,
-              subject: "Welcome to JobPilot AI",
-              html: buildWelcomeEmail(user.name || "there"),
-            }).catch(() => {});
+            if (process.env.RESEND_API_KEY) {
+              getResend().emails.send({
+                from: "JobPilot AI <noreply@jobpilotai.co>",
+                to: user.email,
+                subject: "Welcome to JobPilot AI",
+                html: buildWelcomeEmail(user.name || "there"),
+              }).catch((err) => {
+                console.error("[welcome-email] OAuth send failed:", err);
+                Sentry.captureException(err, { tags: { email_type: "welcome", auth: "oauth" } });
+              });
+            } else {
+              console.error("[welcome-email] RESEND_API_KEY not set — skipping welcome email");
+            }
           } else if (!dbUser.image && user.image) {
             /* Update profile image if user exists but doesn't have one */
             await prisma.user.update({
