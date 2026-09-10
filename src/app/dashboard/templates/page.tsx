@@ -15,6 +15,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
 import { trackEvent } from "@/lib/track-event";
 import { injectPdfAttributes, measureBlocks } from "@/lib/pdf-engine";
 import { markdownToDownloadHTML, getDownloadStyles } from "@/components/CountryResumeResult";
@@ -1645,6 +1646,10 @@ export default function TemplatesPage() {
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* Auto-load saved default resume */
+  const { defaultResume } = useDefaultResume();
+  const [autoFillDone, setAutoFillDone] = useState(false);
+
   const selected = TEMPLATES.find(t => t.id === selectedId)!;
   const categories = ["All", "Standard", "Classic", "Sidebar", "Visual", "Modern", "Special"];
   const filtered = filter === "All" ? TEMPLATES : TEMPLATES.filter(t => t.category === filter);
@@ -1654,6 +1659,67 @@ export default function TemplatesPage() {
   }, []);
 
   const canPreview = String(formData.fullName).trim() && (String(formData.summary).trim() || String(formData.experience).trim());
+
+  /* ---- Auto-fill from default resume (same as other features) ---- */
+  useEffect(() => {
+    if (!defaultResume?.content || autoFillDone) return;
+    setAutoFillDone(true);
+
+    const autoFill = async () => {
+      setUploadStatus("parsing");
+      setUploadedFileName(defaultResume.fileName || "Saved Resume");
+      try {
+        const res = await fetch("/api/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "parse_resume_fields",
+            payload: { resumeText: defaultResume.content.slice(0, 15000) },
+          }),
+        });
+
+        if (!res.ok) { setUploadStatus("idle"); return; }
+        const jsonData = await res.json().catch(() => null);
+        const result = jsonData?.result;
+        if (!result) { setUploadStatus("idle"); return; }
+
+        let parsed: Record<string, unknown>;
+        try {
+          const cleaned = result.replace(/```json\s*|```\s*/g, "").trim();
+          parsed = JSON.parse(cleaned);
+        } catch { setUploadStatus("idle"); return; }
+
+        const str = (v: unknown): string => {
+          if (typeof v === "string") return v;
+          if (Array.isArray(v)) return v.map(item =>
+            typeof item === "object" && item !== null
+              ? Object.values(item as Record<string, string>).join(" | ")
+              : String(item)
+          ).join("\n");
+          if (typeof v === "object" && v !== null) return Object.values(v as Record<string, string>).join(", ");
+          return v ? String(v) : "";
+        };
+
+        setFormData({
+          fullName: str(parsed.fullName),
+          jobTitle: str(parsed.jobTitle),
+          email: str(parsed.email),
+          phone: str(parsed.phone),
+          location: str(parsed.location),
+          linkedin: str(parsed.linkedin),
+          summary: str(parsed.summary),
+          skills: str(parsed.skills),
+          experience: str(parsed.experience),
+          education: str(parsed.education),
+          certifications: str(parsed.certifications),
+          languages: str(parsed.languages),
+        });
+        setUploadStatus("done");
+      } catch { setUploadStatus("idle"); }
+    };
+
+    autoFill();
+  }, [defaultResume, autoFillDone]);
 
   /* ---- PDF Upload & AI Auto-Fill ---- */
   const handlePdfUpload = async (file: File) => {
