@@ -46,8 +46,7 @@ credentials.json
 service-account*.json
 *.secret
 
-# database scripts with credentials
-/scripts/
+# database scripts — tracked build scripts are force-added
 
 # misc sensitive/temp files
 cookies.txt
@@ -77,3 +76,5 @@ test-results/
 
 # temp DB restore files
 prisma/restore-test.db*
+
+.env*
