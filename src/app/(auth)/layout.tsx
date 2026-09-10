@@ -10,7 +10,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-
+import Image from "next/image";
 
 const StarField = dynamic(() => import("@/components/StarField"));
 
@@ -26,7 +26,8 @@ export default function AuthLayout({
 
       {/* Top bar with logo — links back to landing page */}
       <div className="relative z-10 p-6">
-        <Link href="/" className="inline-flex items-center">
+        <Link href="/" className="inline-flex items-center gap-2">
+          <Image src="/logo.svg" alt="JobPilot AI" width={36} height={36} priority />
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
             JobPilot AI
           </span>
