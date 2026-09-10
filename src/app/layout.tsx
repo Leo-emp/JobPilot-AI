@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { headers } from "next/headers";
 import dynamic from "next/dynamic";
-import { SoftwareAppJsonLd, OrganizationJsonLd } from "@/components/JsonLd";
+import { SoftwareAppJsonLd, OrganizationJsonLd, WebSiteJsonLd } from "@/components/JsonLd";
 import "./globals.css";
 
 /* Lazy-load the cookie consent banner — only renders on first visit */
@@ -50,6 +50,9 @@ export const metadata: Metadata = {
   description:
     "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
   keywords: [
+    "JobPilot AI",
+    "JobPilotAI",
+    "Job Pilot AI",
     "AI resume builder",
     "job search",
     "career tools",
@@ -57,7 +60,9 @@ export const metadata: Metadata = {
     "cover letter generator",
     "interview prep",
     "portfolio builder",
-    "career co-pilot",
+    "AI career co-pilot",
+    "AI job search tool",
+    "resume ATS scorer",
   ],
   metadataBase: new URL("https://jobpilotai.co"),
   openGraph: {
@@ -79,6 +84,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://jobpilotai.co",
+  },
+  other: {
+    "trustpilot-one-time-domain-verification-id": "5a54acc0-7d23-406d-a570-f6983e589680",
   },
 };
 
@@ -102,6 +110,7 @@ export default async function RootLayout({
       <body className="min-h-screen flex flex-col" style={{ backgroundColor: "#09090b" }} nonce={nonce}>
         <SoftwareAppJsonLd />
         <OrganizationJsonLd />
+        <WebSiteJsonLd />
         {children}
         <CookieConsent />
       </body>
