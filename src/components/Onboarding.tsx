@@ -88,6 +88,12 @@ const paths: Record<string, { headline: string; steps: { title: string; desc: st
         cta: "Search Jobs",
       },
       {
+        title: "Optimize your resume tailored to each role",
+        desc: "Paste any job description and get an ATS-optimized resume rewritten for that specific role.",
+        href: "/dashboard/resume",
+        cta: "Optimize Resume",
+      },
+      {
         title: "Apply with a tailored cover letter",
         desc: "Generate a unique cover letter for each role in 30 seconds. No templates.",
         href: "/dashboard/cover-letter",
@@ -98,6 +104,18 @@ const paths: Record<string, { headline: string; steps: { title: string; desc: st
         desc: "Keep all your applications in one place. See what's pending, interview dates, and outcomes.",
         href: "/dashboard/tracker",
         cta: "Open Tracker",
+      },
+      {
+        title: "Prepare with real-life interactive mock interviews",
+        desc: "Practice with AI-powered mock interviews that score your answers and give real-time feedback.",
+        href: "/dashboard/interview/mock",
+        cta: "Start Mock Interview",
+      },
+      {
+        title: "Land your dream job",
+        desc: "You've got the tools, the preparation, and the edge. Go get it.",
+        href: "/dashboard",
+        cta: "Go to Dashboard",
       },
     ],
   },
