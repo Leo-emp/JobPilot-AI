@@ -1321,7 +1321,8 @@ function buildExecutive(d: ResumeData): string {
     .name { font-size:30px; font-weight:700; color:#1e3a5f; letter-spacing:0.5px; }
     .title { font-size:14px; color:#4a6d8c; font-style:italic; margin-top:3px; }
     .contact { display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:11px; color:#666; }
-    .contact span { display:flex; align-items:center; gap:4px; }
+    .contact span { display:inline-flex; align-items:center; gap:5px; }
+    .contact svg { flex-shrink:0; vertical-align:middle; }
     h2 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:#1e3a5f; margin:20px 0 10px; padding-bottom:4px; border-bottom:1px solid #c5d4e3; }
     .summary { font-size:13px; color:#333; line-height:1.65; font-style:italic; padding:10px 0; border-left:3px solid #1e3a5f; padding-left:14px; margin-bottom:4px; }
     .entry { margin-bottom:14px; }
@@ -1398,106 +1399,243 @@ function buildTwoColumn(d: ResumeData): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
 
+
 /* ============================================================
-   TEMPLATE 25: INFOGRAPHIC — Metric-driven, percentage rings, data-forward
+   TEMPLATE 25: US ATS OPTIMIZED — Strict 1-page US resume format
    ============================================================ */
-function buildInfographic(d: ResumeData): string {
-  const skills = allSkillItems(d.skills);
+function buildUSOptimized(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Segoe UI', Roboto, sans-serif; max-width:800px; margin:0 auto; padding:28px 36px; line-height:1.5; font-size:12.5px; color:#222; }
-    .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #7c3aed; padding-bottom:14px; margin-bottom:16px; }
-    .name { font-size:28px; font-weight:800; color:#111; }
-    .title { font-size:12px; color:#7c3aed; font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
-    .contact { text-align:right; font-size:11px; color:#666; line-height:1.8; }
-    h2 { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#7c3aed; margin:18px 0 10px; }
-    .summary { font-size:12.5px; color:#444; line-height:1.65; }
-    .skill-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; }
-    .skill-bar-item { display:flex; align-items:center; gap:8px; }
-    .skill-bar-label { font-size:11px; color:#333; width:100px; text-align:right; flex-shrink:0; }
-    .skill-bar-track { flex:1; height:8px; background:#f3e8ff; border-radius:4px; overflow:hidden; }
-    .skill-bar-fill { height:100%; background:linear-gradient(90deg, #7c3aed, #a78bfa); border-radius:4px; }
-    .entry { margin-bottom:12px; }
-    .entry-title { font-weight:700; font-size:13px; color:#111; }
-    .entry-sub { font-size:11.5px; color:#7c3aed; margin-bottom:3px; }
-    ul { padding-left:16px; margin:3px 0; }
-    li { font-size:12px; line-height:1.5; margin-bottom:2px; color:#444; }
-    .metric-row { display:flex; gap:16px; margin:10px 0 14px; }
-    .metric { text-align:center; flex:1; padding:10px; background:#faf5ff; border-radius:8px; border:1px solid #ede9fe; }
-    .metric-num { font-size:22px; font-weight:800; color:#7c3aed; }
-    .metric-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-top:2px; }
-    p { font-size:12px; color:#444; }
+    body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width:760px; margin:0 auto; padding:28px 40px; line-height:1.4; font-size:10.5pt; color:#1a1a1a; }
+    .name { font-size:22pt; font-weight:700; color:#111; letter-spacing:-0.3px; }
+    .title { font-size:11pt; color:#444; margin-top:1px; }
+    .contact { font-size:9.5pt; color:#333; margin-top:6px; padding-bottom:8px; border-bottom:2px solid #1a1a1a; }
+    .contact a { color:#003399; text-decoration:none; }
+    h2 { font-size:10.5pt; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#111; border-bottom:1.5px solid #333; padding-bottom:2px; margin:10px 0 6px; }
+    .summary { font-size:10pt; color:#1a1a1a; line-height:1.5; margin-bottom:2px; }
+    .us-entry { margin-bottom:6px; }
+    .entry-head { display:flex; justify-content:space-between; align-items:baseline; }
+    .entry-head .role { font-weight:700; font-size:10.5pt; color:#111; }
+    .entry-head .date { font-size:10pt; color:#333; white-space:nowrap; }
+    .entry-company { font-size:10pt; color:#444; margin-bottom:2px; }
+    ul { padding-left:18px; margin:2px 0 6px; }
+    li { font-size:10pt; line-height:1.45; margin-bottom:1.5px; color:#1a1a1a; }
+    .skill-row { font-size:10pt; margin-bottom:2px; }
+    .skill-row strong { color:#111; }
+    .edu-entry { margin-bottom:4px; }
+    .edu-head { display:flex; justify-content:space-between; align-items:baseline; }
+    .edu-head .degree { font-weight:700; font-size:10.5pt; color:#111; }
+    .edu-head .year { font-size:10pt; color:#333; }
+    .edu-detail { font-size:9.5pt; color:#444; }
+    .cert-line { font-size:10pt; color:#1a1a1a; margin-bottom:2px; }
+    .flag { display:inline-block; width:14px; height:10px; background:#B22234; border:1px solid #ddd; border-radius:1px; margin-right:6px; vertical-align:middle; position:relative; }
+    .flag::after { content:""; position:absolute; top:0; left:0; right:0; height:3px; background:#3C3B6E; }
+    .ats-badge { display:inline-flex; align-items:center; gap:4px; font-size:8pt; color:#059669; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; margin-left:12px; }
+    .ats-dot { width:6px; height:6px; border-radius:50%; background:#059669; }
   `;
-  const expEntries = parseEntries(d.experience);
-  const yearsMatch = d.experience.match(/(\d{4})\s*[-–]/g);
-  const totalYears = yearsMatch ? new Date().getFullYear() - parseInt(yearsMatch[yearsMatch.length - 1]) : 0;
-  let html = `<div class="header"><div>
-    <div class="name">${esc(d.fullName || "Your Name")}</div>
-    ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
-  </div><div class="contact">${contactParts(d).join("<br>")}</div></div>`;
-  if (d.summary) html += `<h2>Profile</h2><div class="summary">${esc(d.summary)}</div>`;
-  html += `<div class="metric-row">
-    <div class="metric"><div class="metric-num">${totalYears || "5"}+</div><div class="metric-label">Years Experience</div></div>
-    <div class="metric"><div class="metric-num">${expEntries.length}</div><div class="metric-label">Roles</div></div>
-    <div class="metric"><div class="metric-num">${skills.length}</div><div class="metric-label">Skills</div></div>
-  </div>`;
-  if (d.skills) {
-    html += `<h2>Skills</h2><div class="skill-grid">`;
-    html += skills.slice(0, 10).map((s, i) => {
-      const pct = Math.max(50, 95 - i * 5);
-      return `<div class="skill-bar-item"><span class="skill-bar-label">${esc(s)}</span><div class="skill-bar-track"><div class="skill-bar-fill" style="width:${pct}%"></div></div></div>`;
+
+  let html = `<div class="name">${esc(d.fullName || "Your Name")}<span class="ats-badge"><span class="ats-dot"></span>US ATS Optimized</span></div>`;
+  if (d.jobTitle) html += `<div class="title">${esc(d.jobTitle)}</div>`;
+  const contact = contactParts(d);
+  html += `<div class="contact">${contact.map(c => {
+    if (c.includes("linkedin.com")) return `<a href="${c.startsWith("http") ? esc(c) : "https://" + esc(c)}">${esc(c)}</a>`;
+    return esc(c);
+  }).join(" &nbsp;|&nbsp; ")}</div>`;
+
+  if (d.summary) html += `<h2>Professional Summary</h2><div class="summary">${esc(d.summary)}</div>`;
+
+  if (d.experience) {
+    html += `<h2>Work Experience</h2>`;
+    const entries = parseEntries(d.experience);
+    html += entries.map(e => {
+      let role = e.title;
+      let company = "";
+      let dateText = "";
+      if (e.sub) {
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
+        if (datePart) {
+          dateText = datePart[1];
+          company = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+        } else {
+          company = e.sub.replace(/ · /g, ", ");
+        }
+      }
+      let row = `<div class="us-entry"><div class="entry-head"><span class="role">${esc(role)}</span>`;
+      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
+      row += `</div>`;
+      if (company) row += `<div class="entry-company">${esc(company)}</div>`;
+      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
+      row += `</div>`;
+      return row;
     }).join("");
-    html += `</div>`;
   }
-  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
-  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
-  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
-  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join("  ·  ")}</p>`;
+
+  if (d.skills) {
+    html += `<h2>Core Skills</h2>`;
+    const groups = parseSkillGroups(d.skills);
+    html += groups.map(g => `<div class="skill-row">${g.category ? `<strong>${esc(g.category)}:</strong> ` : ""}${g.items.map(i => esc(i)).join(", ")}</div>`).join("");
+  }
+
+  if (d.education) {
+    html += `<h2>Education</h2>`;
+    const entries = parseEntries(d.education);
+    html += entries.map(e => {
+      let dateText = "";
+      let inst = "";
+      if (e.sub) {
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{4})$/);
+        if (datePart) {
+          dateText = datePart[1];
+          inst = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+        } else {
+          inst = e.sub.replace(/ · /g, ", ");
+        }
+      }
+      let row = `<div class="edu-entry"><div class="edu-head"><span class="degree">${esc(e.title)}</span>`;
+      if (dateText) row += `<span class="year">${esc(dateText)}</span>`;
+      row += `</div>`;
+      if (inst) row += `<div class="edu-detail">${esc(inst)}</div>`;
+      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
+      row += `</div>`;
+      return row;
+    }).join("");
+  }
+
+  if (d.certifications) {
+    html += `<h2>Certifications</h2>`;
+    d.certifications.split("\n").filter(l => l.trim()).forEach(l => {
+      html += `<div class="cert-line">${esc(l.replace(/^[-•]\s*/, ""))}</div>`;
+    });
+  }
+
+  if (d.languages) {
+    html += `<h2>Languages</h2>`;
+    html += `<div class="skill-row">${langLines(d.languages).map(l => esc(l)).join(" &nbsp;|&nbsp; ")}</div>`;
+  }
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
 
+
 /* ============================================================
-   TEMPLATE 26: DARK ELEGANT — Dark background, light text, luxury
+   TEMPLATE 26: AU ATS OPTIMIZED — Australian CV format
    ============================================================ */
-function buildDarkElegant(d: ResumeData): string {
+function buildAUOptimized(d: ResumeData): string {
   const css = `
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width:800px; margin:0 auto; padding:0; line-height:1.55; font-size:12.5px; color:#d4d4d8; background:#18181b; }
-    .header { background:linear-gradient(135deg, #18181b 0%, #27272a 100%); padding:36px 44px 28px; border-bottom:1px solid #3f3f46; }
-    .name { font-size:30px; font-weight:300; letter-spacing:4px; text-transform:uppercase; color:#fafafa; }
-    .title { font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#a78bfa; margin-top:4px; font-weight:500; }
-    .contact { margin-top:12px; font-size:11px; color:#71717a; }
-    .contact span { margin-right:16px; }
-    .contact svg { color:#71717a; }
-    .body { padding:24px 44px 36px; }
-    h2 { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:4px; color:#a78bfa; margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid #3f3f46; }
-    .summary { font-size:12.5px; color:#a1a1aa; line-height:1.7; }
-    .entry { margin-bottom:14px; }
-    .entry-title { font-weight:600; font-size:13px; color:#fafafa; }
-    .entry-sub { font-size:11.5px; color:#a78bfa; margin-bottom:3px; }
-    ul { padding-left:16px; margin:4px 0; }
-    li { font-size:12px; line-height:1.55; margin-bottom:3px; color:#a1a1aa; }
-    .skill-chip { display:inline-block; padding:4px 12px; margin:3px 4px 3px 0; font-size:11px; color:#e4e4e7; background:#27272a; border:1px solid #3f3f46; border-radius:4px; }
-    p { font-size:12px; color:#a1a1aa; }
+    body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width:760px; margin:0 auto; padding:32px 40px; line-height:1.45; font-size:10.5pt; color:#1a1a1a; }
+    .name { font-size:24pt; font-weight:700; color:#0C2340; letter-spacing:-0.3px; }
+    .title { font-size:11pt; color:#555; margin-top:2px; }
+    .contact { font-size:9.5pt; color:#333; margin-top:8px; padding-bottom:10px; border-bottom:3px solid #0C2340; }
+    .contact a { color:#0C2340; text-decoration:none; }
+    h2 { font-size:11pt; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#0C2340; border-bottom:1.5px solid #0C2340; padding-bottom:3px; margin:12px 0 8px; }
+    .summary { font-size:10.5pt; color:#1a1a1a; line-height:1.55; margin-bottom:4px; }
+    .au-entry { margin-bottom:8px; }
+    .entry-head { display:flex; justify-content:space-between; align-items:baseline; }
+    .entry-head .role { font-weight:700; font-size:10.5pt; color:#111; }
+    .entry-head .date { font-size:10pt; color:#444; white-space:nowrap; }
+    .entry-company { font-size:10pt; color:#0C2340; font-weight:600; margin-bottom:2px; }
+    ul { padding-left:18px; margin:2px 0 6px; }
+    li { font-size:10pt; line-height:1.5; margin-bottom:2px; color:#1a1a1a; }
+    .skill-row { font-size:10pt; margin-bottom:3px; }
+    .skill-row strong { color:#0C2340; }
+    .edu-entry { margin-bottom:6px; }
+    .edu-head { display:flex; justify-content:space-between; align-items:baseline; }
+    .edu-head .degree { font-weight:700; font-size:10.5pt; color:#111; }
+    .edu-head .year { font-size:10pt; color:#444; }
+    .edu-detail { font-size:9.5pt; color:#555; }
+    .cert-line { font-size:10pt; color:#1a1a1a; margin-bottom:3px; }
+    .lang-line { font-size:10pt; color:#1a1a1a; margin-bottom:2px; }
+    .ref-note { font-size:10pt; color:#555; font-style:italic; margin-top:4px; }
+    .ats-badge { display:inline-flex; align-items:center; gap:4px; font-size:8pt; color:#0C2340; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; margin-left:12px; }
+    .ats-dot { width:6px; height:6px; border-radius:50%; background:#0C2340; }
   `;
-  const icons = [ICONS.location, ICONS.phone, ICONS.email, ICONS.linkedin];
-  let html = `<div class="header">
-    <div class="name">${esc(d.fullName || "Your Name")}</div>
-    ${d.jobTitle ? `<div class="title">${esc(d.jobTitle)}</div>` : ""}
-    <div class="contact">${contactParts(d).map((c, i) => `<span>${icons[i] || ""}${esc(c)}</span>`).join("")}</div>
-  </div><div class="body">`;
-  if (d.summary) html += `<h2>Profile</h2><div class="summary">${esc(d.summary)}</div>`;
-  if (d.experience) html += `<h2>Experience</h2>${entriesHTML(d.experience)}`;
+
+  let html = `<div class="name">${esc(d.fullName || "Your Name")}<span class="ats-badge"><span class="ats-dot"></span>AU CV Optimised</span></div>`;
+  if (d.jobTitle) html += `<div class="title">${esc(d.jobTitle)}</div>`;
+  const contact = contactParts(d);
+  html += `<div class="contact">${contact.map(c => {
+    if (c.includes("linkedin.com")) return `<a href="${c.startsWith("http") ? esc(c) : "https://" + esc(c)}">${esc(c)}</a>`;
+    return esc(c);
+  }).join(" &nbsp;&bull;&nbsp; ")}</div>`;
+
+  if (d.summary) html += `<h2>Career Profile</h2><div class="summary">${esc(d.summary)}</div>`;
+
   if (d.skills) {
-    html += `<h2>Skills</h2>`;
-    html += allSkillItems(d.skills).map(s => `<span class="skill-chip">${esc(s)}</span>`).join("");
+    html += `<h2>Key Competencies</h2>`;
+    const groups = parseSkillGroups(d.skills);
+    html += groups.map(g => `<div class="skill-row">${g.category ? `<strong>${esc(g.category)}:</strong> ` : ""}${g.items.map(i => esc(i)).join(", ")}</div>`).join("");
   }
-  if (d.education) html += `<h2>Education</h2>${entriesHTML(d.education)}`;
-  if (d.certifications) html += `<h2>Certifications</h2>${certsHTML(d.certifications)}`;
-  if (d.languages) html += `<h2>Languages</h2><p>${langLines(d.languages).map(l => esc(l)).join("  ·  ")}</p>`;
-  html += `</div>`;
+
+  if (d.experience) {
+    html += `<h2>Employment History</h2>`;
+    const entries = parseEntries(d.experience);
+    html += entries.map(e => {
+      let role = e.title;
+      let company = "";
+      let dateText = "";
+      if (e.sub) {
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
+        if (datePart) {
+          dateText = datePart[1];
+          company = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+        } else {
+          company = e.sub.replace(/ · /g, ", ");
+        }
+      }
+      let row = `<div class="au-entry">`;
+      row += `<div class="entry-head"><span class="role">${esc(role)}</span>`;
+      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
+      row += `</div>`;
+      if (company) row += `<div class="entry-company">${esc(company)}</div>`;
+      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
+      row += `</div>`;
+      return row;
+    }).join("");
+  }
+
+  if (d.education) {
+    html += `<h2>Education &amp; Qualifications</h2>`;
+    const entries = parseEntries(d.education);
+    html += entries.map(e => {
+      let dateText = "";
+      let inst = "";
+      if (e.sub) {
+        const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{4})$/);
+        if (datePart) {
+          dateText = datePart[1];
+          inst = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+        } else {
+          inst = e.sub.replace(/ · /g, ", ");
+        }
+      }
+      let row = `<div class="edu-entry"><div class="edu-head"><span class="degree">${esc(e.title)}</span>`;
+      if (dateText) row += `<span class="year">${esc(dateText)}</span>`;
+      row += `</div>`;
+      if (inst) row += `<div class="edu-detail">${esc(inst)}</div>`;
+      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
+      row += `</div>`;
+      return row;
+    }).join("");
+  }
+
+  if (d.certifications) {
+    html += `<h2>Professional Development</h2>`;
+    d.certifications.split("\n").filter(l => l.trim()).forEach(l => {
+      html += `<div class="cert-line">${esc(l.replace(/^[-•]\s*/, ""))}</div>`;
+    });
+  }
+
+  if (d.languages) {
+    html += `<h2>Languages</h2>`;
+    html += langLines(d.languages).map(l => `<div class="lang-line">${esc(l)}</div>`).join("");
+  }
+
+  html += `<h2>Referees</h2><div class="ref-note">Available upon request</div>`;
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
 }
+
 
 /* ============================================================
    TEMPLATE REGISTRY — All 26 templates
@@ -1540,8 +1678,10 @@ const TEMPLATES: Template[] = [
   { id: "minimalist", name: "Minimalist", desc: "Ultra-clean hairline rules and generous whitespace", category: "Classic", buildHTML: buildMinimalist },
   { id: "executive", name: "Executive", desc: "C-suite layout with navy accents and serif typography", category: "Classic", buildHTML: buildExecutive },
   { id: "two-column", name: "Two-Column Modern", desc: "Balanced two-column grid with skill pills", category: "Modern", buildHTML: buildTwoColumn },
-  { id: "infographic", name: "Infographic", desc: "Metric-driven layout with skill bars and stat tiles", category: "Visual", buildHTML: buildInfographic },
-  { id: "dark-elegant", name: "Dark Elegant", desc: "Dark background with purple accents and luxury feel", category: "Special", buildHTML: buildDarkElegant },
+
+  /* ---- COUNTRY-OPTIMIZED ---- */
+  { id: "us-optimized", name: "US ATS Optimized", desc: "Strict US resume format — 1 page, power verbs, ATS-safe structure", category: "Standard", buildHTML: buildUSOptimized },
+  { id: "au-optimized", name: "AU CV Optimised", desc: "Australian CV format — career profile, employment history, referees", category: "Standard", buildHTML: buildAUOptimized },
 ];
 
 /* ============================================================
