@@ -1175,33 +1175,63 @@ export default function MockInterviewPage() {
                   <circle cx="100" cy="100" r="96" fill="url(#avatarBg)" opacity="0.5" />
                   <circle cx="100" cy="100" r="94" fill="#0F0E26" />
                   <g clipPath="url(#avatarClip)">
-                    {/* Shoulders / Blazer */}
-                    <path d="M30 200 Q30 162 58 150 L82 142 Q90 139 100 142 Q110 139 118 142 L142 150 Q170 162 170 200 L170 220 L30 220 Z" fill="url(#blazerGrad)" />
-                    <path d="M58 150 L82 142 Q90 139 100 142" stroke="#3730A3" strokeWidth="0.5" fill="none" opacity="0.4" />
-                    <path d="M142 150 L118 142 Q110 139 100 142" stroke="#3730A3" strokeWidth="0.5" fill="none" opacity="0.4" />
-                    {/* Lapel lines */}
-                    <path d="M82 142 L92 158" stroke="#4338CA" strokeWidth="0.8" fill="none" opacity="0.3" />
-                    <path d="M118 142 L108 158" stroke="#4338CA" strokeWidth="0.8" fill="none" opacity="0.3" />
-                    {/* Blouse / collar */}
-                    <path d="M90 140 L100 154 L110 140" fill="#E8E5F0" opacity="0.9" />
-                    <path d="M90 140 L100 154 L110 140" fill="none" stroke="#D1CCE0" strokeWidth="0.5" />
+                    {/* Hair flowing down behind shoulders */}
+                    <path d="M48 70 Q46 100 44 140 Q42 170 50 200 L50 220 L28 220 L28 200 Q30 160 38 130 Q42 100 48 70 Z" fill="url(#hairGrad)" />
+                    <path d="M152 70 Q154 100 156 140 Q158 170 150 200 L150 220 L172 220 L172 200 Q170 160 162 130 Q158 100 152 70 Z" fill="url(#hairGrad)" />
+                    {/* Hair behind-shoulder strands */}
+                    <path d="M44 140 Q46 155 48 175 Q49 185 50 200" stroke="#2C1810" strokeWidth="0.8" fill="none" opacity="0.3" />
+                    <path d="M156 140 Q154 155 152 175 Q151 185 150 200" stroke="#2C1810" strokeWidth="0.8" fill="none" opacity="0.3" />
+                    {/* Shoulders / Professional Blazer */}
+                    <path d="M28 200 Q28 158 55 146 L80 138 Q90 135 100 138 Q110 135 120 138 L145 146 Q172 158 172 200 L172 220 L28 220 Z" fill="url(#blazerGrad)" />
+                    {/* Blazer shoulder seams */}
+                    <path d="M55 146 L42 165" stroke="#4338CA" strokeWidth="0.6" fill="none" opacity="0.2" />
+                    <path d="M145 146 L158 165" stroke="#4338CA" strokeWidth="0.6" fill="none" opacity="0.2" />
+                    {/* Blazer lapels — structured */}
+                    <path d="M80 138 L72 155 L88 170 L92 160 Z" fill="#3730A3" opacity="0.4" />
+                    <path d="M120 138 L128 155 L112 170 L108 160 Z" fill="#3730A3" opacity="0.4" />
+                    {/* Lapel edge lines */}
+                    <path d="M80 138 L72 155 L88 170" stroke="#4F46E5" strokeWidth="0.8" fill="none" opacity="0.35" />
+                    <path d="M120 138 L128 155 L112 170" stroke="#4F46E5" strokeWidth="0.8" fill="none" opacity="0.35" />
+                    {/* Blazer button */}
+                    <circle cx="100" cy="172" r="2.5" fill="#4338CA" opacity="0.5" />
+                    <circle cx="100" cy="172" r="1.2" fill="#6366F1" opacity="0.3" />
+                    {/* Blazer pocket flap — left */}
+                    <path d="M68 175 L82 175 L82 177 L68 177 Z" fill="#3730A3" opacity="0.2" />
+                    {/* Blouse / V-neck collar */}
+                    <path d="M88 137 L100 156 L112 137" fill="#F0ECF5" opacity="0.95" />
+                    <path d="M88 137 L100 156 L112 137" fill="none" stroke="#DDD6EB" strokeWidth="0.6" />
+                    {/* Blouse neckline detail */}
+                    <path d="M93 142 L100 152 L107 142" fill="none" stroke="#E8E0F0" strokeWidth="0.3" opacity="0.5" />
+                    {/* Hair flowing down in front of shoulders */}
+                    <path d="M56 80 Q52 105 48 130 Q46 150 48 170 Q49 160 50 145 Q52 125 55 105 Q57 90 56 80 Z" fill="url(#hairGrad)" opacity="0.85" />
+                    <path d="M144 80 Q148 105 152 130 Q154 150 152 170 Q151 160 150 145 Q148 125 145 105 Q143 90 144 80 Z" fill="url(#hairGrad)" opacity="0.85" />
+                    {/* Front hair strand highlights */}
+                    <path d="M53 110 Q52 130 49 150" stroke="#3D2820" strokeWidth="0.6" fill="none" opacity="0.2" />
+                    <path d="M55 100 Q53 120 51 140" stroke="#4A3228" strokeWidth="0.4" fill="none" opacity="0.15" />
+                    <path d="M147 110 Q148 130 151 150" stroke="#3D2820" strokeWidth="0.6" fill="none" opacity="0.2" />
+                    <path d="M145 100 Q147 120 149 140" stroke="#4A3228" strokeWidth="0.4" fill="none" opacity="0.15" />
                     {/* Neck with shading */}
-                    <path d="M90 122 Q90 140 100 142 Q110 140 110 122 L108 122 Q108 136 100 138 Q92 136 92 122 Z" fill="url(#skinGrad)" />
+                    <path d="M90 122 Q90 136 100 138 Q110 136 110 122 L108 122 Q108 134 100 136 Q92 134 92 122 Z" fill="url(#skinGrad)" />
                     <path d="M93 128 Q100 130 107 128" stroke="#C9998A" strokeWidth="0.5" fill="none" opacity="0.3" />
-                    {/* Face — natural oval with jaw */}
+                    {/* Collarbone hints */}
+                    <path d="M85 136 Q78 138 72 140" stroke="#D4A68C" strokeWidth="0.5" fill="none" opacity="0.2" />
+                    <path d="M115 136 Q122 138 128 140" stroke="#D4A68C" strokeWidth="0.5" fill="none" opacity="0.2" />
+                    {/* Face — natural oval with refined jaw */}
                     <path d="M60 85 Q60 48 100 42 Q140 48 140 85 L140 98 Q138 118 130 126 Q122 134 100 136 Q78 134 70 126 Q62 118 60 98 Z" fill="url(#skinGrad)" filter="url(#softShadow)" />
                     {/* Jawline shadow */}
                     <path d="M65 118 Q78 132 100 134 Q122 132 135 118" stroke="#C49A82" strokeWidth="1" fill="none" opacity="0.25" />
-                    {/* Hair back volume */}
-                    <path d="M54 82 Q52 36 100 28 Q148 36 146 82 L148 110 Q150 124 142 130 L140 116 L138 100 Q138 48 100 40 Q62 48 62 100 L60 116 L58 130 Q50 124 52 110 Z" fill="url(#hairGrad)" />
-                    {/* Hair side strands */}
-                    <path d="M58 90 Q56 105 58 118 Q59 108 60 98 Q60 90 58 82 Z" fill="#1A0E08" opacity="0.6" />
-                    <path d="M142 90 Q144 105 142 118 Q141 108 140 98 Q140 90 142 82 Z" fill="#1A0E08" opacity="0.6" />
-                    {/* Hair top with part */}
-                    <path d="M62 70 Q65 50 80 44 Q72 56 68 70 Z" fill="#1A0E08" opacity="0.7" />
-                    <path d="M138 70 Q135 50 120 44 Q128 56 132 70 Z" fill="#1A0E08" opacity="0.7" />
-                    {/* Hair highlight */}
-                    <path d="M78 38 Q90 34 100 34 Q105 34 108 35" stroke="#3D2820" strokeWidth="1.5" fill="none" opacity="0.3" />
+                    {/* Chin highlight */}
+                    <ellipse cx="100" cy="130" rx="6" ry="3" fill="white" opacity="0.04" />
+                    {/* Hair crown and top volume */}
+                    <path d="M54 82 Q52 36 100 26 Q148 36 146 82 L148 100 Q148 48 100 38 Q52 48 52 100 Z" fill="url(#hairGrad)" />
+                    {/* Hair framing face — soft waves */}
+                    <path d="M56 80 Q58 65 62 55 Q65 50 72 46 Q66 55 62 68 Q58 78 56 88 Z" fill="#1A0E08" opacity="0.7" />
+                    <path d="M144 80 Q142 65 138 55 Q135 50 128 46 Q134 55 138 68 Q142 78 144 88 Z" fill="#1A0E08" opacity="0.7" />
+                    {/* Hair part — slight center-left */}
+                    <path d="M92 30 Q96 28 100 28 Q100 32 97 34" stroke="#3D2820" strokeWidth="0.8" fill="none" opacity="0.3" />
+                    {/* Hair shine highlights */}
+                    <path d="M75 36 Q85 32 95 31" stroke="#4A3228" strokeWidth="2" fill="none" opacity="0.2" />
+                    <path d="M105 31 Q115 32 125 36" stroke="#4A3228" strokeWidth="1.5" fill="none" opacity="0.15" />
                     {/* Eye sockets — subtle shadow */}
                     <ellipse cx="82" cy="86" rx="14" ry="9" fill="#D4A68C" opacity="0.4" />
                     <ellipse cx="118" cy="86" rx="14" ry="9" fill="#D4A68C" opacity="0.4" />
@@ -1225,11 +1255,15 @@ export default function MockInterviewPage() {
                     {/* Lower lash line */}
                     <path d="M74 90 Q78 92 82 92.5 Q86 92 90 90" stroke="#8B6B5A" strokeWidth="0.5" fill="none" opacity="0.4" />
                     <path d="M110 90 Q114 92 118 92.5 Q122 92 126 90" stroke="#8B6B5A" strokeWidth="0.5" fill="none" opacity="0.4" />
-                    {/* Eyelashes — subtle top lash */}
-                    <path d="M73 83.5 Q72 82 71 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
-                    <path d="M91 83.5 Q92 82 93 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
-                    <path d="M109 83.5 Q108 82 107 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
-                    <path d="M127 83.5 Q128 82 129 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
+                    {/* Eyelashes — fuller, more defined */}
+                    <path d="M73 83 Q71.5 81 70 80" stroke="#1A0E08" strokeWidth="0.7" fill="none" />
+                    <path d="M76 82 Q75 80 74 79" stroke="#1A0E08" strokeWidth="0.6" fill="none" />
+                    <path d="M88 82 Q89 80 90 79" stroke="#1A0E08" strokeWidth="0.6" fill="none" />
+                    <path d="M91 83 Q92.5 81 94 80" stroke="#1A0E08" strokeWidth="0.7" fill="none" />
+                    <path d="M109 83 Q107.5 81 106 80" stroke="#1A0E08" strokeWidth="0.7" fill="none" />
+                    <path d="M112 82 Q111 80 110 79" stroke="#1A0E08" strokeWidth="0.6" fill="none" />
+                    <path d="M124 82 Q125 80 126 79" stroke="#1A0E08" strokeWidth="0.6" fill="none" />
+                    <path d="M127 83 Q128.5 81 130 80" stroke="#1A0E08" strokeWidth="0.7" fill="none" />
                     {/* Eyelids for blink animation */}
                     <rect className="avatar-eyelid" x="72" y="80" width="20" height="14" rx="10" fill="#E0B8A0" style={{ transformOrigin: "82px 87px" }} />
                     <rect className="avatar-eyelid" x="108" y="80" width="20" height="14" rx="10" fill="#E0B8A0" style={{ transformOrigin: "118px 87px" }} />
@@ -1270,17 +1304,19 @@ export default function MockInterviewPage() {
                         </>
                       )}
                     </g>
-                    {/* Cheekbone highlights */}
-                    <ellipse cx="68" cy="96" rx="8" ry="5" fill="white" opacity="0.04" />
-                    <ellipse cx="132" cy="96" rx="8" ry="5" fill="white" opacity="0.04" />
-                    {/* Subtle cheek warmth */}
-                    <ellipse cx="72" cy="102" rx="8" ry="5" fill="#D4887A" opacity="0.06" />
-                    <ellipse cx="128" cy="102" rx="8" ry="5" fill="#D4887A" opacity="0.06" />
-                    {/* Small stud earrings */}
-                    <circle cx="57" cy="100" r="2" fill="#E8D5B0" opacity="0.7" />
-                    <circle cx="57" cy="100" r="1" fill="white" opacity="0.3" />
-                    <circle cx="143" cy="100" r="2" fill="#E8D5B0" opacity="0.7" />
-                    <circle cx="143" cy="100" r="1" fill="white" opacity="0.3" />
+                    {/* Cheekbone highlights — more prominent */}
+                    <ellipse cx="68" cy="94" rx="10" ry="5" fill="white" opacity="0.06" />
+                    <ellipse cx="132" cy="94" rx="10" ry="5" fill="white" opacity="0.06" />
+                    {/* Warm cheek blush — rosier */}
+                    <ellipse cx="72" cy="100" rx="9" ry="6" fill="#E08888" opacity="0.08" />
+                    <ellipse cx="128" cy="100" rx="9" ry="6" fill="#E08888" opacity="0.08" />
+                    {/* Forehead highlight */}
+                    <ellipse cx="100" cy="60" rx="15" ry="8" fill="white" opacity="0.04" />
+                    {/* Small elegant stud earrings */}
+                    <circle cx="56" cy="100" r="2.2" fill="#F0DFC0" opacity="0.8" />
+                    <circle cx="56" cy="100" r="1.2" fill="white" opacity="0.4" />
+                    <circle cx="144" cy="100" r="2.2" fill="#F0DFC0" opacity="0.8" />
+                    <circle cx="144" cy="100" r="1.2" fill="white" opacity="0.4" />
                   </g>
                 </svg>
               </div>
