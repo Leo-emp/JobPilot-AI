@@ -1133,63 +1133,154 @@ export default function MockInterviewPage() {
               {/* Glowing ring behind avatar (visible when speaking) */}
               <div className={`absolute rounded-full w-32 h-32 md:w-40 md:h-40 bg-gradient-to-r from-blue-500/20 to-blue-500/30 blur-xl ${isAISpeaking ? "avatar-glow" : "opacity-20"}`} />
 
-              {/* Avatar SVG — professional woman illustration */}
+              {/* Avatar SVG — realistic professional woman */}
               <div className="relative z-10">
                 <svg width="120" height="120" viewBox="0 0 200 200" className="md:w-[160px] md:h-[160px]">
                   <defs>
                     <linearGradient id="avatarBg" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#4338CA" />
-                      <stop offset="100%" stopColor="#7C3AED" />
+                      <stop offset="0%" stopColor="#1E1B4B" />
+                      <stop offset="100%" stopColor="#312E81" />
                     </linearGradient>
+                    <linearGradient id="skinGrad" x1="0.3" y1="0" x2="0.7" y2="1">
+                      <stop offset="0%" stopColor="#EDCBB8" />
+                      <stop offset="50%" stopColor="#E0B8A0" />
+                      <stop offset="100%" stopColor="#D4A68C" />
+                    </linearGradient>
+                    <linearGradient id="hairGrad" x1="0.2" y1="0" x2="0.8" y2="1">
+                      <stop offset="0%" stopColor="#2C1810" />
+                      <stop offset="60%" stopColor="#1A0E08" />
+                      <stop offset="100%" stopColor="#0F0805" />
+                    </linearGradient>
+                    <linearGradient id="blazerGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+                      <stop offset="0%" stopColor="#312E81" />
+                      <stop offset="100%" stopColor="#1E1B4B" />
+                    </linearGradient>
+                    <linearGradient id="lipGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+                      <stop offset="0%" stopColor="#C08080" />
+                      <stop offset="100%" stopColor="#A05858" />
+                    </linearGradient>
+                    <radialGradient id="irisGrad" cx="0.45" cy="0.4">
+                      <stop offset="0%" stopColor="#6B4423" />
+                      <stop offset="60%" stopColor="#3D2415" />
+                      <stop offset="100%" stopColor="#1A0E08" />
+                    </radialGradient>
+                    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+                      <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+                      <feOffset dy="1" />
+                      <feComponentTransfer><feFuncA type="linear" slope="0.15" /></feComponentTransfer>
+                      <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
                     <clipPath id="avatarClip"><circle cx="100" cy="100" r="94" /></clipPath>
                   </defs>
-                  {/* Background circle */}
-                  <circle cx="100" cy="100" r="96" fill="url(#avatarBg)" opacity="0.3" />
-                  <circle cx="100" cy="100" r="94" fill="#1E1B4B" />
+                  <circle cx="100" cy="100" r="96" fill="url(#avatarBg)" opacity="0.5" />
+                  <circle cx="100" cy="100" r="94" fill="#0F0E26" />
                   <g clipPath="url(#avatarClip)">
-                    {/* Body / Blazer */}
-                    <path d="M35 195 Q35 160 65 148 L90 140 L100 143 L110 140 L135 148 Q165 160 165 195 L165 220 L35 220 Z" fill="#4338CA" />
-                    {/* Shirt collar V-neck */}
-                    <path d="M88 142 L100 155 L112 142" fill="none" stroke="#E2E8F0" strokeWidth="2" />
-                    {/* Neck */}
-                    <rect x="91" y="121" width="18" height="22" rx="9" fill="#DEB0A0" />
-                    {/* Face — oval */}
-                    <ellipse cx="100" cy="92" rx="40" ry="46" fill="#DEB0A0" />
-                    {/* Hair back (dark brunette) */}
-                    <path d="M56 78 Q56 38 100 32 Q144 38 144 78 L146 108 Q148 120 140 125 L137 112 L132 98 Q132 55 100 48 Q68 55 68 98 L63 112 L60 125 Q52 120 54 108 Z" fill="#3D2424" />
-                    {/* Hair front bangs */}
-                    <path d="M62 72 Q68 55 85 50 Q75 62 72 75 Z" fill="#3D2424" />
-                    <path d="M138 72 Q132 55 115 50 Q125 62 128 75 Z" fill="#3D2424" />
-                    {/* Eyes — expressive */}
-                    <ellipse cx="82" cy="88" rx="5.5" ry="5" fill="#2D1B0E" />
-                    <ellipse cx="118" cy="88" rx="5.5" ry="5" fill="#2D1B0E" />
-                    {/* Eye shine */}
-                    <circle cx="84" cy="86" r="2" fill="white" opacity="0.85" />
-                    <circle cx="120" cy="86" r="2" fill="white" opacity="0.85" />
-                    {/* Eyelids for blink animation (skin-colored, scales over eyes) */}
-                    <rect className="avatar-eyelid" x="74" y="81" width="17" height="14" rx="7" fill="#DEB0A0" style={{ transformOrigin: "82.5px 88px" }} />
-                    <rect className="avatar-eyelid" x="110" y="81" width="17" height="14" rx="7" fill="#DEB0A0" style={{ transformOrigin: "118.5px 88px" }} />
-                    {/* Eyebrows */}
-                    <path d="M72 77 Q82 73 92 76" stroke="#3D2424" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                    <path d="M108 76 Q118 73 128 77" stroke="#3D2424" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                    {/* Nose */}
-                    <path d="M100 92 Q97 100 95 103 Q98 105 100 105 Q102 105 105 103 Q103 100 100 92" fill="#C9998A" opacity="0.5" />
-                    {/* Mouth — switches between smile and open when speaking */}
-                    <g className={isAISpeaking ? "avatar-mouth-speaking" : ""} style={{ transformOrigin: "100px 115px" }}>
+                    {/* Shoulders / Blazer */}
+                    <path d="M30 200 Q30 162 58 150 L82 142 Q90 139 100 142 Q110 139 118 142 L142 150 Q170 162 170 200 L170 220 L30 220 Z" fill="url(#blazerGrad)" />
+                    <path d="M58 150 L82 142 Q90 139 100 142" stroke="#3730A3" strokeWidth="0.5" fill="none" opacity="0.4" />
+                    <path d="M142 150 L118 142 Q110 139 100 142" stroke="#3730A3" strokeWidth="0.5" fill="none" opacity="0.4" />
+                    {/* Lapel lines */}
+                    <path d="M82 142 L92 158" stroke="#4338CA" strokeWidth="0.8" fill="none" opacity="0.3" />
+                    <path d="M118 142 L108 158" stroke="#4338CA" strokeWidth="0.8" fill="none" opacity="0.3" />
+                    {/* Blouse / collar */}
+                    <path d="M90 140 L100 154 L110 140" fill="#E8E5F0" opacity="0.9" />
+                    <path d="M90 140 L100 154 L110 140" fill="none" stroke="#D1CCE0" strokeWidth="0.5" />
+                    {/* Neck with shading */}
+                    <path d="M90 122 Q90 140 100 142 Q110 140 110 122 L108 122 Q108 136 100 138 Q92 136 92 122 Z" fill="url(#skinGrad)" />
+                    <path d="M93 128 Q100 130 107 128" stroke="#C9998A" strokeWidth="0.5" fill="none" opacity="0.3" />
+                    {/* Face — natural oval with jaw */}
+                    <path d="M60 85 Q60 48 100 42 Q140 48 140 85 L140 98 Q138 118 130 126 Q122 134 100 136 Q78 134 70 126 Q62 118 60 98 Z" fill="url(#skinGrad)" filter="url(#softShadow)" />
+                    {/* Jawline shadow */}
+                    <path d="M65 118 Q78 132 100 134 Q122 132 135 118" stroke="#C49A82" strokeWidth="1" fill="none" opacity="0.25" />
+                    {/* Hair back volume */}
+                    <path d="M54 82 Q52 36 100 28 Q148 36 146 82 L148 110 Q150 124 142 130 L140 116 L138 100 Q138 48 100 40 Q62 48 62 100 L60 116 L58 130 Q50 124 52 110 Z" fill="url(#hairGrad)" />
+                    {/* Hair side strands */}
+                    <path d="M58 90 Q56 105 58 118 Q59 108 60 98 Q60 90 58 82 Z" fill="#1A0E08" opacity="0.6" />
+                    <path d="M142 90 Q144 105 142 118 Q141 108 140 98 Q140 90 142 82 Z" fill="#1A0E08" opacity="0.6" />
+                    {/* Hair top with part */}
+                    <path d="M62 70 Q65 50 80 44 Q72 56 68 70 Z" fill="#1A0E08" opacity="0.7" />
+                    <path d="M138 70 Q135 50 120 44 Q128 56 132 70 Z" fill="#1A0E08" opacity="0.7" />
+                    {/* Hair highlight */}
+                    <path d="M78 38 Q90 34 100 34 Q105 34 108 35" stroke="#3D2820" strokeWidth="1.5" fill="none" opacity="0.3" />
+                    {/* Eye sockets — subtle shadow */}
+                    <ellipse cx="82" cy="86" rx="14" ry="9" fill="#D4A68C" opacity="0.4" />
+                    <ellipse cx="118" cy="86" rx="14" ry="9" fill="#D4A68C" opacity="0.4" />
+                    {/* Eye whites */}
+                    <ellipse cx="82" cy="87" rx="9" ry="6" fill="#F5F0EB" />
+                    <ellipse cx="118" cy="87" rx="9" ry="6" fill="#F5F0EB" />
+                    {/* Iris */}
+                    <circle cx="83" cy="87" r="4.5" fill="url(#irisGrad)" />
+                    <circle cx="119" cy="87" r="4.5" fill="url(#irisGrad)" />
+                    {/* Pupil */}
+                    <circle cx="83" cy="87" r="2.2" fill="#0A0604" />
+                    <circle cx="119" cy="87" r="2.2" fill="#0A0604" />
+                    {/* Eye reflections — dual catchlight */}
+                    <circle cx="84.5" cy="85.5" r="1.5" fill="white" opacity="0.9" />
+                    <circle cx="81.5" cy="88.5" r="0.7" fill="white" opacity="0.5" />
+                    <circle cx="120.5" cy="85.5" r="1.5" fill="white" opacity="0.9" />
+                    <circle cx="117.5" cy="88.5" r="0.7" fill="white" opacity="0.5" />
+                    {/* Upper eyelids (defining line) */}
+                    <path d="M73 84 Q78 81 82 81 Q86 81 91 84" stroke="#5C3A2A" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                    <path d="M109 84 Q114 81 118 81 Q122 81 127 84" stroke="#5C3A2A" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                    {/* Lower lash line */}
+                    <path d="M74 90 Q78 92 82 92.5 Q86 92 90 90" stroke="#8B6B5A" strokeWidth="0.5" fill="none" opacity="0.4" />
+                    <path d="M110 90 Q114 92 118 92.5 Q122 92 126 90" stroke="#8B6B5A" strokeWidth="0.5" fill="none" opacity="0.4" />
+                    {/* Eyelashes — subtle top lash */}
+                    <path d="M73 83.5 Q72 82 71 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
+                    <path d="M91 83.5 Q92 82 93 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
+                    <path d="M109 83.5 Q108 82 107 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
+                    <path d="M127 83.5 Q128 82 129 81.5" stroke="#2C1810" strokeWidth="0.6" fill="none" />
+                    {/* Eyelids for blink animation */}
+                    <rect className="avatar-eyelid" x="72" y="80" width="20" height="14" rx="10" fill="#E0B8A0" style={{ transformOrigin: "82px 87px" }} />
+                    <rect className="avatar-eyelid" x="108" y="80" width="20" height="14" rx="10" fill="#E0B8A0" style={{ transformOrigin: "118px 87px" }} />
+                    {/* Eyebrows — natural arch */}
+                    <path d="M71 77 Q76 73 82 73.5 Q87 74 91 76" stroke="#2C1810" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.7" />
+                    <path d="M109 76 Q113 74 118 73.5 Q124 73 129 77" stroke="#2C1810" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.7" />
+                    {/* Nose bridge shadow */}
+                    <path d="M98 80 Q97 90 96 96" stroke="#C9998A" strokeWidth="0.6" fill="none" opacity="0.3" />
+                    {/* Nose tip and nostrils */}
+                    <path d="M96 100 Q94 103 93 104 Q96 106 100 106 Q104 106 107 104 Q106 103 104 100" fill="#D4A68C" opacity="0.5" />
+                    <ellipse cx="95" cy="104" rx="2" ry="1.2" fill="#C49A82" opacity="0.3" />
+                    <ellipse cx="105" cy="104" rx="2" ry="1.2" fill="#C49A82" opacity="0.3" />
+                    {/* Nose highlight */}
+                    <ellipse cx="100" cy="98" rx="2" ry="3" fill="white" opacity="0.08" />
+                    {/* Nasolabial folds — very subtle */}
+                    <path d="M90 104 Q88 110 88 114" stroke="#C9998A" strokeWidth="0.4" fill="none" opacity="0.2" />
+                    <path d="M110 104 Q112 110 112 114" stroke="#C9998A" strokeWidth="0.4" fill="none" opacity="0.2" />
+                    {/* Mouth — anatomically detailed */}
+                    <g className={isAISpeaking ? "avatar-mouth-speaking" : ""} style={{ transformOrigin: "100px 116px" }}>
                       {isAISpeaking ? (
-                        /* Open mouth (speaking) */
-                        <ellipse cx="100" cy="115" rx="10" ry="6" fill="#C25F5F" />
+                        <>
+                          {/* Speaking: open mouth with teeth hint */}
+                          <ellipse cx="100" cy="116" rx="9" ry="5.5" fill="#8B3A3A" />
+                          <ellipse cx="100" cy="114" rx="7" ry="2" fill="#F0E8E4" opacity="0.6" />
+                          {/* Upper lip */}
+                          <path d="M91 113 Q94 110 97 112 L100 110 L103 112 Q106 110 109 113" fill="url(#lipGrad)" />
+                          {/* Lower lip */}
+                          <path d="M91 113 Q96 121 100 121.5 Q104 121 109 113" fill="#B06868" />
+                        </>
                       ) : (
-                        /* Closed smile (idle) */
-                        <path d="M88 113 Q94 119 100 119 Q106 119 112 113" stroke="#C25F5F" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                        <>
+                          {/* Idle: natural closed-lip smile */}
+                          <path d="M90 114 Q94 111 97 113 L100 111.5 L103 113 Q106 111 110 114" fill="url(#lipGrad)" />
+                          <path d="M90 114.5 Q95 118 100 118.5 Q105 118 110 114.5" fill="#B06868" />
+                          <path d="M90 114.3 L110 114.3" stroke="#9B5050" strokeWidth="0.4" opacity="0.5" />
+                          {/* Lip highlight */}
+                          <ellipse cx="100" cy="117" rx="4" ry="1.5" fill="white" opacity="0.06" />
+                        </>
                       )}
                     </g>
-                    {/* Cheek blush */}
-                    <circle cx="70" cy="102" r="9" fill="rgba(194, 95, 95, 0.1)" />
-                    <circle cx="130" cy="102" r="9" fill="rgba(194, 95, 95, 0.1)" />
-                    {/* Earrings */}
-                    <circle cx="58" cy="103" r="2.5" fill="#F59E0B" opacity="0.8" />
-                    <circle cx="142" cy="103" r="2.5" fill="#F59E0B" opacity="0.8" />
+                    {/* Cheekbone highlights */}
+                    <ellipse cx="68" cy="96" rx="8" ry="5" fill="white" opacity="0.04" />
+                    <ellipse cx="132" cy="96" rx="8" ry="5" fill="white" opacity="0.04" />
+                    {/* Subtle cheek warmth */}
+                    <ellipse cx="72" cy="102" rx="8" ry="5" fill="#D4887A" opacity="0.06" />
+                    <ellipse cx="128" cy="102" rx="8" ry="5" fill="#D4887A" opacity="0.06" />
+                    {/* Small stud earrings */}
+                    <circle cx="57" cy="100" r="2" fill="#E8D5B0" opacity="0.7" />
+                    <circle cx="57" cy="100" r="1" fill="white" opacity="0.3" />
+                    <circle cx="143" cy="100" r="2" fill="#E8D5B0" opacity="0.7" />
+                    <circle cx="143" cy="100" r="1" fill="white" opacity="0.3" />
                   </g>
                 </svg>
               </div>
