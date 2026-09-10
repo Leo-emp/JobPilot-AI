@@ -1555,6 +1555,8 @@ function buildAUOptimized(d: ResumeData): string {
 const TEMPLATES: Template[] = [
   /* ---- STANDARD ---- */
   { id: "standard-ats", name: "Standard ATS-Friendly", desc: "JobPilot's signature layout — clean Helvetica, bold headers, right-aligned dates", category: "Standard", buildHTML: buildStandardATS },
+  { id: "us-optimized", name: "US ATS Optimized", desc: "Strict US resume format — 1 page, power verbs, ATS-safe structure", category: "Standard", buildHTML: buildUSOptimized },
+  { id: "au-optimized", name: "AU CV Optimised", desc: "Australian CV format — career profile, employment history, referees", category: "Standard", buildHTML: buildAUOptimized },
 
   /* ---- CLASSIC ---- */
   { id: "traditional", name: "Traditional", desc: "Classic serif layout trusted by Fortune 500 recruiters", category: "Classic", buildHTML: buildTraditional },
@@ -1591,9 +1593,6 @@ const TEMPLATES: Template[] = [
   { id: "executive", name: "Executive", desc: "C-suite layout with navy accents and serif typography", category: "Classic", buildHTML: buildExecutive },
   { id: "two-column", name: "Two-Column Modern", desc: "Balanced two-column grid with skill pills", category: "Modern", buildHTML: buildTwoColumn },
 
-  /* ---- COUNTRY-OPTIMIZED ---- */
-  { id: "us-optimized", name: "US ATS Optimized", desc: "Strict US resume format — 1 page, power verbs, ATS-safe structure", category: "Standard", buildHTML: buildUSOptimized },
-  { id: "au-optimized", name: "AU CV Optimised", desc: "Australian CV format — career profile, employment history, referees", category: "Standard", buildHTML: buildAUOptimized },
 ];
 
 /* ============================================================
