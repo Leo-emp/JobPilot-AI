@@ -31,13 +31,17 @@ const CATEGORY_COLORS: Record<string, string> = {
 // # Pre-build static paths for all published posts at deploy time
 // # Any slug NOT in this list is generated on-demand and cached (fallback: true equivalent via ISR)
 export async function generateStaticParams() {
-  // # Use prisma directly (no dbRetry) — build-time failure is acceptable here
-  const posts = await prisma.blogPost.findMany({
-    where: { status: "published" },
-    select: { slug: true },
-  });
-  // # Return array of { slug } objects as required by Next.js generateStaticParams
-  return posts.map((p) => ({ slug: p.slug }));
+  // # Try to pre-build slugs at deploy time — if DB isn't reachable during build
+  // # (e.g. env vars not available), return empty array so pages are generated on-demand via ISR
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { status: "published" },
+      select: { slug: true },
+    });
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
 }
 
 // # SEO metadata — unique title, description, and OG tags per post

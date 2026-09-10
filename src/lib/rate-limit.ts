@@ -125,10 +125,19 @@ function createRedisLimiter(config: RateLimiterConfig) {
    PUBLIC API — Auto-selects Redis or in-memory
    ============================================================ */
 export function createRateLimiter(config: RateLimiterConfig) {
-  if (getRedis()) {
-    return createRedisLimiter(config);
-  }
-  return createInMemoryLimiter(config);
+  /* # Lazy init: defer Redis vs in-memory decision to the first .check() call
+     # so importing this module during Vercel builds doesn't crash when
+     # UPSTASH_REDIS_REST_URL isn't available at build time */
+  let inner: { check(id: string): Promise<RateLimitResult> } | null = null;
+
+  return {
+    async check(identifier: string): Promise<RateLimitResult> {
+      if (!inner) {
+        inner = getRedis() ? createRedisLimiter(config) : createInMemoryLimiter(config);
+      }
+      return inner.check(identifier);
+    },
+  };
 }
 
 /* ---- Pre-configured limiters for the AI endpoint ---- */
