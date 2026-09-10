@@ -165,73 +165,83 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === "google" || account?.provider === "linkedin") {
         if (!user.email) return false;
 
-        /* Check if a user with this email already exists */
-        let dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
+        try {
+          /* Check if a user with this email already exists */
+          let dbUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
 
-        /* Block soft-deleted users from signing in via OAuth */
-        if (dbUser?.deletedAt) {
-          audit("auth.login.failed", { email: user.email, detail: "soft_deleted_oauth" });
+          /* Block soft-deleted users from signing in via OAuth */
+          if (dbUser?.deletedAt) {
+            audit("auth.login.failed", { email: user.email, detail: "soft_deleted_oauth" });
+            return false;
+          }
+
+          /* If no user exists, create one (no password for OAuth users) */
+          /* password column is NOT NULL in production — pass empty string as sentinel */
+          /* (authorize() treats !user.password as "no credentials login", so "" is safe) */
+          if (!dbUser) {
+            dbUser = await prisma.user.create({
+              data: {
+                name: user.name || "User",
+                email: user.email,
+                image: user.image,
+                password: "",
+              },
+            });
+
+            /* Send welcome email to new OAuth users (fire-and-forget) */
+            getResend().emails.send({
+              from: "JobPilot AI <noreply@jobpilotai.co>",
+              to: user.email,
+              subject: "Welcome to JobPilot AI",
+              html: buildWelcomeEmail(user.name || "there"),
+            }).catch(() => {});
+          } else if (!dbUser.image && user.image) {
+            /* Update profile image if user exists but doesn't have one */
+            await prisma.user.update({
+              where: { id: dbUser.id },
+              data: { image: user.image },
+            });
+          }
+
+          /* Link the OAuth account to the user if not already linked */
+          const existingAccount = await prisma.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+          });
+
+          if (!existingAccount) {
+            await prisma.account.create({
+              data: {
+                userId: dbUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                refresh_token: account.refresh_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+              },
+            });
+          }
+
+          audit("auth.login.success", { userId: dbUser.id, email: user.email, detail: `oauth_${account.provider}` });
+
+          /* Attach the database user ID so the jwt callback can use it */
+          user.id = dbUser.id;
+        } catch (error) {
+          /* Log the actual error so we can diagnose OAuth failures */
+          console.error("[OAuth signIn error]", account.provider, user.email, error);
+          audit("auth.login.failed", { email: user.email || "unknown", detail: `oauth_error: ${String(error)}` });
           return false;
         }
-
-        /* If no user exists, create one (no password for OAuth users) */
-        if (!dbUser) {
-          dbUser = await prisma.user.create({
-            data: {
-              name: user.name || "User",
-              email: user.email,
-              image: user.image,
-            },
-          });
-
-          /* Send welcome email to new OAuth users (fire-and-forget) */
-          getResend().emails.send({
-            from: "JobPilot AI <noreply@jobpilotai.co>",
-            to: user.email,
-            subject: "Welcome to JobPilot AI",
-            html: buildWelcomeEmail(user.name || "there"),
-          }).catch(() => {});
-        } else if (!dbUser.image && user.image) {
-          /* Update profile image if user exists but doesn't have one */
-          await prisma.user.update({
-            where: { id: dbUser.id },
-            data: { image: user.image },
-          });
-        }
-
-        /* Link the OAuth account to the user if not already linked */
-        const existingAccount = await prisma.account.findUnique({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          },
-        });
-
-        if (!existingAccount) {
-          await prisma.account.create({
-            data: {
-              userId: dbUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-            },
-          });
-        }
-
-        audit("auth.login.success", { userId: dbUser.id, email: user.email, detail: `oauth_${account.provider}` });
-
-        /* Attach the database user ID so the jwt callback can use it */
-        user.id = dbUser.id;
       }
 
       return true;
