@@ -17,6 +17,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { extractTextFromPdf } from "@/lib/pdf-extract";
 import { trackEvent } from "@/lib/track-event";
 import { injectPdfAttributes, measureBlocks } from "@/lib/pdf-engine";
+import { markdownToDownloadHTML, getDownloadStyles } from "@/components/CountryResumeResult";
 
 /* ============================================================
    RESUME DATA INTERFACE
@@ -1401,176 +1402,95 @@ function buildTwoColumn(d: ResumeData): string {
 
 
 /* ============================================================
-   TEMPLATE 25: US ATS OPTIMIZED — Strict 1-page US resume format
+   TEMPLATE 25: US ATS OPTIMIZED — Uses Resume Intelligence renderer
    ============================================================ */
-function buildUSOptimized(d: ResumeData): string {
-  const css = `
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width:760px; margin:0 auto; padding:28px 40px; line-height:1.4; font-size:10.5pt; color:#1a1a1a; }
-    .name { font-size:22pt; font-weight:700; color:#111; letter-spacing:-0.3px; }
-    .title { font-size:11pt; color:#444; margin-top:1px; }
-    .contact { font-size:9.5pt; color:#333; margin-top:6px; padding-bottom:8px; border-bottom:2px solid #1a1a1a; }
-    .contact a { color:#003399; text-decoration:none; }
-    h2 { font-size:10.5pt; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#111; border-bottom:1.5px solid #333; padding-bottom:2px; margin:10px 0 6px; }
-    .summary { font-size:10pt; color:#1a1a1a; line-height:1.5; margin-bottom:2px; }
-    .us-entry { margin-bottom:6px; }
-    .entry-head { display:flex; justify-content:space-between; align-items:baseline; }
-    .entry-head .role { font-weight:700; font-size:10.5pt; color:#111; }
-    .entry-head .date { font-size:10pt; color:#333; white-space:nowrap; }
-    .entry-company { font-size:10pt; color:#444; margin-bottom:2px; }
-    ul { padding-left:18px; margin:2px 0 6px; }
-    li { font-size:10pt; line-height:1.45; margin-bottom:1.5px; color:#1a1a1a; }
-    .skill-row { font-size:10pt; margin-bottom:2px; }
-    .skill-row strong { color:#111; }
-    .edu-entry { margin-bottom:4px; }
-    .edu-head { display:flex; justify-content:space-between; align-items:baseline; }
-    .edu-head .degree { font-weight:700; font-size:10.5pt; color:#111; }
-    .edu-head .year { font-size:10pt; color:#333; }
-    .edu-detail { font-size:9.5pt; color:#444; }
-    .cert-line { font-size:10pt; color:#1a1a1a; margin-bottom:2px; }
-    .flag { display:inline-block; width:14px; height:10px; background:#B22234; border:1px solid #ddd; border-radius:1px; margin-right:6px; vertical-align:middle; position:relative; }
-    .flag::after { content:""; position:absolute; top:0; left:0; right:0; height:3px; background:#3C3B6E; }
-    .ats-badge { display:inline-flex; align-items:center; gap:4px; font-size:8pt; color:#059669; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; margin-left:12px; }
-    .ats-dot { width:6px; height:6px; border-radius:50%; background:#059669; }
-  `;
-
-  let html = `<div class="name">${esc(d.fullName || "Your Name")}<span class="ats-badge"><span class="ats-dot"></span>US ATS Optimized</span></div>`;
-  if (d.jobTitle) html += `<div class="title">${esc(d.jobTitle)}</div>`;
-  const contact = contactParts(d);
-  html += `<div class="contact">${contact.map(c => {
-    if (c.includes("linkedin.com")) return `<a href="${c.startsWith("http") ? esc(c) : "https://" + esc(c)}">${esc(c)}</a>`;
-    return esc(c);
-  }).join(" &nbsp;|&nbsp; ")}</div>`;
-
-  if (d.summary) html += `<h2>Professional Summary</h2><div class="summary">${esc(d.summary)}</div>`;
-
+function resumeDataToUSMarkdown(d: ResumeData): string {
+  const lines: string[] = [];
+  lines.push(`# ${d.fullName || "Your Name"}`);
+  lines.push(contactParts(d).join(" • "));
+  lines.push("");
+  if (d.summary) { lines.push("## Professional Summary"); lines.push(d.summary); lines.push(""); }
   if (d.experience) {
-    html += `<h2>Work Experience</h2>`;
+    lines.push("## Work Experience");
     const entries = parseEntries(d.experience);
-    html += entries.map(e => {
-      let role = e.title;
-      let company = "";
-      let dateText = "";
+    for (const e of entries) {
+      let left = e.title;
       if (e.sub) {
         const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+)$/);
         if (datePart) {
-          dateText = datePart[1];
-          company = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
-        } else {
-          company = e.sub.replace(/ · /g, ", ");
-        }
+          const company = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+          if (company) left += `, ${company}`;
+          left += ` — ${datePart[1]}`;
+        } else { left += `, ${e.sub.replace(/ · /g, ", ")}`; }
       }
-      let row = `<div class="us-entry"><div class="entry-head"><span class="role">${esc(role)}</span>`;
-      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
-      row += `</div>`;
-      if (company) row += `<div class="entry-company">${esc(company)}</div>`;
-      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
-      row += `</div>`;
-      return row;
-    }).join("");
+      lines.push(`**${left}**`);
+      for (const b of e.bullets) lines.push(`- ${b}`);
+      lines.push("");
+    }
   }
-
   if (d.skills) {
-    html += `<h2>Core Skills</h2>`;
+    lines.push("## Core Skills");
     const groups = parseSkillGroups(d.skills);
-    html += groups.map(g => `<div class="skill-row">${g.category ? `<strong>${esc(g.category)}:</strong> ` : ""}${g.items.map(i => esc(i)).join(", ")}</div>`).join("");
+    for (const g of groups) lines.push(`- ${g.category ? `${g.category}: ` : ""}${g.items.join(", ")}`);
+    lines.push("");
   }
-
   if (d.education) {
-    html += `<h2>Education</h2>`;
+    lines.push("## Education");
     const entries = parseEntries(d.education);
-    html += entries.map(e => {
-      let dateText = "";
-      let inst = "";
+    for (const e of entries) {
+      let text = e.title;
       if (e.sub) {
         const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{4})$/);
         if (datePart) {
-          dateText = datePart[1];
-          inst = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
-        } else {
-          inst = e.sub.replace(/ · /g, ", ");
-        }
+          const inst = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+          if (inst) text += `, ${inst}`;
+          text += ` — ${datePart[1]}`;
+        } else { text += `, ${e.sub.replace(/ · /g, ", ")}`; }
       }
-      let row = `<div class="edu-entry"><div class="edu-head"><span class="degree">${esc(e.title)}</span>`;
-      if (dateText) row += `<span class="year">${esc(dateText)}</span>`;
-      row += `</div>`;
-      if (inst) row += `<div class="edu-detail">${esc(inst)}</div>`;
-      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
-      row += `</div>`;
-      return row;
-    }).join("");
+      lines.push(text);
+      for (const b of e.bullets) lines.push(`- ${b}`);
+      lines.push("");
+    }
   }
-
   if (d.certifications) {
-    html += `<h2>Certifications</h2>`;
-    d.certifications.split("\n").filter(l => l.trim()).forEach(l => {
-      html += `<div class="cert-line">${esc(l.replace(/^[-•]\s*/, ""))}</div>`;
-    });
+    lines.push("## Certifications and Trainings");
+    for (const l of d.certifications.split("\n").filter(l => l.trim())) lines.push(l.replace(/^[-•]\s*/, ""));
+    lines.push("");
   }
-
   if (d.languages) {
-    html += `<h2>Languages</h2>`;
-    html += `<div class="skill-row">${langLines(d.languages).map(l => esc(l)).join(" &nbsp;|&nbsp; ")}</div>`;
+    lines.push("## Languages");
+    for (const l of langLines(d.languages)) lines.push(l);
+    lines.push("");
   }
+  return lines.join("\n");
+}
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+function buildUSOptimized(d: ResumeData): string {
+  const md = resumeDataToUSMarkdown(d);
+  const styles = getDownloadStyles("us");
+  const body = markdownToDownloadHTML(md, "us");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${styles}</style></head><body>${body}</body></html>`;
 }
 
 
 /* ============================================================
-   TEMPLATE 26: AU ATS OPTIMIZED — Australian CV format
+   TEMPLATE 26: AU ATS OPTIMIZED — Uses Resume Intelligence renderer
    ============================================================ */
-function buildAUOptimized(d: ResumeData): string {
-  const css = `
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width:760px; margin:0 auto; padding:32px 40px; line-height:1.45; font-size:10.5pt; color:#1a1a1a; }
-    .name { font-size:24pt; font-weight:700; color:#0C2340; letter-spacing:-0.3px; }
-    .title { font-size:11pt; color:#555; margin-top:2px; }
-    .contact { font-size:9.5pt; color:#333; margin-top:8px; padding-bottom:10px; border-bottom:3px solid #0C2340; }
-    .contact a { color:#0C2340; text-decoration:none; }
-    h2 { font-size:11pt; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#0C2340; border-bottom:1.5px solid #0C2340; padding-bottom:3px; margin:12px 0 8px; }
-    .summary { font-size:10.5pt; color:#1a1a1a; line-height:1.55; margin-bottom:4px; }
-    .au-entry { margin-bottom:8px; }
-    .entry-head { display:flex; justify-content:space-between; align-items:baseline; }
-    .entry-head .role { font-weight:700; font-size:10.5pt; color:#111; }
-    .entry-head .date { font-size:10pt; color:#444; white-space:nowrap; }
-    .entry-company { font-size:10pt; color:#0C2340; font-weight:600; margin-bottom:2px; }
-    ul { padding-left:18px; margin:2px 0 6px; }
-    li { font-size:10pt; line-height:1.5; margin-bottom:2px; color:#1a1a1a; }
-    .skill-row { font-size:10pt; margin-bottom:3px; }
-    .skill-row strong { color:#0C2340; }
-    .edu-entry { margin-bottom:6px; }
-    .edu-head { display:flex; justify-content:space-between; align-items:baseline; }
-    .edu-head .degree { font-weight:700; font-size:10.5pt; color:#111; }
-    .edu-head .year { font-size:10pt; color:#444; }
-    .edu-detail { font-size:9.5pt; color:#555; }
-    .cert-line { font-size:10pt; color:#1a1a1a; margin-bottom:3px; }
-    .lang-line { font-size:10pt; color:#1a1a1a; margin-bottom:2px; }
-    .ref-note { font-size:10pt; color:#555; font-style:italic; margin-top:4px; }
-    .ats-badge { display:inline-flex; align-items:center; gap:4px; font-size:8pt; color:#0C2340; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; margin-left:12px; }
-    .ats-dot { width:6px; height:6px; border-radius:50%; background:#0C2340; }
-  `;
-
-  let html = `<div class="name">${esc(d.fullName || "Your Name")}<span class="ats-badge"><span class="ats-dot"></span>AU CV Optimised</span></div>`;
-  if (d.jobTitle) html += `<div class="title">${esc(d.jobTitle)}</div>`;
-  const contact = contactParts(d);
-  html += `<div class="contact">${contact.map(c => {
-    if (c.includes("linkedin.com")) return `<a href="${c.startsWith("http") ? esc(c) : "https://" + esc(c)}">${esc(c)}</a>`;
-    return esc(c);
-  }).join(" &nbsp;&bull;&nbsp; ")}</div>`;
-
-  if (d.summary) html += `<h2>Career Profile</h2><div class="summary">${esc(d.summary)}</div>`;
-
+function resumeDataToAUMarkdown(d: ResumeData): string {
+  const lines: string[] = [];
+  lines.push(`# ${d.fullName || "Your Name"}`);
+  lines.push(contactParts(d).join(" • "));
+  lines.push("");
+  if (d.summary) { lines.push("## Professional Summary"); lines.push(d.summary); lines.push(""); }
   if (d.skills) {
-    html += `<h2>Key Competencies</h2>`;
-    const groups = parseSkillGroups(d.skills);
-    html += groups.map(g => `<div class="skill-row">${g.category ? `<strong>${esc(g.category)}:</strong> ` : ""}${g.items.map(i => esc(i)).join(", ")}</div>`).join("");
+    lines.push("## Key Skills");
+    lines.push(allSkillItems(d.skills).join(" | "));
+    lines.push("");
   }
-
   if (d.experience) {
-    html += `<h2>Employment History</h2>`;
+    lines.push("## Professional Experience");
     const entries = parseEntries(d.experience);
-    html += entries.map(e => {
+    for (const e of entries) {
       let role = e.title;
       let company = "";
       let dateText = "";
@@ -1579,61 +1499,52 @@ function buildAUOptimized(d: ResumeData): string {
         if (datePart) {
           dateText = datePart[1];
           company = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
-        } else {
-          company = e.sub.replace(/ · /g, ", ");
-        }
+        } else { company = e.sub.replace(/ · /g, ", "); }
       }
-      let row = `<div class="au-entry">`;
-      row += `<div class="entry-head"><span class="role">${esc(role)}</span>`;
-      if (dateText) row += `<span class="date">${esc(dateText)}</span>`;
-      row += `</div>`;
-      if (company) row += `<div class="entry-company">${esc(company)}</div>`;
-      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
-      row += `</div>`;
-      return row;
-    }).join("");
+      lines.push(`**${role}${dateText ? ` — ${dateText}` : ""}**`);
+      if (company) lines.push(company);
+      for (const b of e.bullets) lines.push(`- ${b}`);
+      lines.push("");
+    }
   }
-
   if (d.education) {
-    html += `<h2>Education &amp; Qualifications</h2>`;
+    lines.push("## Education & Qualifications");
     const entries = parseEntries(d.education);
-    html += entries.map(e => {
-      let dateText = "";
-      let inst = "";
+    for (const e of entries) {
+      let text = e.title;
       if (e.sub) {
         const datePart = e.sub.match(/([\d/]+ *[-–] *[\d/\w]+|\d{4}\s*[-–]\s*(?:Current|Present|\d{4})|\d{4})$/);
         if (datePart) {
-          dateText = datePart[1];
-          inst = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
-        } else {
-          inst = e.sub.replace(/ · /g, ", ");
-        }
+          const inst = e.sub.slice(0, e.sub.indexOf(datePart[0])).replace(/\s*[·•,\-–—]\s*$/, "").trim().replace(/ · /g, ", ");
+          if (inst) text += `, ${inst}`;
+          text += ` — ${datePart[1]}`;
+        } else { text += `, ${e.sub.replace(/ · /g, ", ")}`; }
       }
-      let row = `<div class="edu-entry"><div class="edu-head"><span class="degree">${esc(e.title)}</span>`;
-      if (dateText) row += `<span class="year">${esc(dateText)}</span>`;
-      row += `</div>`;
-      if (inst) row += `<div class="edu-detail">${esc(inst)}</div>`;
-      if (e.bullets.length > 0) row += `<ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>`;
-      row += `</div>`;
-      return row;
-    }).join("");
+      lines.push(text);
+      for (const b of e.bullets) lines.push(`- ${b}`);
+      lines.push("");
+    }
   }
-
   if (d.certifications) {
-    html += `<h2>Professional Development</h2>`;
-    d.certifications.split("\n").filter(l => l.trim()).forEach(l => {
-      html += `<div class="cert-line">${esc(l.replace(/^[-•]\s*/, ""))}</div>`;
-    });
+    lines.push("## Professional Development");
+    for (const l of d.certifications.split("\n").filter(l => l.trim())) lines.push(l.replace(/^[-•]\s*/, ""));
+    lines.push("");
   }
-
   if (d.languages) {
-    html += `<h2>Languages</h2>`;
-    html += langLines(d.languages).map(l => `<div class="lang-line">${esc(l)}</div>`).join("");
+    lines.push("## Languages");
+    for (const l of langLines(d.languages)) lines.push(l);
+    lines.push("");
   }
+  lines.push("## Referees");
+  lines.push("Professional references available upon request.");
+  return lines.join("\n");
+}
 
-  html += `<h2>Referees</h2><div class="ref-note">Available upon request</div>`;
-
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${html}</body></html>`;
+function buildAUOptimized(d: ResumeData): string {
+  const md = resumeDataToAUMarkdown(d);
+  const styles = getDownloadStyles("au");
+  const body = markdownToDownloadHTML(md, "au");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${styles}</style></head><body>${body}</body></html>`;
 }
 
 

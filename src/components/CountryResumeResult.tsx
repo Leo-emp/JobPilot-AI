@@ -141,7 +141,7 @@ function parseCountryMarkdown(md: string, country: Country): string {
 
 /* ---- Professional download styles for PDF/Word exports ---- */
 /* # Country-specific: US centers name, contact, and section headers */
-function getDownloadStyles(country: Country): string {
+export function getDownloadStyles(country: Country): string {
   const headerAlign = country === "us" ? "text-align: center;" : "";
   const h1Align = country === "us" ? "text-align: center;" : "";
   const contactAlign = country === "us" ? "text-align: center;" : "";
@@ -166,7 +166,7 @@ function getDownloadStyles(country: Country): string {
 }
 
 /* ---- Convert markdown to structured HTML for downloads ---- */
-function markdownToDownloadHTML(md: string, country: Country): string {
+export function markdownToDownloadHTML(md: string, country: Country): string {
   const lines = md.split("\n");
   const htmlParts: string[] = [];
   let inList = false;
