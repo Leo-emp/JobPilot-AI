@@ -172,9 +172,9 @@ export default function ResumeTemplatesToolPage() {
 function TemplateCard({ children }: { children: ReactNode }) {
   return (
     <Link href="/signup" className="group block">
-      <div className="relative rounded-xl border border-card-border bg-space-800/40 overflow-hidden" style={{ height: 520 }}>
+      <div className="relative rounded-xl border border-card-border bg-space-800/40 overflow-hidden" style={{ height: 680 }}>
         {/* # Scaled-down resume — real HTML, not an image */}
-        <div className="origin-top-left" style={{ transform: "scale(0.34)", width: "210mm", minHeight: "297mm" }}>
+        <div className="origin-top-left" style={{ transform: "scale(0.48)", width: "210mm", minHeight: "297mm" }}>
           {children}
         </div>
         {/* # Hover overlay */}
@@ -316,7 +316,7 @@ function USATSTemplate() {
         <div className="border-t border-gray-300 mb-3" />
 
         <div className="mb-4">
-          <p className="text-[12px] font-bold text-blue-700">Senior Marketing Manager, Brightwave Inc. — 2022 - Present</p>
+          <p className="text-[12px] font-bold text-black">Senior Marketing Manager, Brightwave Inc. — 2022 - Present</p>
           <ul className="mt-1 space-y-0.5 list-disc list-outside ml-4">
             <li className="text-[11px] text-gray-800">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</li>
             <li className="text-[11px] text-gray-800">Managed a team of 6 across content, social, and paid media, delivering 95% on-time project completion</li>
@@ -326,7 +326,7 @@ function USATSTemplate() {
         </div>
 
         <div className="mb-4">
-          <p className="text-[12px] font-bold text-blue-700">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
+          <p className="text-[12px] font-bold text-black">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
           <ul className="mt-1 space-y-0.5 list-disc list-outside ml-4">
             <li className="text-[11px] text-gray-800">Executed multi-channel campaigns across email, social, and PPC, driving 150% increase in qualified leads</li>
             <li className="text-[11px] text-gray-800">Built and maintained marketing analytics dashboard tracking $1.2M in campaign spend</li>
@@ -336,7 +336,7 @@ function USATSTemplate() {
         </div>
 
         <div className="mb-4">
-          <p className="text-[12px] font-bold text-blue-700">Marketing Coordinator, Apex Media — 2017 - 2019</p>
+          <p className="text-[12px] font-bold text-black">Marketing Coordinator, Apex Media — 2017 - 2019</p>
           <ul className="mt-1 space-y-0.5 list-disc list-outside ml-4">
             <li className="text-[11px] text-gray-800">Managed social media accounts with 50K+ combined followers, increasing engagement by 60%</li>
             <li className="text-[11px] text-gray-800">Coordinated event marketing for 12 annual conferences, managing $200K in event budgets</li>
