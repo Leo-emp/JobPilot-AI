@@ -250,6 +250,53 @@ export default function FeatureShowcase() {
             /* # Odd index: content right, visual left (flex-row-reverse) */
             const isEven = index % 2 === 0;
 
+            if (index === 7) {
+              return (
+                <div
+                  key={index}
+                  id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="scroll-mt-24"
+                >
+                  {/* ---- Text on top ---- */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ ...SPRING }}
+                    className="text-center max-w-3xl mx-auto mb-10"
+                  >
+                    <div className="inline-flex items-center gap-2 mb-5">
+                      <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
+                        {feature.icon}
+                      </div>
+                      <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                        {feature.tag}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+                      {feature.headline}
+                    </h3>
+                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+
+                  {/* ---- 3 resumes side by side ---- */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ ...SPRING, delay: 0.15 }}
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
+                  >
+                    <FeatureTemplateCard><FeatureStandardATS /></FeatureTemplateCard>
+                    <FeatureTemplateCard><FeatureUSATS /></FeatureTemplateCard>
+                    <FeatureTemplateCard><FeatureAUCV /></FeatureTemplateCard>
+                  </motion.div>
+                </div>
+              );
+            }
+
             return (
               <div
                 key={index}
@@ -611,99 +658,6 @@ export default function FeatureShowcase() {
                         </>
                       )}
 
-                      {index === 7 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 12 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
-                          className="grid grid-cols-3 gap-2"
-                        >
-                          {/* # Mini resume 1 — Standard ATS */}
-                          <div className="bg-white rounded text-black p-1.5 overflow-hidden">
-                            <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
-                            <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
-                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Professional Summary</p>
-                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
-                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Core Skills</p>
-                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, A/B Testing, Team Management, HubSpot</p>
-                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Work Experience</p>
-                            <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc.</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
-                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co.</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
-                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Coordinator, Apex Media</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Managed social media accounts with 50K+ combined followers</p>
-                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Education</p>
-                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
-                            <p className="text-[3px] text-gray-700">BA Communications, Boston University — 2015</p>
-                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Certifications</p>
-                            <p className="text-[3px] text-gray-700">Google Analytics Certified — 2023</p>
-                            <p className="text-[3px] text-gray-700">HubSpot Content Marketing — 2022</p>
-                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Languages</p>
-                            <p className="text-[3px] text-gray-700">English - Native &bull; Spanish - Conversational</p>
-                          </div>
-
-                          {/* # Mini resume 2 — US ATS (centered) */}
-                          <div className="bg-white rounded text-black p-1.5 overflow-hidden">
-                            <p className="text-[6px] font-bold leading-none text-center">Olivia Wilson</p>
-                            <p className="text-[3px] text-gray-500 mb-1 text-center">New York, NY &bull; olivia.wilson@email.com</p>
-                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Professional Summary</p>
-                            <div className="border-t border-gray-300 mb-0.5" />
-                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
-                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Work Experience</p>
-                            <div className="border-t border-gray-300 mb-0.5" />
-                            <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc. — 2022 - Present</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
-                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
-                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Coordinator, Apex Media — 2017 - 2019</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Managed social media accounts with 50K+ combined followers</p>
-                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Core Skills</p>
-                            <div className="border-t border-gray-300 mb-0.5" />
-                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, Content Marketing, A/B Testing</p>
-                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Education</p>
-                            <div className="border-t border-gray-300 mb-0.5" />
-                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
-                            <p className="text-[3px] text-gray-700">BA Communications, Boston University — 2015</p>
-                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Certifications</p>
-                            <div className="border-t border-gray-300 mb-0.5" />
-                            <p className="text-[3px] text-gray-700">Google Analytics Certified — 2023</p>
-                            <p className="text-[3px] text-gray-700">HubSpot Content Marketing — 2022</p>
-                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Languages</p>
-                            <div className="border-t border-gray-300 mb-0.5" />
-                            <p className="text-[3px] text-gray-700">English - Native &bull; Spanish - Conversational</p>
-                          </div>
-
-                          {/* # Mini resume 3 — AU CV (pipe skills) */}
-                          <div className="bg-white rounded text-black p-1.5 overflow-hidden">
-                            <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
-                            <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
-                            <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Summary</p>
-                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
-                            <p className="text-[3.5px] font-bold uppercase mb-0.5">Key Skills</p>
-                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy | Go-to-Market | SEO/SEM | Google Analytics | A/B Testing | HubSpot | Tableau</p>
-                            <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Experience</p>
-                            <p className="text-[3px] font-bold text-black">Senior Marketing Manager — 2022 - Present</p>
-                            <p className="text-[2.5px] text-gray-500">Brightwave Inc.</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
-                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist — 2019 - 2022</p>
-                            <p className="text-[2.5px] text-gray-500">Greenfield Co.</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
-                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Coordinator — 2017 - 2019</p>
-                            <p className="text-[2.5px] text-gray-500">Apex Media</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Managed social media accounts with 50K+ combined followers</p>
-                            <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Education &amp; Qualifications</p>
-                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
-                            <p className="text-[3px] text-gray-700">BA Communications, Boston University — 2015</p>
-                            <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Professional Development</p>
-                            <p className="text-[3px] text-gray-700">Google Analytics Certified — 2023</p>
-                            <p className="text-[3px] text-gray-700">HubSpot Content Marketing — 2022</p>
-                            <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Languages</p>
-                            <p className="text-[3px] text-gray-700">English - Native &bull; Spanish - Conversational</p>
-                          </div>
-                        </motion.div>
-                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -729,5 +683,287 @@ export default function FeatureShowcase() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function FeatureTemplateCard({ children }: { children: React.ReactNode }) {
+  return (
+    <Link href="/tools/resume-templates" className="group block">
+      <div className="relative overflow-hidden" style={{ height: 950, borderRadius: 16 }}>
+        <div className="origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
+          {children}
+        </div>
+        <div className="absolute pointer-events-none" style={{ inset: -20, border: "20px solid #09090b", borderRadius: 36, zIndex: 2 }} />
+      </div>
+    </Link>
+  );
+}
+
+function FeatureStandardATS() {
+  return (
+    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "210mm", fontSize: 16 }}>
+      <div className="mb-1">
+        <h1 className="text-[32px] font-bold text-black leading-tight">Olivia Wilson</h1>
+        <p className="text-[13px] text-gray-600 mt-1">New York, NY &bull; +1 (555) 123-4567 &bull; olivia.wilson@email.com &bull; linkedin.com/in/oliviawilson</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[15px] font-bold text-black uppercase tracking-wide border-b-2 border-black pb-1 mb-2">Professional Summary</h2>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Results-driven marketing manager with 6+ years of experience in digital strategy, brand development, and campaign optimization. Proven track record of increasing revenue by 35% through data-driven marketing initiatives and cross-functional team leadership. Skilled at translating business objectives into measurable marketing outcomes.</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[15px] font-bold text-black uppercase tracking-wide border-b-2 border-black pb-1 mb-2">Core Skills</h2>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Strategy &amp; Growth: Brand Strategy, Go-to-Market, Market Research, Campaign Planning</p>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Digital Marketing: SEO/SEM, Google Analytics, Social Media, Content Marketing, A/B Testing</p>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Leadership: Team Management, Stakeholder Communication, Budget Oversight, Cross-functional Collaboration</p>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Tools: HubSpot, Salesforce, Google Ads, Meta Business Suite, Tableau</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[15px] font-bold text-black uppercase tracking-wide border-b-2 border-black pb-1 mb-3">Work Experience</h2>
+        <div className="mb-4">
+          <div className="flex justify-between items-baseline">
+            <p className="text-[14px] font-bold text-black">Senior Marketing Manager, Brightwave Inc.</p>
+            <p className="text-[13px] text-gray-600">2022 - Present</p>
+          </div>
+          <ul className="mt-1 space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</li>
+            <li className="text-[13px] text-gray-800">Managed a team of 6 across content, social, and paid media, delivering 95% on-time project completion</li>
+            <li className="text-[13px] text-gray-800">Optimized conversion funnel through A/B testing, increasing lead-to-customer rate by 28%</li>
+            <li className="text-[13px] text-gray-800">Launched brand refresh initiative that improved brand recognition scores by 40% in key markets</li>
+          </ul>
+        </div>
+        <div className="mb-4">
+          <div className="flex justify-between items-baseline">
+            <p className="text-[14px] font-bold text-black">Marketing Specialist, Greenfield Co.</p>
+            <p className="text-[13px] text-gray-600">2019 - 2022</p>
+          </div>
+          <ul className="mt-1 space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Executed multi-channel campaigns across email, social, and PPC, driving 150% increase in qualified leads</li>
+            <li className="text-[13px] text-gray-800">Built and maintained marketing analytics dashboard tracking $1.2M in campaign spend</li>
+            <li className="text-[13px] text-gray-800">Developed content strategy that grew organic traffic by 85% over 18 months</li>
+            <li className="text-[13px] text-gray-800">Coordinated with sales team to create enablement materials, reducing sales cycle by 15%</li>
+          </ul>
+        </div>
+        <div className="mb-4">
+          <div className="flex justify-between items-baseline">
+            <p className="text-[14px] font-bold text-black">Marketing Coordinator, Apex Media</p>
+            <p className="text-[13px] text-gray-600">2017 - 2019</p>
+          </div>
+          <ul className="mt-1 space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Managed social media accounts with 50K+ combined followers, increasing engagement by 60%</li>
+            <li className="text-[13px] text-gray-800">Coordinated event marketing for 12 annual conferences, managing $200K in event budgets</li>
+            <li className="text-[13px] text-gray-800">Created monthly performance reports for C-suite, synthesizing data from 8 marketing channels</li>
+            <li className="text-[13px] text-gray-800">Assisted with website redesign project that improved bounce rate by 25%</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[15px] font-bold text-black uppercase tracking-wide border-b-2 border-black pb-1 mb-2">Education</h2>
+        <div className="mb-2">
+          <div className="flex justify-between items-baseline">
+            <p className="text-[14px] font-bold text-black">MBA Marketing, Columbia University, New York</p>
+            <p className="text-[13px] text-gray-600">2017</p>
+          </div>
+          <ul className="mt-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Dean&apos;s List, Marketing Excellence Award</li>
+          </ul>
+        </div>
+        <div className="mb-2">
+          <div className="flex justify-between items-baseline">
+            <p className="text-[14px] font-bold text-black">BA Communications, Boston University</p>
+            <p className="text-[13px] text-gray-600">2015</p>
+          </div>
+          <ul className="mt-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Graduated Magna Cum Laude, GPA: 3.8/4.0</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[15px] font-bold text-black uppercase tracking-wide border-b-2 border-black pb-1 mb-2">Certifications and Trainings</h2>
+        <p className="text-[13px] text-gray-800">Google Analytics Certified — 2023</p>
+        <p className="text-[13px] text-gray-800">HubSpot Content Marketing Certification — 2022</p>
+        <p className="text-[13px] text-gray-800">Meta Certified Digital Marketing Associate — 2021</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[15px] font-bold text-black uppercase tracking-wide border-b-2 border-black pb-1 mb-2">Languages</h2>
+        <p className="text-[13px] text-gray-800">English - Native</p>
+        <p className="text-[13px] text-gray-800">Spanish - Conversational</p>
+      </div>
+    </div>
+  );
+}
+
+function FeatureUSATS() {
+  return (
+    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "210mm", fontSize: 16 }}>
+      <div className="text-center mb-1">
+        <h1 className="text-[30px] font-bold text-black leading-tight">Olivia Wilson</h1>
+        <p className="text-[13px] text-gray-600 mt-1">New York, NY &bull; +1 (555) 123-4567 &bull; olivia.wilson@email.com &bull; linkedin.com/in/oliviawilson</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-widest text-center mb-1">Professional Summary</h2>
+        <div className="border-t border-gray-300 mb-3" />
+        <p className="text-[13px] text-gray-800 leading-relaxed">Results-driven marketing manager with 6+ years of experience in digital strategy, brand development, and campaign optimization. Proven track record of increasing revenue by 35% through data-driven marketing initiatives and cross-functional team leadership. Skilled at translating business objectives into measurable marketing outcomes.</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-widest text-center mb-1">Work Experience</h2>
+        <div className="border-t border-gray-300 mb-3" />
+        <div className="mb-4">
+          <p className="text-[14px] font-bold text-black">Senior Marketing Manager, Brightwave Inc. — 2022 - Present</p>
+          <ul className="mt-1 space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</li>
+            <li className="text-[13px] text-gray-800">Managed a team of 6 across content, social, and paid media, delivering 95% on-time project completion</li>
+            <li className="text-[13px] text-gray-800">Optimized conversion funnel through A/B testing, increasing lead-to-customer rate by 28%</li>
+            <li className="text-[13px] text-gray-800">Launched brand refresh initiative that improved brand recognition scores by 40% in key markets</li>
+          </ul>
+        </div>
+        <div className="mb-4">
+          <p className="text-[14px] font-bold text-black">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
+          <ul className="mt-1 space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Executed multi-channel campaigns across email, social, and PPC, driving 150% increase in qualified leads</li>
+            <li className="text-[13px] text-gray-800">Built and maintained marketing analytics dashboard tracking $1.2M in campaign spend</li>
+            <li className="text-[13px] text-gray-800">Developed content strategy that grew organic traffic by 85% over 18 months</li>
+            <li className="text-[13px] text-gray-800">Coordinated with sales team to create enablement materials, reducing sales cycle by 15%</li>
+          </ul>
+        </div>
+        <div className="mb-4">
+          <p className="text-[14px] font-bold text-black">Marketing Coordinator, Apex Media — 2017 - 2019</p>
+          <ul className="mt-1 space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Managed social media accounts with 50K+ combined followers, increasing engagement by 60%</li>
+            <li className="text-[13px] text-gray-800">Coordinated event marketing for 12 annual conferences, managing $200K in event budgets</li>
+            <li className="text-[13px] text-gray-800">Created monthly performance reports for C-suite, synthesizing data from 8 marketing channels</li>
+            <li className="text-[13px] text-gray-800">Assisted with website redesign project that improved bounce rate by 25%</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-widest text-center mb-1">Core Skills</h2>
+        <div className="border-t border-gray-300 mb-3" />
+        <p className="text-[13px] text-gray-800 leading-relaxed">Strategy &amp; Growth: Brand Strategy, Go-to-Market, Market Research, Campaign Planning</p>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Digital Marketing: SEO/SEM, Google Analytics, Social Media, Content Marketing, A/B Testing</p>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Leadership: Team Management, Stakeholder Communication, Budget Oversight, Cross-functional Collaboration</p>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Tools: HubSpot, Salesforce, Google Ads, Meta Business Suite, Tableau</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-widest text-center mb-1">Education</h2>
+        <div className="border-t border-gray-300 mb-3" />
+        <p className="text-[13px] text-gray-800">MBA Marketing, Columbia University, New York — 2017</p>
+        <ul className="list-disc list-outside ml-5">
+          <li className="text-[13px] text-gray-800">Dean&apos;s List, Marketing Excellence Award</li>
+        </ul>
+        <p className="text-[13px] text-gray-800 mt-2">BA Communications, Boston University — 2015</p>
+        <ul className="list-disc list-outside ml-5">
+          <li className="text-[13px] text-gray-800">Graduated Magna Cum Laude, GPA: 3.8/4.0</li>
+        </ul>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-widest text-center mb-1">Certifications and Trainings</h2>
+        <div className="border-t border-gray-300 mb-3" />
+        <p className="text-[13px] text-gray-800">Google Analytics Certified — 2023</p>
+        <p className="text-[13px] text-gray-800">HubSpot Content Marketing Certification — 2022</p>
+        <p className="text-[13px] text-gray-800">Meta Certified Digital Marketing Associate — 2021</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-widest text-center mb-1">Languages</h2>
+        <div className="border-t border-gray-300 mb-3" />
+        <p className="text-[13px] text-gray-800">English - Native</p>
+        <p className="text-[13px] text-gray-800">Spanish - Conversational</p>
+      </div>
+    </div>
+  );
+}
+
+function FeatureAUCV() {
+  return (
+    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "210mm", fontSize: 16 }}>
+      <div className="mb-1">
+        <h1 className="text-[30px] font-bold text-black leading-tight">Olivia Wilson</h1>
+        <p className="text-[12px] text-gray-500 mt-1">New York, NY &bull; +1 (555) 123-4567 &bull; olivia.wilson@email.com &bull; linkedin.com/in/oliviawilson</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-2">Professional Summary</h2>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Results-driven marketing manager with 6+ years of experience in digital strategy, brand development, and campaign optimization. Proven track record of increasing revenue by 35% through data-driven marketing initiatives and cross-functional team leadership. Skilled at translating business objectives into measurable marketing outcomes.</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-2">Key Skills</h2>
+        <p className="text-[13px] text-gray-800 leading-relaxed">Brand Strategy | Go-to-Market | Market Research | Campaign Planning | SEO/SEM | Google Analytics | Social Media | Content Marketing | A/B Testing | Team Management | Stakeholder Communication | Budget Oversight | Cross-functional Collaboration | HubSpot | Salesforce | Tableau</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-3">Professional Experience</h2>
+        <div className="mb-4">
+          <p className="text-[14px] font-bold text-black">Senior Marketing Manager — 2022 - Present</p>
+          <p className="text-[13px] text-gray-600 mb-1">Brightwave Inc.</p>
+          <ul className="space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</li>
+            <li className="text-[13px] text-gray-800">Managed a team of 6 across content, social, and paid media, delivering 95% on-time project completion</li>
+            <li className="text-[13px] text-gray-800">Optimized conversion funnel through A/B testing, increasing lead-to-customer rate by 28%</li>
+            <li className="text-[13px] text-gray-800">Launched brand refresh initiative that improved brand recognition scores by 40% in key markets</li>
+          </ul>
+        </div>
+        <div className="mb-4">
+          <p className="text-[14px] font-bold text-black">Marketing Specialist — 2019 - 2022</p>
+          <p className="text-[13px] text-gray-600 mb-1">Greenfield Co.</p>
+          <ul className="space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Executed multi-channel campaigns across email, social, and PPC, driving 150% increase in qualified leads</li>
+            <li className="text-[13px] text-gray-800">Built and maintained marketing analytics dashboard tracking $1.2M in campaign spend</li>
+            <li className="text-[13px] text-gray-800">Developed content strategy that grew organic traffic by 85% over 18 months</li>
+            <li className="text-[13px] text-gray-800">Coordinated with sales team to create enablement materials, reducing sales cycle by 15%</li>
+          </ul>
+        </div>
+        <div className="mb-4">
+          <p className="text-[14px] font-bold text-black">Marketing Coordinator — 2017 - 2019</p>
+          <p className="text-[13px] text-gray-600 mb-1">Apex Media</p>
+          <ul className="space-y-0.5 list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Managed social media accounts with 50K+ combined followers, increasing engagement by 60%</li>
+            <li className="text-[13px] text-gray-800">Coordinated event marketing for 12 annual conferences, managing $200K in event budgets</li>
+            <li className="text-[13px] text-gray-800">Created monthly performance reports for C-suite, synthesizing data from 8 marketing channels</li>
+            <li className="text-[13px] text-gray-800">Assisted with website redesign project that improved bounce rate by 25%</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-2">Education &amp; Qualifications</h2>
+        <div className="mb-2">
+          <p className="text-[13px] text-gray-800">MBA Marketing, Columbia University, New York — 2017</p>
+          <ul className="list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Dean&apos;s List, Marketing Excellence Award</li>
+          </ul>
+        </div>
+        <div className="mb-2">
+          <p className="text-[13px] text-gray-800">BA Communications, Boston University — 2015</p>
+          <ul className="list-disc list-outside ml-5">
+            <li className="text-[13px] text-gray-800">Graduated Magna Cum Laude, GPA: 3.8/4.0</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-2">Professional Development</h2>
+        <p className="text-[13px] text-gray-800">Google Analytics Certified — 2023</p>
+        <p className="text-[13px] text-gray-800">HubSpot Content Marketing Certification — 2022</p>
+        <p className="text-[13px] text-gray-800">Meta Certified Digital Marketing Associate — 2021</p>
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-2">Languages</h2>
+        <p className="text-[13px] text-gray-800">English - Native</p>
+        <p className="text-[13px] text-gray-800">Spanish - Conversational</p>
+      </div>
+    </div>
   );
 }
