@@ -612,48 +612,70 @@ export default function FeatureShowcase() {
                       )}
 
                       {index === 7 && (
-                        <>
-                          <motion.div
-                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } } }}
-                            initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true }}
-                            className="grid grid-cols-3 gap-2 mb-4"
-                          >
-                            {[
-                              { name: "Classic", color: "bg-blue-500", active: false },
-                              { name: "Modern", color: "bg-indigo-500", active: true },
-                              { name: "Executive", color: "bg-gray-500", active: false },
-                            ].map((tmpl, i) => (
-                              <motion.div
-                                key={i}
-                                variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                                className={`p-2 rounded-lg border text-center ${tmpl.active ? "bg-slate-500/10 border-slate-500/30" : "bg-space-600/40 border-space-600/60"}`}
-                              >
-                                <div className={`w-full h-1 rounded mb-2 ${tmpl.color}`} />
-                                <div className="h-1.5 rounded bg-space-500/60 w-[70%] mx-auto mb-1" />
-                                <div className="h-1 rounded bg-space-500/40 w-full mb-0.5" />
-                                <div className="h-1 rounded bg-space-500/40 w-[80%]" />
-                                <div className={`text-[9px] mt-2 font-medium ${tmpl.active ? "text-slate-400" : "text-text-muted"}`}>{tmpl.name}</div>
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
-                            className="flex items-center gap-2"
-                          >
-                            <div className="px-3 py-1.5 rounded-md bg-slate-500/10 border border-slate-500/20">
-                              <span className="text-xs text-slate-400 font-medium">PDF</span>
-                            </div>
-                            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
-                              <span className="text-xs text-blue-400 font-medium">Word</span>
-                            </div>
-                            <span className="text-xs text-text-muted ml-1">Ready to download</span>
-                          </motion.div>
-                        </>
+                        <motion.div
+                          initial={{ opacity: 0, y: 12 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
+                          className="grid grid-cols-3 gap-2"
+                        >
+                          {/* # Mini resume 1 — Standard ATS */}
+                          <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 200 }}>
+                            <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
+                            <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
+                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Professional Summary</p>
+                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
+                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Core Skills</p>
+                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, A/B Testing, Team Management, HubSpot</p>
+                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Work Experience</p>
+                            <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc.</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</p>
+                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co.</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Education</p>
+                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University</p>
+                          </div>
+
+                          {/* # Mini resume 2 — US ATS (centered) */}
+                          <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 200 }}>
+                            <p className="text-[6px] font-bold leading-none text-center">Olivia Wilson</p>
+                            <p className="text-[3px] text-gray-500 mb-1 text-center">New York, NY &bull; olivia.wilson@email.com</p>
+                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Professional Summary</p>
+                            <div className="border-t border-gray-300 mb-0.5" />
+                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
+                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Work Experience</p>
+                            <div className="border-t border-gray-300 mb-0.5" />
+                            <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc. — 2022 - Present</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
+                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Core Skills</p>
+                            <div className="border-t border-gray-300 mb-0.5" />
+                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, Content Marketing, A/B Testing</p>
+                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Education</p>
+                            <div className="border-t border-gray-300 mb-0.5" />
+                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+                          </div>
+
+                          {/* # Mini resume 3 — AU CV (pipe skills) */}
+                          <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 200 }}>
+                            <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
+                            <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
+                            <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Summary</p>
+                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
+                            <p className="text-[3.5px] font-bold uppercase mb-0.5">Key Skills</p>
+                            <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy | Go-to-Market | SEO/SEM | Google Analytics | A/B Testing | HubSpot | Tableau</p>
+                            <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Experience</p>
+                            <p className="text-[3px] font-bold text-black">Senior Marketing Manager — 2022 - Present</p>
+                            <p className="text-[2.5px] text-gray-500">Brightwave Inc.</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
+                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist — 2019 - 2022</p>
+                            <p className="text-[2.5px] text-gray-500">Greenfield Co.</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+                            <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Education &amp; Qualifications</p>
+                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+                          </div>
+                        </motion.div>
                       )}
                     </div>
                   </div>
