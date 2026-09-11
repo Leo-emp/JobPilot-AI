@@ -7,6 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
+import Image from "next/image";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
@@ -120,8 +121,8 @@ export default function ChromeExtensionToolPage() {
             <div className="flex-1 mx-4 h-7 rounded-lg bg-space-700/80 border border-white/10 flex items-center px-3">
               <p className="text-[10px] text-text-muted truncate">linkedin.com/jobs/view/senior-product-manager-at-google...</p>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-brand-indigo/20 border border-brand-indigo/30 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-bold text-brand-light">JP</span>
+            <div className="w-8 h-8 rounded-lg bg-brand-indigo/20 border border-brand-indigo/30 flex items-center justify-center shrink-0 overflow-hidden">
+              <Image src="/jp-logo.svg" alt="JobPilot AI" width={24} height={24} className="rounded" />
             </div>
           </div>
 
@@ -129,8 +130,8 @@ export default function ChromeExtensionToolPage() {
           <div className="max-w-xs mx-auto">
             <div className="rounded-xl bg-space-700/80 border border-white/10 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded bg-brand-indigo/20 flex items-center justify-center">
-                  <span className="text-[8px] font-bold text-brand-light">JP</span>
+                <div className="w-6 h-6 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
+                  <Image src="/jp-logo.svg" alt="JobPilot AI" width={20} height={20} className="rounded" />
                 </div>
                 <p className="text-xs font-bold text-white">JobPilot AI</p>
                 <span className="ml-auto px-2 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">Detected</span>

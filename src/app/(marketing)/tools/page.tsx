@@ -9,6 +9,7 @@
    ============================================================ */
 
 import Link from "next/link";
+import Image from "next/image";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
@@ -541,8 +542,8 @@ function ExtensionPreview() {
     <div className="w-full max-w-[200px] mx-auto">
       <div className="bg-space-800/80 rounded-xl p-4 backdrop-blur-sm border border-white/10">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5 rounded bg-brand-indigo/20 flex items-center justify-center">
-            <span className="text-[7px] font-bold text-brand-light">JP</span>
+          <div className="w-5 h-5 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
+            <Image src="/jp-logo.svg" alt="JobPilot AI" width={16} height={16} className="rounded" />
           </div>
           <p className="text-[10px] font-bold text-white">JobPilot AI</p>
           <span className="ml-auto px-1.5 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-400">Detected</span>
