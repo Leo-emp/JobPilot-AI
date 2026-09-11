@@ -620,7 +620,7 @@ export default function FeatureShowcase() {
                           className="grid grid-cols-3 gap-2"
                         >
                           {/* # Mini resume 1 — Standard ATS */}
-                          <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 200 }}>
+                          <div className="bg-white rounded text-black p-1.5 overflow-hidden">
                             <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
                             <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
                             <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Professional Summary</p>
@@ -629,15 +629,23 @@ export default function FeatureShowcase() {
                             <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, A/B Testing, Team Management, HubSpot</p>
                             <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Work Experience</p>
                             <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc.</p>
-                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
                             <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co.</p>
                             <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Coordinator, Apex Media</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Managed social media accounts with 50K+ combined followers</p>
                             <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Education</p>
-                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University</p>
+                            <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+                            <p className="text-[3px] text-gray-700">BA Communications, Boston University — 2015</p>
+                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Certifications</p>
+                            <p className="text-[3px] text-gray-700">Google Analytics Certified — 2023</p>
+                            <p className="text-[3px] text-gray-700">HubSpot Content Marketing — 2022</p>
+                            <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Languages</p>
+                            <p className="text-[3px] text-gray-700">English - Native &bull; Spanish - Conversational</p>
                           </div>
 
                           {/* # Mini resume 2 — US ATS (centered) */}
-                          <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 200 }}>
+                          <div className="bg-white rounded text-black p-1.5 overflow-hidden">
                             <p className="text-[6px] font-bold leading-none text-center">Olivia Wilson</p>
                             <p className="text-[3px] text-gray-500 mb-1 text-center">New York, NY &bull; olivia.wilson@email.com</p>
                             <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Professional Summary</p>
@@ -649,16 +657,26 @@ export default function FeatureShowcase() {
                             <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
                             <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
                             <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Coordinator, Apex Media — 2017 - 2019</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Managed social media accounts with 50K+ combined followers</p>
                             <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Core Skills</p>
                             <div className="border-t border-gray-300 mb-0.5" />
                             <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, Content Marketing, A/B Testing</p>
                             <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Education</p>
                             <div className="border-t border-gray-300 mb-0.5" />
                             <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+                            <p className="text-[3px] text-gray-700">BA Communications, Boston University — 2015</p>
+                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Certifications</p>
+                            <div className="border-t border-gray-300 mb-0.5" />
+                            <p className="text-[3px] text-gray-700">Google Analytics Certified — 2023</p>
+                            <p className="text-[3px] text-gray-700">HubSpot Content Marketing — 2022</p>
+                            <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Languages</p>
+                            <div className="border-t border-gray-300 mb-0.5" />
+                            <p className="text-[3px] text-gray-700">English - Native &bull; Spanish - Conversational</p>
                           </div>
 
                           {/* # Mini resume 3 — AU CV (pipe skills) */}
-                          <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 200 }}>
+                          <div className="bg-white rounded text-black p-1.5 overflow-hidden">
                             <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
                             <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
                             <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Summary</p>
@@ -672,8 +690,17 @@ export default function FeatureShowcase() {
                             <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist — 2019 - 2022</p>
                             <p className="text-[2.5px] text-gray-500">Greenfield Co.</p>
                             <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+                            <p className="text-[3px] font-bold text-black mt-0.5">Marketing Coordinator — 2017 - 2019</p>
+                            <p className="text-[2.5px] text-gray-500">Apex Media</p>
+                            <p className="text-[2.5px] text-gray-700 leading-tight">Managed social media accounts with 50K+ combined followers</p>
                             <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Education &amp; Qualifications</p>
                             <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+                            <p className="text-[3px] text-gray-700">BA Communications, Boston University — 2015</p>
+                            <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Professional Development</p>
+                            <p className="text-[3px] text-gray-700">Google Analytics Certified — 2023</p>
+                            <p className="text-[3px] text-gray-700">HubSpot Content Marketing — 2022</p>
+                            <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Languages</p>
+                            <p className="text-[3px] text-gray-700">English - Native &bull; Spanish - Conversational</p>
                           </div>
                         </motion.div>
                       )}
