@@ -183,15 +183,29 @@ const questions: QuizQuestion[] = [
   {
     id: "best_thing",
     question: "What's the single best thing about your current job — the thing that makes you hesitate to leave?",
-    type: "text",
-    placeholder: "e.g. great team, flexible hours, interesting projects, good salary, short commute, job security, benefits",
+    type: "single",
+    options: [
+      { label: "The people — I genuinely like my team or coworkers", value: "people" },
+      { label: "The salary and benefits — it pays well and has good perks", value: "compensation" },
+      { label: "Flexibility — remote work, flexible hours, or good WLB", value: "flexibility" },
+      { label: "Job security — it's stable and I feel safe", value: "security" },
+      { label: "The work itself — some projects are genuinely interesting", value: "work_itself" },
+      { label: "Convenience — short commute, easy routine, low stress", value: "convenience" },
+    ],
   },
   /* # 15 — Dealbreaker (the core issue) */
   {
     id: "worst_thing",
     question: "What's the single worst thing — the one thing that, if fixed, would change everything?",
-    type: "text",
-    placeholder: "e.g. my manager, the salary, no growth path, toxic culture, boring work, long hours, no remote option",
+    type: "single",
+    options: [
+      { label: "My manager — toxic, unsupportive, or incompetent leadership", value: "manager" },
+      { label: "The salary — I'm underpaid and it's not going to change", value: "salary" },
+      { label: "No growth — I've hit a ceiling with no path forward", value: "no_growth" },
+      { label: "The culture — toxic, political, or misaligned with my values", value: "culture" },
+      { label: "The work itself — it's boring, repetitive, or meaningless", value: "boring_work" },
+      { label: "Work-life balance — long hours, always on, burnout", value: "wlb" },
+    ],
   },
 ];
 

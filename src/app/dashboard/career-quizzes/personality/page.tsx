@@ -133,14 +133,28 @@ const questions: QuizQuestion[] = [
   {
     id: "strengths",
     question: "What do colleagues most often come to you for help with?",
-    type: "text",
-    placeholder: "e.g. explaining complex things simply, fixing technical problems, creative ideas, organizing projects",
+    type: "single",
+    options: [
+      { label: "Explaining complex things in simple terms", value: "explaining" },
+      { label: "Fixing technical problems or troubleshooting", value: "technical_fixing" },
+      { label: "Coming up with creative ideas or fresh perspectives", value: "creative_ideas" },
+      { label: "Organizing projects, plans, or priorities", value: "organizing" },
+      { label: "Navigating people issues, conflicts, or communication", value: "people_issues" },
+      { label: "Making decisions or giving strategic advice", value: "strategic_advice" },
+    ],
   },
   {
     id: "dream_impact",
     question: "If money and qualifications weren't an issue, what kind of work would you do?",
-    type: "text",
-    placeholder: "e.g. design products, teach kids, start a business, build technology, write, explore nature",
+    type: "single",
+    options: [
+      { label: "Design or build products that people use every day", value: "design_build" },
+      { label: "Teach, mentor, or coach others to succeed", value: "teach_mentor" },
+      { label: "Start and grow my own business or brand", value: "entrepreneurship" },
+      { label: "Write, create content, or tell stories", value: "create_content" },
+      { label: "Work with technology, data, or scientific research", value: "tech_research" },
+      { label: "Travel, explore, or work outdoors in nature", value: "explore_nature" },
+    ],
   },
 ];
 
