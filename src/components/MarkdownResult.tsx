@@ -534,10 +534,12 @@ interface MarkdownResultProps {
   result: string;
   showDownload?: boolean;
   editable?: boolean;
+  /* # Custom filename stem for downloads (without extension) — defaults to "resume-jobpilot" */
+  fileName?: string;
 }
 
 /* ---- Main Component ---- */
-export default function MarkdownResult({ result, showDownload = true, editable = true }: MarkdownResultProps) {
+export default function MarkdownResult({ result, showDownload = true, editable = true, fileName = "resume-jobpilot" }: MarkdownResultProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedMarkdownState, setEditedMarkdownState] = useState<string | null>(null);
@@ -847,13 +849,13 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         y += 1;
       }
 
-      doc.save("resume-jobpilot.pdf");
+      doc.save(`${fileName}.pdf`);
     } catch {
       /* Fallback: open print dialog with styled HTML */
       const downloadHTML = markdownToDownloadHTML(getEditedMarkdown());
       const printWindow = window.open("", "_blank");
       if (printWindow) {
-        printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>${fileName} - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
         printWindow.document.close();
         setTimeout(() => printWindow.print(), 300);
       }
@@ -870,7 +872,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "resume-jobpilot.doc";
+    a.download = `${fileName}.doc`;
     a.click();
     URL.revokeObjectURL(url);
   };

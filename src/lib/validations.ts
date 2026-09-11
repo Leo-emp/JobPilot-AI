@@ -103,6 +103,12 @@ const aiActions = [
   "career_pivot_us",
   "career_pivot_uk",
   "career_pivot_au",
+  /* Career tools */
+  "resignation_letter",
+  /* Career quizzes & assessments */
+  "career_change_quiz",
+  "career_personality_quiz",
+  "stay_or_quit_quiz",
   /* Help widget AI fallback */
   "faq_answer",
 ] as const;

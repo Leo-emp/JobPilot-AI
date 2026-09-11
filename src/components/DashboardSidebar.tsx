@@ -76,6 +76,16 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   ),
+  resignation: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  ),
+  quizzes: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+    </svg>
+  ),
   portfolio: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -105,6 +115,8 @@ const navItems = [
   { href: "/dashboard/interview", icon: icons.interview, label: "Interview Prep" },
   { href: "/dashboard/linkedin", icon: icons.linkedin, label: "LinkedIn Optimizer" },
   { href: "/dashboard/network", icon: icons.network, label: "AI Outreach Hub" },
+  { href: "/dashboard/resignation-letter", icon: icons.resignation, label: "Resignation Letter" },
+  { href: "/dashboard/career-quizzes", icon: icons.quizzes, label: "Career Quizzes" },
   { href: "/dashboard/portfolio", icon: icons.portfolio, label: "Portfolio Builder" },
   /* B2B phase — hidden for B2C launch, re-enable when org layer ships
   { href: "/dashboard/opportunities", icon: icons.jobs, label: "My Opportunities" },

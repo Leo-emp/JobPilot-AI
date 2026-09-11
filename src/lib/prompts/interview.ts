@@ -513,3 +513,58 @@ Return ONLY valid JSON (no markdown, no code fences):
   "readinessLevel": "<Not Ready|Needs Work|Almost There|Interview Ready|Excellent>"
 }`;
 }
+
+export function resignationLetter(payload: Record<string, any>): string {
+  const tone = payload.tone || "professional";
+  const toneGuide = tone === "warm"
+    ? "Write with genuine warmth and gratitude. Express positive emotions about your time at the company. Be heartfelt but still professional. Show that leaving is bittersweet."
+    : tone === "brief"
+    ? "Keep it short and direct — 3-4 paragraphs max. State the facts clearly without excessive sentiment. Polite but concise."
+    : "Maintain a balanced, professional tone. Appreciative but composed. Standard business letter formality without being cold.";
+
+  return `Write a professional resignation letter. Follow the structure and rules below EXACTLY.
+
+TODAY'S DATE: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+
+TONE STYLE: ${tone}
+${toneGuide}
+
+STRUCTURE (follow this EXACT format):
+
+1. **Header** — Full name on its own line. Then the date. Then addressed to the manager (or "Dear Hiring Manager" if no manager name provided).
+
+2. **Opening paragraph (2-3 sentences)** — State clearly that you are resigning from your position. Include your current job title and the company name. State your last working day.
+
+3. **Gratitude paragraph (2-4 sentences)** — Express genuine appreciation for the opportunities, growth, or experiences at the company. Reference specific aspects if the user mentioned them. This should feel authentic, not generic.
+
+4. **Transition paragraph (2-3 sentences)** — Offer to help with the transition. Mention willingness to train a replacement, hand over projects, or document processes. Be specific about what you can do during the remaining time.
+
+5. **Closing paragraph (1-2 sentences)** — Wish the company and team continued success. Express hope to stay in touch professionally.
+
+6. **Sign-off** — "Sincerely," then full name
+
+RULES:
+- Use the employee's REAL name. NEVER use [Your Name] or brackets for any information the user provided.
+- For any information NOT provided by the user, use professional placeholders in brackets like [Manager's Name] or [Department].
+- Keep the letter between 150-300 words for the body (Dear... to Sincerely).
+- Do NOT mention the reason for leaving unless the user specifically asked you to. Resignation letters should NOT explain why you're leaving — that's for the conversation, not the letter.
+- If the user DID provide a reason and asked to include it, weave it in naturally and positively (e.g. "pursuing a new opportunity that aligns with my long-term career goals" — never negative about the current employer).
+- Do NOT burn bridges. Never criticize the company, management, colleagues, or policies.
+- Do NOT mention salary, benefits, or complaints.
+- Active voice. Confident but gracious.
+- No AI giveaway phrases like "I am writing to inform you", "It is with mixed emotions", "after much deliberation and soul-searching".
+- Sound like a real person, not a template.
+- Make the letter printable — clean formatting, no markdown symbols.
+
+EMPLOYEE DETAILS:
+Name: ${payload.employeeName || "[Employee Name]"}
+Current Position: ${payload.currentPosition || "[Current Position]"}
+Company: ${payload.companyName || "[Company Name]"}
+Manager: ${payload.managerName || "[Manager's Name]"}
+Last Working Day: ${payload.lastDay || "[Last Working Day]"}
+${payload.reason ? `Reason (include if natural): ${payload.reason}` : "Reason: NOT PROVIDED — do NOT mention why you are leaving."}
+${payload.highlights ? `Specific things to mention/appreciate: ${payload.highlights}` : ""}
+${payload.customInstructions ? `\nUSER'S CUSTOM INSTRUCTIONS (follow these as additional rules):\n${payload.customInstructions}` : ""}
+
+Return ONLY the resignation letter text. No commentary, no markdown formatting, no code fences.`;
+}
