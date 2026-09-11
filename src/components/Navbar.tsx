@@ -50,6 +50,12 @@ export default function Navbar() {
               Features
             </Link>
             <Link
+              href="/tools"
+              className="text-sm text-text-secondary hover:text-white transition-colors"
+            >
+              Tools
+            </Link>
+            <Link
               href="/#how-it-works"
               className="text-sm text-text-secondary hover:text-white transition-colors"
             >
@@ -121,6 +127,13 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
               >
                 Features
+              </Link>
+              <Link
+                href="/tools"
+                className="text-text-secondary hover:text-white transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Tools
               </Link>
               <Link
                 href="/#how-it-works"
