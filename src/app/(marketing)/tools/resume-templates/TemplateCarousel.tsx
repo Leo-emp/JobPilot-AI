@@ -104,7 +104,7 @@ export default function TemplateCarousel() {
 function TemplateCard({ children }: { children: React.ReactNode }) {
   return (
     <Link href="/signup" className="group block w-full max-w-xl">
-      <div className="relative overflow-hidden" style={{ height: 780 }}>
+      <div className="relative overflow-hidden rounded-lg" style={{ height: 780 }}>
         <div className="origin-top-left" style={{ transform: "scale(0.62)", width: "210mm", minHeight: "297mm" }}>
           {children}
         </div>
