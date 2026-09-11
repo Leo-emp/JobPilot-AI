@@ -10,7 +10,7 @@
 "use client";
 
 import QuizShell from "@/components/QuizShell";
-import type { QuizQuestion } from "@/components/QuizShell";
+import type { QuizQuestion, QuizNextStep } from "@/components/QuizShell";
 
 /* # 12 questions mapping to the 6 work-style dimensions:
    Environment, Thinking, Pace, Motivation, Role, Focus */
@@ -144,6 +144,50 @@ const questions: QuizQuestion[] = [
   },
 ];
 
+/* # Next steps after personality results */
+const nextSteps: QuizNextStep[] = [
+  {
+    href: "/dashboard/career-quizzes/career-change",
+    title: "Plan Your Career Change",
+    description: "Found a match? Evaluate your readiness and get a personalized transition plan.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/resume",
+    title: "Optimize Your Resume",
+    description: "Align your resume with your personality strengths and target career.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/jobs",
+    title: "Search for Matching Jobs",
+    description: "Find roles that match your work personality and career matches.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/linkedin",
+    title: "Update Your LinkedIn",
+    description: "Showcase your strengths and attract roles that fit your personality.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7h-4a2 2 0 00-2 2v9m6-11v11a2 2 0 01-2 2h-2a2 2 0 01-2-2M8 7H4a2 2 0 00-2 2v9a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zm0 0V5a2 2 0 012-2h0a2 2 0 012 2v2M8 7h4" />
+      </svg>
+    ),
+  },
+];
+
 export default function CareerPersonalityQuizPage() {
   return (
     <QuizShell
@@ -153,6 +197,7 @@ export default function CareerPersonalityQuizPage() {
       questions={questions}
       aiAction="career_personality_quiz"
       fileName="career-personality-test-jobpilot"
+      nextSteps={nextSteps}
     />
   );
 }

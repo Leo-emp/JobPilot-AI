@@ -9,6 +9,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import { useAIStream } from "@/hooks/useAIStream";
 import MarkdownResult from "@/components/MarkdownResult";
 import UpgradePrompt from "@/components/UpgradePrompt";
@@ -27,6 +28,14 @@ export interface QuizQuestion {
   placeholder?: string;
 }
 
+/* # Next-step CTA shown after quiz results */
+export interface QuizNextStep {
+  href: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}
+
 interface QuizShellProps {
   title: string;
   subtitle: string;
@@ -34,6 +43,7 @@ interface QuizShellProps {
   questions: QuizQuestion[];
   aiAction: string;
   fileName: string;
+  nextSteps?: QuizNextStep[];
 }
 
 /* # Color token maps for the 3 quiz accent colors */
@@ -73,7 +83,7 @@ const accents = {
   },
 };
 
-export default function QuizShell({ title, subtitle, accentColor, questions, aiAction, fileName }: QuizShellProps) {
+export default function QuizShell({ title, subtitle, accentColor, questions, aiAction, fileName, nextSteps }: QuizShellProps) {
   /* # State: current question index, answers map, quiz phase */
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -172,6 +182,36 @@ export default function QuizShell({ title, subtitle, accentColor, questions, aiA
             <button onClick={restartQuiz} className="px-6 py-2.5 rounded-xl text-sm font-medium border border-card-border text-text-secondary hover:text-white hover:border-white/30 transition-colors">
               Retake Quiz
             </button>
+          </div>
+        )}
+
+        {/* # Next Steps — CTA cards linking to other tools */}
+        {result && !loading && !streaming && nextSteps && nextSteps.length > 0 && (
+          <div className="mt-10">
+            <h2 className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold mb-4">
+              Your Next Steps
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {nextSteps.map((step) => (
+                <Link
+                  key={step.href}
+                  href={step.href}
+                  className="glass-card p-5 flex items-start gap-4 hover:border-brand-indigo/40 transition-all group"
+                >
+                  <div className="shrink-0 w-10 h-10 rounded-lg bg-brand-indigo/10 border border-brand-indigo/30 flex items-center justify-center text-brand-light">
+                    {step.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-white group-hover:text-brand-light transition-colors">
+                      {step.title}
+                    </h3>
+                    <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

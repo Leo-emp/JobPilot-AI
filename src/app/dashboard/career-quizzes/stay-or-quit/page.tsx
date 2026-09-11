@@ -15,7 +15,7 @@
 "use client";
 
 import QuizShell from "@/components/QuizShell";
-import type { QuizQuestion } from "@/components/QuizShell";
+import type { QuizQuestion, QuizNextStep } from "@/components/QuizShell";
 
 const questions: QuizQuestion[] = [
   /* # 1 — Overall emotional baseline */
@@ -195,6 +195,50 @@ const questions: QuizQuestion[] = [
   },
 ];
 
+/* # Tool CTAs shown after quiz results */
+const nextSteps: QuizNextStep[] = [
+  {
+    href: "/dashboard/career-quizzes/career-change",
+    title: "Take the Career Change Quiz",
+    description: "Not sure what's next? Discover careers that match your strengths and interests.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/resume",
+    title: "Optimize Your Resume",
+    description: "Get your resume ready for what's next — AI-powered analysis and optimization.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/jobs",
+    title: "Explore Job Opportunities",
+    description: "Search and match with jobs that align with what you're looking for.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/resignation-letter",
+    title: "Write Your Resignation Letter",
+    description: "Ready to make it official? Generate a professional letter in seconds.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+    ),
+  },
+];
+
 export default function StayOrQuitQuizPage() {
   return (
     <QuizShell
@@ -204,6 +248,7 @@ export default function StayOrQuitQuizPage() {
       questions={questions}
       aiAction="stay_or_quit_quiz"
       fileName="stay-or-quit-assessment-jobpilot"
+      nextSteps={nextSteps}
     />
   );
 }

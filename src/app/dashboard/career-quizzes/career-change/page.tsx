@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import QuizShell from "@/components/QuizShell";
-import type { QuizQuestion } from "@/components/QuizShell";
+import type { QuizQuestion, QuizNextStep } from "@/components/QuizShell";
 
 /* ============================================================
    DISCOVERY ROUTE — 14 Questions
@@ -273,6 +273,94 @@ const transitionQuestions: QuizQuestion[] = [
   },
 ];
 
+/* # Next steps for Discovery route — found careers, now take action */
+const discoveryNextSteps: QuizNextStep[] = [
+  {
+    href: "/dashboard/career-quizzes/personality",
+    title: "Take the Personality Test",
+    description: "Go deeper — discover your work personality type and get matched with ideal careers.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/resume",
+    title: "Optimize Your Resume",
+    description: "Reframe your experience for your new target career with AI.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/linkedin",
+    title: "Update Your LinkedIn",
+    description: "Optimize your profile to attract opportunities in your new direction.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7h-4a2 2 0 00-2 2v9m6-11v11a2 2 0 01-2 2h-2a2 2 0 01-2-2M8 7H4a2 2 0 00-2 2v9a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2zm0 0V5a2 2 0 012-2h0a2 2 0 012 2v2M8 7h4" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/jobs",
+    title: "Search for Jobs",
+    description: "Start exploring roles that match your newly discovered career direction.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    ),
+  },
+];
+
+/* # Next steps for Transition route — has a target, now execute */
+const transitionNextSteps: QuizNextStep[] = [
+  {
+    href: "/dashboard/resume",
+    title: "Rebuild Your Resume",
+    description: "Reframe your experience for your target career with AI-powered optimization.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/cover-letter",
+    title: "Write a Cover Letter",
+    description: "Craft a compelling career-changer cover letter that sells your transferable skills.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/interview",
+    title: "Prepare for Interviews",
+    description: "Practice answering 'Why are you switching careers?' and other transition questions.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/jobs",
+    title: "Search for Jobs",
+    description: "Find and apply to roles in your target career.",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    ),
+  },
+];
+
 /* ============================================================
    ROUTE SELECTOR + QUIZ RENDERER
    ============================================================ */
@@ -361,6 +449,7 @@ export default function CareerChangeQuizPage() {
         questions={discoveryQuestions}
         aiAction="career_change_discovery"
         fileName="career-discovery-jobpilot"
+        nextSteps={discoveryNextSteps}
       />
     );
   }
@@ -374,6 +463,7 @@ export default function CareerChangeQuizPage() {
       questions={transitionQuestions}
       aiAction="career_change_transition"
       fileName="career-transition-readiness-jobpilot"
+      nextSteps={transitionNextSteps}
     />
   );
 }
