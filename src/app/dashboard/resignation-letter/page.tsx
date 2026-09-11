@@ -338,7 +338,7 @@ export default function ResignationLetterPage() {
               />
             ) : (
               <div>
-                <MarkdownResult result={displayResult} showDownload={!streaming} fileName="resignation-letter-jobpilot" />
+                <MarkdownResult result={displayResult} fileName="resignation-letter-jobpilot" />
                 {streaming && (
                   <div className="mt-3 flex items-center gap-2 text-brand-light text-sm">
                     <div className="w-2 h-2 bg-brand-indigo rounded-full animate-pulse" />
