@@ -14,7 +14,7 @@ import { RESUME_SYSTEM, SCORING_SYSTEM } from "./shared";
 import { analyzeResume, optimizeResume, rebuildResume, deepTailor, matchScore, careerPivot, parseResumeFields, createResume } from "./resume";
 import { coverLetter, interviewQuestions, interviewAnswer, interviewFeedback, mockInterviewRespond, mockInterviewStart, mockInterviewEvaluate, mockInterviewSummary, resignationLetter } from "./interview";
 import { linkedinAudit, linkedinRewrite, craftOutreach, linkedinContentStrategy } from "./linkedin";
-import { careerChangeQuiz, careerPersonalityQuiz, stayOrQuitQuiz } from "./quizzes";
+import { careerChangeDiscovery, careerChangeTransition, careerPersonalityQuiz, stayOrQuitQuiz } from "./quizzes";
 import { optimizeResumeCountry, rebuildResumeCountry, deepTailorCountry, careerPivotCountry, createResumeCountry } from "./resume-country";
 import type { ResumeCountry } from "./resume-country";
 
@@ -93,7 +93,8 @@ export function buildPrompt(action: string, payload: Record<string, any>): impor
     case "resignation_letter": return { prompt: resignationLetter(payload) };
 
     /* Career quizzes & assessments */
-    case "career_change_quiz": return { prompt: careerChangeQuiz(payload) };
+    case "career_change_discovery": return { prompt: careerChangeDiscovery(payload) };
+    case "career_change_transition": return { prompt: careerChangeTransition(payload) };
     case "career_personality_quiz": return { prompt: careerPersonalityQuiz(payload) };
     case "stay_or_quit_quiz": return { prompt: stayOrQuitQuiz(payload) };
 

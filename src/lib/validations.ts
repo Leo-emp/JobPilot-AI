@@ -106,7 +106,8 @@ const aiActions = [
   /* Career tools */
   "resignation_letter",
   /* Career quizzes & assessments */
-  "career_change_quiz",
+  "career_change_discovery",
+  "career_change_transition",
   "career_personality_quiz",
   "stay_or_quit_quiz",
   /* Help widget AI fallback */

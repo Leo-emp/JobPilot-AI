@@ -11,12 +11,12 @@ import Link from "next/link";
 const quizzes = [
   {
     href: "/dashboard/career-quizzes/career-change",
-    title: "Career Change Readiness",
-    subtitle: "Are you ready to make the leap?",
+    title: "Career Change Quiz",
+    subtitle: "Discover your path or plan your transition",
     description:
-      "Evaluate your readiness for a career change. Get a personalized readiness score, discover transferable strengths, explore matching careers, and receive a concrete 90-day action plan.",
-    duration: "5 min",
-    questions: 10,
+      "Two routes: Discovery (don't know what career to pursue — uncover hidden talents, get 7 career matches) or Transition (have a target — get a readiness score, skill gap analysis, and personalized plan). 14 deep questions per route.",
+    duration: "7 min",
+    questions: 14,
     color: "indigo",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
