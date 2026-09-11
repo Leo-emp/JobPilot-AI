@@ -690,7 +690,7 @@ function FeatureTemplateCard({ children }: { children: React.ReactNode }) {
   return (
     <Link href="/tools/resume-templates" className="group block">
       <div className="relative overflow-hidden rounded-2xl bg-white">
-        <div style={{ aspectRatio: "210/297" }}>
+        <div style={{ aspectRatio: "210/310" }}>
           <div className="absolute top-0 left-0 origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
             {children}
           </div>
