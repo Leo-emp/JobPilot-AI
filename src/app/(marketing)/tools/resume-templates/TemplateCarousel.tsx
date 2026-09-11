@@ -122,7 +122,7 @@ function TemplateCard({ children }: { children: React.ReactNode }) {
    ============================================================ */
 function StandardATSTemplate() {
   return (
-    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "210mm", minHeight: "297mm", fontSize: 14 }}>
+    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif] rounded-xl" style={{ width: "210mm", minHeight: "297mm", fontSize: 14 }}>
       <div className="mb-1">
         <h1 className="text-[28px] font-bold text-black leading-tight">Olivia Wilson</h1>
         <p className="text-[11px] text-gray-600 mt-1">New York, NY &bull; +1 (555) 123-4567 &bull; olivia.wilson@email.com &bull; linkedin.com/in/oliviawilson</p>
@@ -229,7 +229,7 @@ function StandardATSTemplate() {
    ============================================================ */
 function USATSTemplate() {
   return (
-    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "210mm", minHeight: "297mm", fontSize: 14 }}>
+    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif] rounded-xl" style={{ width: "210mm", minHeight: "297mm", fontSize: 14 }}>
       <div className="text-center mb-1">
         <h1 className="text-[26px] font-bold text-black leading-tight">Olivia Wilson</h1>
         <p className="text-[11px] text-gray-600 mt-1">New York, NY &bull; +1 (555) 123-4567 &bull; olivia.wilson@email.com &bull; linkedin.com/in/oliviawilson</p>
@@ -322,7 +322,7 @@ function USATSTemplate() {
    ============================================================ */
 function AUCVTemplate() {
   return (
-    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "210mm", minHeight: "297mm", fontSize: 14 }}>
+    <div className="bg-white text-black p-10 font-[Arial,Helvetica,sans-serif] rounded-xl" style={{ width: "210mm", minHeight: "297mm", fontSize: 14 }}>
       <div className="mb-1">
         <h1 className="text-[26px] font-bold text-black leading-tight">Olivia Wilson</h1>
         <p className="text-[10.5px] text-gray-500 mt-1">New York, NY &bull; +1 (555) 123-4567 &bull; olivia.wilson@email.com &bull; linkedin.com/in/oliviawilson</p>
