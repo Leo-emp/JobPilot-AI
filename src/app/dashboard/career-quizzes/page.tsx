@@ -44,9 +44,9 @@ const quizzes = [
     title: "Stay or Quit Assessment",
     subtitle: "Should you stay or should you go?",
     description:
-      "Get an honest, data-driven recommendation. Receive a job satisfaction breakdown across 7 dimensions, discover what's fixable vs what's broken, and get both a stay-plan and an exit strategy.",
-    duration: "5 min",
-    questions: 10,
+      "Get an honest, data-driven recommendation. Satisfaction breakdown across 9 dimensions, honest fixability analysis, financial reality check, career vs job diagnosis, plus both a 60-day stay plan and a complete exit strategy.",
+    duration: "7 min",
+    questions: 15,
     color: "amber",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
