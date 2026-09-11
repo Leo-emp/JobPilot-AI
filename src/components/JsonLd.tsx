@@ -51,21 +51,55 @@ export function SoftwareAppJsonLd() {
 }
 
 /* # Organization schema — who built this */
+/* # sameAs links tell Google which social profiles belong to this brand */
+/* # The more verified profiles, the stronger Google's confidence that YOU are "JobPilot AI" */
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "JobPilot AI",
+    alternateName: ["JobPilotAI", "Job Pilot AI", "jobpilotai"],
     url: "https://jobpilotai.co",
-    logo: "https://jobpilotai.co/opengraph-image",
+    logo: "https://jobpilotai.co/icon.png",
+    image: "https://jobpilotai.co/opengraph-image",
+    description:
+      "AI-powered career platform that helps job seekers land interviews faster with resume optimization, cover letter generation, mock interviews, and job matching.",
+    foundingDate: "2026",
     sameAs: [
       "https://twitter.com/jobpilotai",
       "https://linkedin.com/company/jobpilotai",
+      "https://github.com/Leo-emp/JobPilot-AI",
     ],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
       url: "https://jobpilotai.co/contact",
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
+    />
+  );
+}
+
+/* # WebSite schema — tells Google this is the official "JobPilot AI" site */
+/* # Strengthens brand ownership in search results over competitors with similar names */
+export function WebSiteJsonLd() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "JobPilot AI",
+    alternateName: ["JobPilotAI", "Job Pilot AI"],
+    url: "https://jobpilotai.co",
+    description:
+      "AI-powered career platform — resume optimization, cover letters, mock interviews, job matching.",
+    publisher: {
+      "@type": "Organization",
+      name: "JobPilot AI",
+      url: "https://jobpilotai.co",
     },
   };
 
