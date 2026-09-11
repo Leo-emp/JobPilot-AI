@@ -14,6 +14,7 @@ declare module "next-auth" {
       id: string;
       isAdmin: boolean;
       twoFactorPending: boolean;
+      sessionRevoked?: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -22,5 +23,6 @@ declare module "@auth/core/jwt" {
   interface JWT {
     isAdmin?: boolean;
     twoFactorPending?: boolean;
+    sessionId?: string;
   }
 }

@@ -44,13 +44,46 @@ import { audit } from "./audit";
 import { isLocked, recordFailure, resetFailures } from "./account-lock";
 import { buildWelcomeEmail } from "./welcome-email";
 import { cacheGet, cacheSet } from "./redis";
+import { getRedis } from "./redis";
 import * as Sentry from "@sentry/nextjs";
+import crypto from "crypto";
 
 /* # Lazy-init so missing env var doesn't crash the module on import */
 let _resend: Resend | null = null;
 function getResend() {
   if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
   return _resend;
+}
+
+/* ---- Session Lock ---- */
+/* # One active session per user. New login invalidates the old session.
+   Stores a random sessionId in Redis keyed by userId. The JWT carries
+   the sessionId — if it doesn't match Redis, the session is revoked. */
+const SESSION_LOCK_TTL = 7 * 24 * 60 * 60; // # 7 days, matches JWT maxAge
+
+async function setActiveSession(userId: string): Promise<string> {
+  const sessionId = crypto.randomBytes(16).toString("hex");
+  const r = getRedis();
+  if (r) {
+    try {
+      await r.set(`session-lock:${userId}`, sessionId, { ex: SESSION_LOCK_TTL });
+    } catch {
+      /* # Redis down — session lock degrades gracefully, no user impact */
+    }
+  }
+  return sessionId;
+}
+
+async function isActiveSession(userId: string, sessionId: string): Promise<boolean> {
+  const r = getRedis();
+  if (!r) return true; // # No Redis = no enforcement
+  try {
+    const active = await r.get<string>(`session-lock:${userId}`);
+    if (active === null) return true; // # Key expired or Redis evicted — don't punish the user
+    return active === sessionId;
+  } catch {
+    return true; // # Redis error = don't kick the user
+  }
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -264,6 +297,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.isAdmin = admins.includes((user.email || "").toLowerCase());
         /* If user has 2FA, mark session as pending verification */
         token.twoFactorPending = (user as Record<string, unknown>).twoFactorEnabled === true;
+        /* # Session lock: register this as the only active session */
+        token.sessionId = await setActiveSession(user.id as string);
       }
       /* Client called updateSession() — allow clearing 2FA pending flag */
       if (trigger === "update" && updateData && typeof updateData === "object" && "twoFactorPending" in updateData) {
@@ -280,8 +315,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.isAdmin = token.isAdmin ?? false;
         session.user.twoFactorPending = (token.twoFactorPending as boolean) ?? false;
 
-        /* # Block soft-deleted users — check Redis cache first to avoid DB hit on every request */
         const userId = token.id as string;
+
+        /* # Session lock: verify this is still the active session.
+           If someone else logged in, this session's ID won't match Redis. */
+        if (token.sessionId) {
+          const stillActive = await isActiveSession(userId, token.sessionId as string);
+          if (!stillActive) {
+            session.user.id = "";
+            session.user.sessionRevoked = true;
+            return session;
+          }
+        }
+
+        /* # Block soft-deleted users — check Redis cache first to avoid DB hit on every request */
         const cacheKey = `session:active:${userId}`;
         const cached = await cacheGet(cacheKey);
 

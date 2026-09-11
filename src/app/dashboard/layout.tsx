@@ -26,6 +26,11 @@ async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
     redirect("/login");
   }
 
+  /* # Session lock: another device logged in, this session is revoked */
+  if (session.user.sessionRevoked) {
+    redirect("/login?reason=session-revoked");
+  }
+
   if (session.user.twoFactorPending) {
     redirect("/verify-2fa");
   }

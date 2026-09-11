@@ -22,6 +22,11 @@ async function OrgShell({ children }: { children: React.ReactNode }) {
     redirect("/login");
   }
 
+  /* # Session lock: another device logged in */
+  if (session.user.sessionRevoked) {
+    redirect("/login?reason=session-revoked");
+  }
+
   return (
     <SessionProvider session={session}>
       <OrgSidebar userName={session.user.name || "User"} />

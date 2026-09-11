@@ -9,12 +9,27 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function LoginPage() {
+/* # Session revoked banner — split out because useSearchParams
+   needs a Suspense boundary in Next.js 16 */
+function SessionRevokedBanner() {
+  const searchParams = useSearchParams();
+  const sessionRevoked = searchParams.get("reason") === "session-revoked";
+
+  if (!sessionRevoked) return null;
+
+  return (
+    <div className="mb-6 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm text-center">
+      You&apos;ve been signed out because your account was signed in on another device. Only one session is allowed at a time.
+    </div>
+  );
+}
+
+function LoginForm() {
   /* Form field states */
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,6 +86,11 @@ export default function LoginPage() {
         <p className="text-text-secondary text-center mb-8">
           Sign in to your JobPilot AI account
         </p>
+
+        {/* # Session revoked banner — wrapped in Suspense for useSearchParams */}
+        <Suspense>
+          <SessionRevokedBanner />
+        </Suspense>
 
         {/* Error message banner */}
         {error && (
@@ -170,4 +190,8 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+export default function LoginPage() {
+  return <LoginForm />;
 }
