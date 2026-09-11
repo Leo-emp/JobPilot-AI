@@ -104,11 +104,11 @@ export default function TemplateCarousel() {
 function TemplateCard({ children }: { children: React.ReactNode }) {
   return (
     <Link href="/signup" className="group block w-full max-w-xl">
-      <div className="relative rounded-xl overflow-hidden bg-white shadow-lg shadow-black/30" style={{ height: 780 }}>
+      <div className="relative overflow-hidden" style={{ height: 780 }}>
         <div className="origin-top-left" style={{ transform: "scale(0.62)", width: "210mm", minHeight: "297mm" }}>
           {children}
         </div>
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <span className="px-6 py-3 rounded-xl bg-brand-indigo/90 text-white text-sm font-bold border border-brand-indigo/50">Select Template</span>
         </div>
       </div>
