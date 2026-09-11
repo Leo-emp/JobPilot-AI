@@ -606,29 +606,63 @@ function MockPreview() {
 function TemplatesPreview() {
   return (
     <div className="w-full">
-      <div className="grid grid-cols-3 gap-1.5 mb-2">
-        {[
-          { cat: "Classic", n: 4, bg: "bg-blue-500/15 border-blue-500/20" },
-          { cat: "Sidebar", n: 5, bg: "bg-purple-500/15 border-purple-500/20" },
-          { cat: "Visual", n: 4, bg: "bg-emerald-500/15 border-emerald-500/20" },
-        ].map((c) => (
-          <div key={c.cat} className={`rounded-lg p-2 border ${c.bg} text-center`}>
-            <p className="text-sm font-bold text-white">{c.n}</p>
-            <p className="text-[8px] text-text-muted">{c.cat}</p>
-          </div>
-        ))}
-      </div>
       <div className="grid grid-cols-3 gap-1.5">
-        {[
-          { cat: "Modern", n: 4, bg: "bg-amber-500/15 border-amber-500/20" },
-          { cat: "Special", n: 3, bg: "bg-rose-500/15 border-rose-500/20" },
-          { cat: "Total", n: 20, bg: "bg-indigo-500/15 border-indigo-500/20" },
-        ].map((c) => (
-          <div key={c.cat} className={`rounded-lg p-2 border ${c.bg} text-center`}>
-            <p className="text-sm font-bold text-white">{c.n}</p>
-            <p className="text-[8px] text-text-muted">{c.cat}</p>
-          </div>
-        ))}
+        {/* # Mini resume 1 — Standard ATS (left-aligned headers) */}
+        <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 160 }}>
+          <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
+          <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
+          <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Professional Summary</p>
+          <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
+          <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Core Skills</p>
+          <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, A/B Testing, Team Management, HubSpot</p>
+          <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5">Work Experience</p>
+          <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc.</p>
+          <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue, exceeding targets by 35%</p>
+          <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co.</p>
+          <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+          <p className="text-[3.5px] font-bold uppercase border-b border-black pb-0.5 mb-0.5 mt-1">Education</p>
+          <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University</p>
+        </div>
+
+        {/* # Mini resume 2 — US ATS (centered headers, rules) */}
+        <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 160 }}>
+          <p className="text-[6px] font-bold leading-none text-center">Olivia Wilson</p>
+          <p className="text-[3px] text-gray-500 mb-1 text-center">New York, NY &bull; olivia.wilson@email.com</p>
+          <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Professional Summary</p>
+          <div className="border-t border-gray-300 mb-0.5" />
+          <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
+          <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Work Experience</p>
+          <div className="border-t border-gray-300 mb-0.5" />
+          <p className="text-[3px] font-bold text-black">Senior Marketing Manager, Brightwave Inc. — 2022 - Present</p>
+          <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
+          <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist, Greenfield Co. — 2019 - 2022</p>
+          <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+          <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5 mt-1">Core Skills</p>
+          <div className="border-t border-gray-300 mb-0.5" />
+          <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy, SEO/SEM, Google Analytics, Content Marketing, A/B Testing</p>
+          <p className="text-[3.5px] font-bold uppercase text-center tracking-wider mb-0.5">Education</p>
+          <div className="border-t border-gray-300 mb-0.5" />
+          <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+        </div>
+
+        {/* # Mini resume 3 — AU CV (pipe skills, different sections) */}
+        <div className="bg-white rounded text-black p-1.5 overflow-hidden" style={{ height: 160 }}>
+          <p className="text-[6px] font-bold leading-none">Olivia Wilson</p>
+          <p className="text-[3px] text-gray-500 mb-1">New York, NY &bull; olivia.wilson@email.com</p>
+          <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Summary</p>
+          <p className="text-[3px] text-gray-700 leading-tight mb-1">Results-driven marketing manager with 6+ years of experience in digital strategy and campaign optimization.</p>
+          <p className="text-[3.5px] font-bold uppercase mb-0.5">Key Skills</p>
+          <p className="text-[3px] text-gray-700 leading-tight mb-1">Brand Strategy | Go-to-Market | SEO/SEM | Google Analytics | A/B Testing | HubSpot | Tableau</p>
+          <p className="text-[3.5px] font-bold uppercase mb-0.5">Professional Experience</p>
+          <p className="text-[3px] font-bold text-black">Senior Marketing Manager — 2022 - Present</p>
+          <p className="text-[2.5px] text-gray-500">Brightwave Inc.</p>
+          <p className="text-[2.5px] text-gray-700 leading-tight">Spearheaded digital campaigns generating $2.4M in annual revenue</p>
+          <p className="text-[3px] font-bold text-black mt-0.5">Marketing Specialist — 2019 - 2022</p>
+          <p className="text-[2.5px] text-gray-500">Greenfield Co.</p>
+          <p className="text-[2.5px] text-gray-700 leading-tight">Executed multi-channel campaigns driving 150% increase in qualified leads</p>
+          <p className="text-[3.5px] font-bold uppercase mb-0.5 mt-1">Education &amp; Qualifications</p>
+          <p className="text-[3px] text-gray-700">MBA Marketing, Columbia University — 2017</p>
+        </div>
       </div>
     </div>
   );
