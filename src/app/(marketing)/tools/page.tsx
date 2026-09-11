@@ -32,7 +32,7 @@ interface Tool {
   href: string;
   /* # Preview card colors + visual type */
   gradient: string;
-  preview: "score" | "letter" | "resignation" | "jobs" | "tracker" | "interview" | "mock" | "quiz-change" | "quiz-personality" | "quiz-stayquit" | "linkedin" | "portfolio" | "templates" | "analyze" | "optimize" | "rebuild" | "outreach";
+  preview: "score" | "letter" | "resignation" | "jobs" | "tracker" | "extension" | "interview" | "mock" | "quiz-change" | "quiz-personality" | "quiz-stayquit" | "linkedin" | "portfolio" | "templates" | "analyze" | "optimize" | "rebuild" | "outreach";
 }
 
 interface ToolCategory {
@@ -102,6 +102,13 @@ const categories: ToolCategory[] = [
         href: "/tools/job-search",
         gradient: "from-emerald-500/30 to-teal-500/30",
         preview: "jobs",
+      },
+      {
+        title: "Chrome Extension",
+        desc: "Save jobs from LinkedIn, Indeed, Glassdoor, and 40+ job boards with one click. Auto-extracts details, adds AI match scores, and syncs to your tracker.",
+        href: "/tools/chrome-extension",
+        gradient: "from-green-500/30 to-emerald-500/30",
+        preview: "extension",
       },
       {
         title: "Application Tracker",
@@ -210,6 +217,7 @@ function ToolPreview({ type, gradient }: { type: Tool["preview"]; gradient: stri
         {type === "resignation" && <ResignationPreview />}
         {type === "jobs" && <JobsPreview />}
         {type === "tracker" && <TrackerPreview />}
+        {type === "extension" && <ExtensionPreview />}
         {type === "interview" && <InterviewPreview />}
         {type === "mock" && <MockPreview />}
         {type === "quiz-change" && <QuizChangePreview />}
@@ -522,6 +530,42 @@ function PortfolioPreview() {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* # Chrome extension popup */
+function ExtensionPreview() {
+  return (
+    <div className="w-full max-w-[200px] mx-auto">
+      <div className="bg-space-800/80 rounded-xl p-4 backdrop-blur-sm border border-white/10">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-5 h-5 rounded bg-brand-indigo/20 flex items-center justify-center">
+            <span className="text-[7px] font-bold text-brand-light">JP</span>
+          </div>
+          <p className="text-[10px] font-bold text-white">JobPilot AI</p>
+          <span className="ml-auto px-1.5 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-400">Detected</span>
+        </div>
+        <div className="space-y-1.5 mb-3">
+          <div className="p-2 rounded bg-space-700/80 border border-white/5">
+            <p className="text-[8px] text-text-muted">Job Title</p>
+            <p className="text-[10px] text-white font-medium">Senior PM</p>
+          </div>
+          <div className="flex gap-1.5">
+            <div className="flex-1 p-2 rounded bg-space-700/80 border border-white/5">
+              <p className="text-[8px] text-text-muted">Company</p>
+              <p className="text-[10px] text-white font-medium">Google</p>
+            </div>
+            <div className="flex-1 p-2 rounded bg-space-700/80 border border-white/5">
+              <p className="text-[8px] text-text-muted">Match</p>
+              <p className="text-[10px] text-emerald-400 font-bold">94%</p>
+            </div>
+          </div>
+        </div>
+        <div className="w-full py-1.5 rounded-lg bg-brand-indigo/60 text-center">
+          <p className="text-[9px] text-white font-semibold">Save to Tracker</p>
+        </div>
       </div>
     </div>
   );
