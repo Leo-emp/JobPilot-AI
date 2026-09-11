@@ -88,7 +88,8 @@ RULES:
 - Career matches must be specific job titles with real salary ranges, not vague categories.
 - The roadmap must have actual steps (specific websites, communities, people to follow, things to build).
 - Be encouraging but honest — if their interests conflict with their constraints, address it directly.
-- Keep the total response under 1800 words — dense and actionable, no fluff.`;
+- Keep the total response under 1800 words — dense and actionable, no fluff.
+- End with a brief disclaimer: "This assessment is for informational and self-reflection purposes only. It is not professional career counselling, financial advice, or a substitute for working with a qualified career professional. Your decisions and outcomes are your own responsibility."`;
 }
 
 /* ============================================================
@@ -184,7 +185,8 @@ RULES:
 - Be specific about resources: name actual courses (Coursera, Udemy, specific programs), certifications, communities, and tools.
 - If their target career is unrealistic given their constraints, say so — but offer the closest realistic alternative.
 - Address financial reality: how long will the transition take and can they afford it based on their runway?
-- Keep the total response under 1800 words — dense and actionable, no fluff.`;
+- Keep the total response under 1800 words — dense and actionable, no fluff.
+- End with a brief disclaimer: "This assessment is for informational and self-reflection purposes only. It is not professional career counselling, financial advice, or a substitute for working with a qualified career professional. Your decisions and outcomes are your own responsibility."`;
 }
 
 export function careerPersonalityQuiz(payload: Record<string, any>): string {
@@ -249,7 +251,8 @@ RULES:
 - Career suggestions must be realistic and specific — actual job titles, not categories.
 - If their answers show internal contradictions (e.g. want stability but also excitement), address this directly.
 - Be specific about industries and companies where their personality thrives.
-- Keep the total response under 1500 words.`;
+- Keep the total response under 1500 words.
+- End with a brief disclaimer: "This assessment is for informational and self-reflection purposes only. It is not professional career counselling, financial advice, or a substitute for working with a qualified career professional. Your decisions and outcomes are your own responsibility."`;
 }
 
 export function stayOrQuitQuiz(payload: Record<string, any>): string {
@@ -364,5 +367,6 @@ RULES:
 - Address the "grass is greener" bias — help them see if the problems would follow them to a new job.
 - If career interest is fading, flag that staying OR leaving for the same field won't solve it — they may need a career change, not a job change.
 - Acknowledge the emotional weight of this decision. It's not just a spreadsheet calculation.
-- Keep the total response under 1800 words — dense, honest, and actionable.`;
+- Keep the total response under 1800 words — dense, honest, and actionable.
+- End with a brief disclaimer: "This assessment is for informational and self-reflection purposes only. It is not professional career counselling, financial advice, or a substitute for working with a qualified career professional. Your decisions and outcomes are your own responsibility."`;
 }
