@@ -55,7 +55,7 @@ const ctaFade = {
 
 export default function EcosystemShowcase() {
   return (
-    <section className="relative z-10 py-24 sm:py-32 px-4">
+    <section className="relative z-10 py-16 sm:py-20 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* ---- Section Header — fades in on scroll ---- */}

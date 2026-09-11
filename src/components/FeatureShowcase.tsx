@@ -672,7 +672,7 @@ export default function FeatureShowcase() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
-          className="mt-24 sm:mt-32 text-center"
+          className="mt-16 sm:mt-20 text-center"
         >
           <p className="text-text-secondary text-lg mb-6">
             Every tool you need. One platform. Zero guesswork.
@@ -689,11 +689,12 @@ export default function FeatureShowcase() {
 function FeatureTemplateCard({ children }: { children: React.ReactNode }) {
   return (
     <Link href="/tools/resume-templates" className="group block">
-      <div className="relative overflow-hidden" style={{ height: 950, borderRadius: 16 }}>
-        <div className="origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
-          {children}
+      <div className="relative overflow-hidden rounded-2xl bg-white">
+        <div style={{ aspectRatio: "210/297" }}>
+          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
+            {children}
+          </div>
         </div>
-        <div className="absolute pointer-events-none" style={{ inset: -20, border: "20px solid #09090b", borderRadius: 36, zIndex: 2 }} />
       </div>
     </Link>
   );

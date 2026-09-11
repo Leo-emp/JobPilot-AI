@@ -28,7 +28,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2 group">
             {/* JP monogram logo — SVG for crisp rendering at any zoom */}
             <Image
-              src="/jp-logo.svg"
+              src="/jp-logo.png"
               alt="JobPilot AI"
               width={36}
               height={36}
