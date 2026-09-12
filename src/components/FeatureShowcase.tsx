@@ -427,22 +427,14 @@ export default function FeatureShowcase() {
 
                     {/* # Simulated UI preview */}
                     <div className="space-y-4">
-                      {/* # Fake header bar */}
-                      <div className="flex items-center gap-2 mb-6">
-                        <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                        <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                        <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50" />
-                      </div>
-
                       {/* # Each index renders a unique card preview */}
                       {index === 0 && (
                         <>
+                          {/* # ATS Score */}
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs text-text-muted uppercase tracking-wider">ATS Score</span>
                             <span className="text-2xl font-bold text-green-400">87/100</span>
                           </div>
-                          {/* # Progress bar — fills up when scrolled into view */}
                           <div className="w-full h-2.5 rounded-full bg-space-600 overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
@@ -452,28 +444,114 @@ export default function FeatureShowcase() {
                               className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400"
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-3 mt-4">
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ ...SPRING, duration: 0.8, delay: 0.6 }}
-                              className="p-3 rounded-lg bg-space-600/40"
-                            >
-                              <div className="text-xs text-text-muted mb-1">Keywords</div>
-                              <div className="text-sm font-semibold text-white">12 found</div>
-                            </motion.div>
+
+                          {/* # Score Breakdown */}
+                          <div className="grid grid-cols-4 gap-2 mt-3">
+                            {[
+                              { label: "Structure", score: "23/25", color: "text-green-400" },
+                              { label: "Writing", score: "22/25", color: "text-green-400" },
+                              { label: "ATS", score: "24/25", color: "text-green-400" },
+                              { label: "Content", score: "18/25", color: "text-amber-400" },
+                            ].map((item, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 8 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ ...SPRING, duration: 0.7, delay: 0.5 + i * 0.08 }}
+                                className="text-center p-2 rounded-lg bg-space-600/40"
+                              >
+                                <div className={`text-xs font-semibold ${item.color}`}>{item.score}</div>
+                                <div className="text-[10px] text-text-muted mt-0.5">{item.label}</div>
+                              </motion.div>
+                            ))}
+                          </div>
+
+                          {/* # Strengths + Areas to Improve side by side */}
+                          <div className="grid grid-cols-2 gap-2 mt-3">
                             <motion.div
                               initial={{ opacity: 0, y: 10 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
                               transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
-                              className="p-3 rounded-lg bg-space-600/40"
+                              className="p-2.5 rounded-lg bg-space-600/40"
                             >
-                              <div className="text-xs text-text-muted mb-1">Missing</div>
-                              <div className="text-sm font-semibold text-amber-400">4 critical</div>
+                              <div className="text-[10px] text-green-400 font-semibold uppercase tracking-wider mb-1.5">Strengths</div>
+                              <div className="space-y-1">
+                                {["Strong action verbs", "Quantified achievements", "Clean ATS layout"].map((s, i) => (
+                                  <div key={i} className="flex items-center gap-1.5">
+                                    <svg className="w-3 h-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    <span className="text-[10px] text-text-secondary">{s}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 0.8, delay: 0.85 }}
+                              className="p-2.5 rounded-lg bg-space-600/40"
+                            >
+                              <div className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider mb-1.5">Improve</div>
+                              <div className="space-y-1">
+                                {["Add industry keywords", "Strengthen summary", "Add certifications"].map((s, i) => (
+                                  <div key={i} className="flex items-center gap-1.5">
+                                    <svg className="w-3 h-3 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                                    <span className="text-[10px] text-text-secondary">{s}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </motion.div>
                           </div>
+
+                          {/* # Suggested Keywords + Formatting */}
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 0.8, delay: 1.0 }}
+                              className="p-2.5 rounded-lg bg-space-600/40"
+                            >
+                              <div className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider mb-1.5">Keywords</div>
+                              <div className="flex flex-wrap gap-1">
+                                {["React", "TypeScript", "CI/CD", "Agile", "AWS"].map((kw, i) => (
+                                  <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">{kw}</span>
+                                ))}
+                              </div>
+                            </motion.div>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 0.8, delay: 1.1 }}
+                              className="p-2.5 rounded-lg bg-space-600/40"
+                            >
+                              <div className="text-[10px] text-cyan-400 font-semibold uppercase tracking-wider mb-1.5">Formatting</div>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-400" /><span className="text-[10px] text-text-secondary">ATS-safe layout</span></div>
+                                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-400" /><span className="text-[10px] text-text-secondary">Standard headers</span></div>
+                                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" /><span className="text-[10px] text-text-secondary">Dates inconsistent</span></div>
+                              </div>
+                            </motion.div>
+                          </div>
+
+                          {/* # Next Steps */}
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ ...SPRING, duration: 0.8, delay: 1.2 }}
+                            className="mt-2 p-2.5 rounded-lg bg-space-600/40"
+                          >
+                            <div className="text-[10px] text-brand-light font-semibold uppercase tracking-wider mb-1.5">Next Steps</div>
+                            <div className="space-y-1">
+                              {["1. Add 5 missing industry keywords", "2. Rewrite summary with metrics", "3. Use Deep Tailor for job-specific targeting"].map((s, i) => (
+                                <div key={i} className="text-[10px] text-text-secondary">{s}</div>
+                              ))}
+                            </div>
+                          </motion.div>
                         </>
                       )}
 
