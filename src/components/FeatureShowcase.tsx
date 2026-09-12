@@ -42,7 +42,7 @@ const showcaseFeatures = [
   },
   {
     tag: "Resume Intelligence",
-    headline: "One job post. One click. A completely new resume.",
+    headline: "One job post. One click. ATS friendly resume tailored for each job description.",
     description:
       "Paste any job description and our AI rebuilds your entire resume from scratch — restructured, reworded, and loaded with the exact keywords that hiring managers and ATS systems are scanning for. Your real experience, reframed for maximum impact.",
     capabilities: [
@@ -155,12 +155,12 @@ export default function FeatureShowcase() {
             Built for Results
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-            Every Tool You Need,{" "}
-            <span className="glow-text">Nothing You Don&apos;t</span>
+            Build Resumes That{" "}
+            <span className="glow-text">Get You Interviews</span>
           </h2>
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            Each feature is purpose-built to solve a specific problem in your job search.
-            No fluff. No gimmicks. Just tools that get you hired.
+            Analyze your resume, rebuild it for any job, and download it in a professional template
+            — all in one place.
           </p>
         </motion.div>
 
@@ -170,6 +170,84 @@ export default function FeatureShowcase() {
             /* # Even index: content left, visual right */
             /* # Odd index: content right, visual left (flex-row-reverse) */
             const isEven = index % 2 === 0;
+
+            /* # Resume Intelligence — full-width text on top, before/after resumes below */
+            if (index === 1) {
+              return (
+                <div
+                  key={index}
+                  id="showcase-resume-intelligence"
+                  className="scroll-mt-24"
+                >
+                  {/* ---- Text centered on top ---- */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ ...SPRING }}
+                    className="text-center max-w-3xl mx-auto mb-10"
+                  >
+                    <div className="inline-flex items-center gap-2 mb-5">
+                      <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
+                        {feature.icon}
+                      </div>
+                      <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                        {feature.tag}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+                      {feature.headline}
+                    </h3>
+                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+
+                  {/* ---- Before / After resume cards side by side ---- */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-3xl mx-auto">
+                    {/* # Before — bad, non-ATS-friendly resume */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ ...SPRING, delay: 0.1 }}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-red-400" />
+                        <span className="text-sm font-semibold text-red-400 uppercase tracking-wider">Before</span>
+                      </div>
+                      <div className="relative overflow-hidden rounded-2xl bg-white border-2 border-red-400/30">
+                        <div style={{ aspectRatio: "210/310" }}>
+                          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
+                            <FeatureBadResume />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* # After — clean, ATS-friendly resume */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ ...SPRING, delay: 0.25 }}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-green-400" />
+                        <span className="text-sm font-semibold text-green-400 uppercase tracking-wider">After</span>
+                      </div>
+                      <div className="relative overflow-hidden rounded-2xl bg-white border-2 border-green-400/30">
+                        <div style={{ aspectRatio: "210/310" }}>
+                          <div className="absolute top-0 left-2 origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
+                            <FeatureStandardATS />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              );
+            }
 
             /* # Resume Templates + Cover Letter Generator — tabbed section */
             if (index === 2) {
@@ -396,42 +474,6 @@ export default function FeatureShowcase() {
                                 <div key={i} className="text-[10px] text-text-secondary">{s}</div>
                               ))}
                             </div>
-                          </motion.div>
-                        </>
-                      )}
-
-                      {index === 1 && (
-                        <>
-                          <motion.div
-                            initial={{ opacity: 0, x: -15 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
-                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-red-400/50"
-                          >
-                            <div className="text-xs text-red-400 mb-1">Before</div>
-                            <div className="text-xs text-text-muted line-through">Responsible for managing team projects</div>
-                          </motion.div>
-                          <div className="flex justify-center">
-                            <motion.svg
-                              initial={{ opacity: 0, y: -5 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ ...SPRING, duration: 0.7, delay: 0.5 }}
-                              className="w-5 h-5 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                            </motion.svg>
-                          </div>
-                          <motion.div
-                            initial={{ opacity: 0, x: -15 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.6 }}
-                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50"
-                          >
-                            <div className="text-xs text-green-400 mb-1">After</div>
-                            <div className="text-xs text-white">Spearheaded cross-functional team of 8, delivering 3 projects ahead of schedule and reducing costs by 22%</div>
                           </motion.div>
                         </>
                       )}
@@ -851,6 +893,120 @@ function FeatureAUCV() {
         <h2 className="text-[14px] font-bold text-black uppercase tracking-wide mb-2">Languages</h2>
         <p className="text-[13px] text-gray-800">English - Native</p>
         <p className="text-[13px] text-gray-800">Spanish - Conversational</p>
+      </div>
+    </div>
+  );
+}
+
+/* # Bad resume — two-column sidebar layout with every common non-ATS mistake */
+function FeatureBadResume() {
+  return (
+    <div className="bg-white text-black font-[Arial,Helvetica,sans-serif] flex" style={{ width: "210mm", fontSize: 16, minHeight: "320mm" }}>
+      {/* # Dark sidebar — ATS can't parse multi-column layouts */}
+      <div className="w-[70mm] bg-slate-800 text-white p-8 shrink-0" style={{ minHeight: "320mm" }}>
+        {/* # Photo placeholder — ATS ignores images, wastes space */}
+        <div className="w-28 h-28 rounded-full bg-slate-600 mx-auto mb-4 flex items-center justify-center">
+          <svg className="w-14 h-14 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+        </div>
+
+        <h1 className="text-[22px] font-bold text-center leading-tight mb-1">Olivia Wilson</h1>
+        <p className="text-[11px] text-slate-300 text-center mb-6">Marketing Professional</p>
+
+        {/* # Contact with icons — ATS can't read icon fonts */}
+        <div className="space-y-2 mb-8">
+          <p className="text-[11px] text-slate-300 flex items-center gap-2">
+            <span className="w-4 h-4 rounded bg-slate-600 flex items-center justify-center text-[8px]">@</span>
+            olivia.w@email.com
+          </p>
+          <p className="text-[11px] text-slate-300 flex items-center gap-2">
+            <span className="w-4 h-4 rounded bg-slate-600 flex items-center justify-center text-[8px]">#</span>
+            555-123-4567
+          </p>
+          <p className="text-[11px] text-slate-300 flex items-center gap-2">
+            <span className="w-4 h-4 rounded bg-slate-600 flex items-center justify-center text-[8px]">in</span>
+            linkedin.com/olivia
+          </p>
+        </div>
+
+        {/* # Skills as progress bars — ATS reads 0% of this */}
+        <div className="mb-8">
+          <h2 className="text-[13px] font-bold text-white uppercase tracking-wider mb-3">Skills</h2>
+          {[
+            { name: "Marketing", pct: "85%" },
+            { name: "Social Media", pct: "90%" },
+            { name: "Teamwork", pct: "95%" },
+            { name: "Communication", pct: "88%" },
+            { name: "MS Office", pct: "80%" },
+          ].map((s) => (
+            <div key={s.name} className="mb-2">
+              <p className="text-[10px] text-slate-300 mb-0.5">{s.name}</p>
+              <div className="w-full h-1.5 rounded-full bg-slate-600">
+                <div className="h-full rounded-full bg-sky-400" style={{ width: s.pct }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* # Hobbies — irrelevant, wastes space */}
+        <div>
+          <h2 className="text-[13px] font-bold text-white uppercase tracking-wider mb-3">Hobbies</h2>
+          <p className="text-[10px] text-slate-300 leading-relaxed">Yoga, Travel, Reading, Photography, Cooking, Gardening</p>
+        </div>
+      </div>
+
+      {/* # Main content — weak writing, no metrics, paragraph dumps */}
+      <div className="flex-1 p-8">
+        {/* # No professional summary section */}
+        <div className="mb-6">
+          <h2 className="text-[14px] font-bold text-sky-600 uppercase tracking-wider mb-3">About Me</h2>
+          <p className="text-[12px] text-gray-600 leading-relaxed">
+            I am a hardworking and passionate marketing professional who loves creating campaigns and working with teams. I am looking for a challenging position where I can use my skills and grow my career.
+          </p>
+        </div>
+
+        {/* # Work experience — no achievements, no numbers, vague descriptions */}
+        <div className="mb-6">
+          <h2 className="text-[14px] font-bold text-sky-600 uppercase tracking-wider mb-3">Work Experience</h2>
+
+          <div className="mb-4">
+            <p className="text-[13px] font-bold text-black">Marketing Manager</p>
+            <p className="text-[11px] text-gray-500 mb-1">Brightwave Inc. | Jan 2022 - Current</p>
+            <p className="text-[12px] text-gray-600 leading-relaxed">
+              Responsible for managing marketing campaigns and overseeing the team. Helped with social media and content creation. Worked on various projects and assisted with brand strategy. Attended meetings and coordinated with other departments.
+            </p>
+          </div>
+
+          <div className="mb-4">
+            <p className="text-[13px] font-bold text-black">Marketing Specialist</p>
+            <p className="text-[11px] text-gray-500 mb-1">Greenfield Co. | 2019 - 2022</p>
+            <p className="text-[12px] text-gray-600 leading-relaxed">
+              Handled marketing tasks including email campaigns and social media posts. Was responsible for updating the website and creating reports. Helped the sales team with materials.
+            </p>
+          </div>
+
+          <div className="mb-4">
+            <p className="text-[13px] font-bold text-black">Marketing Intern</p>
+            <p className="text-[11px] text-gray-500 mb-1">Apex Media | Summer 2017</p>
+            <p className="text-[12px] text-gray-600 leading-relaxed">
+              Assisted with day-to-day marketing tasks. Updated social media accounts. Filed paperwork and organized events. Learned about marketing.
+            </p>
+          </div>
+        </div>
+
+        {/* # Education — minimal detail */}
+        <div className="mb-6">
+          <h2 className="text-[14px] font-bold text-sky-600 uppercase tracking-wider mb-3">Education</h2>
+          <p className="text-[12px] text-gray-800">MBA - Columbia University (2017)</p>
+          <p className="text-[12px] text-gray-800 mt-1">BA Communications - Boston University (2015)</p>
+        </div>
+
+        {/* # References available — outdated, wastes space */}
+        <div>
+          <h2 className="text-[14px] font-bold text-sky-600 uppercase tracking-wider mb-2">References</h2>
+          <p className="text-[12px] text-gray-500 italic">Available upon request</p>
+        </div>
       </div>
     </div>
   );
