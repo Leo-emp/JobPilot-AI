@@ -14,6 +14,7 @@ import ForEmployersClient from "./ForEmployersClient";
 export const metadata = {
   title: "For Employers | JobPilot AI",
   description: "AI-powered recruiting. Post roles, get matched candidates, hire faster.",
+  alternates: { canonical: "https://jobpilotai.co/for-employers" },
 };
 
 export default function ForEmployersPage() {

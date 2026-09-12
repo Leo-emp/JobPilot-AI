@@ -16,6 +16,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Blog — JobPilot AI",
   description: "Career tips, resume advice, and job search strategies from the JobPilot AI team.",
+  alternates: { canonical: "https://jobpilotai.co/blog" },
 };
 
 // # Category color mapping — each category gets a distinct colour badge

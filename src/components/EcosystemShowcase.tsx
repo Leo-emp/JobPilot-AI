@@ -309,7 +309,7 @@ export default function EcosystemShowcase() {
 
             {/* # Description */}
             <p className="text-base text-text-secondary leading-relaxed mb-6">
-              Real listings from Indeed, LinkedIn, Glassdoor, and more — pulled directly into your workspace.
+              Real listings from major job boards and aggregators — pulled directly into your workspace.
               Save roles with one click and they land straight in your tracker.
             </p>
 
@@ -471,7 +471,7 @@ export default function EcosystemShowcase() {
             </h3>
 
             <p className="text-base text-text-secondary leading-relaxed mb-6">
-              Browsing LinkedIn, Indeed, or Glassdoor? Click the extension and the job is saved — title, company, salary,
+              Browsing any job board? Click the extension and the job is saved — title, company, salary,
               and full description extracted automatically. Works on 40+ job boards and ATS career pages.
             </p>
 
@@ -483,7 +483,7 @@ export default function EcosystemShowcase() {
               className="space-y-3"
             >
               {[
-                "One-click save from LinkedIn, Indeed, Glassdoor, and 40+ sites",
+                "One-click save from any job board or ATS career page",
                 "Auto-extracts job title, company, salary, location, and description",
                 "Instant AI match score based on your resume",
                 "Syncs directly to your Application Tracker",
@@ -603,8 +603,8 @@ export default function EcosystemShowcase() {
               >
                 <span className="text-[9px] text-text-muted">Works on:</span>
                 <div className="flex gap-1 flex-wrap">
-                  {["LinkedIn", "Indeed", "Glassdoor", "Greenhouse", "Lever", "40+"].map((site, i) => (
-                    <span key={i} className={`px-1.5 py-0.5 rounded text-[8px] ${i === 5 ? "text-blue-400 bg-blue-500/10" : "text-text-muted bg-space-600/50"}`}>{site}</span>
+                  {["Job Boards", "ATS Pages", "Career Sites", "Aggregators", "40+"].map((site, i) => (
+                    <span key={i} className={`px-1.5 py-0.5 rounded text-[8px] ${i === 4 ? "text-blue-400 bg-blue-500/10" : "text-text-muted bg-space-600/50"}`}>{site}</span>
                   ))}
                 </div>
               </motion.div>

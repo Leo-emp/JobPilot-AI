@@ -17,6 +17,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Terms of Service — JobPilot AI",
   description: "Terms of Service for JobPilot AI. Covers AI-generated content disclaimers, acceptable use, billing, and data handling.",
+  alternates: { canonical: "https://jobpilotai.co/terms" },
 };
 
 export default function TermsPage() {

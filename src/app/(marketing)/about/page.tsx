@@ -10,6 +10,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "About — JobPilot AI",
   description: "Learn about JobPilot AI — helping job seekers get to interviews faster with every career tool in one place.",
+  alternates: { canonical: "https://jobpilotai.co/about" },
 };
 
 export default function AboutPage() {

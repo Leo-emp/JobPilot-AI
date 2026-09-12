@@ -16,6 +16,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Privacy Policy — JobPilot AI",
   description: "How JobPilot AI protects your career data. GDPR, CCPA, and Australian Privacy Act compliant. No tracking, essential cookies only.",
+  alternates: { canonical: "https://jobpilotai.co/privacy" },
 };
 
 export default function PrivacyPage() {

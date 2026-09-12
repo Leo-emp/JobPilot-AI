@@ -25,7 +25,7 @@ const StarField = dynamic(() => import("@/components/StarField"));
 const FeatureShowcase = dynamic(() => import("@/components/FeatureShowcase"));
 const EcosystemShowcase = dynamic(() => import("@/components/EcosystemShowcase"));
 const HowItWorks = dynamic(() => import("@/components/HowItWorks"));
-const Testimonials = dynamic(() => import("@/components/Testimonials"));
+/* # Testimonials removed — will re-add with real user reviews post-launch */
 const Pricing = dynamic(() => import("@/components/Pricing"));
 const CTA = dynamic(() => import("@/components/CTA"));
 
@@ -42,7 +42,7 @@ export default function Home() {
         <FeatureShowcase />
         <EcosystemShowcase />
         <HowItWorks />
-        <Testimonials />
+        {/* Testimonials removed until real user reviews available */}
         <Pricing />
         <CTA />
         <NewsletterSignup />
