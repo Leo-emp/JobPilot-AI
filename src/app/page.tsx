@@ -6,18 +6,18 @@
    1. StarField (animated background — behind everything)
    2. Navbar (sticky top navigation)
    3. Hero (main headline + CTA)
-   4. Features (8 feature cards)
-   5. HowItWorks (3-step guide)
-   6. Testimonials (social proof)
-   7. Pricing (3-tier plans)
-   8. CTA (final call to action)
-   9. Footer (links + legal)
+   4. FeatureShowcase (deep-dive feature sections)
+   5. EcosystemShowcase (Chrome Extension + Application Tracker)
+   6. HowItWorks (3-step guide)
+   7. Testimonials (social proof)
+   8. Pricing (3-tier plans)
+   9. CTA (final call to action)
+   10. Footer (links + legal)
    ============================================================ */
 
 import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
@@ -39,7 +39,6 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <Features />
         <FeatureShowcase />
         <EcosystemShowcase />
         <HowItWorks />

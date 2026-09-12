@@ -9,8 +9,8 @@
 
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 
 /* # Zero-bounce spring — naturally settles with no hard stop */
@@ -21,7 +21,7 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 /* ---- Feature data with detailed breakdowns ---- */
 const showcaseFeatures = [
   {
-    tag: "Resume Intelligence",
+    tag: "Resume Analyzer",
     headline: "Your resume, decoded by AI in seconds",
     description:
       "Upload your resume and get an instant ATS compatibility score out of 100. Our AI reads your resume the same way Applicant Tracking Systems do — identifying missing keywords, weak formatting, and missed opportunities that cost you interviews.",
@@ -41,7 +41,7 @@ const showcaseFeatures = [
     ),
   },
   {
-    tag: "Resume Rebuild Engine",
+    tag: "Resume Intelligence",
     headline: "One job post. One click. A completely new resume.",
     description:
       "Paste any job description and our AI rebuilds your entire resume from scratch — restructured, reworded, and loaded with the exact keywords that hiring managers and ATS systems are scanning for. Your real experience, reframed for maximum impact.",
@@ -57,106 +57,6 @@ const showcaseFeatures = [
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-    ),
-  },
-  {
-    tag: "Smart Job Matching",
-    headline: "Know your odds before you apply",
-    description:
-      "Stop wasting time on jobs you won't get. Paste a job description alongside your resume, and our AI calculates a precise match score — showing exactly which skills align, which are missing, and what you need to do to close the gap.",
-    capabilities: [
-      "Match score from 0-100 with detailed skill breakdown",
-      "Matching skills highlighted so you know what to emphasize",
-      "Gap analysis showing exactly which skills to add or develop",
-      "Actionable recommendations to increase your match percentage",
-    ],
-    accent: "from-sky-500 to-blue-600",
-    iconBg: "bg-sky-500/10 border-sky-500/20",
-    iconColor: "text-blue-400",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-  },
-  {
-    tag: "Interview Prep AI",
-    headline: "Walk in knowing what they'll ask",
-    description:
-      "Our AI predicts the most likely interview questions for any role based on the job description, company, and industry. Then it coaches you through strong answers using the STAR method, grounded in your actual resume experience.",
-    capabilities: [
-      "10 predicted questions: technical, behavioral, and culture-fit",
-      "AI-coached answers based on your real experience and background",
-      "STAR method structuring for behavioral questions",
-      "Company-specific questions based on the role and industry",
-    ],
-    accent: "from-amber-500 to-orange-600",
-    iconBg: "bg-amber-500/10 border-amber-500/20",
-    iconColor: "text-amber-400",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-  },
-  {
-    tag: "Interactive Mock Interview",
-    headline: "Practice with an AI interviewer that feels real",
-    description:
-      "Step into a live mock interview powered by AI. Choose your target role, face realistic questions from a virtual interviewer, and respond with your voice or text — all in a real-time video-call format. Get detailed feedback and scoring after the interview.",
-    capabilities: [
-      "Real-time AI interviewer with voice and video-call style interface",
-      "Role-specific questions tailored to the exact position you're targeting",
-      "Respond by voice or text — practice exactly how you'll interview",
-      "Comprehensive feedback with scoring and improvement suggestions after the interview",
-    ],
-    accent: "from-red-500 to-amber-600",
-    iconBg: "bg-red-500/10 border-red-500/20",
-    iconColor: "text-red-400",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    tag: "Career Pivot Mode",
-    headline: "Switch careers without starting from scratch",
-    description:
-      "Changing industries is hard — but your experience is more valuable than you think. Our AI identifies transferable skills from your background and reframes your resume for a completely different career path. Same experience, new narrative.",
-    capabilities: [
-      "Transferable skills mapping between your current and target industry",
-      "Experience reframing — same achievements, new industry language",
-      "Gap analysis showing what skills to highlight vs. what to learn",
-      "Industry-specific keyword injection for your target career",
-    ],
-    accent: "from-rose-500 to-rose-600",
-    iconBg: "bg-rose-500/10 border-rose-500/20",
-    iconColor: "text-rose-400",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    ),
-  },
-  {
-    tag: "LinkedIn Optimizer",
-    headline: "Get found by recruiters, not lost in the feed",
-    description:
-      "Your LinkedIn profile is your digital storefront. Our AI audits every section — headline, about, experience, skills — with a score out of 100, then rewrites your profile to rank higher in recruiter searches and attract inbound opportunities.",
-    capabilities: [
-      "Profile score with section-by-section breakdown and priorities",
-      "Headline rewrite optimized for recruiter search algorithms",
-      "About section that hooks readers in the first 3 visible lines",
-      "Skills and hashtag recommendations for maximum discoverability",
-    ],
-    accent: "from-cyan-500 to-blue-600",
-    iconBg: "bg-cyan-500/10 border-cyan-500/20",
-    iconColor: "text-cyan-400",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     ),
   },
@@ -240,7 +140,7 @@ const ctaFade = {
 
 export default function FeatureShowcase() {
   return (
-    <section className="relative z-10 py-24 sm:py-32 px-4">
+    <section id="features" className="relative z-10 py-24 sm:py-32 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* ---- Section Header — fades in on scroll ---- */}
@@ -271,101 +171,25 @@ export default function FeatureShowcase() {
             /* # Odd index: content right, visual left (flex-row-reverse) */
             const isEven = index % 2 === 0;
 
-            /* # Resume Templates — special full-width card layout */
-            if (index === 7) {
+            /* # Resume Templates + Cover Letter Generator — tabbed section */
+            if (index === 2) {
+              const coverLetterFeature = showcaseFeatures[3];
               return (
                 <div
                   key={index}
-                  id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
+                  id="showcase-resume-templates"
                   className="scroll-mt-24"
                 >
-                  {/* ---- Text on top ---- */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{ ...SPRING }}
-                    className="text-center max-w-3xl mx-auto mb-10"
-                  >
-                    <div className="inline-flex items-center gap-2 mb-5">
-                      <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
-                        {feature.icon}
-                      </div>
-                      <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
-                        {feature.tag}
-                      </span>
-                    </div>
-                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-                      {feature.headline}
-                    </h3>
-                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </motion.div>
-
-                  {/* ---- 3 resumes side by side ---- */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{ ...SPRING, delay: 0.15 }}
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
-                  >
-                    <FeatureTemplateCard><FeatureStandardATS /></FeatureTemplateCard>
-                    <FeatureTemplateCard><FeatureUSATS /></FeatureTemplateCard>
-                    <FeatureTemplateCard><FeatureAUCV /></FeatureTemplateCard>
-                  </motion.div>
+                  <TemplatesAndCoverLettersTabs
+                    resumeFeature={feature}
+                    coverLetterFeature={coverLetterFeature}
+                  />
                 </div>
               );
             }
 
-            /* # Cover Letter Generator — same text-on-top + 3 card grid layout */
-            if (index === 8) {
-              return (
-                <div
-                  key={index}
-                  id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="scroll-mt-24"
-                >
-                  {/* ---- Text on top ---- */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{ ...SPRING }}
-                    className="text-center max-w-3xl mx-auto mb-10"
-                  >
-                    <div className="inline-flex items-center gap-2 mb-5">
-                      <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
-                        {feature.icon}
-                      </div>
-                      <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
-                        {feature.tag}
-                      </span>
-                    </div>
-                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-                      {feature.headline}
-                    </h3>
-                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </motion.div>
-
-                  {/* ---- 3 cover letters side by side ---- */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{ ...SPRING, delay: 0.15 }}
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
-                  >
-                    <FeatureCoverLetterCard><FeatureCoverLetter1 /></FeatureCoverLetterCard>
-                    <FeatureCoverLetterCard><FeatureCoverLetter2 /></FeatureCoverLetterCard>
-                    <FeatureCoverLetterCard><FeatureCoverLetter3 /></FeatureCoverLetterCard>
-                  </motion.div>
-                </div>
-              );
-            }
+            /* # Cover Letter data is rendered inside the tabbed section above */
+            if (index === 3) return null;
 
             return (
               <div
@@ -612,315 +436,6 @@ export default function FeatureShowcase() {
                         </>
                       )}
 
-                      {index === 2 && (
-                        <>
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.9, delay: 0.3 }}
-                            className="text-center mb-4"
-                          >
-                            <div className="text-4xl font-bold text-green-400 mb-1">78%</div>
-                            <div className="text-xs text-text-muted">Match Score</div>
-                          </motion.div>
-                          <motion.div
-                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.5 } } }}
-                            initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true }}
-                            className="space-y-2"
-                          >
-                            {[
-                              { color: "bg-green-400", text: "React, TypeScript, Node.js" },
-                              { color: "bg-green-400", text: "3+ years experience" },
-                              { color: "bg-amber-400", text: "AWS — mentioned but not emphasized" },
-                              { color: "bg-red-400", text: "GraphQL — not found in resume" },
-                            ].map((item, i) => (
-                              <motion.div
-                                key={i}
-                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                                className="flex items-center gap-2"
-                              >
-                                <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                                <span className="text-xs text-text-secondary">{item.text}</span>
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        </>
-                      )}
-
-                      {index === 3 && (
-                        <>
-                          {/* # Job role header */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
-                            className="flex items-center justify-between mb-3"
-                          >
-                            <div>
-                              <div className="text-xs text-text-muted">Preparing for</div>
-                              <div className="text-sm font-semibold text-white">Senior Product Manager</div>
-                            </div>
-                            <div className="px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
-                              <span className="text-[10px] text-amber-400 font-medium">10 Questions</span>
-                            </div>
-                          </motion.div>
-
-                          {/* # Interview questions by type */}
-                          <motion.div
-                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.35 } } }}
-                            initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true }}
-                            className="space-y-2"
-                          >
-                            {[
-                              { label: "Behavioral", color: "text-amber-400", border: "border-amber-400/30", q: "“Describe a time you had to influence stakeholders without direct authority”" },
-                              { label: "Technical", color: "text-blue-400", border: "border-blue-400/30", q: "“How would you prioritize a backlog with competing business and engineering needs?”" },
-                              { label: "Behavioral", color: "text-amber-400", border: "border-amber-400/30", q: "“Tell me about a product launch that didn’t go as planned. What did you learn?”" },
-                              { label: "Culture Fit", color: "text-emerald-400", border: "border-emerald-400/30", q: "“How do you build alignment across cross-functional teams?”" },
-                              { label: "Technical", color: "text-blue-400", border: "border-blue-400/30", q: "“Walk me through how you’d define success metrics for a new feature”" },
-                            ].map((item, i) => (
-                              <motion.div
-                                key={i}
-                                variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                                className={`p-2.5 rounded-lg bg-space-600/40 border-l-2 ${item.border}`}
-                              >
-                                <div className={`text-[10px] ${item.color} font-medium mb-0.5`}>{item.label}</div>
-                                <div className="text-[11px] text-white leading-snug">{item.q}</div>
-                              </motion.div>
-                            ))}
-                          </motion.div>
-
-                        </>
-                      )}
-
-                      {index === 4 && (
-                        <>
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <div className="text-xs text-text-muted">Mock Interview Session</div>
-                              <div className="text-sm font-semibold text-white">Product Lead at Google</div>
-                            </div>
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20">
-                              <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                              <span className="text-[10px] text-red-400 font-medium">LIVE</span>
-                            </div>
-                          </div>
-                          <div className="rounded-xl overflow-hidden">
-                            <Image
-                              src="/mock-interview-preview.png"
-                              alt="Interactive mock interview with AI interviewer"
-                              width={1366}
-                              height={768}
-                              className="w-full h-auto"
-                            />
-                          </div>
-                          <div className="flex items-center gap-3 mt-3">
-                            <div className="flex items-center gap-1.5">
-                              <svg className="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
-                              <span className="text-[10px] text-text-muted">Voice & Text</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              <span className="text-[10px] text-text-muted">Post-interview feedback</span>
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      {index === 5 && (
-                        <>
-                          <motion.div
-                            initial={{ opacity: 0, x: -15 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
-                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-rose-400/50 mb-3"
-                          >
-                            <div className="text-xs text-text-muted mb-1">Current: Marketing Manager</div>
-                            <div className="text-xs text-white">7 years in B2B SaaS marketing</div>
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.7, delay: 0.5 }}
-                            className="flex justify-center mb-3"
-                          >
-                            <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                            </svg>
-                          </motion.div>
-                          <motion.div
-                            initial={{ opacity: 0, x: -15 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.6 }}
-                            className="p-3 rounded-lg bg-space-600/40 border-l-2 border-green-400/50 mb-4"
-                          >
-                            <div className="text-xs text-green-400 mb-1">Target: Product Manager</div>
-                            <div className="text-xs text-white">Reframed for product leadership</div>
-                          </motion.div>
-                          <motion.div
-                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.7 } } }}
-                            initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true }}
-                            className="space-y-2"
-                          >
-                            {[
-                              { color: "bg-green-400", text: "5 transferable skills found" },
-                              { color: "bg-amber-400", text: "2 skills to emphasize more" },
-                              { color: "bg-red-400", text: "1 certification recommended" },
-                            ].map((item, i) => (
-                              <motion.div
-                                key={i}
-                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                                className="flex items-center gap-2"
-                              >
-                                <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                                <span className="text-xs text-text-secondary">{item.text}</span>
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        </>
-                      )}
-
-                      {index === 6 && (
-                        <>
-                          {/* # Mini LinkedIn profile mockup */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
-                            className="rounded-lg bg-space-600/40 overflow-hidden"
-                          >
-                            {/* # Banner bar */}
-                            <div className="h-10 bg-gradient-to-r from-cyan-600/40 to-blue-600/40" />
-
-                            {/* # Profile header */}
-                            <div className="px-3 -mt-5">
-                              <div className="flex items-end gap-2.5 mb-2">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-space-700 flex items-center justify-center">
-                                  <span className="text-white text-sm font-bold">JD</span>
-                                </div>
-                                <div className="pb-0.5">
-                                  <div className="text-xs font-semibold text-white">Jason Davis</div>
-                                  <div className="text-[10px] text-text-muted">Software Engineer</div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* # Headline section with AI callout */}
-                            <div className="px-3 pb-2">
-                              <div className="flex items-start gap-2">
-                                <div className="flex-1 p-2 rounded bg-red-500/5 border border-red-500/20 border-dashed">
-                                  <div className="text-[10px] text-text-muted leading-snug">&quot;Software Engineer | Problem Solver | Team Player&quot;</div>
-                                </div>
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  whileInView={{ opacity: 1, scale: 1 }}
-                                  viewport={{ once: true }}
-                                  transition={{ ...SPRING, duration: 0.6, delay: 0.5 }}
-                                  className="flex-shrink-0 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20"
-                                >
-                                  <span className="text-[8px] text-red-400 font-medium">Weak</span>
-                                </motion.div>
-                              </div>
-                            </div>
-
-                            {/* # About section */}
-                            <motion.div
-                              initial={{ opacity: 0, y: 6 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ ...SPRING, duration: 0.7, delay: 0.8 }}
-                              className="px-3 pb-2.5"
-                            >
-                              <div className="flex items-start gap-2">
-                                <div className="flex-1 p-2 rounded bg-amber-500/5 border border-amber-500/20 border-dashed">
-                                  <div className="text-[9px] text-text-muted font-medium mb-0.5">About</div>
-                                  <div className="text-[10px] text-text-muted leading-snug">I am a passionate developer who loves building things and solving problems...</div>
-                                  <div className="text-[8px] text-amber-400 mt-1">Too generic — lacks metrics, impact, and keywords</div>
-                                </div>
-                                <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-                                  <span className="text-[8px] text-amber-400 font-medium">6/10</span>
-                                </div>
-                              </div>
-                            </motion.div>
-
-                            {/* # Experience section */}
-                            <motion.div
-                              initial={{ opacity: 0, y: 6 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ ...SPRING, duration: 0.7, delay: 0.95 }}
-                              className="px-3 pb-2.5"
-                            >
-                              <div className="flex items-start gap-2">
-                                <div className="flex-1 p-2 rounded bg-green-500/5 border border-green-500/20">
-                                  <div className="text-[9px] text-text-muted font-medium mb-0.5">Experience</div>
-                                  <div className="text-[10px] text-text-secondary leading-snug">Senior Engineer at Lumina Software &bull; 3 yrs</div>
-                                  <div className="text-[10px] text-text-secondary leading-snug">Engineer at Apex Digital &bull; 2 yrs</div>
-                                </div>
-                                <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20">
-                                  <span className="text-[8px] text-green-400 font-medium">8/10</span>
-                                </div>
-                              </div>
-                            </motion.div>
-
-                            {/* # Skills section */}
-                            <motion.div
-                              initial={{ opacity: 0, y: 6 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ ...SPRING, duration: 0.7, delay: 1.1 }}
-                              className="px-3 pb-3"
-                            >
-                              <div className="flex items-start gap-2">
-                                <div className="flex-1 p-2 rounded bg-amber-500/5 border border-amber-500/20 border-dashed">
-                                  <div className="text-[9px] text-text-muted font-medium mb-1">Skills</div>
-                                  <div className="flex flex-wrap gap-1">
-                                    {["JavaScript", "React", "Node.js"].map((s, i) => (
-                                      <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-space-500/50 text-text-secondary">{s}</span>
-                                    ))}
-                                    <span className="text-[8px] text-amber-400">+8 missing</span>
-                                  </div>
-                                </div>
-                                <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-                                  <span className="text-[8px] text-amber-400 font-medium">5/10</span>
-                                </div>
-                              </div>
-                            </motion.div>
-                          </motion.div>
-
-                          {/* # Overall score bar at bottom */}
-                          <motion.div
-                            initial={{ opacity: 0, y: 8 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 1.25 }}
-                            className="flex items-center gap-3 mt-2"
-                          >
-                            <span className="text-[10px] text-text-muted uppercase tracking-wider">Profile Score</span>
-                            <div className="flex-1 h-2 rounded-full bg-space-600 overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                whileInView={{ width: "62%" }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 1.2, ease: EASE, delay: 1.4 }}
-                                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-400"
-                              />
-                            </div>
-                            <span className="text-sm font-bold text-cyan-400">62/100</span>
-                          </motion.div>
-                        </>
-                      )}
 
                     </div>
                   </div>
@@ -947,6 +462,99 @@ export default function FeatureShowcase() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+/* # Tabbed component combining Resume Templates + Cover Letter Generator */
+function TemplatesAndCoverLettersTabs({
+  resumeFeature,
+  coverLetterFeature,
+}: {
+  resumeFeature: (typeof showcaseFeatures)[0];
+  coverLetterFeature: (typeof showcaseFeatures)[0];
+}) {
+  const [activeTab, setActiveTab] = useState<"resumes" | "coverLetters">("resumes");
+  const feature = activeTab === "resumes" ? resumeFeature : coverLetterFeature;
+
+  return (
+    <>
+      {/* ---- Tab toggle buttons ---- */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ ...SPRING }}
+        className="flex justify-center gap-3 mb-8"
+      >
+        <button
+          onClick={() => setActiveTab("resumes")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-300 ${
+            activeTab === "resumes"
+              ? "bg-brand-indigo/20 border-brand-indigo/40 text-white"
+              : "bg-space-700/40 border-card-border text-text-secondary hover:text-white hover:border-white/20"
+          }`}
+        >
+          Resume Templates
+        </button>
+        <button
+          onClick={() => setActiveTab("coverLetters")}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-300 ${
+            activeTab === "coverLetters"
+              ? "bg-emerald-500/20 border-emerald-500/40 text-white"
+              : "bg-space-700/40 border-card-border text-text-secondary hover:text-white hover:border-white/20"
+          }`}
+        >
+          Cover Letter Generator
+        </button>
+      </motion.div>
+
+      {/* ---- Text — switches based on active tab ---- */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ ...SPRING }}
+        className="text-center max-w-3xl mx-auto mb-10"
+      >
+        <div className="inline-flex items-center gap-2 mb-5">
+          <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
+            {feature.icon}
+          </div>
+          <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+            {feature.tag}
+          </span>
+        </div>
+        <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+          {feature.headline}
+        </h3>
+        <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
+          {feature.description}
+        </p>
+      </motion.div>
+
+      {/* ---- 3 cards grid — switches content based on active tab ---- */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING, delay: 0.1 }}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
+      >
+        {activeTab === "resumes" ? (
+          <>
+            <FeatureTemplateCard><FeatureStandardATS /></FeatureTemplateCard>
+            <FeatureTemplateCard><FeatureUSATS /></FeatureTemplateCard>
+            <FeatureTemplateCard><FeatureAUCV /></FeatureTemplateCard>
+          </>
+        ) : (
+          <>
+            <FeatureCoverLetterCard><FeatureCoverLetter1 /></FeatureCoverLetterCard>
+            <FeatureCoverLetterCard><FeatureCoverLetter2 /></FeatureCoverLetterCard>
+            <FeatureCoverLetterCard><FeatureCoverLetter3 /></FeatureCoverLetterCard>
+          </>
+        )}
+      </motion.div>
+    </>
   );
 }
 

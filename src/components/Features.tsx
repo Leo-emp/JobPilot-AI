@@ -44,7 +44,7 @@ const features = [
   },
   {
     title: "Cover Letter Generator",
-    showcaseId: "showcase-cover-letter-generator",
+    showcaseId: "showcase-resume-templates",
     description:
       "Generate tailored, professional cover letters for any job in seconds. Each one is unique to the role.",
     color: "text-emerald-400",
@@ -81,20 +81,6 @@ const features = [
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Career Pivot Mode",
-    showcaseId: "showcase-career-pivot-mode",
-    description:
-      "Switching careers? Our AI reframes your experience with transferable skills for your target industry.",
-    color: "text-rose-400",
-    bg: "bg-rose-500/10",
-    border: "border-rose-500/20",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
   },

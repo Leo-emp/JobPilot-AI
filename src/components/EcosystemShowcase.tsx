@@ -1,10 +1,13 @@
 /* ============================================================
-   ECOSYSTEM SHOWCASE - Job Board, Outreach & Portfolio
+   ECOSYSTEM SHOWCASE - Career Command Center
    ============================================================
-   Showcases three platform features below the AI tool showcase:
-   1. Job Board Integration — search real listings, save & track
-   2. AI Outreach Hub — generate cold outreach messages with AI
-   3. Portfolio Builder — 9 templates, resume import, shareable link
+   Showcases six platform features below the resume tools:
+   1. LinkedIn Optimizer — profile audit and rewrite
+   2. Job Board Integration — search real listings, save & track
+   3. Chrome Extension — one-click save from 40+ job boards
+   4. Application Tracker — pipeline stages, notes, AI match scores
+   5. Interview Prep AI — predicted questions and STAR coaching
+   6. Interactive Mock Interview — live AI interview practice
    Content slides in from its edge, visual cards from opposite
    side. Internal card elements animate on scroll for premium feel.
    ============================================================ */
@@ -12,10 +15,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 /* # Zero-bounce spring — naturally settles with no hard stop */
 const SPRING = { type: "spring" as const, duration: 1.2, bounce: 0 };
+/* # Tween ease for width animations */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /* # Section header fade */
 const headerFade = {
@@ -74,12 +80,204 @@ export default function EcosystemShowcase() {
             <span className="glow-text">Command Center</span>
           </h2>
           <p className="max-w-xl mx-auto text-text-secondary text-lg">
-            Search real jobs, craft perfect outreach, and showcase your work — all from one dashboard.
+            Optimize your LinkedIn, find the right jobs, track every application, and nail every interview — all from one dashboard.
           </p>
         </motion.div>
 
         {/* ============================================================
-             FEATURE 1 - Job Board Integration
+             FEATURE 1 - LinkedIn Optimizer
+             Content: right (flex-row-reverse) → slides from right.
+             Visual: left → slides from left.
+             ============================================================ */}
+        <div className="flex flex-col lg:flex-row-reverse gap-10 lg:gap-16 items-center mb-24 sm:mb-32">
+
+          {/* ---- Content Side — slides in from right ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING }}
+            className="flex-1 max-w-xl"
+          >
+            <div className="inline-flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                LinkedIn Optimizer
+              </span>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+              Get found by recruiters, not lost in the feed
+            </h3>
+
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
+              Your LinkedIn profile is your digital storefront. Our AI audits every section — headline, about, experience, skills — with a score out of 100, then rewrites your profile to rank higher in recruiter searches and attract inbound opportunities.
+            </p>
+
+            <motion.ul
+              variants={bulletStagger}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-50px" }}
+              className="space-y-3"
+            >
+              {[
+                "Profile score with section-by-section breakdown and priorities",
+                "Headline rewrite optimized for recruiter search algorithms",
+                "About section that hooks readers in the first 3 visible lines",
+                "Skills and hashtag recommendations for maximum discoverability",
+              ].map((cap, j) => (
+                <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+
+          {/* ---- Visual Side — LinkedIn profile mockup (slides from left) ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING, delay: 0.15 }}
+            className="flex-1 w-full max-w-lg"
+          >
+            <div className="glass-card p-8 sm:p-10 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-600" />
+
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
+                  className="rounded-lg bg-space-600/40 overflow-hidden"
+                >
+                  <div className="h-10 bg-gradient-to-r from-cyan-600/40 to-blue-600/40" />
+                  <div className="px-3 -mt-5">
+                    <div className="flex items-end gap-2.5 mb-2">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-space-700 flex items-center justify-center">
+                        <span className="text-white text-sm font-bold">JD</span>
+                      </div>
+                      <div className="pb-0.5">
+                        <div className="text-xs font-semibold text-white">Jason Davis</div>
+                        <div className="text-[10px] text-text-muted">Software Engineer</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-3 pb-2">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 p-2 rounded bg-red-500/5 border border-red-500/20 border-dashed">
+                        <div className="text-[10px] text-text-muted leading-snug">&quot;Software Engineer | Problem Solver | Team Player&quot;</div>
+                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ ...SPRING, duration: 0.6, delay: 0.5 }}
+                        className="flex-shrink-0 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20"
+                      >
+                        <span className="text-[8px] text-red-400 font-medium">Weak</span>
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ ...SPRING, duration: 0.7, delay: 0.8 }}
+                    className="px-3 pb-2.5"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 p-2 rounded bg-amber-500/5 border border-amber-500/20 border-dashed">
+                        <div className="text-[9px] text-text-muted font-medium mb-0.5">About</div>
+                        <div className="text-[10px] text-text-muted leading-snug">I am a passionate developer who loves building things and solving problems...</div>
+                        <div className="text-[8px] text-amber-400 mt-1">Too generic — lacks metrics, impact, and keywords</div>
+                      </div>
+                      <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                        <span className="text-[8px] text-amber-400 font-medium">6/10</span>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ ...SPRING, duration: 0.7, delay: 0.95 }}
+                    className="px-3 pb-2.5"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 p-2 rounded bg-green-500/5 border border-green-500/20">
+                        <div className="text-[9px] text-text-muted font-medium mb-0.5">Experience</div>
+                        <div className="text-[10px] text-text-secondary leading-snug">Senior Engineer at Lumina Software &bull; 3 yrs</div>
+                        <div className="text-[10px] text-text-secondary leading-snug">Engineer at Apex Digital &bull; 2 yrs</div>
+                      </div>
+                      <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20">
+                        <span className="text-[8px] text-green-400 font-medium">8/10</span>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ ...SPRING, duration: 0.7, delay: 1.1 }}
+                    className="px-3 pb-3"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 p-2 rounded bg-amber-500/5 border border-amber-500/20 border-dashed">
+                        <div className="text-[9px] text-text-muted font-medium mb-1">Skills</div>
+                        <div className="flex flex-wrap gap-1">
+                          {["JavaScript", "React", "Node.js"].map((s, i) => (
+                            <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-space-500/50 text-text-secondary">{s}</span>
+                          ))}
+                          <span className="text-[8px] text-amber-400">+8 missing</span>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                        <span className="text-[8px] text-amber-400 font-medium">5/10</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...SPRING, duration: 0.8, delay: 1.25 }}
+                  className="flex items-center gap-3"
+                >
+                  <span className="text-[10px] text-text-muted uppercase tracking-wider">Profile Score</span>
+                  <div className="flex-1 h-2 rounded-full bg-space-600 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "62%" }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.2, ease: EASE, delay: 1.4 }}
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-400"
+                    />
+                  </div>
+                  <span className="text-sm font-bold text-cyan-400">62/100</span>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ============================================================
+             FEATURE 2 - Job Board Integration
              Content: left → slides from left. Visual: right → slides from right.
              ============================================================ */}
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center mb-24 sm:mb-32">
@@ -243,7 +441,7 @@ export default function EcosystemShowcase() {
         </div>
 
         {/* ============================================================
-             FEATURE 2 - AI Outreach Hub
+             FEATURE 2 - Chrome Extension
              Content: right (flex-row-reverse) → slides from right.
              Visual: left → slides from left.
              ============================================================ */}
@@ -257,30 +455,26 @@ export default function EcosystemShowcase() {
             transition={{ ...SPRING }}
             className="flex-1 max-w-xl"
           >
-            {/* # Feature tag */}
             <div className="inline-flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
                 </svg>
               </div>
               <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
-                AI Outreach Hub
+                Chrome Extension
               </span>
             </div>
 
-            {/* # Headline */}
             <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-              Cold messages that actually get replies
+              Save any job listing in one click
             </h3>
 
-            {/* # Description */}
             <p className="text-base text-text-secondary leading-relaxed mb-6">
-              Upload your resume, describe who you&apos;re reaching out to, and AI generates 3 personalized message
-              versions — from short and direct to detailed and confident. No more generic templates that get ignored.
+              Browsing LinkedIn, Indeed, or Glassdoor? Click the extension and the job is saved — title, company, salary,
+              and full description extracted automatically. Works on 40+ job boards and ATS career pages.
             </p>
 
-            {/* # Capability bullets — stagger in */}
             <motion.ul
               variants={bulletStagger}
               initial="hidden"
@@ -289,12 +483,13 @@ export default function EcosystemShowcase() {
               className="space-y-3"
             >
               {[
-                "Upload your resume PDF — AI extracts your background automatically",
-                "3 unique message styles: Short & Direct, Confident & Detailed, Natural & Human",
-                "References specific details from both your background and the recipient",
+                "One-click save from LinkedIn, Indeed, Glassdoor, and 40+ sites",
+                "Auto-extracts job title, company, salary, location, and description",
+                "Instant AI match score based on your resume",
+                "Syncs directly to your Application Tracker",
               ].map((cap, j) => (
                 <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
-                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
@@ -312,93 +507,105 @@ export default function EcosystemShowcase() {
             className="flex-1 w-full max-w-lg"
           >
             <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
-              {/* # Gradient accent bar */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-600" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600" />
 
-              {/* # Fake browser chrome */}
-              <div className="flex items-center gap-2 mb-5">
+              {/* # Browser tab with extension popup */}
+              <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 rounded-full bg-red-500/60" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                 <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50" />
+                <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50 flex items-center px-2">
+                  <span className="text-[9px] text-text-muted">linkedin.com/jobs/senior-engineer</span>
+                </div>
               </div>
 
-              {/* # Resume uploaded badge — slides in */}
+              {/* # Extension popup overlay */}
               <motion.div
-                initial={{ opacity: 0, x: -15 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
-                className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-space-700/50 border border-card-border"
+                className="rounded-xl bg-space-700/80 border border-card-border p-4 mb-3"
               >
-                <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-                <span className="text-[11px] text-white font-medium">resume_2026.pdf</span>
-                <span className="text-[9px] text-green-400 ml-auto">Uploaded</span>
-              </motion.div>
-
-              {/* # Recipient info — slides in */}
-              <motion.div
-                initial={{ opacity: 0, x: -15 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ ...SPRING, duration: 0.8, delay: 0.45 }}
-                className="mb-4 px-3 py-2 rounded-lg bg-space-700/50 border border-card-border"
-              >
-                <div className="text-[10px] text-text-muted mb-1">Reaching out to:</div>
-                <div className="text-xs text-white font-medium">Sarah Chen — Engineering Manager at Google</div>
-              </motion.div>
-
-              {/* # 3 message version tabs — stagger in */}
-              <motion.div
-                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.55 } } }}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                className="flex gap-2 mb-3"
-              >
-                {[
-                  { label: "Short & Direct", active: true },
-                  { label: "Confident", active: false },
-                  { label: "Natural", active: false },
-                ].map((tab, i) => (
-                  <motion.div
-                    key={i}
-                    variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                    className={`px-3 py-1.5 rounded-lg ${tab.active ? "bg-brand-indigo/20 border border-brand-indigo/30" : "bg-space-700/50"}`}
-                  >
-                    <span className={`text-[10px] font-medium ${tab.active ? "text-white" : "text-text-muted"}`}>{tab.label}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {/* # Message preview — fades in */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ ...SPRING, duration: 0.9, delay: 0.7 }}
-                className="p-3 rounded-lg bg-space-700/50 border border-brand-indigo/20 mb-3"
-              >
-                <p className="text-[11px] text-text-secondary leading-relaxed">
-                  Hi Sarah, I saw Google&apos;s work on the Gemini API and it caught my attention — I&apos;ve been building AI-powered
-                  career tools with it. With 5 years in full-stack development and a focus on AI integration, I&apos;d love to
-                  chat about opportunities on your team...
-                </p>
-              </motion.div>
-
-              {/* # Action buttons — fade in */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ ...SPRING, duration: 0.8, delay: 0.85 }}
-                className="flex gap-2"
-              >
-                <div className="flex-1 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-center">
-                  <span className="text-[10px] text-white font-semibold">Copy Message</span>
+                {/* # Extension header */}
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                    <span className="text-[8px] font-bold text-white">JP</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-white">JobPilot AI</span>
+                  <div className="ml-auto px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20">
+                    <span className="text-[8px] text-green-400 font-medium">Connected</span>
+                  </div>
                 </div>
-                <div className="py-2 px-3 rounded-lg bg-space-700/50 border border-card-border">
-                  <span className="text-[10px] text-text-muted">Edit</span>
+
+                {/* # Detected job details */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...SPRING, duration: 0.7, delay: 0.5 }}
+                  className="p-3 rounded-lg bg-space-600/50 mb-3"
+                >
+                  <div className="text-[10px] text-blue-400 font-medium mb-1.5">Job Detected</div>
+                  <div className="text-xs font-semibold text-white mb-1">Senior Software Engineer</div>
+                  <div className="text-[10px] text-text-secondary mb-2">Google — Mountain View, CA</div>
+                  <div className="flex gap-1.5">
+                    <span className="px-1.5 py-0.5 rounded bg-green-500/10 text-[8px] text-green-400">$180k - $260k</span>
+                    <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400">Full Time</span>
+                    <span className="px-1.5 py-0.5 rounded bg-space-500/50 text-[8px] text-text-muted">Hybrid</span>
+                  </div>
+                </motion.div>
+
+                {/* # AI match score */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...SPRING, duration: 0.7, delay: 0.65 }}
+                  className="flex items-center gap-3 mb-3"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[9px] text-text-muted uppercase tracking-wider">AI Match</span>
+                      <span className="text-sm font-bold text-green-400">87%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-space-600 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: "87%" }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                        className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* # Save button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...SPRING, duration: 0.7, delay: 0.8 }}
+                  className="w-full py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-500 text-center"
+                >
+                  <span className="text-[11px] text-white font-semibold">Save to Tracker</span>
+                </motion.div>
+              </motion.div>
+
+              {/* # Supported sites row */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ ...SPRING, duration: 0.7, delay: 0.95 }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-[9px] text-text-muted">Works on:</span>
+                <div className="flex gap-1 flex-wrap">
+                  {["LinkedIn", "Indeed", "Glassdoor", "Greenhouse", "Lever", "40+"].map((site, i) => (
+                    <span key={i} className={`px-1.5 py-0.5 rounded text-[8px] ${i === 5 ? "text-blue-400 bg-blue-500/10" : "text-text-muted bg-space-600/50"}`}>{site}</span>
+                  ))}
                 </div>
               </motion.div>
             </div>
@@ -406,7 +613,7 @@ export default function EcosystemShowcase() {
         </div>
 
         {/* ============================================================
-             FEATURE 3 - Portfolio Builder
+             FEATURE 3 - Application Tracker
              Content: left → slides from left. Visual: right → slides from right.
              ============================================================ */}
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center mt-24 sm:mt-32">
@@ -419,30 +626,26 @@ export default function EcosystemShowcase() {
             transition={{ ...SPRING }}
             className="flex-1 max-w-xl"
           >
-            {/* # Feature tag */}
             <div className="inline-flex items-center gap-2 mb-5">
               <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
               <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
-                Portfolio Builder
+                Application Tracker
               </span>
             </div>
 
-            {/* # Headline */}
             <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
-              A stunning portfolio site — built in minutes, not days
+              Every application, one dashboard — no more spreadsheets
             </h3>
 
-            {/* # Description */}
             <p className="text-base text-text-secondary leading-relaxed mb-6">
-              Pick from 9 premium templates, fill in your details, and publish a professional portfolio
-              with a shareable link. Import directly from your resume so you never type the same thing twice.
+              Track every job from saved to offer in a visual pipeline. See your application stages at a glance,
+              add notes and follow-up dates, and never lose track of where you stand. Free and unlimited on every plan.
             </p>
 
-            {/* # Capability bullets — stagger in */}
             <motion.ul
               variants={bulletStagger}
               initial="hidden"
@@ -451,9 +654,10 @@ export default function EcosystemShowcase() {
               className="space-y-3"
             >
               {[
-                "9 designer templates — from minimal to creative to corporate",
-                "One-click import from your uploaded resume",
-                "Custom slug — share yourname.jobpilotai.co with anyone",
+                "Pipeline stages: Saved, Applied, Phone Screen, Interview, Offer",
+                "AI match scores on every tracked job",
+                "Notes, follow-up dates, and interviewer details per application",
+                "One-click save from Job Board and Chrome Extension",
               ].map((cap, j) => (
                 <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,109 +677,294 @@ export default function EcosystemShowcase() {
             transition={{ ...SPRING, delay: 0.15 }}
             className="flex-1 w-full max-w-lg"
           >
-            <div className="glass-card relative overflow-hidden">
-              {/* # Gradient accent bar */}
+            <div className="glass-card p-6 sm:p-8 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
 
-              {/* # Fake browser chrome */}
-              <div className="flex items-center gap-2 px-6 pt-6 sm:px-8 sm:pt-8 mb-4">
-                <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                <div className="ml-2 flex-1 h-5 rounded-md bg-space-600/50 flex items-center px-2">
-                  <span className="text-[9px] text-text-muted">jobpilotai.co/p/sarah-chen</span>
-                </div>
-              </div>
-
-              {/* # Mini portfolio page — resembles a real template */}
+              {/* # Header — matches dashboard page header */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
+                transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
+                className="flex items-center justify-between mb-4"
               >
-                {/* # Hero header with gradient */}
-                <div className="mx-4 sm:mx-6 rounded-t-xl bg-gradient-to-br from-violet-600/30 via-purple-600/20 to-indigo-600/10 p-5 relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "16px 16px" }} />
-                  <div className="relative flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                      <span className="text-lg font-bold text-white">SC</span>
-                    </div>
-                    <div>
-                      <div className="text-base font-bold text-white">Sarah Chen</div>
-                      <div className="text-xs text-violet-200/80">Full Stack Engineer</div>
-                      <div className="flex gap-1.5 mt-1.5">
-                        {["React", "Node.js", "Python"].map((t, i) => (
-                          <span key={i} className="px-1.5 py-0.5 rounded bg-white/10 text-[8px] text-white/70">{t}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <div className="text-sm font-bold text-white">Application Tracker</div>
+                  <div className="text-[10px] text-text-muted">Track all your job applications in one place.</div>
                 </div>
-
-                {/* # Content body */}
-                <div className="mx-4 sm:mx-6 rounded-b-xl bg-space-800/80 border border-card-border border-t-0 p-4 mb-4 sm:mb-6 space-y-4">
-
-                  {/* # Skills section with bars */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ ...SPRING, duration: 0.8, delay: 0.5 }}
-                  >
-                    <div className="text-[10px] font-semibold text-white uppercase tracking-wider mb-2">Skills</div>
-                    <div className="space-y-1.5">
-                      {[
-                        { name: "React / Next.js", pct: 95 },
-                        { name: "Python / FastAPI", pct: 88 },
-                        { name: "TypeScript", pct: 92 },
-                      ].map((skill, i) => (
-                        <div key={i}>
-                          <div className="flex justify-between mb-0.5">
-                            <span className="text-[9px] text-text-secondary">{skill.name}</span>
-                            <span className="text-[9px] text-text-muted">{skill.pct}%</span>
-                          </div>
-                          <div className="h-1 rounded-full bg-space-600">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${skill.pct}%` }}
-                              viewport={{ once: true }}
-                              transition={{ ...SPRING, duration: 1.2, delay: 0.6 + i * 0.1 }}
-                              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-400"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-
-                  {/* # Projects section with cards */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ ...SPRING, duration: 0.8, delay: 0.7 }}
-                  >
-                    <div className="text-[10px] font-semibold text-white uppercase tracking-wider mb-2">Projects</div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { name: "AI Career Coach", tech: "Next.js + Gemini" },
-                        { name: "DevOps Dashboard", tech: "React + Go" },
-                      ].map((proj, i) => (
-                        <div key={i} className="p-2.5 rounded-lg bg-space-700/50 border border-card-border">
-                          <div className="w-full h-8 rounded bg-gradient-to-br from-violet-500/10 to-purple-500/5 mb-2 flex items-center justify-center">
-                            <svg className="w-3.5 h-3.5 text-violet-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-                            </svg>
-                          </div>
-                          <div className="text-[10px] font-semibold text-white">{proj.name}</div>
-                          <div className="text-[8px] text-text-muted">{proj.tech}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
+                <div className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-purple-500">
+                  <span className="text-[9px] text-white font-semibold">+ Add Application</span>
                 </div>
               </motion.div>
+
+              {/* # Stats bar — 5 status counts like the real dashboard */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...SPRING, duration: 0.7, delay: 0.35 }}
+                className="grid grid-cols-5 gap-1.5 mb-4"
+              >
+                {[
+                  { label: "Saved", count: 4, color: "text-blue-400" },
+                  { label: "Applied", count: 6, color: "text-blue-400" },
+                  { label: "Interview", count: 2, color: "text-yellow-400" },
+                  { label: "Offer", count: 1, color: "text-green-400" },
+                  { label: "Rejected", count: 3, color: "text-red-400" },
+                ].map((s, i) => (
+                  <div key={i} className="rounded-lg bg-space-600/40 p-2 text-center">
+                    <div className={`text-sm font-bold ${s.color}`}>{s.count}</div>
+                    <div className="text-[8px] text-text-muted mt-0.5">{s.label}</div>
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* # Application list — matches glass-card p-5 layout */}
+              <div className="space-y-2">
+                {[
+                  { title: "Full Stack Engineer", company: "Vercel", status: "Applied", statusStyle: "bg-blue-500/20 text-blue-400 border-blue-500/30", date: "Applied Sep 8", salary: "$150k - $200k" },
+                  { title: "Backend Engineer", company: "Shopify", status: "Saved", statusStyle: "bg-blue-500/20 text-blue-400 border-blue-500/30", date: "Saved Sep 11", salary: "$140k - $180k" },
+                  { title: "Senior Product Manager", company: "Stripe", status: "Interview", statusStyle: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", date: "Applied Sep 5", extra: "Interview Oct 3", extraColor: "text-yellow-400", salary: "$180k - $220k" },
+                ].map((app, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 8 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ ...SPRING, duration: 0.7, delay: 0.45 + i * 0.08 }}
+                    className="p-3 rounded-xl bg-space-700/50 border border-card-border"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-white">{app.title}</div>
+                        <div className="text-[10px] text-text-secondary">{app.company}</div>
+                      </div>
+                      <div className={`px-2 py-1 rounded-lg text-[9px] font-medium border ${app.statusStyle}`}>{app.status}</div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[9px] text-text-muted">{app.date}</span>
+                      {app.extra && <span className={`text-[9px] font-medium ${app.extraColor}`}>{app.extra}</span>}
+                      <span className="text-[9px] text-green-400 ml-auto">{app.salary}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ============================================================
+             FEATURE 5 - Interview Prep AI
+             Content: right (flex-row-reverse) → slides from right.
+             Visual: left → slides from left.
+             ============================================================ */}
+        <div className="flex flex-col lg:flex-row-reverse gap-10 lg:gap-16 items-center mt-24 sm:mt-32">
+
+          {/* ---- Content Side — slides in from right ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING }}
+            className="flex-1 max-w-xl"
+          >
+            <div className="inline-flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                Interview Prep AI
+              </span>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+              Walk in knowing what they&apos;ll ask
+            </h3>
+
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
+              Our AI predicts the most likely interview questions for any role based on the job description, company, and industry. Then it coaches you through strong answers using the STAR method, grounded in your actual resume experience.
+            </p>
+
+            <motion.ul
+              variants={bulletStagger}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-50px" }}
+              className="space-y-3"
+            >
+              {[
+                "10 predicted questions: technical, behavioral, and culture-fit",
+                "AI-coached answers based on your real experience and background",
+                "STAR method structuring for behavioral questions",
+                "Company-specific questions based on the role and industry",
+              ].map((cap, j) => (
+                <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+
+          {/* ---- Visual Side — Interview questions card ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING, delay: 0.15 }}
+            className="flex-1 w-full max-w-lg"
+          >
+            <div className="glass-card p-8 sm:p-10 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600" />
+
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
+                  className="flex items-center justify-between mb-3"
+                >
+                  <div>
+                    <div className="text-xs text-text-muted">Preparing for</div>
+                    <div className="text-sm font-semibold text-white">Senior Product Manager</div>
+                  </div>
+                  <div className="px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
+                    <span className="text-[10px] text-amber-400 font-medium">10 Questions</span>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.35 } } }}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="space-y-2"
+                >
+                  {[
+                    { label: "Behavioral", color: "text-amber-400", border: "border-amber-400/30", q: "“Describe a time you had to influence stakeholders without direct authority”" },
+                    { label: "Technical", color: "text-blue-400", border: "border-blue-400/30", q: "“How would you prioritize a backlog with competing business and engineering needs?”" },
+                    { label: "Behavioral", color: "text-amber-400", border: "border-amber-400/30", q: "“Tell me about a product launch that didn’t go as planned. What did you learn?”" },
+                    { label: "Culture Fit", color: "text-emerald-400", border: "border-emerald-400/30", q: "“How do you build alignment across cross-functional teams?”" },
+                    { label: "Technical", color: "text-blue-400", border: "border-blue-400/30", q: "“Walk me through how you’d define success metrics for a new feature”" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
+                      className={`p-2.5 rounded-lg bg-space-600/40 border-l-2 ${item.border}`}
+                    >
+                      <div className={`text-[10px] ${item.color} font-medium mb-0.5`}>{item.label}</div>
+                      <div className="text-[11px] text-white leading-snug">{item.q}</div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ============================================================
+             FEATURE 6 - Interactive Mock Interview
+             Content: left → slides from left. Visual: right → slides from right.
+             ============================================================ */}
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-center mt-24 sm:mt-32">
+
+          {/* ---- Content Side — slides in from left ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING }}
+            className="flex-1 max-w-xl"
+          >
+            <div className="inline-flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                Interactive Mock Interview
+              </span>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+              Practice with an AI interviewer that feels real
+            </h3>
+
+            <p className="text-base text-text-secondary leading-relaxed mb-6">
+              Step into a live mock interview powered by AI. Choose your target role, face realistic questions from a virtual interviewer, and respond with your voice or text — all in a real-time video-call format. Get detailed feedback and scoring after the interview.
+            </p>
+
+            <motion.ul
+              variants={bulletStagger}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-50px" }}
+              className="space-y-3"
+            >
+              {[
+                "Real-time AI interviewer with voice and video-call style interface",
+                "Role-specific questions tailored to the exact position you're targeting",
+                "Respond by voice or text — practice exactly how you'll interview",
+                "Comprehensive feedback with scoring and improvement suggestions",
+              ].map((cap, j) => (
+                <motion.li key={j} variants={bulletItem} className="flex items-start gap-3">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-base text-text-secondary leading-relaxed">{cap}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+
+          {/* ---- Visual Side — Mock interview preview ---- */}
+          <motion.div
+            initial={{ opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ ...SPRING, delay: 0.15 }}
+            className="flex-1 w-full max-w-lg"
+          >
+            <div className="glass-card p-8 sm:p-10 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-600" />
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="text-xs text-text-muted">Mock Interview Session</div>
+                    <div className="text-sm font-semibold text-white">Product Lead at Google</div>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                    <span className="text-[10px] text-red-400 font-medium">LIVE</span>
+                  </div>
+                </div>
+                <div className="rounded-xl overflow-hidden">
+                  <Image
+                    src="/mock-interview-preview.png"
+                    alt="Interactive mock interview with AI interviewer"
+                    width={1366}
+                    height={768}
+                    className="w-full h-auto"
+                  />
+                </div>
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                    <span className="text-[10px] text-text-muted">Voice & Text</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span className="text-[10px] text-text-muted">Post-interview feedback</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -589,7 +978,7 @@ export default function EcosystemShowcase() {
           className="mt-24 sm:mt-32 text-center"
         >
           <p className="text-text-secondary text-lg mb-6">
-            Find jobs. Craft perfect outreach. Showcase your work. Land interviews.
+            Optimize your profile. Find the right jobs. Ace every interview.
           </p>
           <Link href="/signup" className="btn-primary text-base px-8 py-4">
             Get Started Free

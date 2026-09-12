@@ -33,7 +33,7 @@ interface Tool {
   href: string;
   /* # Preview card colors + visual type */
   gradient: string;
-  preview: "score" | "letter" | "resignation" | "jobs" | "tracker" | "extension" | "interview" | "mock" | "quiz-change" | "quiz-personality" | "quiz-stayquit" | "linkedin" | "portfolio" | "templates" | "analyze" | "optimize" | "rebuild" | "outreach";
+  preview: "score" | "letter" | "resignation" | "jobs" | "tracker" | "extension" | "interview" | "mock" | "quiz-change" | "quiz-personality" | "quiz-stayquit" | "linkedin" | "portfolio" | "templates" | "analyze" | "optimize" | "rebuild" | "outreach" | "job-matching";
 }
 
 interface ToolCategory {
@@ -103,6 +103,13 @@ const categories: ToolCategory[] = [
         href: "/tools/job-search",
         gradient: "from-emerald-500/30 to-teal-500/30",
         preview: "jobs",
+      },
+      {
+        title: "Smart Job Matching",
+        desc: "Paste a job description and your resume to get a precise match score. See which skills align, which are missing, and what to do to close the gap.",
+        href: "/tools/job-matching",
+        gradient: "from-sky-500/30 to-blue-500/30",
+        preview: "job-matching",
       },
       {
         title: "Chrome Extension",
@@ -231,6 +238,7 @@ function ToolPreview({ type, gradient }: { type: Tool["preview"]; gradient: stri
         {type === "optimize" && <OptimizePreview />}
         {type === "rebuild" && <RebuildPreview />}
         {type === "outreach" && <OutreachPreview />}
+        {type === "job-matching" && <JobMatchingPreview />}
       </div>
     </div>
   );
@@ -771,6 +779,31 @@ function OutreachPreview() {
       <div className="bg-sky-500/10 rounded-lg p-2.5 border border-sky-500/20">
         <p className="text-[9px] text-text-secondary">Hi Sarah, I saw your work on Stripe&apos;s checkout...</p>
         <p className="text-[8px] text-sky-400 mt-1">247 / 300 chars</p>
+      </div>
+    </div>
+  );
+}
+
+/* # Job matching score + skill breakdown */
+function JobMatchingPreview() {
+  return (
+    <div className="bg-space-800/80 rounded-xl p-5 w-full backdrop-blur-sm border border-white/10">
+      <div className="text-center mb-3">
+        <p className="text-2xl font-bold text-emerald-400">78%</p>
+        <p className="text-[9px] text-text-muted">Match Score</p>
+      </div>
+      <div className="space-y-1.5">
+        {[
+          { color: "bg-emerald-400", text: "React, TypeScript, Node.js", status: "text-emerald-400" },
+          { color: "bg-emerald-400", text: "3+ years experience", status: "text-emerald-400" },
+          { color: "bg-amber-400", text: "AWS — not emphasized", status: "text-amber-400" },
+          { color: "bg-red-400", text: "GraphQL — missing", status: "text-red-400" },
+        ].map((item) => (
+          <div key={item.text} className="flex items-center gap-2 px-2 py-1.5 rounded bg-white/5">
+            <div className={`w-1.5 h-1.5 rounded-full ${item.color} shrink-0`} />
+            <span className="text-[10px] text-text-secondary flex-1">{item.text}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
