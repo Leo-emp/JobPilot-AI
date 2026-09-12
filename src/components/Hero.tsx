@@ -53,20 +53,16 @@ export default function Hero() {
     >
 
       {/* ---- Title ---- */}
-      <motion.h1 variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-[-0.04em] mb-6 glow-text-strong">
-        JobPilot AI
+      <motion.h1 variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-[-0.03em] mb-6 max-w-4xl">
+        Land More Interviews With{" "}
+        <span className="glow-text-strong">Tailored Resumes</span>
       </motion.h1>
 
-      {/* ---- Tagline ---- */}
-      <motion.p variants={fadeUp} className="font-[family-name:var(--font-space-grotesk)] text-lg sm:text-xl md:text-2xl font-medium tracking-[0.15em] uppercase mb-8 glow-text-subtle">
-        Your Career Co-Pilot
-      </motion.p>
-
       {/* ---- Description ---- */}
-      <motion.p variants={fadeUp} className="max-w-2xl text-base sm:text-lg text-text-secondary leading-relaxed mb-12">
-        AI-powered resume optimization, intelligent job matching,
-        personalized cover letters, and interview prep —
-        everything you need to land your dream job, in one place.
+      <motion.p variants={fadeUp} className="max-w-2xl text-sm sm:text-base text-text-secondary leading-relaxed mb-12">
+        Upload your resume, paste a job description, and get an ATS-optimized
+        resume in seconds — tailored with the right keywords, structure, and
+        formatting to get optimized for ATS screening and to stand out to hiring managers.
       </motion.p>
 
       {/* ---- CTA Buttons ---- */}
