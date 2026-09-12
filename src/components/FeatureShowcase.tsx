@@ -80,26 +80,6 @@ const showcaseFeatures = [
     ),
   },
   {
-    tag: "Cover Letter Generator",
-    headline: "A cover letter that sounds like you, not a robot",
-    description:
-      "Every cover letter is written from scratch using your actual experience and the specific job requirements. No templates. No fill-in-the-blanks. Just a compelling, human-sounding letter that connects your story to what the employer needs.",
-    capabilities: [
-      "Unique letter for every application — never the same twice",
-      "References your real achievements, projects, and skills",
-      "Tone that's confident and professional without being generic",
-      "Under 350 words — optimized for how hiring managers actually read",
-    ],
-    accent: "from-emerald-500 to-teal-600",
-    iconBg: "bg-emerald-500/10 border-emerald-500/20",
-    iconColor: "text-emerald-400",
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
     tag: "Interview Prep AI",
     headline: "Walk in knowing what they'll ask",
     description:
@@ -179,6 +159,26 @@ const showcaseFeatures = [
       </svg>
     ),
   },
+  {
+    tag: "Cover Letter Generator",
+    headline: "A cover letter that sounds like you, not a robot",
+    description:
+      "Every cover letter is written from scratch using your actual experience and the specific job requirements. No templates. No fill-in-the-blanks. Just a compelling, human-sounding letter that connects your story to what the employer needs.",
+    capabilities: [
+      "Unique letter for every application — never the same twice",
+      "References your real achievements, projects, and skills",
+      "Tone that's confident and professional without being generic",
+      "Under 350 words — optimized for how hiring managers actually read",
+    ],
+    accent: "from-emerald-500 to-teal-600",
+    iconBg: "bg-emerald-500/10 border-emerald-500/20",
+    iconColor: "text-emerald-400",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
 ];
 
 /* # Section header fade */
@@ -250,7 +250,8 @@ export default function FeatureShowcase() {
             /* # Odd index: content right, visual left (flex-row-reverse) */
             const isEven = index % 2 === 0;
 
-            if (index === 7) {
+            /* # Resume Templates — special full-width card layout */
+            if (index === 6) {
               return (
                 <div
                   key={index}
@@ -292,6 +293,54 @@ export default function FeatureShowcase() {
                     <FeatureTemplateCard><FeatureStandardATS /></FeatureTemplateCard>
                     <FeatureTemplateCard><FeatureUSATS /></FeatureTemplateCard>
                     <FeatureTemplateCard><FeatureAUCV /></FeatureTemplateCard>
+                  </motion.div>
+                </div>
+              );
+            }
+
+            /* # Cover Letter Generator — same text-on-top + 3 card grid layout */
+            if (index === 7) {
+              return (
+                <div
+                  key={index}
+                  id={`showcase-${feature.tag.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="scroll-mt-24"
+                >
+                  {/* ---- Text on top ---- */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ ...SPRING }}
+                    className="text-center max-w-3xl mx-auto mb-10"
+                  >
+                    <div className="inline-flex items-center gap-2 mb-5">
+                      <div className={`w-8 h-8 rounded-lg ${feature.iconBg} border flex items-center justify-center ${feature.iconColor}`}>
+                        {feature.icon}
+                      </div>
+                      <span className="text-sm sm:text-base font-semibold text-text-muted uppercase tracking-wider">
+                        {feature.tag}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 leading-tight">
+                      {feature.headline}
+                    </h3>
+                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+
+                  {/* ---- 3 cover letters side by side ---- */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ ...SPRING, delay: 0.15 }}
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
+                  >
+                    <FeatureCoverLetterCard><FeatureCoverLetter1 /></FeatureCoverLetterCard>
+                    <FeatureCoverLetterCard><FeatureCoverLetter2 /></FeatureCoverLetterCard>
+                    <FeatureCoverLetterCard><FeatureCoverLetter3 /></FeatureCoverLetterCard>
                   </motion.div>
                 </div>
               );
@@ -691,7 +740,22 @@ function FeatureTemplateCard({ children }: { children: React.ReactNode }) {
     <Link href="/tools/resume-templates" className="group block">
       <div className="relative overflow-hidden rounded-2xl bg-white">
         <div style={{ aspectRatio: "210/310" }}>
-          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
+          <div className="absolute top-0 left-2 origin-top-left" style={{ transform: "scale(0.45)", width: "210mm" }}>
+            {children}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* # Cover letter card — shorter aspect ratio since cover letters have less content */
+function FeatureCoverLetterCard({ children }: { children: React.ReactNode }) {
+  return (
+    <Link href="/tools/cover-letter" className="group block">
+      <div className="relative overflow-hidden rounded-2xl bg-white">
+        <div style={{ aspectRatio: "210/260" }}>
+          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: "scale(0.55)", width: "170mm" }}>
             {children}
           </div>
         </div>
@@ -965,6 +1029,126 @@ function FeatureAUCV() {
         <p className="text-[13px] text-gray-800">English - Native</p>
         <p className="text-[13px] text-gray-800">Spanish - Conversational</p>
       </div>
+    </div>
+  );
+}
+
+/* # Cover Letter 1 — Software Engineer applying for Senior Frontend role */
+function FeatureCoverLetter1() {
+  return (
+    <div className="bg-white text-black px-12 py-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "170mm", fontSize: 16 }}>
+      {/* # Header — name and contact */}
+      <div className="mb-6">
+        <h1 className="text-[24px] font-bold text-black leading-tight">Sarah Chen</h1>
+        <p className="text-[13px] text-gray-600 mt-1">San Francisco, CA &bull; +1 (415) 892-3047 &bull; sarah.chen@email.com &bull; linkedin.com/in/sarahchen</p>
+      </div>
+
+      {/* # Date */}
+      <p className="text-[13px] text-gray-800 mb-6">September 10, 2026</p>
+
+      {/* # Salutation */}
+      <p className="text-[13px] text-gray-800 mb-4">Dear Hiring Manager,</p>
+
+      {/* # Body paragraphs */}
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        I am writing to express my strong interest in the Senior Frontend Engineer position at Veritas Technologies. With over five years of experience building high-performance web applications using React, TypeScript, and Next.js, I am confident that my technical expertise and passion for delivering exceptional user experiences make me an ideal candidate for this role.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        In my current role as a Frontend Engineer at Lumina Software, I led the complete redesign of our customer-facing dashboard, which resulted in a 42% increase in user engagement and a 28% reduction in support tickets. I architected a component library used across four product teams, reducing development time by 35% and establishing consistent design patterns that improved our Lighthouse performance score from 62 to 94.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        What excites me most about Veritas Technologies is your commitment to building accessible, performant interfaces that serve millions of users daily. My experience optimizing rendering pipelines, implementing code-splitting strategies, and mentoring junior developers aligns directly with the challenges your team is tackling. I have also contributed to open-source projects in the React ecosystem, including performance monitoring tools that have been adopted by over 2,000 developers.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-6">
+        I would welcome the opportunity to discuss how my background in scalable frontend architecture and my track record of shipping impactful features can contribute to your team&apos;s goals. Thank you for considering my application, and I look forward to the possibility of contributing to Veritas Technologies&apos; continued success.
+      </p>
+
+      {/* # Sign-off */}
+      <p className="text-[13px] text-gray-800 mb-1">Sincerely,</p>
+      <p className="text-[13px] font-bold text-black">Sarah Chen</p>
+    </div>
+  );
+}
+
+/* # Cover Letter 2 — Product Manager applying for Senior PM role */
+function FeatureCoverLetter2() {
+  return (
+    <div className="bg-white text-black px-12 py-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "170mm", fontSize: 16 }}>
+      {/* # Header — name and contact */}
+      <div className="mb-6">
+        <h1 className="text-[24px] font-bold text-black leading-tight">James Rodriguez</h1>
+        <p className="text-[13px] text-gray-600 mt-1">Austin, TX &bull; +1 (512) 734-1985 &bull; james.rodriguez@email.com &bull; linkedin.com/in/jamesrodriguez</p>
+      </div>
+
+      {/* # Date */}
+      <p className="text-[13px] text-gray-800 mb-6">September 10, 2026</p>
+
+      {/* # Salutation */}
+      <p className="text-[13px] text-gray-800 mb-4">Dear Hiring Manager,</p>
+
+      {/* # Body paragraphs */}
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        I am excited to apply for the Senior Product Manager position at CloudScale. Having spent the past six years building and scaling B2B SaaS products from concept to market leadership, I bring a data-driven approach to product strategy that I believe aligns perfectly with CloudScale&apos;s mission to simplify enterprise infrastructure management.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        At my current company, Meridian Analytics, I own the product roadmap for our core analytics platform, which serves over 800 enterprise clients and generates $18M in annual recurring revenue. I led the launch of our real-time data pipeline feature, which became our fastest-adopted feature in company history with 340 enterprise accounts onboarded within the first quarter. This initiative alone contributed $3.2M in new ARR and reduced customer churn by 18%.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        What draws me to CloudScale is your focus on making complex infrastructure accessible to engineering teams of all sizes. My experience translating technical complexity into intuitive user workflows, combined with my background in cross-functional leadership across engineering, design, and go-to-market teams, positions me to drive meaningful impact. I have consistently delivered products that achieve both user satisfaction scores above 4.5 and measurable business outcomes.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-6">
+        I would love the opportunity to discuss how my product leadership experience and my passion for developer tools can contribute to CloudScale&apos;s next phase of growth. Thank you for your time and consideration, and I look forward to hearing from you.
+      </p>
+
+      {/* # Sign-off */}
+      <p className="text-[13px] text-gray-800 mb-1">Sincerely,</p>
+      <p className="text-[13px] font-bold text-black">James Rodriguez</p>
+    </div>
+  );
+}
+
+/* # Cover Letter 3 — Data Analyst applying for Senior Analyst role at consulting firm */
+function FeatureCoverLetter3() {
+  return (
+    <div className="bg-white text-black px-12 py-10 font-[Arial,Helvetica,sans-serif]" style={{ width: "170mm", fontSize: 16 }}>
+      {/* # Header — name and contact */}
+      <div className="mb-6">
+        <h1 className="text-[24px] font-bold text-black leading-tight">Priya Sharma</h1>
+        <p className="text-[13px] text-gray-600 mt-1">London, UK &bull; +44 7911 234 567 &bull; priya.sharma@email.com &bull; linkedin.com/in/priyasharma</p>
+      </div>
+
+      {/* # Date */}
+      <p className="text-[13px] text-gray-800 mb-6">September 10, 2026</p>
+
+      {/* # Salutation */}
+      <p className="text-[13px] text-gray-800 mb-4">Dear Hiring Manager,</p>
+
+      {/* # Body paragraphs */}
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        I am writing to apply for the Senior Data Analyst position at McKenzie &amp; Partners. With four years of experience transforming complex datasets into actionable business intelligence for Fortune 500 clients, I am eager to bring my analytical expertise and consulting mindset to your growing analytics practice.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        In my current role at Stratton Consulting Group, I lead data analysis engagements across financial services and healthcare sectors. Most recently, I designed a predictive customer segmentation model for a major retail banking client that identified $14M in untapped cross-selling opportunities and improved campaign conversion rates by 45%. I also built an automated reporting pipeline using Python and Tableau that reduced weekly reporting time from 12 hours to 45 minutes across three client accounts.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-4">
+        McKenzie &amp; Partners&apos; reputation for delivering data-driven transformation to global enterprises is what makes this opportunity particularly compelling. My proficiency in SQL, Python, R, and advanced statistical modelling, combined with my ability to communicate complex findings to C-suite stakeholders in clear, actionable terms, aligns directly with the consultative approach your firm is known for. I thrive in client-facing environments and have consistently received top satisfaction ratings from engagement partners.
+      </p>
+
+      <p className="text-[13px] text-gray-800 leading-relaxed mb-6">
+        I would be delighted to discuss how my experience in data strategy and client engagement can contribute to McKenzie &amp; Partners&apos; continued growth. Thank you for considering my application, and I look forward to the opportunity to speak with you further.
+      </p>
+
+      {/* # Sign-off */}
+      <p className="text-[13px] text-gray-800 mb-1">Sincerely,</p>
+      <p className="text-[13px] font-bold text-black">Priya Sharma</p>
     </div>
   );
 }
