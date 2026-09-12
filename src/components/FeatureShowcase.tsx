@@ -10,6 +10,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 /* # Zero-bounce spring — naturally settles with no hard stop */
@@ -96,6 +97,26 @@ const showcaseFeatures = [
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    ),
+  },
+  {
+    tag: "Interactive Mock Interview",
+    headline: "Practice with an AI interviewer that feels real",
+    description:
+      "Step into a live mock interview powered by AI. Choose your target role, face realistic questions from a virtual interviewer, and respond with your voice or text — all in a real-time video-call format. Get detailed feedback and scoring after the interview.",
+    capabilities: [
+      "Real-time AI interviewer with voice and video-call style interface",
+      "Role-specific questions tailored to the exact position you're targeting",
+      "Respond by voice or text — practice exactly how you'll interview",
+      "Comprehensive feedback with scoring and improvement suggestions after the interview",
+    ],
+    accent: "from-red-500 to-amber-600",
+    iconBg: "bg-red-500/10 border-red-500/20",
+    iconColor: "text-red-400",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     ),
   },
@@ -251,7 +272,7 @@ export default function FeatureShowcase() {
             const isEven = index % 2 === 0;
 
             /* # Resume Templates — special full-width card layout */
-            if (index === 6) {
+            if (index === 7) {
               return (
                 <div
                   key={index}
@@ -299,7 +320,7 @@ export default function FeatureShowcase() {
             }
 
             /* # Cover Letter Generator — same text-on-top + 3 card grid layout */
-            if (index === 7) {
+            if (index === 8) {
               return (
                 <div
                   key={index}
@@ -631,62 +652,84 @@ export default function FeatureShowcase() {
 
                       {index === 3 && (
                         <>
-                          <motion.div
-                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.3 } } }}
-                            initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true }}
-                            className="space-y-2.5"
-                          >
-                            {[60, 100, 90, 75, 0, 100, 85, 70].map((w, i) => (
-                              <motion.div
-                                key={i}
-                                variants={{ hidden: { opacity: 0, scaleX: 0 }, show: { opacity: 1, scaleX: 1, transition: { ...SPRING, duration: 0.7 } } }}
-                                style={{ transformOrigin: "left", width: w === 0 ? "100%" : `${w}%` }}
-                                className={`rounded ${w === 0 ? "h-3 bg-space-600/20 mt-3" : "h-2.5 bg-space-600/60"}`}
-                              />
-                            ))}
-                          </motion.div>
+                          {/* # Job role header */}
                           <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.8 }}
-                            className="mt-4 flex items-center gap-2"
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
+                            className="flex items-center justify-between mb-3"
                           >
-                            <div className="px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                              <span className="text-xs text-emerald-400 font-medium">287 words</span>
+                            <div>
+                              <div className="text-xs text-text-muted">Preparing for</div>
+                              <div className="text-sm font-semibold text-white">Senior Product Manager</div>
                             </div>
-                            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20">
-                              <span className="text-xs text-blue-400 font-medium">Personalized</span>
+                            <div className="px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
+                              <span className="text-[10px] text-amber-400 font-medium">10 Questions</span>
                             </div>
                           </motion.div>
+
+                          {/* # Interview questions by type */}
+                          <motion.div
+                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.35 } } }}
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            className="space-y-2"
+                          >
+                            {[
+                              { label: "Behavioral", color: "text-amber-400", border: "border-amber-400/30", q: "“Describe a time you had to influence stakeholders without direct authority”" },
+                              { label: "Technical", color: "text-blue-400", border: "border-blue-400/30", q: "“How would you prioritize a backlog with competing business and engineering needs?”" },
+                              { label: "Behavioral", color: "text-amber-400", border: "border-amber-400/30", q: "“Tell me about a product launch that didn’t go as planned. What did you learn?”" },
+                              { label: "Culture Fit", color: "text-emerald-400", border: "border-emerald-400/30", q: "“How do you build alignment across cross-functional teams?”" },
+                              { label: "Technical", color: "text-blue-400", border: "border-blue-400/30", q: "“Walk me through how you’d define success metrics for a new feature”" },
+                            ].map((item, i) => (
+                              <motion.div
+                                key={i}
+                                variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.7 } } }}
+                                className={`p-2.5 rounded-lg bg-space-600/40 border-l-2 ${item.border}`}
+                              >
+                                <div className={`text-[10px] ${item.color} font-medium mb-0.5`}>{item.label}</div>
+                                <div className="text-[11px] text-white leading-snug">{item.q}</div>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+
                         </>
                       )}
 
                       {index === 4 && (
-                        <motion.div
-                          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.12, delayChildren: 0.3 } } }}
-                          initial="hidden"
-                          whileInView="show"
-                          viewport={{ once: true }}
-                          className="space-y-3"
-                        >
-                          {[
-                            { label: "Behavioral", color: "text-amber-400", q: "“Tell me about a time you led a team through a difficult challenge”" },
-                            { label: "Technical", color: "text-blue-400", q: "“How would you design a scalable notification system?”" },
-                            { label: "Culture Fit", color: "text-blue-400", q: "“What does collaboration look like to you?”" },
-                          ].map((item, i) => (
-                            <motion.div
-                              key={i}
-                              variants={{ hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { ...SPRING, duration: 0.8 } } }}
-                              className="p-3 rounded-lg bg-space-600/40"
-                            >
-                              <div className={`text-xs ${item.color} mb-1`}>{item.label}</div>
-                              <div className="text-xs text-white">{item.q}</div>
-                            </motion.div>
-                          ))}
-                        </motion.div>
+                        <>
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <div className="text-xs text-text-muted">Mock Interview Session</div>
+                              <div className="text-sm font-semibold text-white">Product Lead at Google</div>
+                            </div>
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20">
+                              <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                              <span className="text-[10px] text-red-400 font-medium">LIVE</span>
+                            </div>
+                          </div>
+                          <div className="rounded-xl overflow-hidden">
+                            <Image
+                              src="/mock-interview-preview.png"
+                              alt="Interactive mock interview with AI interviewer"
+                              width={1366}
+                              height={768}
+                              className="w-full h-auto"
+                            />
+                          </div>
+                          <div className="flex items-center gap-3 mt-3">
+                            <div className="flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                              <span className="text-[10px] text-text-muted">Voice & Text</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              <span className="text-[10px] text-text-muted">Post-interview feedback</span>
+                            </div>
+                          </div>
+                        </>
                       )}
 
                       {index === 5 && (
@@ -749,38 +792,132 @@ export default function FeatureShowcase() {
 
                       {index === 6 && (
                         <>
+                          {/* # Mini LinkedIn profile mockup */}
                           <motion.div
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ ...SPRING, duration: 0.8, delay: 0.3 }}
-                            className="flex items-center justify-between mb-3"
+                            transition={{ ...SPRING, duration: 0.8, delay: 0.2 }}
+                            className="rounded-lg bg-space-600/40 overflow-hidden"
                           >
-                            <span className="text-xs text-text-muted uppercase tracking-wider">Profile Score</span>
-                            <span className="text-2xl font-bold text-cyan-400">62/100</span>
+                            {/* # Banner bar */}
+                            <div className="h-10 bg-gradient-to-r from-cyan-600/40 to-blue-600/40" />
+
+                            {/* # Profile header */}
+                            <div className="px-3 -mt-5">
+                              <div className="flex items-end gap-2.5 mb-2">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 border-2 border-space-700 flex items-center justify-center">
+                                  <span className="text-white text-sm font-bold">JD</span>
+                                </div>
+                                <div className="pb-0.5">
+                                  <div className="text-xs font-semibold text-white">Jason Davis</div>
+                                  <div className="text-[10px] text-text-muted">Software Engineer</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* # Headline section with AI callout */}
+                            <div className="px-3 pb-2">
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 p-2 rounded bg-red-500/5 border border-red-500/20 border-dashed">
+                                  <div className="text-[10px] text-text-muted leading-snug">&quot;Software Engineer | Problem Solver | Team Player&quot;</div>
+                                </div>
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  whileInView={{ opacity: 1, scale: 1 }}
+                                  viewport={{ once: true }}
+                                  transition={{ ...SPRING, duration: 0.6, delay: 0.5 }}
+                                  className="flex-shrink-0 px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20"
+                                >
+                                  <span className="text-[8px] text-red-400 font-medium">Weak</span>
+                                </motion.div>
+                              </div>
+                            </div>
+
+                            {/* # About section */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 0.7, delay: 0.8 }}
+                              className="px-3 pb-2.5"
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 p-2 rounded bg-amber-500/5 border border-amber-500/20 border-dashed">
+                                  <div className="text-[9px] text-text-muted font-medium mb-0.5">About</div>
+                                  <div className="text-[10px] text-text-muted leading-snug">I am a passionate developer who loves building things and solving problems...</div>
+                                  <div className="text-[8px] text-amber-400 mt-1">Too generic — lacks metrics, impact, and keywords</div>
+                                </div>
+                                <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                                  <span className="text-[8px] text-amber-400 font-medium">6/10</span>
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            {/* # Experience section */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 0.7, delay: 0.95 }}
+                              className="px-3 pb-2.5"
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 p-2 rounded bg-green-500/5 border border-green-500/20">
+                                  <div className="text-[9px] text-text-muted font-medium mb-0.5">Experience</div>
+                                  <div className="text-[10px] text-text-secondary leading-snug">Senior Engineer at Lumina Software &bull; 3 yrs</div>
+                                  <div className="text-[10px] text-text-secondary leading-snug">Engineer at Apex Digital &bull; 2 yrs</div>
+                                </div>
+                                <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20">
+                                  <span className="text-[8px] text-green-400 font-medium">8/10</span>
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            {/* # Skills section */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ ...SPRING, duration: 0.7, delay: 1.1 }}
+                              className="px-3 pb-3"
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 p-2 rounded bg-amber-500/5 border border-amber-500/20 border-dashed">
+                                  <div className="text-[9px] text-text-muted font-medium mb-1">Skills</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {["JavaScript", "React", "Node.js"].map((s, i) => (
+                                      <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-space-500/50 text-text-secondary">{s}</span>
+                                    ))}
+                                    <span className="text-[8px] text-amber-400">+8 missing</span>
+                                  </div>
+                                </div>
+                                <div className="flex-shrink-0 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                                  <span className="text-[8px] text-amber-400 font-medium">5/10</span>
+                                </div>
+                              </div>
+                            </motion.div>
                           </motion.div>
+
+                          {/* # Overall score bar at bottom */}
                           <motion.div
-                            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.4 } } }}
-                            initial="hidden"
-                            whileInView="show"
+                            initial={{ opacity: 0, y: 8 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="space-y-2"
+                            transition={{ ...SPRING, duration: 0.8, delay: 1.25 }}
+                            className="flex items-center gap-3 mt-2"
                           >
-                            {[
-                              { label: "Headline", score: "Weak — 4/10", color: "text-red-400" },
-                              { label: "About", score: "Okay — 6/10", color: "text-amber-400" },
-                              { label: "Experience", score: "Strong — 8/10", color: "text-green-400" },
-                              { label: "Skills", score: "Okay — 5/10", color: "text-amber-400" },
-                            ].map((item, i) => (
+                            <span className="text-[10px] text-text-muted uppercase tracking-wider">Profile Score</span>
+                            <div className="flex-1 h-2 rounded-full bg-space-600 overflow-hidden">
                               <motion.div
-                                key={i}
-                                variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0, transition: { ...SPRING, duration: 0.7 } } }}
-                                className="flex items-center justify-between"
-                              >
-                                <span className="text-xs text-text-secondary">{item.label}</span>
-                                <span className={`text-xs ${item.color} font-medium`}>{item.score}</span>
-                              </motion.div>
-                            ))}
+                                initial={{ width: 0 }}
+                                whileInView={{ width: "62%" }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 1.2, ease: EASE, delay: 1.4 }}
+                                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-400"
+                              />
+                            </div>
+                            <span className="text-sm font-bold text-cyan-400">62/100</span>
                           </motion.div>
                         </>
                       )}
