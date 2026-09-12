@@ -62,16 +62,16 @@ export default function Hero() {
       <motion.p variants={fadeUp} className="max-w-2xl text-sm sm:text-base text-text-secondary leading-relaxed mb-12">
         Upload your resume, paste a job description, and get an ATS-optimized
         resume in seconds — tailored with the right keywords, structure, and
-        formatting to get optimized for ATS screening and to stand out to hiring managers.
+        formatting to stand out to hiring managers.
       </motion.p>
 
       {/* ---- CTA Buttons ---- */}
       <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4">
         <Link href="/signup" className="btn-primary text-base px-8 py-4">
-          Get Started Free →
+          Build Your Resume Free →
         </Link>
-        <Link href="/#features" className="btn-secondary text-base px-8 py-4">
-          See Features
+        <Link href="/#how-it-works" className="btn-secondary text-base px-8 py-4">
+          See How It Works
         </Link>
       </motion.div>
 

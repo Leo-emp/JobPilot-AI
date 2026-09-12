@@ -52,23 +52,20 @@ export default function CTA() {
 
         {/* # Main CTA heading */}
         <motion.h2 variants={fadeUp} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6">
-          Ready to{" "}
-          <span className="glow-text-strong">Launch Your Career?</span>
+          Your Next Interview{" "}
+          <span className="glow-text-strong">Starts Here</span>
         </motion.h2>
 
         {/* # Supporting text */}
         <motion.p variants={fadeUp} className="text-lg sm:text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
-          Join thousands of professionals who use JobPilot AI to land interviews
-          faster, write better resumes, and walk into every opportunity fully prepared.
+          Build an ATS-optimized resume, generate tailored cover letters, and
+          prepare for interviews — all in one platform, completely free to start.
         </motion.p>
 
-        {/* # CTA Buttons */}
-        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+        {/* # CTA Button — single strong CTA, no secondary escape */}
+        <motion.div variants={fadeUp} className="flex justify-center">
           <Link href="/signup" className="btn-primary text-lg px-10 py-4">
-            Get Started Free →
-          </Link>
-          <Link href="/#features" className="btn-secondary text-lg px-10 py-4">
-            Learn More
+            Start Your Job Search →
           </Link>
         </motion.div>
 
