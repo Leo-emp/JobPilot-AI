@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    TERMS OF SERVICE PAGE
    ============================================================
    Comprehensive terms covering:
@@ -15,8 +15,8 @@
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Terms of Service — JobPilot AI",
-  description: "Terms of Service for JobPilot AI. Covers AI-generated content disclaimers, acceptable use, billing, and data handling.",
+  title: "Terms of Service — JP Arc",
+  description: "Terms of Service for JP Arc. Covers AI-generated content disclaimers, acceptable use, billing, and data handling.",
   alternates: { canonical: "https://jobpilotai.co/terms" },
 };
 
@@ -33,10 +33,10 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
           <p>
-            By accessing, registering for, or using JobPilot AI (&ldquo;the Service&rdquo;), you agree to be
+            By accessing, registering for, or using JP Arc (&ldquo;the Service&rdquo;), you agree to be
             legally bound by these Terms of Service (&ldquo;Terms&rdquo;). If you do not agree to any part of
             these Terms, you must immediately stop using the Service. These Terms constitute a binding
-            legal agreement between you (&ldquo;User&rdquo;, &ldquo;you&rdquo;) and JobPilot AI (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;).
+            legal agreement between you (&ldquo;User&rdquo;, &ldquo;you&rdquo;) and JP Arc (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;).
           </p>
         </section>
 
@@ -44,7 +44,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-bold text-white mb-4">2. Description of Service</h2>
           <p className="mb-3">
-            JobPilot AI provides AI-powered career assistance tools, including but not limited to:
+            JP Arc provides AI-powered career assistance tools, including but not limited to:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
             <li>Resume analysis, optimization, rebuilding, and career pivot reframing</li>
@@ -200,7 +200,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-bold text-white mb-4">9. Indemnification</h2>
           <p>
-            You agree to indemnify, defend, and hold harmless JobPilot AI, its owners, operators, affiliates,
+            You agree to indemnify, defend, and hold harmless JP Arc, its owners, operators, affiliates,
             and agents from and against any and all claims, damages, losses, costs, and expenses (including
             reasonable legal fees) arising from or related to: (a) your use of the Service; (b) your violation
             of these Terms; (c) your use of AI-generated content; (d) any content you submit to the Service;
@@ -263,7 +263,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-bold text-white mb-4">14. Entire Agreement</h2>
           <p>
             These Terms, together with our Privacy Policy, constitute the entire agreement between you and
-            JobPilot AI regarding your use of the Service. These Terms supersede any prior agreements or
+            JP Arc regarding your use of the Service. These Terms supersede any prior agreements or
             communications regarding the Service.
           </p>
         </section>

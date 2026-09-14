@@ -68,7 +68,7 @@ export async function handleEmployerCheckout(session: Stripe.Checkout.Session, s
   if (owner?.user?.email) {
     const planLabel = plan === "enterprise" ? "Enterprise" : "Pro";
     getResend().emails.send({
-      from: "JobPilot AI <noreply@jobpilotai.co>",
+      from: "JP Arc <noreply@jobpilotai.co>",
       to: owner.user.email,
       subject: `Your company is now on the ${planLabel} plan`,
       text: [
@@ -82,7 +82,7 @@ export async function handleEmployerCheckout(session: Stripe.Checkout.Session, s
         "",
         "Visit your billing page to manage your subscription.",
         "",
-        "-- JobPilot AI",
+        "-- JP Arc",
       ].join("\n"),
     }).catch((err) => {
       console.error(`Employer upgrade email failed for ${owner.user.email}:`, err);
@@ -124,7 +124,7 @@ export async function handleEmployerCancellation(subscription: Stripe.Subscripti
 
   if (owner?.user?.email) {
     getResend().emails.send({
-      from: "JobPilot AI <noreply@jobpilotai.co>",
+      from: "JP Arc <noreply@jobpilotai.co>",
       to: owner.user.email,
       subject: "Your employer plan has been downgraded",
       text: [
@@ -135,7 +135,7 @@ export async function handleEmployerCancellation(subscription: Stripe.Subscripti
         "",
         "You can re-subscribe any time from your billing page.",
         "",
-        "-- JobPilot AI",
+        "-- JP Arc",
       ].join("\n"),
     }).catch((err) => {
       console.error(`Employer cancel email failed for ${owner.user.email}:`, err);

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Mock Interview
    ============================================================
    # Targets: "AI mock interview", "practice interview online",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Mock Interview — Practice with Real-Time Feedback | JobPilot AI",
+  title: "Free AI Mock Interview — Practice with Real-Time Feedback | JP Arc",
   description:
     "Practice interviews with an AI interviewer that adapts to the job description. Get real-time STAR coaching, detailed feedback, and confidence scores. Unlimited practice.",
   alternates: { canonical: "https://jobpilotai.co/tools/mock-interview" },
   openGraph: {
-    title: "Free AI Mock Interview — JobPilot AI",
+    title: "Free AI Mock Interview — JP Arc",
     description: "Practice with an AI interviewer. Real-time STAR coaching, role-specific questions, detailed feedback.",
     url: "https://jobpilotai.co/tools/mock-interview",
   },
@@ -196,7 +196,7 @@ export default function MockInterviewToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready to Ace Your Next Interview?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Practice with AI. Get real-time coaching. Walk in confident.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Start a Mock Interview Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

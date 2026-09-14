@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Cover Letter Generator
    ============================================================
    Targets: "AI cover letter generator", "cover letter writer",
@@ -9,12 +9,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "AI Cover Letter Generator — Tailored to Every Job | JobPilot AI",
+  title: "AI Cover Letter Generator — Tailored to Every Job | JP Arc",
   description:
     "Generate personalized cover letters in seconds. AI matches your resume to the job description and writes a compelling, unique cover letter every time. Free to try.",
   alternates: { canonical: "https://jobpilotai.co/features/cover-letter-generator" },
   openGraph: {
-    title: "AI Cover Letter Generator — JobPilot AI",
+    title: "AI Cover Letter Generator — JP Arc",
     description:
       "Generate personalized cover letters tailored to every job description. AI-powered, unique every time.",
     url: "https://jobpilotai.co/features/cover-letter-generator",
@@ -68,7 +68,7 @@ export default function CoverLetterPage() {
           Cover Letters That Actually Get Read
         </h1>
         <p className="text-text-secondary text-lg sm:text-xl max-w-3xl mx-auto mb-8">
-          Generic cover letters go straight to the trash. JobPilot AI writes
+          Generic cover letters go straight to the trash. JP Arc writes
           personalized, compelling cover letters that match your experience to the
           exact requirements of each job — in seconds, not hours.
         </p>
@@ -141,7 +141,7 @@ export default function CoverLetterPage() {
             tailored first draft in seconds — you just add the personal touch.
           </p>
           <p>
-            JobPilot AI goes beyond generic templates. It reads both your resume and the
+            JP Arc goes beyond generic templates. It reads both your resume and the
             job description, identifies the strongest alignment points, and writes a
             letter that connects your specific achievements to the role&apos;s requirements.
             Every letter is unique — no two outputs are the same.

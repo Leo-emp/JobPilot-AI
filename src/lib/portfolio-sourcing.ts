@@ -114,7 +114,7 @@ export async function parsePortfolioSite(
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "JobPilot-AI-Sourcing/1.0 (hiring platform)",
+        "User-Agent": "JP Arc-AI-Sourcing/1.0 (hiring platform)",
       },
       signal: AbortSignal.timeout(10000),
     });

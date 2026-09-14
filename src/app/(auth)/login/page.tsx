@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    LOGIN PAGE - User Sign In
    ============================================================
    Three sign-in options:
@@ -84,7 +84,7 @@ function LoginForm() {
           Welcome Back
         </h1>
         <p className="text-text-secondary text-center mb-8">
-          Sign in to your JobPilot AI account
+          Sign in to your JP Arc account
         </p>
 
         {/* # Session revoked banner — wrapped in Suspense for useSearchParams */}

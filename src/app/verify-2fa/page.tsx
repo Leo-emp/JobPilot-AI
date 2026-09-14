@@ -62,7 +62,7 @@ export default function Verify2FAPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold text-white">
-            JobPilot AI
+            JP Arc
           </Link>
         </div>
 

@@ -66,12 +66,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   // # Return minimal metadata if post not found or not published
   if (!post || post.status !== "published") {
-    return { title: "Post Not Found — JobPilot AI" };
+    return { title: "Post Not Found — JP Arc" };
   }
 
   // # metaTitle and metaDescription override the defaults if set (for SEO fine-tuning)
   const description = post.metaDescription || post.excerpt;
-  const title = post.metaTitle || `${post.title} — JobPilot AI Blog`;
+  const title = post.metaTitle || `${post.title} — JP Arc Blog`;
 
   return {
     title,
@@ -231,14 +231,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </ReactMarkdown>
       </article>
 
-      {/* # CTA Banner — nudges readers to try JobPilot AI after consuming the content */}
+      {/* # CTA Banner — nudges readers to try JP Arc after consuming the content */}
       <div className="mt-16 rounded-2xl border border-card-border bg-space-800/60 p-8 text-center">
         <h3 className="text-xl font-bold mb-3">Ready to Put This Into Practice?</h3>
         <p className="text-text-secondary text-base mb-6 max-w-md mx-auto">
-          JobPilot AI helps you build ATS-optimized resumes, write tailored cover letters, and prepare for interviews — all powered by AI.
+          JP Arc helps you build ATS-optimized resumes, write tailored cover letters, and prepare for interviews — all powered by AI.
         </p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">
-          Try JobPilot AI Free
+          Try JP Arc Free
         </Link>
       </div>
 

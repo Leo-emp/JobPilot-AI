@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    2FA DISABLE API — /api/auth/two-factor/disable
    ============================================================
    Disables 2FA for the user's account. Requires a valid TOTP
@@ -44,7 +44,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
   /* Verify code before disabling */
   const totp = new OTPAuth.TOTP({
-    issuer: "JobPilot AI",
+    issuer: "JP Arc",
     label: session.user.email || "user",
     algorithm: "SHA1",
     digits: 6,

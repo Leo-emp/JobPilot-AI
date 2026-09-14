@@ -335,7 +335,7 @@ export default function SettingsPage() {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.text("JobPilot AI", 14, 18);
+      doc.text("JP Arc", 14, 18);
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
       doc.text(`Data Export — ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, 14, 28);
@@ -508,7 +508,7 @@ export default function SettingsPage() {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text(`JobPilot AI — Page ${i} of ${pages}`, 14, 290);
+        doc.text(`JP Arc — Page ${i} of ${pages}`, 14, 290);
       }
 
       doc.save(`jobpilot-export-${new Date().toISOString().slice(0, 10)}.pdf`);

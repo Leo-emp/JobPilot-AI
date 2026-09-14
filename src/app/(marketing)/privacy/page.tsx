@@ -14,8 +14,8 @@
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Privacy Policy — JobPilot AI",
-  description: "How JobPilot AI protects your career data. GDPR, CCPA, and Australian Privacy Act compliant. No tracking, essential cookies only.",
+  title: "Privacy Policy — JP Arc",
+  description: "How JP Arc protects your career data. GDPR, CCPA, and Australian Privacy Act compliant. No tracking, essential cookies only.",
   alternates: { canonical: "https://jobpilotai.co/privacy" },
 };
 
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
         {/* Introduction */}
         <section>
           <p>
-            JobPilot AI (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is committed to protecting your privacy.
+            JP Arc (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is committed to protecting your privacy.
             This policy explains what data we collect, how we process it, and your rights regarding that data.
             By using our service, you consent to the practices described in this policy.
           </p>
@@ -162,13 +162,13 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-xl font-bold text-white mb-4">7. Browser Extension</h2>
           <p className="mb-3">
-            The JobPilot AI Chrome extension enhances your job search experience by working alongside your browser.
+            The JP Arc Chrome extension enhances your job search experience by working alongside your browser.
             Here is what it does and does not do:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
             <li><strong className="text-white">What it reads:</strong> When you visit a supported job board (LinkedIn, Indeed, Glassdoor, and others), the extension reads the job title, company name, location, and description from that page so you can save the job to your dashboard with one click.</li>
             <li><strong className="text-white">What it stores locally:</strong> The extension temporarily stores extracted job details in your browser&apos;s local storage so the popup can display them. This data stays on your device and is overwritten each time you visit a new job listing.</li>
-            <li><strong className="text-white">What it sends to our servers:</strong> Only when you click &ldquo;Save to JobPilot&rdquo; or use an AI feature (Match Score, Cover Letter) is the job data sent to our API. It is then stored in your account like any other saved job.</li>
+            <li><strong className="text-white">What it sends to our servers:</strong> Only when you click &ldquo;Save to JP Arc&rdquo; or use an AI feature (Match Score, Cover Letter) is the job data sent to our API. It is then stored in your account like any other saved job.</li>
             <li><strong className="text-white">What it does NOT do:</strong> The extension does not track your browsing history, collect personal information, run in the background, or send any data without your explicit action.</li>
           </ul>
         </section>

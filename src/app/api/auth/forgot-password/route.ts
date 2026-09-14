@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    FORGOT PASSWORD API — /api/auth/forgot-password
    ============================================================
    Generates a time-limited reset token and sends it via email.
@@ -84,9 +84,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
     /* ---- Send the email via Resend ---- */
     await resend.emails.send({
-      from: "JobPilot AI <noreply@jobpilotai.co>",
+      from: "JP Arc <noreply@jobpilotai.co>",
       to: normalizedEmail,
-      subject: "Reset your JobPilot AI password",
+      subject: "Reset your JP Arc password",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
           <h2 style="color: #1a1a2e; margin-bottom: 16px;">Reset Your Password</h2>
@@ -94,7 +94,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
             Hi ${user.name},
           </p>
           <p style="color: #555; line-height: 1.6;">
-            We received a request to reset your JobPilot AI password. Click the button below to set a new password:
+            We received a request to reset your JP Arc password. Click the button below to set a new password:
           </p>
           <div style="text-align: center; margin: 32px 0;">
             <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #4338CA, #7C3AED); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
@@ -106,7 +106,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
           </p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
           <p style="color: #aaa; font-size: 12px;">
-            JobPilot AI — Your AI-powered career copilot
+            JP Arc — Your AI-powered career copilot
           </p>
         </div>
       `,

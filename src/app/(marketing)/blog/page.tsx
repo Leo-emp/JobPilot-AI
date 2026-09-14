@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    BLOG PAGE - DB-Driven Blog Listing
    ============================================================
    Career advice and job search tips blog. Articles created by
@@ -14,8 +14,8 @@ import { dbRetry } from "@/lib/db-retry";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Blog — JobPilot AI",
-  description: "Career tips, resume advice, and job search strategies from the JobPilot AI team.",
+  title: "Blog — JP Arc",
+  description: "Career tips, resume advice, and job search strategies from the JP Arc team.",
   alternates: { canonical: "https://jobpilotai.co/blog" },
 };
 

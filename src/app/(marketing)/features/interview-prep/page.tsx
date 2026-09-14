@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Interview Preparation
    ============================================================
    Targets: "AI interview prep", "interview questions",
@@ -9,12 +9,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "AI Interview Prep & Mock Interviews — JobPilot AI",
+  title: "AI Interview Prep & Mock Interviews — JP Arc",
   description:
     "Prepare for job interviews with AI-predicted questions, answer coaching, and live mock interviews. Practice with AI before the real thing. Free interview prep tool.",
   alternates: { canonical: "https://jobpilotai.co/features/interview-prep" },
   openGraph: {
-    title: "AI Interview Prep & Mock Interviews — JobPilot AI",
+    title: "AI Interview Prep & Mock Interviews — JP Arc",
     description:
       "AI-predicted questions, answer coaching, and live mock interviews. Practice before the real thing.",
     url: "https://jobpilotai.co/features/interview-prep",
@@ -68,7 +68,7 @@ export default function InterviewPrepPage() {
           Walk Into Every Interview Prepared
         </h1>
         <p className="text-text-secondary text-lg sm:text-xl max-w-3xl mx-auto mb-8">
-          Stop guessing what they&apos;ll ask. JobPilot AI predicts interview questions
+          Stop guessing what they&apos;ll ask. JP Arc predicts interview questions
           from the job description, coaches you on answers using your real experience,
           and lets you practice with a live AI mock interviewer.
         </p>
@@ -145,7 +145,7 @@ export default function InterviewPrepPage() {
           <p>
             Mock interviews take preparation to the next level. Practicing out loud —
             even with an AI — builds muscle memory, reduces anxiety, and helps you
-            structure clear, concise answers under pressure. JobPilot AI&apos;s mock
+            structure clear, concise answers under pressure. JP Arc&apos;s mock
             interviewer provides the repetitions you need to walk in confident.
           </p>
         </div>

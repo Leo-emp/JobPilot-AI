@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Outreach Hub
    ============================================================
    # Targets: "AI networking message generator", "LinkedIn cold
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Outreach Hub — Networking Messages That Get Replies | JobPilot AI",
+  title: "Free AI Outreach Hub — Networking Messages That Get Replies | JP Arc",
   description:
     "Generate personalized LinkedIn messages, cold outreach, follow-ups, thank-you notes, referral requests, and recruiter pitches. AI writes messages that sound human and get replies.",
   alternates: { canonical: "https://jobpilotai.co/tools/outreach-hub" },
   openGraph: {
-    title: "Free AI Outreach Hub — JobPilot AI",
+    title: "Free AI Outreach Hub — JP Arc",
     description: "AI generates personalized networking messages: LinkedIn requests, cold outreach, follow-ups, and more.",
     url: "https://jobpilotai.co/tools/outreach-hub",
   },
@@ -182,7 +182,7 @@ export default function OutreachHubToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Start Networking with Confidence</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">7 message types. Personalized in seconds. Messages that actually get replies.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Get Started Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

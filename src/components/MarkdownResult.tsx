@@ -855,7 +855,7 @@ export default function MarkdownResult({ result, showDownload = true, editable =
       const downloadHTML = markdownToDownloadHTML(getEditedMarkdown());
       const printWindow = window.open("", "_blank");
       if (printWindow) {
-        printWindow.document.write(`<!DOCTYPE html><html><head><title>${fileName} - JobPilot AI</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>${fileName} - JP Arc</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
         printWindow.document.close();
         setTimeout(() => printWindow.print(), 300);
       }

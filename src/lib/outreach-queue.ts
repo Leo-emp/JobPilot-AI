@@ -132,7 +132,7 @@ export async function processOutreachQueue(): Promise<QueueProcessResult> {
     /* # Send the email via Resend */
     try {
       await getResend().emails.send({
-        from: "JobPilot AI <noreply@jobpilotai.co>",
+        from: "JP Arc <noreply@jobpilotai.co>",
         to: outreach.email,
         subject: outreach.subject,
         text: outreach.body,

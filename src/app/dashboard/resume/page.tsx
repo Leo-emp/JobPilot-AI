@@ -1,7 +1,7 @@
 /* ============================================================
    RESUME INTELLIGENCE PAGE
    ============================================================
-   The core feature of JobPilot AI. Provides:
+   The core feature of JP Arc. Provides:
    - Resume upload (PDF, TXT) with client-side PDF text extraction
    - AI analysis with ATS scoring
    - Quick optimize for a specific job

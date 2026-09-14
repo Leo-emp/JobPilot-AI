@@ -95,7 +95,7 @@ export const POST = authHandler(async (
 
   return NextResponse.json({
     converted: true,
-    message: "Welcome to JobPilot! Your profile has been linked with your match history.",
+    message: "Welcome to JP Arc! Your profile has been linked with your match history.",
     matchesTransferred: true,
   });
 });

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Job Application Tracker
    ============================================================
    Targets: "job application tracker", "application tracking",
@@ -9,12 +9,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Job Application Tracker — Organize Your Job Search | JobPilot AI",
+  title: "Job Application Tracker — Organize Your Job Search | JP Arc",
   description:
     "Track every job application in one place. Save jobs, monitor status, get AI match scores, and manage your entire job search pipeline. Free application tracker.",
   alternates: { canonical: "https://jobpilotai.co/features/application-tracker" },
   openGraph: {
-    title: "Job Application Tracker — JobPilot AI",
+    title: "Job Application Tracker — JP Arc",
     description:
       "Track every job application in one place. Save, monitor, and manage your entire job search pipeline.",
     url: "https://jobpilotai.co/features/application-tracker",
@@ -68,7 +68,7 @@ export default function ApplicationTrackerPage() {
           Never Lose Track of an Application Again
         </h1>
         <p className="text-text-secondary text-lg sm:text-xl max-w-3xl mx-auto mb-8">
-          Spreadsheets aren&apos;t built for job searching. JobPilot AI gives you a
+          Spreadsheets aren&apos;t built for job searching. JP Arc gives you a
           purpose-built application tracker with AI match scores, status management,
           and a Chrome extension to save jobs with one click.
         </p>
@@ -138,7 +138,7 @@ export default function ApplicationTrackerPage() {
           <p>
             Most people start with a spreadsheet, but spreadsheets lack context.
             They can&apos;t score job matches, suggest resume improvements, or remind
-            you to follow up. JobPilot AI combines tracking with intelligence —
+            you to follow up. JP Arc combines tracking with intelligence —
             each saved job is automatically analyzed against your profile.
           </p>
           <p>

@@ -18,7 +18,7 @@ export function SoftwareAppJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "JobPilot AI",
+    name: "JP Arc",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     url: "https://jobpilotai.co",
@@ -52,13 +52,13 @@ export function SoftwareAppJsonLd() {
 
 /* # Organization schema — who built this */
 /* # sameAs links tell Google which social profiles belong to this brand */
-/* # The more verified profiles, the stronger Google's confidence that YOU are "JobPilot AI" */
+/* # The more verified profiles, the stronger Google's confidence that YOU are "JP Arc" */
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "JobPilot AI",
-    alternateName: ["JobPilotAI", "Job Pilot AI", "jobpilotai"],
+    name: "JP Arc",
+    alternateName: ["JP Arc", "JobPilot AI", "jobpilotai"],
     url: "https://jobpilotai.co",
     logo: "https://jobpilotai.co/icon.png",
     image: "https://jobpilotai.co/opengraph-image",
@@ -68,7 +68,7 @@ export function OrganizationJsonLd() {
     sameAs: [
       "https://twitter.com/jobpilotai",
       "https://linkedin.com/company/jobpilotai",
-      "https://github.com/Leo-emp/JobPilot-AI",
+      "https://github.com/Leo-emp/JP Arc-AI",
     ],
     contactPoint: {
       "@type": "ContactPoint",
@@ -85,20 +85,20 @@ export function OrganizationJsonLd() {
   );
 }
 
-/* # WebSite schema — tells Google this is the official "JobPilot AI" site */
+/* # WebSite schema — tells Google this is the official "JP Arc" site */
 /* # Strengthens brand ownership in search results over competitors with similar names */
 export function WebSiteJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "JobPilot AI",
-    alternateName: ["JobPilotAI", "Job Pilot AI"],
+    name: "JP Arc",
+    alternateName: ["JP Arc", "JobPilot AI"],
     url: "https://jobpilotai.co",
     description:
       "AI-powered career platform — resume optimization, cover letters, mock interviews, job matching.",
     publisher: {
       "@type": "Organization",
-      name: "JobPilot AI",
+      name: "JP Arc",
       url: "https://jobpilotai.co",
     },
   };
@@ -153,12 +153,12 @@ export function ArticleJsonLd({
     datePublished,
     author: {
       "@type": "Organization",
-      name: "JobPilot AI",
+      name: "JP Arc",
       url: "https://jobpilotai.co",
     },
     publisher: {
       "@type": "Organization",
-      name: "JobPilot AI",
+      name: "JP Arc",
       url: "https://jobpilotai.co",
       logo: {
         "@type": "ImageObject",

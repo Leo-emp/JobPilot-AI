@@ -17,7 +17,7 @@ export default function RocketIcon({ size = 80, className = "" }: RocketIconProp
   return (
     <Image
       src="/logo.png"
-      alt="JobPilot AI"
+      alt="JP Arc"
       width={width}
       height={height}
       className={className}

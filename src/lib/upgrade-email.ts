@@ -29,10 +29,10 @@ export function buildUpgradeEmail(firstName: string): string {
   <table role="presentation" cellspacing="0" cellpadding="0" border="0">
   <tr>
     <td valign="middle" style="padding-right: 10px;">
-      <img src="${LOGO_URL}" alt="JobPilot AI" width="28" style="display: block; width: 28px; height: auto;" />
+      <img src="${LOGO_URL}" alt="JP Arc" width="28" style="display: block; width: 28px; height: auto;" />
     </td>
     <td valign="middle">
-      <span style="font-family: ${FONT_DISPLAY}; font-size: 15px; font-weight: 700; color: #e4e4e7; letter-spacing: -0.3px;">JobPilot AI</span>
+      <span style="font-family: ${FONT_DISPLAY}; font-size: 15px; font-weight: 700; color: #e4e4e7; letter-spacing: -0.3px;">JP Arc</span>
     </td>
   </tr>
   </table>
@@ -74,7 +74,7 @@ export function buildUpgradeEmail(firstName: string): string {
 <tr><td style="padding: 36px 52px 52px 52px;">
   <p style="font-family: ${FONT}; font-size: 14.5px; color: #8b8ba0; margin: 0 0 20px 0; line-height: 1.8; letter-spacing: -0.1px;">With 500 requests a month, you can apply to every role that fits, prep for every interview, and let the AI do the heavy lifting.</p>
   <p style="font-family: ${FONT}; font-size: 15px; font-weight: 500; color: #c4c4d8; margin: 0 0 8px 0; line-height: 1.5; letter-spacing: -0.1px;">Make every application count.</p>
-  <p style="font-family: ${FONT_DISPLAY}; font-size: 14px; color: #6366f1; margin: 0; font-weight: 600; letter-spacing: -0.2px;">&mdash; The JobPilot AI Team</p>
+  <p style="font-family: ${FONT_DISPLAY}; font-size: 14px; color: #6366f1; margin: 0; font-weight: 600; letter-spacing: -0.2px;">&mdash; The JP Arc Team</p>
 </td></tr>
 
 </table>
@@ -82,7 +82,7 @@ export function buildUpgradeEmail(firstName: string): string {
 
 <tr><td align="center" style="padding: 32px 48px 48px 48px;">
   <p style="font-family: ${FONT}; font-size: 13px; color: #3f3f4a; margin: 0 0 8px 0; letter-spacing: -0.1px;">Questions? Email us at <a href="mailto:support@jobpilotai.co" style="color: #6366f1; text-decoration: none;">support@jobpilotai.co</a> &mdash; we read every one.</p>
-  <p style="font-family: ${FONT}; font-size: 12px; color: #27272e; margin: 0;"><a href="https://jobpilotai.co" style="color: #3f3f4a; text-decoration: none;">jobpilotai.co</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;&copy; 2026 JobPilot AI</p>
+  <p style="font-family: ${FONT}; font-size: 12px; color: #27272e; margin: 0;"><a href="https://jobpilotai.co" style="color: #3f3f4a; text-decoration: none;">jobpilotai.co</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;&copy; 2026 JP Arc</p>
 </td></tr>
 
 </table>

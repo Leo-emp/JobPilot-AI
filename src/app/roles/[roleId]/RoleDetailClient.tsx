@@ -319,7 +319,7 @@ export default function RoleDetailClient() {
           <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-6 text-center">
             <h3 className="text-lg font-semibold text-foreground mb-2">Interested in this role?</h3>
             <p className="text-sm text-muted mb-4">
-              Sign up for JobPilot AI to get matched with roles like this one.
+              Sign up for JP Arc to get matched with roles like this one.
             </p>
             <Link
               href="/signup"

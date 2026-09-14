@@ -1,5 +1,5 @@
 /* ============================================================
-   HOME PAGE - JobPilot AI Landing Page
+   HOME PAGE - JP Arc Landing Page
    ============================================================
    This is the main landing page that visitors see first.
    It assembles all sections in order:

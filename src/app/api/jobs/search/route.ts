@@ -123,7 +123,7 @@ async function fetchRemotive(query: string): Promise<Job[]> {
    ============================================================ */
 async function fetchRemoteOK(query: string): Promise<Job[]> {
   const res = await fetchWithTimeout("https://remoteok.com/api", {
-    headers: { "User-Agent": "JobPilotAI/1.0" },
+    headers: { "User-Agent": "JPArc/1.0" },
   });
   if (!res.ok) return [];
 

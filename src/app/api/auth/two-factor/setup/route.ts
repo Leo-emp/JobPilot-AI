@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    2FA SETUP API — /api/auth/two-factor/setup
    ============================================================
    Generates a TOTP secret and QR code for the user to scan
@@ -24,7 +24,7 @@ export const POST = safeHandler(async () => {
   const secret = new OTPAuth.Secret({ size: 20 });
 
   const totp = new OTPAuth.TOTP({
-    issuer: "JobPilot AI",
+    issuer: "JP Arc",
     label: session.user.email || "user",
     algorithm: "SHA1",
     digits: 6,

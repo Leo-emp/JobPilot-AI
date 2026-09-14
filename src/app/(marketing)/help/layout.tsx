@@ -1,6 +1,6 @@
-export const metadata = {
-  title: "Help & FAQ — JobPilot AI",
-  description: "Find answers to common questions about JobPilot AI — account setup, AI features, billing, privacy, and troubleshooting.",
+﻿export const metadata = {
+  title: "Help & FAQ — JP Arc",
+  description: "Find answers to common questions about JP Arc — account setup, AI features, billing, privacy, and troubleshooting.",
   alternates: { canonical: "https://jobpilotai.co/help" },
 };
 

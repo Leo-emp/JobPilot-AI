@@ -1,5 +1,5 @@
 /* ============================================================
-   FEATURES SECTION - What JobPilot AI Does
+   FEATURES SECTION - What JP Arc Does
    ============================================================
    Displays 8 core features in a clean centered grid.
    Top row: 4 features. Bottom row: 4 features.

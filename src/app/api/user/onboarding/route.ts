@@ -2,7 +2,7 @@
    ONBOARDING API — Save goal and referral source
    ============================================================
    POST /api/user/onboarding
-   Saves the user's goal and how they found JobPilot.
+   Saves the user's goal and how they found JP Arc.
    Called once during the onboarding wizard.
    ============================================================ */
 

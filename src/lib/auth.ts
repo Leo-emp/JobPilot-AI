@@ -227,9 +227,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             /* Send welcome email to new OAuth users (fire-and-forget) */
             if (process.env.RESEND_API_KEY) {
               getResend().emails.send({
-                from: "JobPilot AI <noreply@jobpilotai.co>",
+                from: "JP Arc <noreply@jobpilotai.co>",
                 to: user.email,
-                subject: "Welcome to JobPilot AI",
+                subject: "Welcome to JP Arc",
                 html: buildWelcomeEmail(user.name || "there"),
               }).catch((err) => {
                 console.error("[welcome-email] OAuth send failed:", err);

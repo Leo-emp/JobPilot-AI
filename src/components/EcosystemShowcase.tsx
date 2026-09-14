@@ -532,7 +532,7 @@ export default function EcosystemShowcase() {
                   <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
                     <span className="text-[8px] font-bold text-white">JP</span>
                   </div>
-                  <span className="text-[11px] font-semibold text-white">JobPilot AI</span>
+                  <span className="text-[11px] font-semibold text-white">JP Arc</span>
                   <div className="ml-auto px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20">
                     <span className="text-[8px] text-green-400 font-medium">Connected</span>
                   </div>

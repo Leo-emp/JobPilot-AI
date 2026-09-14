@@ -200,7 +200,7 @@ export const POST = orgHandler(async (req: NextRequest, session, membership) => 
       });
 
       await resend.emails.send({
-        from: "JobPilot AI <noreply@jobpilotai.co>",
+        from: "JP Arc <noreply@jobpilotai.co>",
         to: invite.email,
         subject,
         html,

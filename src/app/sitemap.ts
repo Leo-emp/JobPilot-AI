@@ -42,6 +42,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/features/application-tracker`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
   ];
 
+  /* # Free tools pages — target "free [tool]" search queries */
+  const toolPages: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/tools`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/tools/resume-builder`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/tools/resume-analyzer`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/tools/resume-optimizer`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/tools/resume-rebuild`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/resume-templates`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/tools/cover-letter-generator`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/tools/interview-prep`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/mock-interview`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/linkedin-optimizer`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/portfolio-builder`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/application-tracker`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/job-search`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/job-matching`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/chrome-extension`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/tools/career-quizzes`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/tools/outreach-hub`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/tools/resignation-letter-generator`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+  ];
+
   /* # Blog post pages — dynamic from BlogPost table
      # Fetches all published slugs and their updatedAt timestamps from the DB.
      # Try/catch ensures a DB error never breaks the sitemap — static pages still get indexed. */
@@ -78,5 +100,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* # DB error shouldn't break the sitemap — static pages still get indexed */
   }
 
-  return [...staticPages, ...featurePages, ...blogPages, ...portfolioPages];
+  return [...staticPages, ...featurePages, ...toolPages, ...blogPages, ...portfolioPages];
 }

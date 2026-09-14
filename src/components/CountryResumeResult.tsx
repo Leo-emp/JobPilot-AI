@@ -787,7 +787,7 @@ export default function CountryResumeResult({ result, country, showDownload = tr
       const styles = getDownloadStyles(country);
       const printWindow = window.open("", "_blank");
       if (printWindow) {
-        printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JobPilot AI</title><style>${styles}</style></head><body>${downloadHTML}</body></html>`);
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>Resume - JP Arc</title><style>${styles}</style></head><body>${downloadHTML}</body></html>`);
         printWindow.document.close();
         setTimeout(() => printWindow.print(), 300);
       }

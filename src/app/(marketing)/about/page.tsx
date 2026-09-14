@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    ABOUT PAGE
    ============================================================
    Company story, mission, and team info. Matches the space
@@ -8,8 +8,8 @@
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "About — JobPilot AI",
-  description: "Learn about JobPilot AI — helping job seekers get to interviews faster with every career tool in one place.",
+  title: "About — JP Arc",
+  description: "Learn about JP Arc — helping job seekers get to interviews faster with every career tool in one place.",
   alternates: { canonical: "https://jobpilotai.co/about" },
 };
 
@@ -18,7 +18,7 @@ export default function AboutPage() {
     <div className="max-w-4xl mx-auto px-4 py-16 sm:py-24">
       {/* ---- Page Header ---- */}
       <h1 className="font-[family-name:var(--font-space-grotesk)] text-4xl sm:text-5xl font-bold mb-4 glow-text-strong">
-        About JobPilot AI
+        About JP Arc
       </h1>
       <p className="text-text-secondary text-lg mb-16 max-w-2xl">
         We help job seekers get to interviews faster and land their dream roles
@@ -33,19 +33,19 @@ export default function AboutPage() {
           </h2>
           <div className="glass-card p-6 sm:p-8 space-y-4 text-text-secondary leading-relaxed">
             <p>
-              JobPilot AI was born from a simple frustration: job hunting is broken.
+              JP Arc was born from a simple frustration: job hunting is broken.
               You spend hours tailoring resumes, writing cover letters from scratch,
               and preparing for interviews — only to hear nothing back.
             </p>
             <p>
-              We built JobPilot AI to change that. By combining cutting-edge AI with
+              We built JP Arc to change that. By combining cutting-edge AI with
               a deep understanding of what recruiters and hiring managers look for,
               we created an all-in-one career platform that does the heavy lifting
               so you can focus on what matters — landing the right job.
             </p>
             <p>
               Whether you&apos;re a fresh graduate, a career changer, or a seasoned
-              professional looking for your next move, JobPilot AI gives you the
+              professional looking for your next move, JP Arc gives you the
               tools to stand out in a competitive market.
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function AboutPage() {
         {/* ---- Why Choose Us ---- */}
         <section>
           <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold mb-6 glow-text">
-            Why Choose JobPilot AI
+            Why Choose JP Arc
           </h2>
           <div className="glass-card p-6 sm:p-8">
             <ul className="space-y-4 text-text-secondary">

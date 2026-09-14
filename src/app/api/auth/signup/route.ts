@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SIGNUP API ROUTE - Create New User Account
    ============================================================
    Handles POST requests to /api/auth/signup
@@ -123,9 +123,9 @@ export const POST = safeHandler(async (req: NextRequest) => {
   /* Send welcome email (fire-and-forget — don't block signup on email delivery) */
   if (process.env.RESEND_API_KEY) {
     getResend().emails.send({
-      from: "JobPilot AI <noreply@jobpilotai.co>",
+      from: "JP Arc <noreply@jobpilotai.co>",
       to: email,
-      subject: "Welcome to JobPilot AI",
+      subject: "Welcome to JP Arc",
       html: buildWelcomeEmail(name),
     }).catch((err) => {
       console.error("[welcome-email] Signup send failed:", err);

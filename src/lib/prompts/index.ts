@@ -21,8 +21,8 @@ import type { ResumeCountry } from "./resume-country";
 export type { PromptParts } from "./shared";
 
 /* ---- FAQ AI fallback system prompt ---- */
-/* # Provides product knowledge so the AI can answer questions about JobPilot AI */
-const FAQ_SYSTEM = `You are a helpful customer support assistant for JobPilot AI — an AI-powered career platform.
+/* # Provides product knowledge so the AI can answer questions about JP Arc */
+const FAQ_SYSTEM = `You are a helpful customer support assistant for JP Arc — an AI-powered career platform.
 Answer questions accurately, concisely, and helpfully. Keep responses under 150 words.
 If you don't know the answer, say so and suggest contacting support@jobpilotai.co.
 
@@ -43,8 +43,8 @@ Do NOT make up features that don't exist. Do NOT promise specific upcoming featu
 
 /* ---- FAQ answer prompt builder ---- */
 function faqAnswer(payload: Record<string, any>): string {
-  const question = payload.question || "How does JobPilot AI work?";
-  return `User question: ${question}\n\nAnswer this question about JobPilot AI helpfully and concisely.`;
+  const question = payload.question || "How does JP Arc work?";
+  return `User question: ${question}\n\nAnswer this question about JP Arc helpfully and concisely.`;
 }
 
 export function buildPrompt(action: string, payload: Record<string, any>): import("./shared").PromptParts {
@@ -98,7 +98,7 @@ export function buildPrompt(action: string, payload: Record<string, any>): impor
     case "career_personality_quiz": return { prompt: careerPersonalityQuiz(payload) };
     case "stay_or_quit_quiz": return { prompt: stayOrQuitQuiz(payload) };
 
-    /* Help widget AI fallback — answers user questions about JobPilot AI */
+    /* Help widget AI fallback — answers user questions about JP Arc */
     case "faq_answer": return { system: FAQ_SYSTEM, prompt: faqAnswer(payload) };
 
     default: throw new Error(`Unknown action: ${action}`);

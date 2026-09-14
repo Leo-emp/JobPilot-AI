@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Portfolio Builder
    ============================================================
    # Targets: "portfolio builder", "professional portfolio maker",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Portfolio Builder — Showcase Your Career Story | JobPilot AI",
+  title: "Free AI Portfolio Builder — Showcase Your Career Story | JP Arc",
   description:
     "AI builds a professional career portfolio from your resume and experience. Showcases projects, achievements, and skills in a shareable format. Free tool.",
   alternates: { canonical: "https://jobpilotai.co/tools/portfolio-builder" },
   openGraph: {
-    title: "Free AI Portfolio Builder — JobPilot AI",
+    title: "Free AI Portfolio Builder — JP Arc",
     description: "AI transforms your resume into a professional portfolio that showcases projects and achievements.",
     url: "https://jobpilotai.co/tools/portfolio-builder",
   },
@@ -212,7 +212,7 @@ export default function PortfolioBuilderToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready to Showcase Your Career?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Turn your resume into a portfolio that shows your impact. AI-generated in seconds.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Get Started Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Stay or Quit Assessment
    ============================================================
    # Targets: "should I quit my job quiz", "stay or leave job quiz",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Should I Quit My Job? Free Stay or Quit Assessment | JobPilot AI",
+  title: "Should I Quit My Job? Free Stay or Quit Assessment | JP Arc",
   description:
     "Get an honest, AI-powered verdict: Stay, Plan Your Exit, or Leave Soon. 15 questions covering satisfaction, growth, culture, compensation, and financial readiness.",
   alternates: { canonical: "https://jobpilotai.co/tools/stay-or-quit-assessment" },
   openGraph: {
-    title: "Should I Quit My Job? Stay or Quit Assessment — JobPilot AI",
+    title: "Should I Quit My Job? Stay or Quit Assessment — JP Arc",
     description: "15 questions, honest AI verdict, satisfaction breakdown, and both a stay-plan and exit strategy.",
     url: "https://jobpilotai.co/tools/stay-or-quit-assessment",
   },
@@ -191,7 +191,7 @@ export default function StayOrQuitAssessmentToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready for an Honest Answer?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">15 questions. 5 minutes. An honest verdict with plans for both paths.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Take the Assessment Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

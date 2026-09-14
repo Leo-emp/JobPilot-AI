@@ -72,7 +72,7 @@ export function proxy(req: NextRequest) {
       );
     }
     return new NextResponse(
-      `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Maintenance</title><style>body{font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0a0a1a;color:#e2e8f0;text-align:center;padding:2rem}.box{max-width:480px}h1{font-size:2rem;margin-bottom:1rem}p{color:#94a3b8;line-height:1.6}</style></head><body><div class="box"><h1>We'll be right back</h1><p>JobPilot AI is undergoing scheduled maintenance. This usually takes less than 5 minutes. Please check back shortly.</p></div></body></html>`,
+      `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Maintenance</title><style>body{font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0a0a1a;color:#e2e8f0;text-align:center;padding:2rem}.box{max-width:480px}h1{font-size:2rem;margin-bottom:1rem}p{color:#94a3b8;line-height:1.6}</style></head><body><div class="box"><h1>We'll be right back</h1><p>JP Arc is undergoing scheduled maintenance. This usually takes less than 5 minutes. Please check back shortly.</p></div></body></html>`,
       { status: 503, headers: { "Content-Type": "text/html", "Retry-After": "300" } }
     );
   }

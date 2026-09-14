@@ -436,7 +436,7 @@ export default function MinimalTemplate({ data }: { data: PortfolioData }) {
       ))}
 
       <footer className="py-16 text-center text-xs tracking-wide" style={{ color: c.muted }}>
-        Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-60 transition-opacity" style={{ color: c.heading }}>JobPilot AI</a>
+        Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-60 transition-opacity" style={{ color: c.heading }}>JP Arc</a>
       </footer>
     </div>
   );

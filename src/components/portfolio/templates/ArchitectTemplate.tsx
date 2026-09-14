@@ -541,7 +541,7 @@ export default function ArchitectTemplate({ data }: { data: PortfolioData }) {
       ))}
 
       <footer className="py-12 text-center text-xs" style={{ color: c.muted, borderTop: `1px solid ${c.border}` }}>
-        Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-60 transition-opacity" style={{ color: c.copper }}>JobPilot AI</a>
+        Built with <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="font-medium hover:opacity-60 transition-opacity" style={{ color: c.copper }}>JP Arc</a>
       </footer>
     </div>
   );

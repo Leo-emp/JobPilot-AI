@@ -12,7 +12,7 @@ import { isB2BEnabled } from "@/lib/b2b-gate";
 import JobBoardClient from "./JobBoardClient";
 
 export const metadata = {
-  title: "Job Board | JobPilot AI",
+  title: "Job Board | JP Arc",
   description: "Browse AI-matched roles from verified employers.",
 };
 

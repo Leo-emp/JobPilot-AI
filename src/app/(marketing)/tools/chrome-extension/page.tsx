@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Chrome Extension
    ============================================================
    # Targets: "job search chrome extension", "save jobs extension",
@@ -11,12 +11,12 @@ import Image from "next/image";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free Chrome Extension — Save Jobs from Any Job Board in One Click | JobPilot AI",
+  title: "Free Chrome Extension — Save Jobs from Any Job Board in One Click | JP Arc",
   description:
     "Save jobs from LinkedIn, Indeed, Glassdoor, and 40+ job boards with one click. Auto-extracts job details, AI match scores, and syncs to your tracker. Free extension.",
   alternates: { canonical: "https://jobpilotai.co/tools/chrome-extension" },
   openGraph: {
-    title: "Free Job Saver Chrome Extension — JobPilot AI",
+    title: "Free Job Saver Chrome Extension — JP Arc",
     description: "One click to save any job listing. Auto-extracts details, AI match scores, syncs to your tracker.",
     url: "https://jobpilotai.co/tools/chrome-extension",
   },
@@ -48,7 +48,7 @@ const benefits = [
   },
   {
     title: "Syncs to Application Tracker",
-    desc: "Saved jobs appear instantly in your JobPilot AI dashboard tracker. Track status, add notes, and move jobs through your pipeline — all in one place.",
+    desc: "Saved jobs appear instantly in your JP Arc dashboard tracker. Track status, add notes, and move jobs through your pipeline — all in one place.",
   },
   {
     title: "Works on ATS Pages Too",
@@ -67,7 +67,7 @@ const faqs = [
   },
   {
     q: "Is it really free?",
-    a: "Yes. The Chrome extension is free to install and use. Saving jobs and syncing to your tracker costs nothing. AI match scores use your existing JobPilot AI credits (10 free per month).",
+    a: "Yes. The Chrome extension is free to install and use. Saving jobs and syncing to your tracker costs nothing. AI match scores use your existing JP Arc credits (10 free per month).",
   },
   {
     q: "What if a job board isn't supported?",
@@ -79,7 +79,7 @@ const faqs = [
   },
   {
     q: "How do saved jobs sync to the tracker?",
-    a: "Instantly. When you save a job through the extension, it appears in your JobPilot AI dashboard tracker within seconds. No manual sync, no import needed — it's automatic.",
+    a: "Instantly. When you save a job through the extension, it appears in your JP Arc dashboard tracker within seconds. No manual sync, no import needed — it's automatic.",
   },
 ];
 
@@ -122,7 +122,7 @@ export default function ChromeExtensionToolPage() {
               <p className="text-[10px] text-text-muted truncate">linkedin.com/jobs/view/senior-product-manager-at-google...</p>
             </div>
             <div className="w-8 h-8 rounded-lg bg-brand-indigo/20 border border-brand-indigo/30 flex items-center justify-center shrink-0 overflow-hidden">
-              <Image src="/jp-logo.svg" alt="JobPilot AI" width={24} height={24} className="rounded" />
+              <Image src="/jp-logo.svg" alt="JP Arc" width={24} height={24} className="rounded" />
             </div>
           </div>
 
@@ -131,9 +131,9 @@ export default function ChromeExtensionToolPage() {
             <div className="rounded-xl bg-space-700/80 border border-white/10 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
-                  <Image src="/jp-logo.svg" alt="JobPilot AI" width={20} height={20} className="rounded" />
+                  <Image src="/jp-logo.svg" alt="JP Arc" width={20} height={20} className="rounded" />
                 </div>
-                <p className="text-xs font-bold text-white">JobPilot AI</p>
+                <p className="text-xs font-bold text-white">JP Arc</p>
                 <span className="ml-auto px-2 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">Detected</span>
               </div>
 
@@ -220,7 +220,7 @@ export default function ChromeExtensionToolPage() {
                 <div className="rounded-xl bg-space-700/50 border border-white/5 p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-7 h-7 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
-                      <Image src="/jp-logo.svg" alt="JobPilot AI" width={18} height={18} className="rounded" />
+                      <Image src="/jp-logo.svg" alt="JP Arc" width={18} height={18} className="rounded" />
                     </div>
                     <p className="text-xs font-bold text-white">Create Account</p>
                   </div>
@@ -249,7 +249,7 @@ export default function ChromeExtensionToolPage() {
               <div className="flex-1">
                 <h3 className="font-bold text-white text-lg mb-2">Install from Chrome Web Store</h3>
                 <p className="text-sm text-text-secondary leading-relaxed mb-4">
-                  Go to the <span className="text-brand-light font-medium">Chrome Web Store</span> and search &quot;JobPilot AI&quot; — or click the install link in your dashboard.
+                  Go to the <span className="text-brand-light font-medium">Chrome Web Store</span> and search &quot;JP Arc&quot; — or click the install link in your dashboard.
                   Hit <span className="text-white font-medium">&quot;Add to Chrome&quot;</span> and confirm the permissions. The extension icon appears in your browser toolbar instantly.
                 </p>
                 <div className="rounded-xl bg-space-700/50 border border-white/5 p-4">
@@ -257,15 +257,15 @@ export default function ChromeExtensionToolPage() {
                     <svg className="w-5 h-5 text-blue-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.2"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
                     <p className="text-[10px] text-text-muted">Chrome Web Store</p>
                     <div className="flex-1 h-6 rounded bg-space-800/80 border border-white/10 flex items-center px-2 ml-2">
-                      <p className="text-[9px] text-text-muted">JobPilot AI</p>
+                      <p className="text-[9px] text-text-muted">JP Arc</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-space-800/60 border border-white/5">
                     <div className="w-10 h-10 rounded-lg bg-brand-indigo/20 flex items-center justify-center overflow-hidden shrink-0">
-                      <Image src="/jp-logo.svg" alt="JobPilot AI" width={28} height={28} className="rounded" />
+                      <Image src="/jp-logo.svg" alt="JP Arc" width={28} height={28} className="rounded" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-white font-bold">JobPilot AI — Job Saver</p>
+                      <p className="text-xs text-white font-bold">JP Arc — Job Saver</p>
                       <p className="text-[10px] text-text-muted">Save jobs from any site in one click</p>
                     </div>
                     <div className="px-3 py-1.5 rounded-lg bg-blue-500 shrink-0">
@@ -287,8 +287,8 @@ export default function ChromeExtensionToolPage() {
                 <h3 className="font-bold text-white text-lg mb-2">Pin It to Your Toolbar</h3>
                 <p className="text-sm text-text-secondary leading-relaxed mb-4">
                   Click the <span className="text-white font-medium">puzzle piece icon</span> (Extensions) in the top-right of Chrome.
-                  Find JobPilot AI in the list and click the <span className="text-white font-medium">pin icon</span> so it&apos;s always visible.
-                  Now you&apos;ll see the JobPilot AI icon right next to your address bar — ready to use on any page.
+                  Find JP Arc in the list and click the <span className="text-white font-medium">pin icon</span> so it&apos;s always visible.
+                  Now you&apos;ll see the JP Arc icon right next to your address bar — ready to use on any page.
                 </p>
                 <div className="rounded-xl bg-space-700/50 border border-white/5 p-4">
                   <div className="flex items-center justify-end gap-2 mb-3">
@@ -299,9 +299,9 @@ export default function ChromeExtensionToolPage() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 p-2.5 rounded-lg bg-space-800/60 border border-white/5">
                       <div className="w-5 h-5 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
-                        <Image src="/jp-logo.svg" alt="JobPilot AI" width={14} height={14} className="rounded" />
+                        <Image src="/jp-logo.svg" alt="JP Arc" width={14} height={14} className="rounded" />
                       </div>
-                      <p className="text-[10px] text-white font-medium flex-1">JobPilot AI</p>
+                      <p className="text-[10px] text-white font-medium flex-1">JP Arc</p>
                       <svg className="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M16 12l-4-4v3H4v2h8v3l4-4z" transform="rotate(-90 12 12)"/><rect x="10" y="14" width="4" height="8" rx="1"/></svg>
                     </div>
                     <div className="flex items-center gap-3 p-2.5 rounded-lg bg-space-800/60 border border-white/5 opacity-40">
@@ -326,15 +326,15 @@ export default function ChromeExtensionToolPage() {
               <div className="flex-1">
                 <h3 className="font-bold text-white text-lg mb-2">Sign In to the Extension</h3>
                 <p className="text-sm text-text-secondary leading-relaxed mb-4">
-                  Click the JobPilot AI icon in your toolbar. The first time, it asks you to sign in with the account you created in Step 1.
+                  Click the JP Arc icon in your toolbar. The first time, it asks you to sign in with the account you created in Step 1.
                   Enter your email and password — you only need to do this once. The extension stays logged in across browser sessions.
                 </p>
                 <div className="rounded-xl bg-space-700/50 border border-white/5 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-6 h-6 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
-                      <Image src="/jp-logo.svg" alt="JobPilot AI" width={16} height={16} className="rounded" />
+                      <Image src="/jp-logo.svg" alt="JP Arc" width={16} height={16} className="rounded" />
                     </div>
-                    <p className="text-[10px] font-bold text-white">Sign in to JobPilot AI</p>
+                    <p className="text-[10px] font-bold text-white">Sign in to JP Arc</p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-7 rounded-lg bg-space-800/80 border border-white/10 flex items-center px-3">
@@ -397,15 +397,15 @@ export default function ChromeExtensionToolPage() {
               <div className="flex-1">
                 <h3 className="font-bold text-white text-lg mb-2">Click the Icon &amp; Save</h3>
                 <p className="text-sm text-text-secondary leading-relaxed mb-4">
-                  Click the <span className="text-white font-medium">JobPilot AI icon</span> in your toolbar. The extension reads the page and auto-extracts the job title, company, location, salary, and description.
+                  Click the <span className="text-white font-medium">JP Arc icon</span> in your toolbar. The extension reads the page and auto-extracts the job title, company, location, salary, and description.
                   Review the details, then hit <span className="text-emerald-400 font-medium">&quot;Save to Tracker&quot;</span>. Done — the job is saved with an AI match score.
                 </p>
                 <div className="rounded-xl bg-space-700/50 border border-white/5 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-6 h-6 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
-                      <Image src="/jp-logo.svg" alt="JobPilot AI" width={16} height={16} className="rounded" />
+                      <Image src="/jp-logo.svg" alt="JP Arc" width={16} height={16} className="rounded" />
                     </div>
-                    <p className="text-[10px] font-bold text-white">JobPilot AI</p>
+                    <p className="text-[10px] font-bold text-white">JP Arc</p>
                     <span className="ml-auto px-1.5 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">Auto-Detected</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 mb-3">

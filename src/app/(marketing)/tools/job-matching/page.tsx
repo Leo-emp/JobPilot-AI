@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Smart Job Matching
    ============================================================
    # Targets: "job matching tool", "resume job match",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Smart Job Matching — AI Match Score & Skills Gap Analysis | JobPilot AI",
+  title: "Smart Job Matching — AI Match Score & Skills Gap Analysis | JP Arc",
   description:
     "Paste a job description and your resume to get a precise AI match score. See which skills align, which are missing, and get actionable recommendations to close the gap.",
   alternates: { canonical: "https://jobpilotai.co/tools/job-matching" },
   openGraph: {
-    title: "Smart Job Matching — JobPilot AI",
+    title: "Smart Job Matching — JP Arc",
     description: "Get an AI match score that tells you exactly how well your resume fits any job. Free skills gap analysis.",
     url: "https://jobpilotai.co/tools/job-matching",
   },
@@ -213,7 +213,7 @@ export default function JobMatchingToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Check Your Match Score Now</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Paste a job description. See your match score and skill gaps in seconds.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Check My Match Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Resume Builder
    ============================================================
    Targets: "AI resume builder", "ATS friendly resume",
@@ -9,12 +9,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "AI Resume Builder & ATS Optimizer — JobPilot AI",
+  title: "AI Resume Builder & ATS Optimizer — JP Arc",
   description:
     "Build ATS-friendly resumes with AI. Get instant resume analysis, keyword optimization, ATS score, and professional formatting. Free AI resume builder — no credit card required.",
   alternates: { canonical: "https://jobpilotai.co/features/resume-builder" },
   openGraph: {
-    title: "AI Resume Builder & ATS Optimizer — JobPilot AI",
+    title: "AI Resume Builder & ATS Optimizer — JP Arc",
     description:
       "Build ATS-friendly resumes with AI. Instant analysis, keyword optimization, and professional formatting.",
     url: "https://jobpilotai.co/features/resume-builder",
@@ -70,7 +70,7 @@ export default function ResumeBuilderPage() {
         </h1>
         <p className="text-text-secondary text-lg sm:text-xl max-w-3xl mx-auto mb-8">
           Most resumes get rejected by ATS software before a human ever reads them.
-          JobPilot AI analyzes, optimizes, and rebuilds your resume so it passes
+          JP Arc analyzes, optimizes, and rebuilds your resume so it passes
           automated screening and lands on the recruiter&apos;s desk.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
@@ -111,7 +111,7 @@ export default function ResumeBuilderPage() {
       {/* # Benefits grid */}
       <div className="mb-16">
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold text-center mb-10 glow-text">
-          Why Job Seekers Choose JobPilot AI
+          Why Job Seekers Choose JP Arc
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {benefits.map((b) => (
@@ -138,7 +138,7 @@ export default function ResumeBuilderPage() {
           <p>
             Common reasons resumes fail ATS screening include: using tables or columns that
             confuse parsers, missing critical keywords, creative section headings the software
-            doesn&apos;t recognize, and file formats the system can&apos;t read. JobPilot AI
+            doesn&apos;t recognize, and file formats the system can&apos;t read. JP Arc
             checks for all of these issues and shows you exactly how to fix them.
           </p>
           <p>

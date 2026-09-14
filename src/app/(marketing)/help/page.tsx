@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    HELP / FAQ PAGE — Customer Support Hub
    ============================================================
    Accordion-style FAQ organized by category. Covers account,
@@ -27,12 +27,12 @@ const faqSections = [
         a: "Click \"Get Started Free\" on the homepage or go to the signup page. You can register with your email and password, or sign in instantly with Google. No credit card required.",
       },
       {
-        q: "Is JobPilot AI really free?",
+        q: "Is JP Arc really free?",
         a: "Yes! The free plan includes 20 AI calls per month, access to all AI tools (resume analysis, cover letter generator, interview prep, LinkedIn optimizer), job search, application tracker, and networking CRM. Upgrade to Pro for 500 AI calls/month.",
       },
       {
         q: "What browsers are supported?",
-        a: "JobPilot AI works on all modern browsers — Chrome, Firefox, Safari, and Edge. We recommend using the latest version for the best experience.",
+        a: "JP Arc works on all modern browsers — Chrome, Firefox, Safari, and Edge. We recommend using the latest version for the best experience.",
       },
     ],
   },
@@ -187,7 +187,7 @@ export default function HelpPage() {
         Help Center
       </h1>
       <p className="text-text-secondary text-lg mb-12">
-        Find answers to common questions about JobPilot AI.
+        Find answers to common questions about JP Arc.
       </p>
 
       {/* ---- FAQPage JSON-LD for Google rich results ---- */}

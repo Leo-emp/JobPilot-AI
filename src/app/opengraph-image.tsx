@@ -12,7 +12,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 export const runtime = "nodejs";
-export const alt = "JobPilot AI — Your Career Co-Pilot";
+export const alt = "JP Arc — AI Career Platform";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -83,7 +83,7 @@ export default async function Image() {
               letterSpacing: "-1px",
             }}
           >
-            JobPilot AI
+            JP Arc
           </span>
         </div>
 

@@ -260,7 +260,7 @@ export default function CompanyProfileClient() {
             Want to work at {employer.name}?
           </h3>
           <p className="text-sm text-muted mb-4">
-            Create a free JobPilot AI profile to get matched with their open roles.
+            Create a free JP Arc profile to get matched with their open roles.
           </p>
           <Link
             href="/signup"

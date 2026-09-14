@@ -32,7 +32,7 @@ export function buildWeeklyDigestEmail(data: WeeklyDigestData): string {
   <table role="presentation" cellspacing="0" cellpadding="0" border="0">
   <tr>
     <td valign="middle">
-      <span style="font-family: ${FONT_DISPLAY}; font-size: 15px; font-weight: 700; color: #e4e4e7; letter-spacing: -0.3px;">JobPilot AI</span>
+      <span style="font-family: ${FONT_DISPLAY}; font-size: 15px; font-weight: 700; color: #e4e4e7; letter-spacing: -0.3px;">JP Arc</span>
     </td>
   </tr>
   </table>
@@ -103,7 +103,7 @@ ${buildNumbersSection(data)}
 <!-- Footer inside card -->
 <tr><td style="padding: 28px 52px 40px 52px;">
   <p style="font-family: ${FONT}; font-size: 13px; color: #8b8ba0; margin: 0 0 16px 0; line-height: 1.6;">Keep the momentum going. Every week gets you closer.</p>
-  <p style="font-family: ${FONT_DISPLAY}; font-size: 14px; color: #6366f1; margin: 0; font-weight: 600; letter-spacing: -0.2px;">&mdash; The JobPilot AI Team</p>
+  <p style="font-family: ${FONT_DISPLAY}; font-size: 14px; color: #6366f1; margin: 0; font-weight: 600; letter-spacing: -0.2px;">&mdash; The JP Arc Team</p>
 </td></tr>
 
 </table>
@@ -114,7 +114,7 @@ ${buildNumbersSection(data)}
   <p style="font-family: ${FONT}; font-size: 12px; color: #3f3f4a; margin: 0 0 8px 0;">
     <a href="https://jobpilotai.co/dashboard/settings" style="color: #4f4f5a; text-decoration: underline;">Unsubscribe</a> from weekly emails
   </p>
-  <p style="font-family: ${FONT}; font-size: 12px; color: #27272e; margin: 0;"><a href="https://jobpilotai.co" style="color: #3f3f4a; text-decoration: none;">jobpilotai.co</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;&copy; 2026 JobPilot AI</p>
+  <p style="font-family: ${FONT}; font-size: 12px; color: #27272e; margin: 0;"><a href="https://jobpilotai.co" style="color: #3f3f4a; text-decoration: none;">jobpilotai.co</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;&copy; 2026 JP Arc</p>
 </td></tr>
 
 </table>

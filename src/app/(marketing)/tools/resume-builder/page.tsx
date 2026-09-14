@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Resume Builder & ATS Checker
    ============================================================
    # Targets: "ATS resume checker", "resume score checker",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Builder & ATS Checker — Score & Optimize | JobPilot AI",
+  title: "Free AI Resume Builder & ATS Checker — Score & Optimize | JP Arc",
   description:
     "Get an instant ATS compatibility score, find missing keywords, and let AI rebuild your resume to beat applicant tracking systems. Free AI-powered resume tool.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-builder" },
   openGraph: {
-    title: "Free AI Resume Builder & ATS Checker — JobPilot AI",
+    title: "Free AI Resume Builder & ATS Checker — JP Arc",
     description: "Get an instant ATS score, find keyword gaps, and optimize your resume with AI. Free tool.",
     url: "https://jobpilotai.co/tools/resume-builder",
   },
@@ -67,7 +67,7 @@ const faqs = [
   },
   {
     q: "How is this different from other resume checkers?",
-    a: "Most checkers give you a score and a vague list of suggestions. JobPilot AI gives you the score, specific missing keywords, a strength/weakness breakdown, AND can rebuild your entire resume optimized for the role — all in one tool.",
+    a: "Most checkers give you a score and a vague list of suggestions. JP Arc gives you the score, specific missing keywords, a strength/weakness breakdown, AND can rebuild your entire resume optimized for the role — all in one tool.",
   },
 ];
 
@@ -134,7 +134,7 @@ export default function ResumeBuilderToolPage() {
             </div>
           </div>
           <div className="mt-6 pt-4 border-t border-card-border text-center">
-            <p className="text-xs text-text-muted">Analyzed by JobPilot AI in 6 seconds — Senior Product Manager at Google</p>
+            <p className="text-xs text-text-muted">Analyzed by JP Arc in 6 seconds — Senior Product Manager at Google</p>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function ResumeBuilderToolPage() {
           Get your ATS score in seconds. Find missing keywords. Let AI rebuild your resume for any job.
         </p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Get Started Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

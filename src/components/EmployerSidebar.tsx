@@ -61,7 +61,7 @@ export default function EmployerSidebar({ userName }: { userName: string }) {
           <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          JobPilot
+          JP Arc
           <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">Employer</span>
         </Link>
       </div>

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    AUTH LAYOUT - Shared Layout for Login & Signup Pages
    ============================================================
    This layout wraps the login and signup pages.
@@ -27,9 +27,9 @@ export default function AuthLayout({
       {/* Top bar with logo — links back to landing page */}
       <div className="relative z-10 p-6">
         <Link href="/" className="inline-flex items-center gap-2">
-          <Image src="/logo.svg" alt="JobPilot AI" width={36} height={36} priority />
+          <Image src="/logo.svg" alt="JP Arc" width={36} height={36} priority />
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
-            JobPilot AI
+            JP Arc
           </span>
         </Link>
       </div>

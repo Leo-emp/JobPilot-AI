@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    EXTENSION SAVE JOB API - Save Job from Chrome Extension
    ============================================================
    POST /api/extension/save-job
@@ -32,7 +32,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json(
-      { error: "Please log in to JobPilot AI first." },
+      { error: "Please log in to JP Arc first." },
       { status: 401, headers: corsHeaders(origin) }
     );
   }

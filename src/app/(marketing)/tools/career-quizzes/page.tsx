@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Career Quizzes & Assessments
    ============================================================
    # Targets: "career quiz", "career assessment", "career change
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free Career Quizzes & Assessments — AI-Powered Insights | JobPilot AI",
+  title: "Free Career Quizzes & Assessments — AI-Powered Insights | JP Arc",
   description:
     "Take free AI-powered career quizzes: Career Change Readiness, Career Personality Test, and Stay or Quit Assessment. Get personalized insights, career matches, and action plans in under 60 seconds.",
   alternates: { canonical: "https://jobpilotai.co/tools/career-quizzes" },
   openGraph: {
-    title: "Free Career Quizzes & Assessments — JobPilot AI",
+    title: "Free Career Quizzes & Assessments — JP Arc",
     description:
       "AI-powered career assessments with personalized insights. Discover your career personality, evaluate career change readiness, and get an honest stay-or-quit recommendation.",
     url: "https://jobpilotai.co/tools/career-quizzes",
@@ -223,7 +223,7 @@ export default function CareerQuizzesLandingPage() {
           Get Started Free
         </Link>
         <p className="text-xs text-text-muted mt-4">
-          No credit card required. Part of the complete JobPilot AI career toolkit.
+          No credit card required. Part of the complete JP Arc career toolkit.
         </p>
       </div>
     </div>

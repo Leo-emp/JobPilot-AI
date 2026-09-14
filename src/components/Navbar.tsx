@@ -29,14 +29,14 @@ export default function Navbar() {
             {/* JP monogram logo — SVG for crisp rendering at any zoom */}
             <Image
               src="/jp-logo.png"
-              alt="JobPilot AI"
+              alt="JP Arc"
               width={36}
               height={36}
               className=""
               priority
             />
             <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
-              JobPilot AI
+              JP Arc
             </span>
           </Link>
 

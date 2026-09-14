@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    OPT-OUT — GET, POST /api/outreach/opt-out
    ============================================================
    GET: Show opt-out confirmation (email param in query string).
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 
   /* # Return a simple confirmation page */
   return new NextResponse(
-    `<html><head><title>Unsubscribed</title></head><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px;text-align:center"><h2>You have been unsubscribed</h2><p>You will no longer receive recruiting outreach emails from JobPilot AI.</p><p>If this was a mistake, contact support@jobpilotai.co.</p></body></html>`,
+    `<html><head><title>Unsubscribed</title></head><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px;text-align:center"><h2>You have been unsubscribed</h2><p>You will no longer receive recruiting outreach emails from JP Arc.</p><p>If this was a mistake, contact support@jobpilotai.co.</p></body></html>`,
     { headers: { "Content-Type": "text/html" } },
   );
 }

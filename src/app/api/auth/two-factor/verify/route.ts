@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    2FA VERIFY API — /api/auth/two-factor/verify
    ============================================================
    Verifies a TOTP code from the user's authenticator app.
@@ -56,7 +56,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
 
   /* Validate the TOTP code (allows ±1 time window for clock drift) */
   const totp = new OTPAuth.TOTP({
-    issuer: "JobPilot AI",
+    issuer: "JP Arc",
     label: session.user.email || "user",
     algorithm: "SHA1",
     digits: 6,

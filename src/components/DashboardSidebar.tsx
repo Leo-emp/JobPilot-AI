@@ -164,9 +164,9 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       <div className="flex items-center justify-between p-6 border-b border-card-border">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           {/* # Brand logo icon — matches browser tab favicon */}
-          <Image src="/icon-192.png" alt="JobPilot AI" width={28} height={28} className="rounded-md" />
+          <Image src="/icon-192.png" alt="JP Arc" width={28} height={28} className="rounded-md" />
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
-            JobPilot AI
+            JP Arc
           </span>
         </Link>
         {/* <NotificationBell /> — re-enable for B2B phase */}
@@ -286,7 +286,7 @@ export default function DashboardSidebar({ userName, isAdmin }: DashboardSidebar
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 nav-blur px-4 py-3 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center">
           <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight glow-text-strong">
-            JobPilot AI
+            JP Arc
           </span>
         </Link>
         <button

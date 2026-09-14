@@ -17,7 +17,7 @@ export default function PortfolioNotFound() {
         <Link href="/"
           className="inline-block px-6 py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style={{ backgroundColor: "#6366f1" }}>
-          Go to JobPilot AI
+          Go to JP Arc
         </Link>
       </div>
     </div>

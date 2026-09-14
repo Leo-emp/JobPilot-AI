@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Resume Optimizer
    ============================================================
    # Targets: "resume optimizer", "optimize resume for job",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Optimizer — Tailor Your Resume to Any Job | JobPilot AI",
+  title: "Free AI Resume Optimizer — Tailor Your Resume to Any Job | JP Arc",
   description:
     "Paste a job description and AI rewrites your resume to match — adding missing keywords, strengthening bullets, and boosting your ATS score. Quick optimize in seconds.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-optimizer" },
   openGraph: {
-    title: "Free AI Resume Optimizer — JobPilot AI",
+    title: "Free AI Resume Optimizer — JP Arc",
     description: "AI tailors your resume to any job description. Missing keywords added, bullets strengthened, ATS score boosted.",
     url: "https://jobpilotai.co/tools/resume-optimizer",
   },
@@ -186,7 +186,7 @@ export default function ResumeOptimizerToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Tailor Your Resume in 30 Seconds</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Paste the JD. Get an optimized resume. Apply with confidence.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Optimize My Resume Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

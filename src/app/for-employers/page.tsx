@@ -12,7 +12,7 @@ import { isB2BEnabled } from "@/lib/b2b-gate";
 import ForEmployersClient from "./ForEmployersClient";
 
 export const metadata = {
-  title: "For Employers | JobPilot AI",
+  title: "For Employers | JP Arc",
   description: "AI-powered recruiting. Post roles, get matched candidates, hire faster.",
   alternates: { canonical: "https://jobpilotai.co/for-employers" },
 };

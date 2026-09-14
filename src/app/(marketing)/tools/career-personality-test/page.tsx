@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Career Personality Test
    ============================================================
    # Targets: "career personality test", "work personality quiz",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free Career Personality Test — Find Your Ideal Career Match | JobPilot AI",
+  title: "Free Career Personality Test — Find Your Ideal Career Match | JP Arc",
   description:
     "Discover your work personality type across 6 dimensions. Get matched with 5 ideal careers, learn which careers to avoid, and uncover hidden strengths. Free AI-powered test.",
   alternates: { canonical: "https://jobpilotai.co/tools/career-personality-test" },
   openGraph: {
-    title: "Free Career Personality Test — JobPilot AI",
+    title: "Free Career Personality Test — JP Arc",
     description: "Discover your work personality and get matched with 5 ideal careers. AI-powered, 6 minutes, free.",
     url: "https://jobpilotai.co/tools/career-personality-test",
   },
@@ -215,7 +215,7 @@ export default function CareerPersonalityTestToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready to Discover Your Work Personality?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">12 questions. 6 minutes. Your personality type, career matches, and hidden strengths.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Take the Test Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

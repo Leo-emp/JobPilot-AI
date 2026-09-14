@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Resume Analyzer
    ============================================================
    # Targets: "resume analyzer", "resume analysis tool",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Analyzer — ATS Score & Detailed Feedback | JobPilot AI",
+  title: "Free AI Resume Analyzer — ATS Score & Detailed Feedback | JP Arc",
   description:
     "Upload your resume and get an instant ATS compatibility score, keyword analysis, formatting feedback, and section-by-section improvement suggestions. Free tool.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-analyzer" },
   openGraph: {
-    title: "Free AI Resume Analyzer — JobPilot AI",
+    title: "Free AI Resume Analyzer — JP Arc",
     description: "Get your ATS score, keyword gaps, and section-by-section improvement suggestions. Free.",
     url: "https://jobpilotai.co/tools/resume-analyzer",
   },
@@ -198,7 +198,7 @@ export default function ResumeAnalyzerToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Check Your Resume Score Now</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Upload your resume. Get your ATS score and improvement roadmap in 10 seconds.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Analyze My Resume Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

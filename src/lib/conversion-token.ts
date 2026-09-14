@@ -2,7 +2,7 @@
    CONVERSION TOKEN — External candidate → User conversion
    ============================================================
    Generates and verifies tokens for converting external
-   candidates into full JobPilot users.
+   candidates into full JP Arc users.
 
    Flow:
    1. After outreach, a unique token is generated for the external candidate

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Application Tracker
    ============================================================
    # Targets: "job application tracker", "application tracker",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free Job Application Tracker — Organize Your Job Search | JobPilot AI",
+  title: "Free Job Application Tracker — Organize Your Job Search | JP Arc",
   description:
     "Track every job application in one place. Save jobs with one click, monitor application stages, get AI match scores, and never lose track of an opportunity.",
   alternates: { canonical: "https://jobpilotai.co/tools/application-tracker" },
   openGraph: {
-    title: "Free Job Application Tracker — JobPilot AI",
+    title: "Free Job Application Tracker — JP Arc",
     description: "Track every application, monitor stages, and stay organized throughout your job search.",
     url: "https://jobpilotai.co/tools/application-tracker",
   },
@@ -186,7 +186,7 @@ export default function ApplicationTrackerToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready to Get Organized?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Track every application in one place. Never lose track of an opportunity again.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Get Started Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

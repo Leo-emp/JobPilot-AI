@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Job Board & Search
    ============================================================
    # Targets: "AI job search", "job board with match score",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "AI Job Board — Smart Job Search with Match Scores | JobPilot AI",
+  title: "AI Job Board — Smart Job Search with Match Scores | JP Arc",
   description:
     "Search jobs with AI match scores that tell you how well each role fits your profile. Filter by location, salary, and remote options. Save jobs with one click.",
   alternates: { canonical: "https://jobpilotai.co/tools/job-search" },
   openGraph: {
-    title: "AI Job Board — Smart Job Search | JobPilot AI",
+    title: "AI Job Board — Smart Job Search | JP Arc",
     description: "Search jobs with AI match scores. Know which roles fit you best before applying.",
     url: "https://jobpilotai.co/tools/job-search",
   },
@@ -181,7 +181,7 @@ export default function JobSearchToolPage() {
           Search jobs with AI match scores. Know which roles fit before you apply.
         </p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Get Started Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

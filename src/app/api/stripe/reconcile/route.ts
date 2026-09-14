@@ -49,7 +49,9 @@ export const GET = safeHandler(async (req: NextRequest) => {
     try {
       const sub = await stripe.subscriptions.retrieve(user.stripeSubId!);
       const priceId = sub.items.data[0]?.price.id;
-      const expectedPlan = priceId === process.env.STRIPE_PRO_PRICE_ID ? "pro" : "enterprise";
+      /* # Check both monthly + annual Pro price IDs (matches webhook logic) */
+      const proIds = [process.env.STRIPE_PRO_PRICE_ID, process.env.STRIPE_PRO_ANNUAL_PRICE_ID].filter(Boolean);
+      const expectedPlan = proIds.includes(priceId) ? "pro" : "enterprise";
 
       if (sub.status === "active" && user.plan !== expectedPlan) {
         /* User paid but DB has wrong plan — fix it */

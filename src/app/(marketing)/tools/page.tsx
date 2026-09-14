@@ -1,7 +1,7 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Tools Hub
    ============================================================
-   # Master directory of every JobPilot AI tool. Organized by
+   # Master directory of every JP Arc tool. Organized by
    # category with visual preview cards. Each tool links to its
    # own dedicated page. Mirrors Teal-style tools hub.
    # Targets: "job search tools", "AI career tools",
@@ -13,12 +13,12 @@ import Image from "next/image";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Career Tools — Resume, Interview, Job Search & More | JobPilot AI",
+  title: "Free AI Career Tools — Resume, Interview, Job Search & More | JP Arc",
   description:
     "Every tool you need to land your dream job. AI resume checker, cover letter generator, interview prep, career quizzes, application tracker, LinkedIn optimizer, and more — all free.",
   alternates: { canonical: "https://jobpilotai.co/tools" },
   openGraph: {
-    title: "Free AI Career Tools — JobPilot AI",
+    title: "Free AI Career Tools — JP Arc",
     description:
       "AI resume checker, cover letter generator, interview prep, career quizzes, job tracker, and more — all in one platform.",
     url: "https://jobpilotai.co/tools",
@@ -551,9 +551,9 @@ function ExtensionPreview() {
       <div className="bg-space-800/80 rounded-xl p-4 backdrop-blur-sm border border-white/10">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 rounded bg-brand-indigo/20 flex items-center justify-center overflow-hidden">
-            <Image src="/jp-logo.svg" alt="JobPilot AI" width={16} height={16} className="rounded" />
+            <Image src="/jp-logo.svg" alt="JP Arc" width={16} height={16} className="rounded" />
           </div>
-          <p className="text-[10px] font-bold text-white">JobPilot AI</p>
+          <p className="text-[10px] font-bold text-white">JP Arc</p>
           <span className="ml-auto px-1.5 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-400">Detected</span>
         </div>
         <div className="space-y-1.5 mb-3">

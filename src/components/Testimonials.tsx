@@ -96,7 +96,7 @@ export default function Testimonials() {
             <span className="glow-text">Say</span>
           </h2>
           <p className="max-w-2xl mx-auto text-text-secondary text-lg">
-            Real results from real job seekers using JobPilot AI.
+            Real results from real job seekers using JP Arc.
           </p>
         </motion.div>
 

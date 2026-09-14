@@ -942,7 +942,7 @@ export default function DeveloperTemplate({ data }: { data: PortfolioData }) {
           <p className="text-xs font-mono" style={{ color: c.muted }}>
             <span style={{ color: c.green }}>{"// "}</span>
             Built with{" "}
-            <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.green }}>JobPilot AI</a>
+            <a href="https://jobpilotai.co" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: c.green }}>JP Arc</a>
           </p>
         </div>
       </div>

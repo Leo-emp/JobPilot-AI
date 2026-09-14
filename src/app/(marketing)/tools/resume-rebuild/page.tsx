@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Resume Rebuild
    ============================================================
    # Targets: "resume rewrite service", "rebuild resume",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Rebuild — Complete Resume Rewrite for Any Role | JobPilot AI",
+  title: "Free AI Resume Rebuild — Complete Resume Rewrite for Any Role | JP Arc",
   description:
     "AI completely rewrites your resume from scratch for a target role. New structure, new bullets, new language — optimized to land interviews in your desired field.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-rebuild" },
   openGraph: {
-    title: "Free AI Resume Rebuild — JobPilot AI",
+    title: "Free AI Resume Rebuild — JP Arc",
     description: "Complete resume rewrite for any target role. New structure, bullets, and language — AI-powered.",
     url: "https://jobpilotai.co/tools/resume-rebuild",
   },
@@ -188,7 +188,7 @@ export default function ResumeRebuildToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready for a Fresh Start?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">Upload your resume. Tell AI your target role. Get a complete rewrite in 2 minutes.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Rebuild My Resume Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

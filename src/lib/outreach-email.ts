@@ -96,7 +96,7 @@ RULES:
 2. Opening: personal hook referencing their actual work (NOT generic)
 3. Role pitch: 2-3 sentences on why this role is interesting
 4. Company pitch: 1-2 sentences
-5. CTA: "Interested? Join JobPilot to connect: ${inviteUrl}" or "Reply to this email"
+5. CTA: "Interested? Join JP Arc to connect: ${inviteUrl}" or "Reply to this email"
 6. Closing: professional, warm, not pushy
 7. Tone: professional but human. No corporate jargon. No exclamation marks.
 8. Length: under 200 words total
@@ -119,7 +119,7 @@ The body should use plain text with line breaks (\\n), not HTML.`;
     }
 
     /* # Append the mandatory opt-out footer */
-    const fullBody = `${parsed.body}\n\n---\nYou received this because your public profile matched a role on JobPilot AI.\nTo stop receiving these emails: ${optOutUrl}`;
+    const fullBody = `${parsed.body}\n\n---\nYou received this because your public profile matched a role on JP Arc.\nTo stop receiving these emails: ${optOutUrl}`;
 
     return {
       subject: parsed.subject,
@@ -131,7 +131,7 @@ The body should use plain text with line breaks (\\n), not HTML.`;
     /* # Fallback: generic but functional email */
     return {
       subject: `${employer.name} is looking for a ${role.title}`,
-      body: `Hi ${candidate.name},\n\nYour profile on ${candidate.source} caught our attention. We're looking for a ${role.title} at ${employer.name}, and your skills in ${candidate.skills.slice(0, 3).join(", ")} are a strong match.\n\nInterested? Join JobPilot to connect: ${inviteUrl}\n\nOr simply reply to this email.\n\nBest,\nThe ${employer.name} team via JobPilot AI\n\n---\nYou received this because your public profile matched a role on JobPilot AI.\nTo stop receiving these emails: ${optOutUrl}`,
+      body: `Hi ${candidate.name},\n\nYour profile on ${candidate.source} caught our attention. We're looking for a ${role.title} at ${employer.name}, and your skills in ${candidate.skills.slice(0, 3).join(", ")} are a strong match.\n\nInterested? Join JP Arc to connect: ${inviteUrl}\n\nOr simply reply to this email.\n\nBest,\nThe ${employer.name} team via JP Arc\n\n---\nYou received this because your public profile matched a role on JP Arc.\nTo stop receiving these emails: ${optOutUrl}`,
     };
   }
 }

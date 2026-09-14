@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    WEEKLY DIGEST CRON - Send Career Intelligence Emails
    ============================================================
    POST /api/cron/weekly-digest
@@ -78,7 +78,7 @@ export const POST = safeHandler(async (req: NextRequest) => {
           const html = buildWeeklyDigestEmail(stats);
 
           await resend.emails.send({
-            from: "JobPilot AI <noreply@jobpilotai.co>",
+            from: "JP Arc <noreply@jobpilotai.co>",
             to: user.email,
             subject: `Your Career Intelligence — ${stats.weekOf}`,
             html,

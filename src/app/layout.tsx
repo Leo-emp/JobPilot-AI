@@ -1,5 +1,5 @@
 /* ============================================================
-   ROOT LAYOUT - JobPilot AI
+   ROOT LAYOUT - JP Arc
    ============================================================
    This is the top-level layout that wraps every page.
    It sets up fonts, metadata (SEO), and the HTML shell.
@@ -31,7 +31,7 @@ const geistMono = Geist_Mono({
 });
 
 /* Space Grotesk — geometric, premium display font for the brand name */
-/* Used specifically for "JobPilot AI" headings and hero text */
+/* Used specifically for "JP Arc" headings and hero text */
 /* Its sharp, techy letterforms fit the space theme perfectly */
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -44,40 +44,45 @@ const spaceGrotesk = Space_Grotesk({
 /* Search engines and social media use these when displaying links */
 export const metadata: Metadata = {
   title: {
-    default: "JobPilot AI — Your Career Co-Pilot",
-    template: "%s | JobPilot AI",
+    default: "JP Arc — AI Career Platform",
+    template: "%s | JP Arc",
   },
   description:
     "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
   keywords: [
+    "JP Arc",
     "JobPilot AI",
-    "JobPilotAI",
-    "Job Pilot AI",
+    "jobpilotai",
     "AI resume builder",
-    "job search",
-    "career tools",
+    "free resume builder",
+    "ATS resume builder",
     "ATS optimization",
-    "cover letter generator",
-    "interview prep",
-    "portfolio builder",
-    "AI career co-pilot",
+    "resume tailoring",
+    "AI cover letter generator",
+    "AI interview prep",
+    "mock interview AI",
+    "job application tracker",
+    "career tools for new grads",
+    "career change tools",
     "AI job search tool",
     "resume ATS scorer",
+    "free career tools",
+    "portfolio builder",
   ],
   metadataBase: new URL("https://jobpilotai.co"),
   openGraph: {
     type: "website",
     locale: "en_GB",
     url: "https://jobpilotai.co",
-    siteName: "JobPilot AI",
-    title: "JobPilot AI — Your Career Co-Pilot",
+    siteName: "JP Arc",
+    title: "JP Arc — AI Career Platform",
     description:
       "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "JobPilot AI — Your AI-Powered Career Co-Pilot" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "JP Arc — AI Career Platform" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "JobPilot AI — Your Career Co-Pilot",
+    title: "JP Arc — AI Career Platform",
     description:
       "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
     images: ["/og-image.png"],

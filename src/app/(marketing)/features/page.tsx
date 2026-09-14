@@ -1,8 +1,8 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Features Overview
    ============================================================
    Hub page linking to all individual feature pages.
-   Targets: "JobPilot AI features", "AI career tools",
+   Targets: "JP Arc features", "AI career tools",
    "job search tools", "AI job application tools"
    ============================================================ */
 
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Features — AI Career Tools for Job Seekers | JobPilot AI",
+  title: "Features — AI Career Tools for Job Seekers | JP Arc",
   description:
     "Every tool you need to land your dream job. AI resume builder, cover letter generator, interview prep, portfolio builder, application tracker, and more — all in one platform.",
   alternates: { canonical: "https://jobpilotai.co/features" },
   openGraph: {
-    title: "Features — JobPilot AI",
+    title: "Features — JP Arc",
     description:
       "AI resume builder, cover letter generator, interview prep, portfolio builder, and application tracker — all in one platform.",
     url: "https://jobpilotai.co/features",
@@ -102,7 +102,7 @@ export default function FeaturesPage() {
         </h1>
         <p className="text-text-secondary text-lg sm:text-xl max-w-3xl mx-auto">
           From resume building to interview prep, portfolio creation to application
-          tracking — JobPilot AI is the all-in-one AI career platform built to help
+          tracking — JP Arc is the all-in-one AI career platform built to help
           you land your dream job faster.
         </p>
       </div>

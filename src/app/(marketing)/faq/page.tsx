@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    FAQ PAGE — Comprehensive Frequently Asked Questions
    ============================================================
    Covers everything visitors might want to know: features,
@@ -38,24 +38,24 @@ const faqSections: FaqSection[] = [
     ),
     questions: [
       {
-        q: "What is JobPilot AI?",
-        a: "JobPilot AI is an all-in-one AI-powered career platform that helps job seekers land their dream jobs faster. It includes AI resume analysis and optimization, cover letter generation, interview preparation, LinkedIn profile optimization, job search aggregation, application tracking, networking CRM, and a professional portfolio builder — all in one place.",
+        q: "What is JP Arc?",
+        a: "JP Arc is an all-in-one AI-powered career platform that helps job seekers land their dream jobs faster. It includes AI resume analysis and optimization, cover letter generation, interview preparation, LinkedIn profile optimization, job search aggregation, application tracking, networking CRM, and a professional portfolio builder — all in one place.",
       },
       {
         q: "How do I create an account?",
         a: "Click \"Get Started Free\" on the homepage or go to the signup page. You can register with your email and password, or sign in instantly with Google. No credit card required — you get full access to all features on the free plan.",
       },
       {
-        q: "Is JobPilot AI really free?",
+        q: "Is JP Arc really free?",
         a: "Yes! The free plan gives you 20 AI calls per month with access to every feature: resume analysis, cover letters, interview prep, LinkedIn optimization, job search, application tracker, networking CRM, and portfolio builder. Upgrade to Pro for 500 AI calls/month when you need more.",
       },
       {
         q: "What browsers and devices are supported?",
-        a: "JobPilot AI works on all modern browsers — Chrome, Firefox, Safari, and Edge — on both desktop and mobile. The interface is fully responsive, so you can manage your job search from any device. We recommend using the latest browser version for the best experience.",
+        a: "JP Arc works on all modern browsers — Chrome, Firefox, Safari, and Edge — on both desktop and mobile. The interface is fully responsive, so you can manage your job search from any device. We recommend using the latest browser version for the best experience.",
       },
       {
         q: "Do I need to install anything?",
-        a: "No. JobPilot AI is a web application — just visit the site and log in. We also offer an optional Chrome Extension that automatically saves job listings as you browse job boards like LinkedIn, Indeed, and Glassdoor, but it's not required.",
+        a: "No. JP Arc is a web application — just visit the site and log in. We also offer an optional Chrome Extension that automatically saves job listings as you browse job boards like LinkedIn, Indeed, and Glassdoor, but it's not required.",
       },
     ],
   },
@@ -235,7 +235,7 @@ const faqSections: FaqSection[] = [
       },
       {
         q: "Can I use a custom domain?",
-        a: "Currently, portfolios are hosted on a JobPilot AI subdomain (e.g., jobpilotai.co/p/your-name). Custom domain support is planned for a future update. You can share your portfolio link anywhere — LinkedIn, email signatures, or your resume.",
+        a: "Currently, portfolios are hosted on a JP Arc subdomain (e.g., jobpilotai.co/p/your-name). Custom domain support is planned for a future update. You can share your portfolio link anywhere — LinkedIn, email signatures, or your resume.",
       },
       {
         q: "What templates are available?",
@@ -303,7 +303,7 @@ const faqSections: FaqSection[] = [
       },
       {
         q: "Do you sell my data to third parties?",
-        a: "No. We never sell, share, or trade your personal data with third parties for marketing or any other purpose. Your data is used exclusively to provide JobPilot AI services to you. See our Privacy Policy for full details.",
+        a: "No. We never sell, share, or trade your personal data with third parties for marketing or any other purpose. Your data is used exclusively to provide JP Arc services to you. See our Privacy Policy for full details.",
       },
       {
         q: "Can I export all my data?",
@@ -335,7 +335,7 @@ const faqSections: FaqSection[] = [
     questions: [
       {
         q: "What does the Chrome Extension do?",
-        a: "The JobPilot AI Chrome Extension automatically detects job listings on supported sites and lets you save them to your application tracker with one click. It captures job title, company, location, salary, description, and required skills — no manual entry needed.",
+        a: "The JP Arc Chrome Extension automatically detects job listings on supported sites and lets you save them to your application tracker with one click. It captures job title, company, location, salary, description, and required skills — no manual entry needed.",
       },
       {
         q: "Which job sites does it support?",
@@ -343,11 +343,11 @@ const faqSections: FaqSection[] = [
       },
       {
         q: "Is the extension free?",
-        a: "Yes. The Chrome Extension is completely free for all JobPilot AI users, including free plan members. It's an optional tool to enhance your job search workflow.",
+        a: "Yes. The Chrome Extension is completely free for all JP Arc users, including free plan members. It's an optional tool to enhance your job search workflow.",
       },
       {
         q: "How do I install it?",
-        a: "Visit the Chrome Web Store and search for \"JobPilot AI\" or follow the install link from your dashboard. Click \"Add to Chrome\" and sign in with your JobPilot AI account. The extension icon will appear in your browser toolbar.",
+        a: "Visit the Chrome Web Store and search for \"JP Arc\" or follow the install link from your dashboard. Click \"Add to Chrome\" and sign in with your JP Arc account. The extension icon will appear in your browser toolbar.",
       },
     ],
   },
@@ -362,7 +362,7 @@ const faqSections: FaqSection[] = [
     ),
     questions: [
       {
-        q: "Does JobPilot AI have employer features?",
+        q: "Does JP Arc have employer features?",
         a: "Yes. We offer an employer portal where companies can post roles, manage candidate pipelines, communicate with applicants, and collaborate as a hiring team. Employers get a dedicated dashboard with application management and team tools.",
       },
       {
@@ -371,7 +371,7 @@ const faqSections: FaqSection[] = [
       },
       {
         q: "How do candidates apply to posted roles?",
-        a: "Candidates can discover and apply to roles directly through the JobPilot AI platform. Employers receive applications in their pipeline dashboard, where they can review resumes, track candidates through stages, and communicate with applicants.",
+        a: "Candidates can discover and apply to roles directly through the JP Arc platform. Employers receive applications in their pipeline dashboard, where they can review resumes, track candidates through stages, and communicate with applicants.",
       },
     ],
   },
@@ -486,7 +486,7 @@ export default function FaqPage() {
         Frequently Asked Questions
       </h1>
       <p className="text-text-secondary text-lg mb-8">
-        Everything you need to know about JobPilot AI — {totalQuestions} answers across {faqSections.length} categories.
+        Everything you need to know about JP Arc — {totalQuestions} answers across {faqSections.length} categories.
       </p>
 
       {/* ---- FAQPage JSON-LD for Google rich results ---- */}

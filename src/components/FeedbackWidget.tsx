@@ -126,7 +126,7 @@ export default function FeedbackWidget() {
                   </div>
                   <h4 className="text-lg font-bold text-white mb-2">Thanks for your feedback!</h4>
                   <p className="text-sm text-text-secondary mb-4">
-                    We read every submission and use it to improve JobPilot AI.
+                    We read every submission and use it to improve JP Arc.
                   </p>
                   <button onClick={handleClose} className="btn-primary text-sm">
                     Close

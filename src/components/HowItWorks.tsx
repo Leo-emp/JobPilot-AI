@@ -1,7 +1,7 @@
 /* ============================================================
    HOW IT WORKS - Step-by-Step Flow
    ============================================================
-   Shows users the 3 simple steps to get started with JobPilot AI.
+   Shows users the 3 simple steps to get started with JP Arc.
    Each step slides in from the left with a staggered delay,
    creating a visual "building" effect as you scroll down.
    Uses whileInView so animations trigger on scroll.

@@ -97,7 +97,7 @@ export async function searchGitHubUsers(
 
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "JobPilot-AI-Sourcing",
+    "User-Agent": "JP Arc-AI-Sourcing",
   };
 
   /* # Add auth header if token available (30 search req/min vs 10) */

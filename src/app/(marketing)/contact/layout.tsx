@@ -1,6 +1,6 @@
-export const metadata = {
-  title: "Contact Us — JobPilot AI",
-  description: "Get in touch with JobPilot AI for support, feedback, or enterprise inquiries. We respond within 24 hours.",
+﻿export const metadata = {
+  title: "Contact Us — JP Arc",
+  description: "Get in touch with JP Arc for support, feedback, or enterprise inquiries. We respond within 24 hours.",
   alternates: { canonical: "https://jobpilotai.co/contact" },
 };
 

@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    CAREERS PAGE
    ============================================================
    Shows open positions and company culture info.
@@ -12,8 +12,8 @@ import Link from "next/link";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Careers — JobPilot AI",
-  description: "Join the JobPilot AI team. We're building the future of AI-powered career tools.",
+  title: "Careers — JP Arc",
+  description: "Join the JP Arc team. We're building the future of AI-powered career tools.",
   alternates: { canonical: "https://jobpilotai.co/careers" },
 };
 

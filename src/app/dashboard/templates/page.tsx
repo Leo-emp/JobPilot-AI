@@ -1167,7 +1167,7 @@ function buildRightSidebar(d: ResumeData): string {
 
 
 /* ============================================================
-   TEMPLATE 0: STANDARD ATS — Matches JobPilot AI PDF output exactly
+   TEMPLATE 0: STANDARD ATS — Matches JP Arc PDF output exactly
    ============================================================ */
 function buildStandardATS(d: ResumeData): string {
   const css = `
@@ -1554,7 +1554,7 @@ function buildAUOptimized(d: ResumeData): string {
    ============================================================ */
 const TEMPLATES: Template[] = [
   /* ---- STANDARD ---- */
-  { id: "standard-ats", name: "Standard ATS-Friendly", desc: "JobPilot's signature layout — clean Helvetica, bold headers, right-aligned dates", category: "Standard", buildHTML: buildStandardATS },
+  { id: "standard-ats", name: "Standard ATS-Friendly", desc: "JP Arc's signature layout — clean Helvetica, bold headers, right-aligned dates", category: "Standard", buildHTML: buildStandardATS },
   { id: "us-optimized", name: "US ATS Optimized", desc: "Strict US resume format — 1 page, power verbs, ATS-safe structure", category: "Standard", buildHTML: buildUSOptimized },
   { id: "au-optimized", name: "AU CV Optimised", desc: "Australian CV format — career profile, employment history, referees", category: "Standard", buildHTML: buildAUOptimized },
 

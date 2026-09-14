@@ -12,7 +12,7 @@ export default function Logo({ size = 28, className = "" }: LogoProps) {
   return (
     <Image
       src="/logo.png"
-      alt="JobPilot AI"
+      alt="JP Arc"
       width={size}
       height={height}
       className={className}

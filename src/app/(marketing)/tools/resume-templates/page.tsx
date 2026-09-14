@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Visual Resume Templates
    ============================================================
    # Targets: "free resume templates", "ATS resume templates",
@@ -11,12 +11,12 @@ import { BreadcrumbJsonLd } from "@/components/JsonLd";
 import TemplateCarousel from "./TemplateCarousel";
 
 export const metadata = {
-  title: "20 Free Professional Resume Templates — ATS-Friendly | JobPilot AI",
+  title: "20 Free Professional Resume Templates — ATS-Friendly | JP Arc",
   description:
     "Choose from 20 structurally unique resume templates. Classic, sidebar, visual, modern, and special layouts — all ATS-friendly. Fill in your details, download as PDF.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-templates" },
   openGraph: {
-    title: "20 Free Professional Resume Templates — JobPilot AI",
+    title: "20 Free Professional Resume Templates — JP Arc",
     description: "20 unique layouts: Classic, Sidebar, Visual, Modern, Special. ATS-friendly, fill & download.",
     url: "https://jobpilotai.co/tools/resume-templates",
   },
@@ -154,7 +154,7 @@ export default function ResumeTemplatesToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Find Your Perfect Resume Template</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">20 professional templates. All free. All ATS-friendly. Pick one and start building.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Browse Templates Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

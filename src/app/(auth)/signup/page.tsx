@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SIGNUP PAGE - Create New Account
    ============================================================
    Three sign-up options:
@@ -112,7 +112,7 @@ export default function SignupPage() {
           Create Account
         </h1>
         <p className="text-text-secondary text-center mb-8">
-          Start your career journey with JobPilot AI
+          Start your career journey with JP Arc
         </p>
 
         {/* Error message */}

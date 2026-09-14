@@ -48,7 +48,7 @@ const helpData: HelpItem[] = [
   /* ---- Job Search & Tracker ---- */
   { category: "Jobs", q: "How do I search for jobs?", a: "Go to Job Search, enter keywords, location, and filters. Results come from multiple job boards. Click the bookmark icon to save a job to your tracker." },
   { category: "Jobs", q: "How does the application tracker work?", a: "The tracker is a Kanban board with stages: Saved, Applied, Interview, Offer, Rejected. Drag applications between stages. Add notes, deadlines, and contacts to each application." },
-  { category: "Jobs", q: "How do I save jobs from external sites?", a: "Install the JobPilot AI Chrome Extension from the Chrome Web Store. It adds a save button to 40+ job sites including LinkedIn, Indeed, and Glassdoor." },
+  { category: "Jobs", q: "How do I save jobs from external sites?", a: "Install the JP Arc Chrome Extension from the Chrome Web Store. It adds a save button to 40+ job sites including LinkedIn, Indeed, and Glassdoor." },
 
   /* ---- Networking ---- */
   { category: "Networking", q: "How do I add contacts?", a: "Go to Networking CRM and click \"Add Contact\". Enter their details and categorize the relationship. You can also add contacts directly from job applications." },
@@ -264,7 +264,7 @@ export default function HelpWidget() {
               /* ---- AI Fallback View ---- */
               <div className="p-5">
                 <p className="text-xs text-text-muted mb-3">
-                  Ask any question about JobPilot AI. Uses 1 AI credit.
+                  Ask any question about JP Arc. Uses 1 AI credit.
                 </p>
                 <textarea
                   value={aiQuestion}

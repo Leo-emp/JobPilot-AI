@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — AI Portfolio Builder
    ============================================================
    Targets: "portfolio builder", "online portfolio creator",
@@ -9,12 +9,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "AI Portfolio Builder — Create a Professional Portfolio | JobPilot AI",
+  title: "AI Portfolio Builder — Create a Professional Portfolio | JP Arc",
   description:
     "Build a stunning professional portfolio in minutes. Showcase projects, skills, and achievements with a shareable public link. Free AI portfolio builder — no coding required.",
   alternates: { canonical: "https://jobpilotai.co/features/portfolio-builder" },
   openGraph: {
-    title: "AI Portfolio Builder — JobPilot AI",
+    title: "AI Portfolio Builder — JP Arc",
     description:
       "Build a professional portfolio in minutes. Shareable public link, no coding required.",
     url: "https://jobpilotai.co/features/portfolio-builder",
@@ -24,7 +24,7 @@ export const metadata = {
 const benefits = [
   {
     title: "No Coding Required",
-    desc: "Fill in your details — experience, projects, skills, education — and JobPilot AI generates a polished, professional portfolio page. No HTML, CSS, or hosting needed.",
+    desc: "Fill in your details — experience, projects, skills, education — and JP Arc generates a polished, professional portfolio page. No HTML, CSS, or hosting needed.",
   },
   {
     title: "Shareable Public Link",
@@ -69,7 +69,7 @@ export default function PortfolioBuilderPage() {
         </h1>
         <p className="text-text-secondary text-lg sm:text-xl max-w-3xl mx-auto mb-8">
           A resume shows what you&apos;ve done. A portfolio shows what you can do.
-          JobPilot AI helps you build a professional portfolio with a shareable
+          JP Arc helps you build a professional portfolio with a shareable
           public link — no design skills or coding required.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
@@ -137,7 +137,7 @@ export default function PortfolioBuilderPage() {
           </p>
           <p>
             Building a portfolio website traditionally requires web development skills,
-            a domain name, hosting, and ongoing maintenance. JobPilot AI eliminates all
+            a domain name, hosting, and ongoing maintenance. JP Arc eliminates all
             of that. You fill in your information, choose a template, and publish —
             everything is hosted for you with a professional URL.
           </p>

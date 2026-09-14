@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SEO LANDING PAGE — Career Change Quiz
    ============================================================
    # Targets: "career change quiz", "career change readiness",
@@ -10,12 +10,12 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free Career Change Quiz — Discover Your Ideal Career Path | JobPilot AI",
+  title: "Free Career Change Quiz — Discover Your Ideal Career Path | JP Arc",
   description:
     "Take our AI-powered career change quiz. Two paths: Discovery (what career suits you?) or Transition (how ready are you?). Get career matches, readiness scores, and a personalized action plan.",
   alternates: { canonical: "https://jobpilotai.co/tools/career-change-quiz" },
   openGraph: {
-    title: "Free Career Change Quiz — JobPilot AI",
+    title: "Free Career Change Quiz — JP Arc",
     description: "Discover your ideal career path or evaluate your transition readiness. AI-powered insights in 7 minutes.",
     url: "https://jobpilotai.co/tools/career-change-quiz",
   },
@@ -189,7 +189,7 @@ export default function CareerChangeQuizToolPage() {
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl sm:text-3xl font-bold mb-4">Ready to Discover Your Path?</h2>
         <p className="text-text-secondary text-base max-w-xl mx-auto mb-6">14 questions. 7 minutes. Career matches, readiness score, and a concrete action plan.</p>
         <Link href="/signup" className="btn-primary inline-block px-8 py-3 text-base">Take the Quiz Free</Link>
-        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JobPilot AI career toolkit.</p>
+        <p className="text-xs text-text-muted mt-4">No credit card required. Part of the complete JP Arc career toolkit.</p>
       </div>
     </div>
   );

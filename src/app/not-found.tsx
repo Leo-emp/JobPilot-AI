@@ -22,7 +22,7 @@ export default function NotFound() {
       <div className="relative z-10 p-6">
         <Link href="/" className="inline-flex items-center">
           <span className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold tracking-tight glow-text-strong">
-            JobPilot AI
+            JP Arc
           </span>
         </Link>
       </div>

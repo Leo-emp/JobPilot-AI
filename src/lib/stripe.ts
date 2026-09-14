@@ -55,7 +55,7 @@ export const TOPUP_PACKS = [
 
 /* ---- Employer Price IDs ---- */
 /* Separate Stripe products for employer B2B plans */
-/* Create these in the Stripe Dashboard under a "JobPilot Employer" product group */
+/* Create these in the Stripe Dashboard under a "JP Arc Employer" product group */
 export const EMPLOYER_PRICE_IDS = {
   pro: process.env.STRIPE_EMPLOYER_PRO_PRICE_ID || "",           // $299/mo
   proAnnual: process.env.STRIPE_EMPLOYER_PRO_ANNUAL_PRICE_ID || "",  // $249/mo billed annually

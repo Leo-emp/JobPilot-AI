@@ -21,7 +21,7 @@ export default function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center mb-4">
               <span className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold tracking-tight glow-text-strong">
-                JobPilot AI
+                JP Arc
               </span>
             </div>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -135,7 +135,7 @@ export default function Footer() {
         {/* ---- Bottom Bar ---- */}
         <div className="mt-12 pt-8 border-t border-card-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-text-muted">
-            &copy; 2026 JobPilot AI. All rights reserved.
+            &copy; 2026 JP Arc. All rights reserved.
           </p>
           {/* Social links */}
           <div className="flex items-center gap-6">

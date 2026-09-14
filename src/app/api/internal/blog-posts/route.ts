@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    INTERNAL BLOG POSTS — /api/internal/blog-posts
    ============================================================
    POST: Receive published articles from Marketing HQ.
@@ -76,8 +76,8 @@ export async function POST(req: NextRequest) {
           metaTitle: body.metaTitle || null,
           metaDescription: body.metaDescription || null,
           coverImageUrl: body.coverImageUrl || null,
-          // # Default author to JobPilot AI Team if not specified
-          author: body.author || "JobPilot AI Team",
+          // # Default author to JP Arc Team if not specified
+          author: body.author || "JP Arc Team",
           readTime,
           // # Immediately set as published — no draft stage for Marketing HQ posts
           status: "published",
