@@ -511,7 +511,7 @@ export default function SettingsPage() {
         doc.text(`JP Arc — Page ${i} of ${pages}`, 14, 290);
       }
 
-      doc.save(`jobpilot-export-${new Date().toISOString().slice(0, 10)}.pdf`);
+      doc.save(`jparc-export-${new Date().toISOString().slice(0, 10)}.pdf`);
       setExportMessage("Data exported successfully!");
     } catch {
       setExportMessage("Failed to export data.");

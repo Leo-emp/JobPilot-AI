@@ -210,7 +210,7 @@ export default function CareerPersonalityQuizPage() {
       accentColor="purple"
       questions={questions}
       aiAction="career_personality_quiz"
-      fileName="career-personality-test-jobpilot"
+      fileName="career-personality-test-jparc"
       nextSteps={nextSteps}
     />
   );

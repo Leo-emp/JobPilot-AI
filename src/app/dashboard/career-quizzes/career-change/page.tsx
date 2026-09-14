@@ -550,7 +550,7 @@ export default function CareerChangeQuizPage() {
         accentColor="indigo"
         questions={discoveryQuestions}
         aiAction="career_change_discovery"
-        fileName="career-discovery-jobpilot"
+        fileName="career-discovery-jparc"
         nextSteps={discoveryNextSteps}
       />
     );
@@ -564,7 +564,7 @@ export default function CareerChangeQuizPage() {
       accentColor="purple"
       questions={transitionQuestions}
       aiAction="career_change_transition"
-      fileName="career-transition-readiness-jobpilot"
+      fileName="career-transition-readiness-jparc"
       nextSteps={transitionNextSteps}
     />
   );

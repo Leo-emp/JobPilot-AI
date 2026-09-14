@@ -261,7 +261,7 @@ export default function StayOrQuitQuizPage() {
       accentColor="amber"
       questions={questions}
       aiAction="stay_or_quit_quiz"
-      fileName="stay-or-quit-assessment-jobpilot"
+      fileName="stay-or-quit-assessment-jparc"
       nextSteps={nextSteps}
     />
   );
