@@ -475,15 +475,17 @@ function renderWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWi
    set corrupt text width calculations, causing spaced-out rendering in PDF.
    Only affects PDF export — preview, Word, and clipboard are unaffected. */
 function sanitizeForPdf(text: string): string {
-  let s = text;
-  /* # Remove invisible / zero-width characters that break measurements */
-  s = s.replace(/[\u200B-\u200F\u2028-\u202F\uFEFF\u00AD]/g, "");
-  /* # Replace arrows with readable text equivalents */
+  /* # NFKC normalization converts full-width chars, ligatures, and
+     # compatibility forms to their standard equivalents */
+  let s = text.normalize("NFKC");
+  /* # Remove ALL invisible / formatting Unicode (ChatGPT embeds these) */
+  s = s.replace(/[ ---\u009F\u00AD\u061C\u180E\u200B-\u200F\u2028-\u202F\u2060-\u206F\uFEFF\uFFF9-\uFFFB]/g, "");
+  /* # Replace arrows with readable text */
   s = s.replace(/[\u2192\u2794\u279C\u21D2]/g, " to ");
   s = s.replace(/\u2190/g, " from ");
-  /* # Replace non-standard hyphens with ASCII hyphen */
+  /* # Replace non-standard hyphens/dashes with ASCII hyphen */
   s = s.replace(/[\u2010-\u2012\u2015]/g, "-");
-  /* # Strip remaining characters outside WinAnsiEncoding */
+  /* # Strip any remaining characters outside jsPDF WinAnsiEncoding */
   s = s.replace(/[^\t\n\r\x20-\x7E\u00A0-\u00FF\u0152\u0153\u0160\u0161\u0178\u017D\u017E\u0192\u02C6\u02DC\u2013\u2014\u2018\u2019\u201A\u201C\u201D\u201E\u2020-\u2022\u2026\u2030\u2039\u203A\u20AC\u2122]/g, "");
   return s;
 }
