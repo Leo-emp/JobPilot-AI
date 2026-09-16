@@ -89,7 +89,7 @@ const MicIcon: React.FC<{ active?: boolean }> = ({ active }) => (
 
 export default function InterviewPage() {
   /* ---- Tab state ---- */
-  const [activeTab, setActiveTab] = useState<"predict" | "practice">("predict");
+  const [activeTab, setActiveTab] = useState<"predict" | "practice" | "saythis" | "star">("predict");
 
   /* ---- Predict tab fields ---- */
   const [jobTitle, setJobTitle] = useState("");
@@ -283,6 +283,26 @@ export default function InterviewPage() {
               {parsedQuestions.length}
             </span>
           )}
+        </button>
+        <button
+          onClick={() => { setActiveTab("saythis"); resetAI(); }}
+          className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            activeTab === "saythis"
+              ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+              : "text-text-secondary hover:text-white hover:bg-space-600 border border-transparent"
+          }`}
+        >
+          Say This, Not That
+        </button>
+        <button
+          onClick={() => { setActiveTab("star"); resetAI(); }}
+          className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+            activeTab === "star"
+              ? "bg-brand-indigo/20 text-white border border-brand-indigo/30"
+              : "text-text-secondary hover:text-white hover:bg-space-600 border border-transparent"
+          }`}
+        >
+          STAR Templates
         </button>
       </div>
 
@@ -699,6 +719,531 @@ export default function InterviewPage() {
         {error && (
           <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
             {error}
+          </div>
+        )}
+
+        {/* ============================================================
+           SAY THIS, NOT THAT TAB
+           ============================================================
+           Static content — zero AI calls. Casual-to-professional phrase
+           swaps organized by common interview situations.
+           ============================================================ */}
+        {activeTab === "saythis" && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">Say This, Not That</h2>
+            <p className="text-text-secondary text-sm mb-6">Swap casual phrases for professional ones. Organized by interview situation.</p>
+
+            <div className="space-y-4">
+
+              {/* ---- Why did you leave? ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Why did you leave?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;My boss was terrible and didn&apos;t appreciate my work.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I&apos;d maximized my growth in that role and I&apos;m seeking an environment where I can take on broader ownership.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Never criticize a former employer — interviewers hear it as a red flag about your attitude. Reframe as what you&apos;re moving toward.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Why did you leave?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;It was boring and I wasn&apos;t learning anything new.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I&apos;d reached a point where the role no longer challenged me technically, and I wanted to be in a high-growth environment.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">&ldquo;Boring&rdquo; sounds entitled. &ldquo;No longer challenged me&rdquo; positions you as someone who actively seeks growth.</p>
+                </div>
+              </div>
+
+              {/* ---- What's your weakness? ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: What&apos;s your weakness?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I&apos;m a perfectionist&rdquo; or &ldquo;I work too hard.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;Earlier in my career, I tended to take on too much myself rather than delegating. I&apos;ve since learned to trust my team and distribute work based on strengths.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Clich&eacute; answers signal you&apos;re dodging the question. Name a real weakness, show self-awareness, and demonstrate you&apos;ve worked on it.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: What&apos;s your weakness?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I don&apos;t really have any weaknesses.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I sometimes spend too long researching before making a decision. I&apos;ve started setting myself time-boxed research windows to move faster.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Claiming no weakness is the worst answer. It signals zero self-awareness. Always pair the weakness with an active fix.</p>
+                </div>
+              </div>
+
+              {/* ---- Describing your impact ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When describing your impact</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I helped with the project and did some data stuff.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I led the data analysis workstream, identifying three cost-saving opportunities that reduced operational expenses by 12%.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">&ldquo;Helped&rdquo; and &ldquo;stuff&rdquo; erase your contribution. Use a strong verb (led, designed, built) + specific scope + measurable outcome.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When describing your impact</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I was responsible for the website.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I owned the end-to-end redesign of our customer-facing platform, resulting in a 25% increase in user engagement.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">&ldquo;Responsible for&rdquo; is passive. &ldquo;Owned&rdquo; shows initiative and accountability — exactly what interviewers want to hear.</p>
+                </div>
+              </div>
+
+              {/* ---- Teamwork ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When discussing teamwork</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I&apos;m a good team player.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I coordinated across product, design, and engineering to align on the launch timeline — we shipped on schedule with zero critical bugs.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Claiming a trait is meaningless. Proving it with a specific example is everything. Replace adjectives with evidence.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When discussing teamwork</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;We all worked together and got it done.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I facilitated daily syncs between three teams, identified a dependency risk early, and re-sequenced our deliverables to keep us on track.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Vague group statements hide your individual contribution. Name your specific role and what YOU did to drive the outcome.</p>
+                </div>
+              </div>
+
+              {/* ---- Why this company? ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Why this company?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I heard it&apos;s a great company to work for.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;Your team&apos;s work on [specific product/initiative] stood out to me because it aligns with my experience in [your relevant skill], and I&apos;m excited to contribute to [specific goal].&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Generic flattery sounds like you applied everywhere. Reference something specific about the company and connect it to your skills.</p>
+                </div>
+              </div>
+
+              {/* ---- Salary / Compensation ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked about salary expectations</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I&apos;ll take whatever you offer&rdquo; or &ldquo;I need at least $X because of my bills.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;Based on my research and the scope of this role, I&apos;m targeting the [range] bracket. I&apos;m flexible depending on the total compensation package.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Never anchor to personal needs — anchor to market value. Giving a range shows you&apos;ve done research and are negotiating professionally.</p>
+                </div>
+              </div>
+
+              {/* ---- Opening / First impression ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When opening your answer</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;That&apos;s a great question!&rdquo; or &ldquo;So basically...&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">Jump straight into your answer. &ldquo;In my previous role at [Company], I...&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Filler openers waste time and signal nervousness. Going straight to the substance shows confidence and respect for the interviewer&apos;s time.</p>
+                </div>
+              </div>
+
+              {/* ---- Gaps in experience ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When addressing gaps in experience</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I don&apos;t have experience with that, sorry.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;While I haven&apos;t worked with [X] directly, I have strong experience with [related skill], and I&apos;ve already started upskilling through [course/project].&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Never apologize for a gap. Bridge it to what you DO have, then show you&apos;re already closing it. That&apos;s initiative.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================
+           STAR TEMPLATES TAB
+           ============================================================
+           Static fill-in-the-blank STAR frameworks for common
+           behavioral interview questions. Zero AI calls.
+           ============================================================ */}
+        {activeTab === "star" && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">STAR Answer Templates</h2>
+            <p className="text-text-secondary text-sm mb-6">Fill-in-the-blank frameworks for common behavioral questions. Practice filling these with your real experience.</p>
+
+            <div className="space-y-6">
+
+              {/* ---- Template 1: Conflict ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-3 bg-brand-indigo/10 border-b border-card-border">
+                  <p className="text-sm font-semibold text-white italic">&ldquo;Tell me about a time you had a conflict with a coworker.&rdquo;</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  {/* S */}
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">S</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Situation</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">While working on <em>[project]</em> at <em>[company]</em>, a teammate and I disagreed on <em>[the specific decision]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* T */}
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">T</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Task</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">We needed to reach a decision by <em>[deadline]</em> because <em>[what was at stake]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* A */}
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm">A</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Action</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I scheduled a 1-on-1, listened to their perspective first, then proposed <em>[your compromise or data-driven approach]</em>.</p>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1.5">Tip: Show you listened, didn&apos;t escalate, and found a solution together.</p>
+                    </div>
+                  </div>
+                  {/* R */}
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-sm">R</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Result</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">The approach worked — <em>[measurable outcome]</em>. We also established <em>[process improvement]</em> to prevent similar issues.</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Example */}
+                  <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-4 mt-2">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-2">Example completed answer</p>
+                    <p className="text-sm text-text-secondary leading-relaxed">While building the checkout redesign at Acme Corp, a teammate and I disagreed on whether to prioritize speed or accessibility. We needed to decide within two days because QA was waiting. I set up a quick call, heard their concerns about load time, then proposed we run a Lighthouse audit on both approaches. The data showed we could hit both targets with lazy-loaded components. We shipped on time, and the page scored 94 on accessibility with a 1.2s load time.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Template 2: Initiative ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-3 bg-brand-indigo/10 border-b border-card-border">
+                  <p className="text-sm font-semibold text-white italic">&ldquo;Tell me about a time you took initiative without being asked.&rdquo;</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">S</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Situation</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I noticed that <em>[a recurring problem]</em> at <em>[company]</em> was costing the team <em>[time/money/quality]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">T</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Task</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">No one had formally prioritized fixing it, but I saw an opportunity to <em>[the improvement]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm">A</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Action</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">On my own time, I <em>[built/researched/prototyped]</em> a solution using <em>[tool/approach]</em>. I presented it to <em>[who]</em> with a demo showing the before/after.</p>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1.5">Tip: Show you saw the gap, took ownership, and brought a solution — not just a complaint.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-sm">R</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Result</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">The team adopted it, saving <em>[hours/money]</em>. My manager <em>[recognized it / expanded it / gave me more ownership]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-4 mt-2">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-2">Example completed answer</p>
+                    <p className="text-sm text-text-secondary leading-relaxed">I noticed our sales team was manually copying CRM data into spreadsheets every Friday — about 4 hours of work. Nobody had flagged it as a priority. I spent a weekend building an automated pipeline using Zapier and Google Sheets. I demoed it Monday, we rolled it out that week, and it freed up 16 hours of labor per month. My manager then asked me to audit other manual workflows.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Template 3: Failure ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-3 bg-brand-indigo/10 border-b border-card-border">
+                  <p className="text-sm font-semibold text-white italic">&ldquo;Tell me about a time you failed.&rdquo;</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">S</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Situation</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">During <em>[project]</em> at <em>[company]</em>, I was responsible for <em>[your responsibility]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">T</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Task</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">The goal was to <em>[deliverable]</em> by <em>[deadline]</em>, and <em>[what depended on it]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm">A</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Action</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I made the mistake of <em>[specific mistake]</em>. As a result, <em>[what went wrong]</em>.</p>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1.5">Tip: Name the real mistake honestly. Vague failures (&ldquo;I worked too hard&rdquo;) sound rehearsed.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-sm">R</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Result</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I took accountability, then <em>[how you fixed it]</em>. The lesson I applied since: <em>[behavioral change + proof]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-4 mt-2">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-2">Example completed answer</p>
+                    <p className="text-sm text-text-secondary leading-relaxed">During a product launch, I was responsible for the payment API integration. I underestimated international transaction edge cases and didn&apos;t flag the risk early enough — we missed launch by a week. I took full accountability in the retro, documented every edge case, and created a pre-launch integration checklist the team still uses. On the next launch, we shipped two days early.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Template 4: Leadership under pressure ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-3 bg-brand-indigo/10 border-b border-card-border">
+                  <p className="text-sm font-semibold text-white italic">&ldquo;Describe a time you had to lead under pressure.&rdquo;</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">S</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Situation</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">During <em>[critical moment — e.g., outage, tight deadline, team crisis]</em> at <em>[company]</em>, <em>[what happened]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">T</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Task</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I needed to <em>[immediate goal]</em> while keeping the team <em>[calm/focused/aligned]</em> under <em>[time constraint]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm">A</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Action</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I <em>[took charge by doing X]</em>, delegated <em>[Y to whom]</em>, and communicated <em>[Z to stakeholders]</em>.</p>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1.5">Tip: Show calm decision-making, clear delegation, and stakeholder communication.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-sm">R</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Result</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">We resolved it in <em>[timeframe]</em> with <em>[outcome]</em>. The experience led to <em>[lasting improvement]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-4 mt-2">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-2">Example completed answer</p>
+                    <p className="text-sm text-text-secondary leading-relaxed">Our main API went down during a product demo to a key client. I immediately organized a war room — assigned one engineer to the fix, another to draft client comms, and kept our VP updated every 15 minutes. We restored service in 40 minutes. I then wrote the post-mortem and implemented automated alerting that caught the next issue before it reached production.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Template 5: Achievement ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-3 bg-brand-indigo/10 border-b border-card-border">
+                  <p className="text-sm font-semibold text-white italic">&ldquo;What&apos;s your greatest professional achievement?&rdquo;</p>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">S</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Situation</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">At <em>[company]</em>, the team was facing <em>[challenge or opportunity]</em> that no one had tackled.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm">T</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Task</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I stepped up to <em>[own/lead/design]</em> the solution, with the goal of <em>[specific target]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 font-bold text-sm">A</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Action</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">I <em>[specific actions — research, build, coordinate, present]</em> over <em>[timeframe]</em>, working with <em>[who]</em>.</p>
+                      </div>
+                      <p className="text-xs text-text-secondary mt-1.5">Tip: Pick an achievement relevant to the role you&apos;re applying for, not just the most impressive one.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-sm">R</div>
+                    <div className="flex-1">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-text-secondary mb-1">Result</p>
+                      <div className="rounded-lg bg-brand-indigo/5 border border-dashed border-brand-indigo/25 p-3">
+                        <p className="text-sm text-brand-light">The outcome was <em>[quantified result]</em>. It became <em>[lasting impact — adopted company-wide, promoted, recognized]</em>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-green-500/5 border border-green-500/20 p-4 mt-2">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-2">Example completed answer</p>
+                    <p className="text-sm text-text-secondary leading-relaxed">At my previous company, customer churn was at 8% monthly and no one had a data-driven approach to fix it. I proposed and built a predictive churn model using our CRM and usage data, then partnered with the success team to create targeted intervention workflows. Within three months, churn dropped to 4.5%. The model was adopted across all regions and I was asked to present the approach at our all-hands.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
       </div>

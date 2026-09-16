@@ -12,7 +12,7 @@
 
 import { RESUME_SYSTEM, SCORING_SYSTEM } from "./shared";
 import { analyzeResume, optimizeResume, rebuildResume, deepTailor, matchScore, careerPivot, parseResumeFields, createResume } from "./resume";
-import { coverLetter, interviewQuestions, interviewAnswer, interviewFeedback, mockInterviewRespond, mockInterviewStart, mockInterviewEvaluate, mockInterviewSummary, resignationLetter } from "./interview";
+import { coverLetter, interviewQuestions, interviewAnswer, interviewFeedback, mockInterviewRespond, mockInterviewStart, mockInterviewEvaluate, mockInterviewSummary, resignationLetter, interviewCoaching } from "./interview";
 import { linkedinAudit, linkedinRewrite, craftOutreach, linkedinContentStrategy } from "./linkedin";
 import { careerChangeDiscovery, careerChangeTransition, careerPersonalityQuiz, stayOrQuitQuiz } from "./quizzes";
 import { optimizeResumeCountry, rebuildResumeCountry, deepTailorCountry, careerPivotCountry, createResumeCountry } from "./resume-country";
@@ -65,6 +65,7 @@ export function buildPrompt(action: string, payload: Record<string, any>): impor
     case "mock_interview_start": return { prompt: mockInterviewStart(payload) };
     case "mock_interview_evaluate": return { prompt: mockInterviewEvaluate(payload) };
     case "mock_interview_summary": return { prompt: mockInterviewSummary(payload) };
+    case "interview_coaching": return { prompt: interviewCoaching(payload) };
     case "craft_outreach": return { prompt: craftOutreach(payload) };
     case "linkedin_content_strategy": return { prompt: linkedinContentStrategy(payload) };
     case "parse_resume_fields": return { prompt: parseResumeFields(payload) };

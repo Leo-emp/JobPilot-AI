@@ -568,3 +568,79 @@ ${payload.customInstructions ? `\nUSER'S CUSTOM INSTRUCTIONS (follow these as ad
 
 Return ONLY the resignation letter text. No commentary, no markdown formatting, no code fences.`;
 }
+
+
+/* ============================================================
+   INTERVIEW LANGUAGE COACH
+   ============================================================
+   Generates professional versions of the candidate's mock
+   interview answers, personalized with their resume, target
+   company, and JD. Returns JSON array of coaching objects.
+   ============================================================ */
+export function interviewCoaching(payload: Record<string, any>): string {
+  const company = payload.company || "the company";
+  const companyBlock = payload.companyPromptBlock || "";
+
+  /* Company-specific language coaching rules */
+  /* Different companies expect different communication styles */
+  const companyLanguageRules = companyBlock
+    ? `COMPANY-SPECIFIC LANGUAGE FOR ${company}:
+Use language and frameworks that ${company} interviewers value.
+${companyBlock}
+Frame every answer to align with ${company}'s culture and evaluation criteria.
+If ${company} uses specific frameworks (e.g., Amazon Leadership Principles, Google Googleyness), weave that language naturally into pro answers.`
+    : `Use standard professional business English. Quantify outcomes, use action verbs, show initiative. Frame answers for a ${payload.interviewType || "general"} interview context.`;
+
+  return `You are an elite interview language coach specializing in helping international professionals sound polished and confident in corporate interviews. The candidate just completed a mock interview. They understand the questions and have relevant experience, but their language lacks the polish that hiring managers expect.
+
+YOUR TASK: For each question below, write a professional version of the candidate's answer and explain what they should learn.
+
+RULES FOR PRO ANSWERS:
+1. Use the candidate's ACTUAL experiences, skills, and projects from their resume. NEVER invent achievements, metrics, or skills they don't have.
+2. Keep answers 150-200 words (60-90 seconds spoken). Concise and punchy.
+3. Only use STAR method for behavioral questions ("Tell me about a time..."). For motivation/technical/opinion questions — answer directly and naturally.
+4. NEVER open with filler ("That's a great question", "I believe I would be a great fit"). Jump straight into the answer.
+5. Replace every casual phrase with a professional equivalent:
+   - "my boss was not good" → never criticize; reframe as YOUR growth need
+   - "it was boring" → "I'd maximized my growth in that role"
+   - "I did stuff with data" → "I led data-driven process optimization"
+   - "I'm good at teamwork" → name a specific collaboration with measurable outcome
+   - "I left because..." → "I'm seeking an environment where I can..."
+
+${companyLanguageRules}
+
+RULES FOR TAKEAWAYS (max 3 per question):
+- Each takeaway identifies a specific pattern: "You said [X] → say [Y] instead — here's why: [reason]"
+- Focus on REUSABLE patterns they can apply to any question, not one-off fixes
+- Be specific — quote their actual words and show the exact replacement
+
+RULES FOR PHRASES TO REMEMBER (2-3 per question):
+- Extract professional phrases from each pro answer that the candidate should memorize
+- These must be plug-and-play templates: "[X] years of experience driving [outcome]" — they fill in their own details
+- Only include phrases that sound natural when spoken aloud
+
+CANDIDATE CONTEXT:
+- Target Role: ${payload.role || "Not specified"}
+- Target Company: ${company}
+- Interview Type: ${payload.interviewType || "General"}
+- Experience Level: ${payload.experience || "Mid-level"}
+
+${payload.jobDescription ? `JOB DESCRIPTION:\n${payload.jobDescription}` : ""}
+
+CANDIDATE'S RESUME:
+${payload.resume || "No resume provided"}
+
+INTERVIEW TRANSCRIPT (${payload.questionsAnswered || "unknown"} questions answered):
+${payload.transcript || "No transcript provided"}
+
+Return ONLY valid JSON (no markdown, no code fences) as an array:
+[
+  {
+    "questionNumber": 1,
+    "question": "short version of the question asked",
+    "proAnswer": "the professional answer using their real experience (150-200 words)",
+    "takeaways": ["specific pattern: You said X → say Y — here's why", "pattern 2", "pattern 3"],
+    "phrasesToRemember": ["reusable phrase template 1", "reusable phrase template 2"]
+  }
+]`;
+}

@@ -134,7 +134,7 @@ describe("aiSchema", () => {
       "cover_letter", "interview_questions", "interview_answer", "career_pivot",
       "linkedin_audit", "linkedin_rewrite", "mock_interview_start",
       "mock_interview_respond", "mock_interview_evaluate", "mock_interview_summary",
-      "craft_outreach", "parse_resume_fields",
+      "interview_coaching", "craft_outreach", "parse_resume_fields",
     ];
     for (const action of actions) {
       const result = aiSchema.safeParse({ action, payload: {} });

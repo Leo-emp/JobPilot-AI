@@ -83,6 +83,7 @@ const aiActions = [
   "mock_interview_respond",
   "mock_interview_evaluate",
   "mock_interview_summary",
+  "interview_coaching",
   "craft_outreach",
   "parse_resume_fields",
   /* Create resume from scratch */

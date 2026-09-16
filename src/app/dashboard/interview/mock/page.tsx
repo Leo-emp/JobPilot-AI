@@ -267,6 +267,43 @@ export default function MockInterviewPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  /* ---- Persist results to sessionStorage ---- */
+  /* Enables: (1) coach page reads interview data, (2) "Back to Results" restores state */
+  useEffect(() => {
+    if (!finalScore) return;
+    try {
+      sessionStorage.setItem("mockInterviewSession", JSON.stringify({
+        role, company, companyPromptBlock, interviewType, experience,
+        jobDescription, resume, messages, finalScore, elapsedTime,
+      }));
+    } catch { /* sessionStorage full or unavailable — non-critical, ignore */ }
+  }, [finalScore, role, company, companyPromptBlock, interviewType, experience, jobDescription, resume, messages, elapsedTime]);
+
+  /* ---- Restore results from sessionStorage (browser back navigation) ---- */
+  /* Only restores if phase is "setup" and no finalScore exists (fresh mount) */
+  useEffect(() => {
+    if (phase !== "setup" || finalScore) return;
+    try {
+      const saved = sessionStorage.getItem("mockInterviewSession");
+      if (!saved) return;
+      const data = JSON.parse(saved);
+      if (!data.finalScore) return;
+      /* Restore all state needed to render the results phase */
+      setRole(data.role || "");
+      setCompany(data.company || "");
+      setCompanyPromptBlock(data.companyPromptBlock || "");
+      setInterviewType(data.interviewType || "Behavioral");
+      setExperience(data.experience || "Mid-level");
+      setJobDescription(data.jobDescription || "");
+      setResume(data.resume || "");
+      setMessages(data.messages || []);
+      setFinalScore(data.finalScore);
+      setElapsedTime(data.elapsedTime || 0);
+      setPhase("results");
+    } catch { /* corrupt or missing — ignore, user just sees setup page */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); /* intentionally run once on mount only */
+
   /* ---- Refs ---- */
   const videoRef = useRef<HTMLVideoElement>(null);                      /* user's webcam element */
   const streamRef = useRef<MediaStream | null>(null);                   /* webcam MediaStream */
@@ -1530,6 +1567,22 @@ export default function MockInterviewPage() {
             )}
           </div>
 
+          {/* ---- Interview Coach CTA (only when below "Interview Ready") ---- */}
+          {finalScore.readinessLevel !== "Interview Ready" && finalScore.readinessLevel !== "Excellent" && (
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-600/10 to-purple-600/10 border border-brand-indigo/30">
+              <p className="text-white text-sm mb-3">
+                Your answers showed good thinking but the language needs polish. See how a pro would phrase each answer using <span className="text-brand-light font-semibold">your real experience</span>.
+              </p>
+              <Link
+                href="/dashboard/interview/mock/coach"
+                className="inline-block px-6 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all"
+              >
+                Get Pro Answers
+              </Link>
+              <p className="text-xs text-text-secondary mt-2">Uses 1 AI credit</p>
+            </div>
+          )}
+
           {/* ---- Per-Question Breakdown ---- */}
           {finalScore.questionScores && finalScore.questionScores.length > 0 && (
             <div className="p-6 rounded-2xl bg-space-700/80 border border-card-border">
@@ -1573,7 +1626,7 @@ export default function MockInterviewPage() {
           {/* ---- Action buttons ---- */}
           <div className="flex gap-4">
             <button
-              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setQuestionNumber(0); setSkippedQuestions([]); setError(""); setWebcamReady(false); setCompanyCategory(""); setCompanySlug(""); setCompany(""); setCompanyPromptBlock(""); }}
+              onClick={() => { setPhase("setup"); setFinalScore(null); setMessages([]); setCurrentAIMessage(""); setExchangeNumber(0); setQuestionNumber(0); setSkippedQuestions([]); setError(""); setWebcamReady(false); setCompanyCategory(""); setCompanySlug(""); setCompany(""); setCompanyPromptBlock(""); try { sessionStorage.removeItem("mockInterviewSession"); } catch {} }}
               className="flex-1 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-500/90 transition-all">
               Practice Another Interview
             </button>
