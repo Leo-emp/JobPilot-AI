@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    MARKDOWN RESULT - Renders AI output as formatted HTML
    ============================================================
    Custom markdown-to-HTML renderer that handles the common
@@ -471,23 +471,20 @@ function renderWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWi
 }
 
 /* ---- Sanitize Unicode for jsPDF's WinAnsiEncoding ---- */
-/* jsPDF's built-in fonts (helvetica) only support WinAnsiEncoding characters.
-   Characters outside this set (arrows, special hyphens, zero-width chars) corrupt
-   text width calculations, causing spaced-out or garbled rendering in the PDF.
-   This ONLY applies to PDF export — preview, Word, and clipboard are unaffected. */
+/* jsPDF built-in fonts only support WinAnsiEncoding. Characters outside this
+   set corrupt text width calculations, causing spaced-out rendering in PDF.
+   Only affects PDF export — preview, Word, and clipboard are unaffected. */
 function sanitizeForPdf(text: string): string {
   let s = text;
   /* # Remove invisible / zero-width characters that break measurements */
-  s = s.replace(/[​-‏ - ﻿­]/g, "");
+  s = s.replace(/[\u200B-\u200F\u2028-\u202F\uFEFF\u00AD]/g, "");
   /* # Replace arrows with readable text equivalents */
-  s = s.replace(/[→➔➜⇒]/g, " to ");
-  s = s.replace(/←/g, " from ");
+  s = s.replace(/[\u2192\u2794\u279C\u21D2]/g, " to ");
+  s = s.replace(/\u2190/g, " from ");
   /* # Replace non-standard hyphens with ASCII hyphen */
-  s = s.replace(/[‐-‒―]/g, "-");
-  /* # Strip any remaining characters outside WinAnsiEncoding.
-     # Keeps: ASCII printable, Latin-1 supplement (accented chars),
-     # smart quotes, em/en dashes, bullets, ellipsis, euro, trademark */
-  s = s.replace(/[^\t\n\r\x20-\x7E -ÿŒœŠšŸŽžƒˆ˜–—‘’‚“”„†-•…‰‹›€™]/g, "");
+  s = s.replace(/[\u2010-\u2012\u2015]/g, "-");
+  /* # Strip remaining characters outside WinAnsiEncoding */
+  s = s.replace(/[^\t\n\r\x20-\x7E\u00A0-\u00FF\u0152\u0153\u0160\u0161\u0178\u017D\u017E\u0192\u02C6\u02DC\u2013\u2014\u2018\u2019\u201A\u201C\u201D\u201E\u2020-\u2022\u2026\u2030\u2039\u203A\u20AC\u2122]/g, "");
   return s;
 }
 
