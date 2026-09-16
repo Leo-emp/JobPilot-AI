@@ -563,6 +563,9 @@ export default function MarkdownResult({ result, showDownload = true, editable =
   const [pdfLoading, setPdfLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedMarkdownState, setEditedMarkdownState] = useState<string | null>(null);
+  /* # Filename prompt state — shown before PDF/Word download */
+  const [fileNamePrompt, setFileNamePrompt] = useState<{ open: boolean; format: "pdf" | "word"; name: string }>({ open: false, format: "pdf", name: "" });
+  const fileNameInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const cleaned = stripCodeFences(result);
   const source = editedMarkdownState ?? cleaned;
@@ -575,7 +578,8 @@ export default function MarkdownResult({ result, showDownload = true, editable =
   };
 
   /* Download as PDF — matches reference resume layout exactly */
-  const downloadPDF = async () => {
+  const downloadPDF = async (customName?: string) => {
+    const exportName = customName || fileName;
     setPdfLoading(true);
     try {
       const { jsPDF: JsPDF } = await import("jspdf");
@@ -870,13 +874,13 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         y += 1;
       }
 
-      doc.save(`${fileName}.pdf`);
+      doc.save(`${exportName}.pdf`);
     } catch {
       /* Fallback: open print dialog with styled HTML */
       const downloadHTML = markdownToDownloadHTML(getEditedMarkdown());
       const printWindow = window.open("", "_blank");
       if (printWindow) {
-        printWindow.document.write(`<!DOCTYPE html><html><head><title>${fileName} - JP Arc</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>${exportName} - JP Arc</title><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`);
         printWindow.document.close();
         setTimeout(() => printWindow.print(), 300);
       }
@@ -886,14 +890,15 @@ export default function MarkdownResult({ result, showDownload = true, editable =
   };
 
   /* Download as Word — creates .doc blob */
-  const downloadWord = () => {
+  const downloadWord = (customName?: string) => {
+    const exportName = customName || fileName;
     const downloadHTML = markdownToDownloadHTML(getEditedMarkdown());
     const wordContent = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>${DOWNLOAD_STYLES}</style></head><body>${downloadHTML}</body></html>`;
     const blob = new Blob([wordContent], { type: "application/msword" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${fileName}.doc`;
+    a.download = `${exportName}.doc`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -930,13 +935,13 @@ export default function MarkdownResult({ result, showDownload = true, editable =
           {showDownload && (
             <>
               <button
-                onClick={downloadWord}
+                onClick={() => { setFileNamePrompt({ open: true, format: "word", name: fileName }); setTimeout(() => fileNameInputRef.current?.select(), 50); }}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white hover:border-brand-indigo/30 transition-colors"
               >
                 Download Word
               </button>
               <button
-                onClick={downloadPDF}
+                onClick={() => { setFileNamePrompt({ open: true, format: "pdf", name: fileName }); setTimeout(() => fileNameInputRef.current?.select(), 50); }}
                 disabled={pdfLoading}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50"
               >
@@ -968,6 +973,54 @@ export default function MarkdownResult({ result, showDownload = true, editable =
 
       {/* AI-generated content disclosure */}
       <AiDisclosure />
+
+      {/* Filename prompt modal — appears before PDF/Word download */}
+      {fileNamePrompt.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setFileNamePrompt(p => ({ ...p, open: false }))}>
+          <div className="bg-space-700 border border-card-border rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white mb-1">Save as {fileNamePrompt.format === "pdf" ? "PDF" : "Word Document"}</h3>
+            <p className="text-sm text-text-secondary mb-4">Choose a file name for your download</p>
+            <div className="flex items-center gap-2 mb-5">
+              <input
+                ref={fileNameInputRef}
+                type="text"
+                value={fileNamePrompt.name}
+                onChange={e => setFileNamePrompt(p => ({ ...p, name: e.target.value }))}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && fileNamePrompt.name.trim()) {
+                    const name = fileNamePrompt.name.trim();
+                    setFileNamePrompt(p => ({ ...p, open: false }));
+                    if (fileNamePrompt.format === "pdf") downloadPDF(name);
+                    else downloadWord(name);
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-space-600 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo/50 focus:ring-1 focus:ring-brand-indigo/30"
+                placeholder="Enter file name"
+              />
+              <span className="text-text-secondary text-sm font-medium">.{fileNamePrompt.format === "pdf" ? "pdf" : "doc"}</span>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setFileNamePrompt(p => ({ ...p, open: false }))}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const name = fileNamePrompt.name.trim() || fileName;
+                  setFileNamePrompt(p => ({ ...p, open: false }));
+                  if (fileNamePrompt.format === "pdf") downloadPDF(name);
+                  else downloadWord(name);
+                }}
+                className="px-5 py-2 rounded-xl text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors"
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

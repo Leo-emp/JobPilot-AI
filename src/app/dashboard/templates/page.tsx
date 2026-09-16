@@ -1638,6 +1638,10 @@ export default function TemplatesPage() {
   const [formData, setFormData] = useState<ResumeData>(EMPTY_FORM);
   const [filter, setFilter] = useState("All");
   const [pdfLoading, setPdfLoading] = useState(false);
+  /* # Filename prompt state for PDF/Word download */
+  const defaultFileName = `${formData.fullName || "resume"}-resume`;
+  const [fileNamePrompt, setFileNamePrompt] = useState<{ open: boolean; format: "pdf" | "word"; name: string }>({ open: false, format: "pdf", name: "" });
+  const fileNameInputRef = useRef<HTMLInputElement>(null);
 
   /* PDF upload state */
   const [uploadStatus, setUploadStatus] = useState<"idle" | "extracting" | "parsing" | "done" | "error">("idle");
@@ -1815,7 +1819,8 @@ export default function TemplatesPage() {
   };
 
   /* ---- PDF Download via jspdf + html2canvas — content-aware page breaking ---- */
-  const downloadPDF = async () => {
+  const downloadPDF = async (customName?: string) => {
+    const exportName = customName || defaultFileName;
     setPdfLoading(true);
     try {
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
@@ -1994,7 +1999,7 @@ export default function TemplatesPage() {
         isFirstPage = false;
       }
 
-      pdf.save(`${formData.fullName || "resume"}-resume.pdf`);
+      pdf.save(`${exportName}.pdf`);
     } catch (err) {
       console.error("PDF generation error:", err);
       const html = selected.buildHTML(formData);
@@ -2004,14 +2009,15 @@ export default function TemplatesPage() {
   };
 
   /* ---- Word Download ---- */
-  const downloadWord = () => {
+  const downloadWord = (customName?: string) => {
+    const exportName = customName || defaultFileName;
     const html = selected.buildHTML(formData);
     const wordHTML = html.replace("<html>", '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">');
     const blob = new Blob([wordHTML], { type: "application/msword" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${formData.fullName || "resume"}-resume.doc`;
+    a.download = `${exportName}.doc`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -2403,10 +2409,10 @@ export default function TemplatesPage() {
               <button onClick={() => setStep("gallery")} className="px-4 py-2.5 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
                 Change Template
               </button>
-              <button onClick={downloadWord} className="px-4 py-2.5 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
+              <button onClick={() => { setFileNamePrompt({ open: true, format: "word", name: defaultFileName }); setTimeout(() => fileNameInputRef.current?.select(), 50); }} className="px-4 py-2.5 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors">
                 Download Word
               </button>
-              <button onClick={downloadPDF} disabled={pdfLoading}
+              <button onClick={() => { setFileNamePrompt({ open: true, format: "pdf", name: defaultFileName }); setTimeout(() => fileNameInputRef.current?.select(), 50); }} disabled={pdfLoading}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors disabled:opacity-50">
                 {pdfLoading ? "Generating..." : "Download PDF"}
               </button>
@@ -2426,6 +2432,54 @@ export default function TemplatesPage() {
           <p className="mt-4 text-sm text-text-muted text-center">
             Click &quot;Edit Details&quot; to modify content, or download directly as PDF or Word.
           </p>
+        </div>
+      )}
+
+      {/* # Filename prompt modal */}
+      {fileNamePrompt.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setFileNamePrompt(p => ({ ...p, open: false }))}>
+          <div className="bg-space-700 border border-card-border rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white mb-1">Save as {fileNamePrompt.format === "pdf" ? "PDF" : "Word Document"}</h3>
+            <p className="text-sm text-text-secondary mb-4">Choose a file name for your download</p>
+            <div className="flex items-center gap-2 mb-5">
+              <input
+                ref={fileNameInputRef}
+                type="text"
+                value={fileNamePrompt.name}
+                onChange={e => setFileNamePrompt(p => ({ ...p, name: e.target.value }))}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && fileNamePrompt.name.trim()) {
+                    const name = fileNamePrompt.name.trim();
+                    setFileNamePrompt(p => ({ ...p, open: false }));
+                    if (fileNamePrompt.format === "pdf") downloadPDF(name);
+                    else downloadWord(name);
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-space-600 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo/50 focus:ring-1 focus:ring-brand-indigo/30"
+                placeholder="Enter file name"
+              />
+              <span className="text-text-secondary text-sm font-medium">.{fileNamePrompt.format === "pdf" ? "pdf" : "doc"}</span>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setFileNamePrompt(p => ({ ...p, open: false }))}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-space-600 border border-card-border text-text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const name = fileNamePrompt.name.trim() || defaultFileName;
+                  setFileNamePrompt(p => ({ ...p, open: false }));
+                  if (fileNamePrompt.format === "pdf") downloadPDF(name);
+                  else downloadWord(name);
+                }}
+                className="px-5 py-2 rounded-xl text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors"
+              >
+                Download
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
