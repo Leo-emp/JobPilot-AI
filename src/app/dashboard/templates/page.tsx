@@ -2450,9 +2450,9 @@ export default function TemplatesPage() {
                 onKeyDown={e => {
                   if (e.key === "Enter" && fileNamePrompt.name.trim()) {
                     const name = fileNamePrompt.name.trim();
-                    const fmt = fileNamePrompt.format;
                     setFileNamePrompt(p => ({ ...p, open: false }));
-                    setTimeout(() => { if (fmt === "pdf") downloadPDF(name); else downloadWord(name); }, 150);
+                    if (fileNamePrompt.format === "pdf") downloadPDF(name);
+                    else downloadWord(name);
                   }
                 }}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-space-600 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo/50 focus:ring-1 focus:ring-brand-indigo/30"
@@ -2470,9 +2470,9 @@ export default function TemplatesPage() {
               <button
                 onClick={() => {
                   const name = fileNamePrompt.name.trim() || defaultFileName;
-                  const fmt = fileNamePrompt.format;
                   setFileNamePrompt(p => ({ ...p, open: false }));
-                  setTimeout(() => { if (fmt === "pdf") downloadPDF(name); else downloadWord(name); }, 150);
+                  if (fileNamePrompt.format === "pdf") downloadPDF(name);
+                  else downloadWord(name);
                 }}
                 className="px-5 py-2 rounded-xl text-sm font-medium bg-brand-indigo/20 border border-brand-indigo/30 text-brand-light hover:text-white hover:bg-brand-indigo/30 transition-colors"
               >

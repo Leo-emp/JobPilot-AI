@@ -479,7 +479,7 @@ function sanitizeForPdf(text: string): string {
      # compatibility forms to their standard equivalents */
   let s = text.normalize("NFKC");
   /* # Remove ALL invisible / formatting Unicode (ChatGPT embeds these) */
-  s = s.replace(/[ ---\u009F\u00AD\u061C\u180E\u200B-\u200F\u2028-\u202F\u2060-\u206F\uFEFF\uFFF9-\uFFFB]/g, "");
+  s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\u009F\u00AD\u061C\u180E\u200B-\u200F\u2028-\u202F\u2060-\u206F\uFEFF\uFFF9-\uFFFB]/g, "");
   /* # Replace arrows with readable text */
   s = s.replace(/[\u2192\u2794\u279C\u21D2]/g, " to ");
   s = s.replace(/\u2190/g, " from ");
