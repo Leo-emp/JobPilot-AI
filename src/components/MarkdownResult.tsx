@@ -470,6 +470,27 @@ function renderWrappedText(doc: jsPDF, text: string, x: number, y: number, maxWi
   return y;
 }
 
+/* ---- Sanitize Unicode for jsPDF's WinAnsiEncoding ---- */
+/* jsPDF's built-in fonts (helvetica) only support WinAnsiEncoding characters.
+   Characters outside this set (arrows, special hyphens, zero-width chars) corrupt
+   text width calculations, causing spaced-out or garbled rendering in the PDF.
+   This ONLY applies to PDF export — preview, Word, and clipboard are unaffected. */
+function sanitizeForPdf(text: string): string {
+  let s = text;
+  /* # Remove invisible / zero-width characters that break measurements */
+  s = s.replace(/[​-‏ - ﻿­]/g, "");
+  /* # Replace arrows with readable text equivalents */
+  s = s.replace(/[→➔➜⇒]/g, " to ");
+  s = s.replace(/←/g, " from ");
+  /* # Replace non-standard hyphens with ASCII hyphen */
+  s = s.replace(/[‐-‒―]/g, "-");
+  /* # Strip any remaining characters outside WinAnsiEncoding.
+     # Keeps: ASCII printable, Latin-1 supplement (accented chars),
+     # smart quotes, em/en dashes, bullets, ellipsis, euro, trademark */
+  s = s.replace(/[^\t\n\r\x20-\x7E -ÿŒœŠšŸŽžƒˆ˜–—‘’‚“”„†-•…‰‹›€™]/g, "");
+  return s;
+}
+
 /* ---- Strip markdown code fences that Gemini sometimes wraps responses in ---- */
 function stripCodeFences(text: string): string {
   return text
@@ -641,7 +662,8 @@ export default function MarkdownResult({ result, showDownload = true, editable =
         }).join("\n");
       };
 
-      const lines = normalizeHeaders(editedMarkdown).split("\n");
+      /* # Sanitize Unicode before PDF rendering — prevents spaced-out/garbled text */
+      const lines = sanitizeForPdf(normalizeHeaders(editedMarkdown)).split("\n");
 
       for (const line of lines) {
         const trimmed = line.trim();
