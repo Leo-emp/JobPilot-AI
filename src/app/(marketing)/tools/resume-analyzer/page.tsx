@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free AI Resume Analyzer — ATS Score & Detailed Feedback | JP Arc",
@@ -81,6 +81,7 @@ export default function ResumeAnalyzerToolPage() {
           { name: "Resume Analyzer", url: "https://jobpilotai.co/tools/resume-analyzer" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Tool</p>

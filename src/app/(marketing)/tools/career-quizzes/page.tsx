@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free Career Quizzes & Assessments — AI-Powered Insights | JP Arc",
@@ -84,6 +84,7 @@ export default function CareerQuizzesLandingPage() {
           { name: "Career Quizzes", url: "https://jobpilotai.co/tools/career-quizzes" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       {/* # Hero Section */}
       <div className="text-center mb-16">

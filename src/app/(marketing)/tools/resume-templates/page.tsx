@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import TemplateCarousel from "./TemplateCarousel";
 
 export const metadata = {
@@ -82,6 +82,7 @@ export default function ResumeTemplatesToolPage() {
           { name: "Resume Templates", url: "https://jobpilotai.co/tools/resume-templates" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free Templates</p>

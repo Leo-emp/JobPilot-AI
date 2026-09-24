@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free Chrome Extension — Save Jobs from Any Job Board in One Click | JP Arc",
@@ -93,6 +93,7 @@ export default function ChromeExtensionToolPage() {
           { name: "Chrome Extension", url: "https://jobpilotai.co/tools/chrome-extension" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free Chrome Extension</p>

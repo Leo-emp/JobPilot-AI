@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free Resignation Letter Generator — Professional & Instant | JP Arc",
@@ -84,6 +84,7 @@ export default function ResignationLetterGeneratorPage() {
           { name: "Resignation Letter Generator", url: "https://jobpilotai.co/tools/resignation-letter-generator" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       {/* # Hero Section */}
       <div className="text-center mb-16">

@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free AI Interview Prep & Mock Interviews — Practice & Ace It | JP Arc",
@@ -81,6 +81,7 @@ export default function InterviewPrepToolPage() {
           { name: "Interview Prep", url: "https://jobpilotai.co/tools/interview-prep" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Tool</p>

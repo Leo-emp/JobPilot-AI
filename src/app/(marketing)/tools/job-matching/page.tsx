@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Smart Job Matching — AI Match Score & Skills Gap Analysis | JP Arc",
@@ -83,6 +83,7 @@ export default function JobMatchingToolPage() {
           { name: "Smart Job Matching", url: "https://jobpilotai.co/tools/job-matching" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       {/* # Hero */}
       <div className="text-center mb-16">

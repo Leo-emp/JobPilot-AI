@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "AI Job Board — Smart Job Search with Match Scores | JP Arc",
@@ -81,6 +81,7 @@ export default function JobSearchToolPage() {
           { name: "AI Job Board", url: "https://jobpilotai.co/tools/job-search" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       {/* # Hero */}
       <div className="text-center mb-16">

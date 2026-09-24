@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free AI Resume Rebuild — Complete Resume Rewrite for Any Role | JP Arc",
@@ -81,6 +81,7 @@ export default function ResumeRebuildToolPage() {
           { name: "Resume Rebuild", url: "https://jobpilotai.co/tools/resume-rebuild" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Tool</p>

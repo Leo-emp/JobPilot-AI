@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Should I Quit My Job? Free Stay or Quit Assessment | JP Arc",
@@ -81,6 +81,7 @@ export default function StayOrQuitAssessmentToolPage() {
           { name: "Stay or Quit Assessment", url: "https://jobpilotai.co/tools/stay-or-quit-assessment" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Assessment</p>

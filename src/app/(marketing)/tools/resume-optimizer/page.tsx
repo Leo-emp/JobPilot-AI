@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free AI Resume Optimizer — Tailor Your Resume to Any Job | JP Arc",
@@ -81,6 +81,7 @@ export default function ResumeOptimizerToolPage() {
           { name: "Resume Optimizer", url: "https://jobpilotai.co/tools/resume-optimizer" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Tool</p>

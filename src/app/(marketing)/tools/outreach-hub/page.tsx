@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free AI Outreach Hub — Networking Messages That Get Replies | JP Arc",
@@ -91,6 +91,7 @@ export default function OutreachHubToolPage() {
           { name: "AI Outreach Hub", url: "https://jobpilotai.co/tools/outreach-hub" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Tool</p>

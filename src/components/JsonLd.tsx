@@ -132,6 +132,29 @@ export function BreadcrumbJsonLd({ items }: { items: { name: string; url: string
   );
 }
 
+/* # FAQPage schema — expandable Q&A dropdowns in Google search results */
+export function FAQPageJsonLd({ faqs }: { faqs: { q: string; a: string }[] }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.a,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
+    />
+  );
+}
+
 /* # Article schema — for individual blog posts */
 export function ArticleJsonLd({
   title,

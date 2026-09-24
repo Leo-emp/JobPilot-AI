@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free Career Personality Test — Find Your Ideal Career Match | JP Arc",
@@ -81,6 +81,7 @@ export default function CareerPersonalityTestToolPage() {
           { name: "Career Personality Test", url: "https://jobpilotai.co/tools/career-personality-test" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       <div className="text-center mb-16">
         <p className="text-brand-light text-sm font-medium tracking-wider uppercase mb-3">Free AI Assessment</p>

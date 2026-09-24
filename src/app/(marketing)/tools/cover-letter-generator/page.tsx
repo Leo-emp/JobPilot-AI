@@ -7,7 +7,7 @@
    ============================================================ */
 
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/JsonLd";
+import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
   title: "Free AI Cover Letter Generator — Personalized & Job-Matched | JP Arc",
@@ -81,6 +81,7 @@ export default function CoverLetterGeneratorToolPage() {
           { name: "Cover Letter Generator", url: "https://jobpilotai.co/tools/cover-letter-generator" },
         ]}
       />
+      <FAQPageJsonLd faqs={faqs} />
 
       {/* # Hero */}
       <div className="text-center mb-16">
