@@ -51,8 +51,6 @@ export const metadata: Metadata = {
     "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
   keywords: [
     "JP Arc",
-    "JobPilot AI",
-    "jobpilotai",
     "AI resume builder",
     "free resume builder",
     "ATS resume builder",

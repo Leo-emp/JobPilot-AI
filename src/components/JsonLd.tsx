@@ -58,7 +58,7 @@ export function OrganizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "JP Arc",
-    alternateName: ["JP Arc", "JobPilot AI", "jobpilotai"],
+    alternateName: ["JP Arc"],
     url: "https://jobpilotai.co",
     logo: "https://jobpilotai.co/icon.png",
     image: "https://jobpilotai.co/opengraph-image",
@@ -68,7 +68,7 @@ export function OrganizationJsonLd() {
     sameAs: [
       "https://twitter.com/jobpilotai",
       "https://linkedin.com/company/jobpilotai",
-      "https://github.com/Leo-emp/JP Arc-AI",
+      "https://github.com/Leo-emp/JobPilot-AI",
     ],
     contactPoint: {
       "@type": "ContactPoint",
@@ -92,7 +92,7 @@ export function WebSiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "JP Arc",
-    alternateName: ["JP Arc", "JobPilot AI"],
+    alternateName: ["JP Arc"],
     url: "https://jobpilotai.co",
     description:
       "AI-powered career platform — resume optimization, cover letters, mock interviews, job matching.",

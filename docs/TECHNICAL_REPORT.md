@@ -1,4 +1,4 @@
-# JobPilot AI: Technical Report
+# JP Arc: Technical Report
 
 ## Problem Statement
 

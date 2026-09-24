@@ -22,9 +22,9 @@ test.describe("Landing Page", () => {
   });
 
   test("renders navigation bar with brand name", async ({ page }) => {
-    /* # Brand name "JobPilot AI" in navbar */
+    /* # Brand name "JP Arc" in navbar */
     await expect(page.locator("nav")).toBeVisible();
-    await expect(page.getByText("JobPilot AI").first()).toBeVisible();
+    await expect(page.getByText("JP Arc").first()).toBeVisible();
   });
 
   test("renders pricing section with plan tiers", async ({ page }) => {

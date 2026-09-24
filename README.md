@@ -1,4 +1,4 @@
-# JobPilot AI
+# JP Arc
 
 A production-grade AI career platform that helps job seekers optimize resumes, match jobs, generate cover letters, and prepare for interviews — deployed at [jobpilotai.co](https://jobpilotai.co) with Stripe billing, multi-provider auth, and a Chrome extension.
 

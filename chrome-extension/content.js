@@ -659,7 +659,7 @@ async function injectBadge(jobData) {
 
   badge.innerHTML = `
     <div class="jp-badge-panel" id="jp-panel">
-      <h3>JobPilot AI</h3>
+      <h3>JP Arc</h3>
       <div class="jp-badge-job-info">
         <strong>${escapeHtml(jobData.title)}</strong>
         ${escapeHtml(jobData.company)}
@@ -675,12 +675,12 @@ async function injectBadge(jobData) {
     <div class="jp-badge-main" id="jp-trigger">
       <div class="jp-badge-logo">JP</div>
       <div class="jp-badge-text">
-        <span class="jp-badge-title">JobPilot AI</span>
+        <span class="jp-badge-title">JP Arc</span>
         <span class="jp-badge-score loading" id="jp-score">Checking match...</span>
       </div>
       <button class="jp-badge-minimize" id="jp-minimize" title="Minimize badge">×</button>
     </div>
-    <div class="jp-badge-mini" id="jp-mini-trigger" title="Open JobPilot AI">
+    <div class="jp-badge-mini" id="jp-mini-trigger" title="Open JP Arc">
       <div class="jp-badge-logo">JP</div>
     </div>
   `;

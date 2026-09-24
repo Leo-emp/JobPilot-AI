@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "BlogPost" (
   metaTitle       TEXT,
   metaDescription TEXT,
   coverImageUrl   TEXT,
-  author          TEXT NOT NULL DEFAULT 'JobPilot AI Team',
+  author          TEXT NOT NULL DEFAULT 'JP Arc Team',
   readTime        TEXT NOT NULL,
   status          TEXT NOT NULL DEFAULT 'draft',
   publishedAt     DATETIME,

@@ -1,5 +1,5 @@
 // ============================================================
-// PRISMA SCHEMA - JobPilot AI Database
+// PRISMA SCHEMA - JP Arc Database
 // ============================================================
 // Defines all database tables (models) and their relationships.
 // Using SQLite for development — can migrate to PostgreSQL for production.
@@ -339,7 +339,7 @@ model BlogPost {
   metaTitle       String?                         // # SEO <title> override (falls back to title)
   metaDescription String?                         // # SEO meta description (under 160 chars)
   coverImageUrl   String?                         // # 1200x630 OG/cover image URL
-  author          String   @default("JobPilot AI Team")
+  author          String   @default("JP Arc Team")
   readTime        String                          // # "2 min read"
   status          String   @default("draft")      // # draft, published, archived
   publishedAt     DateTime?

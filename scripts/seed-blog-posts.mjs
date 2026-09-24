@@ -100,7 +100,7 @@ Unless the job posting specifies otherwise, submit your resume as a **.docx file
 
 ## Test Your Resume
 
-Before submitting, run your resume through an ATS simulator. Tools like JobPilot AI can analyze your resume against a specific job description and give you an ATS compatibility score, highlighting exactly what to fix.
+Before submitting, run your resume through an ATS simulator. Tools like JP Arc can analyze your resume against a specific job description and give you an ATS compatibility score, highlighting exactly what to fix.
 
 ## The Bottom Line
 
@@ -219,7 +219,7 @@ If the application explicitly says "no cover letter needed" or doesn't have a fi
 
 ## Pro Tip: Use AI as a Starting Point
 
-Tools like JobPilot AI can generate a tailored cover letter based on your resume and the job description. Use it as a first draft, then add your personal voice and specific details. The best cover letters feel human — let the AI handle the structure while you bring the personality.
+Tools like JP Arc can generate a tailored cover letter based on your resume and the job description. Use it as a first draft, then add your personal voice and specific details. The best cover letters feel human — let the AI handle the structure while you bring the personality.
 
 **A great cover letter doesn't just get read — it gets you remembered.**`,
   },
@@ -285,7 +285,7 @@ Your resume shows the what. Your cover letter explains the why. Be honest about 
 
 ## Tools to Help
 
-JobPilot AI's Career Pivot Mode is specifically designed for career changers. It analyzes your current experience, identifies transferable skills, and helps you rewrite your resume bullets in the language of your target industry.
+JP Arc's Career Pivot Mode is specifically designed for career changers. It analyzes your current experience, identifies transferable skills, and helps you rewrite your resume bullets in the language of your target industry.
 
 **Your past experience isn't a liability — it's your unfair advantage. Frame it right.**`,
   },
@@ -380,7 +380,7 @@ Asking thoughtful questions shows genuine interest and helps you evaluate if the
 - **Practice out loud** — thinking about answers isn't the same as saying them
 - **Record yourself** — you'll catch filler words and rambling
 - **Prepare 5-7 STAR stories** that can be adapted to different behavioral questions
-- **Use JobPilot AI's Interview Prep** tool to practice with AI-generated questions tailored to specific job descriptions
+- **Use JP Arc's Interview Prep** tool to practice with AI-generated questions tailored to specific job descriptions
 
 **The interview is a conversation, not an interrogation. Prepare well, be authentic, and remember — they want you to succeed.**`,
   },

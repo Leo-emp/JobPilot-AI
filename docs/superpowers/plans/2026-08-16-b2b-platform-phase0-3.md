@@ -895,13 +895,13 @@ export function buildInviteEmail(params: {
 }): { subject: string; html: string } {
   const { orgName, inviterName, acceptUrl, role, cohort } = params;
 
-  const subject = `${orgName} has invited you to JobPilot AI`;
+  const subject = `${orgName} has invited you to JP Arc`;
 
   const html = `
     <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
       <h2 style="color: #1e1b4b; margin-bottom: 8px;">${orgName} has invited you</h2>
       <p style="color: #475569; line-height: 1.6;">
-        ${inviterName} has invited you to join ${orgName} on JobPilot AI as a ${role}${cohort ? ` in the ${cohort} cohort` : ""}.
+        ${inviterName} has invited you to join ${orgName} on JP Arc as a ${role}${cohort ? ` in the ${cohort} cohort` : ""}.
       </p>
       <p style="color: #475569; line-height: 1.6;">
         ${orgName} sponsors your account, giving you access to all Pro features including AI resume optimization,

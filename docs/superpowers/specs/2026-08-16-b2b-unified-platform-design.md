@@ -1,4 +1,4 @@
-# JobPilot AI — Unified B2B Platform Design
+# JP Arc — Unified B2B Platform Design
 
 **Date:** 2026-08-16
 **Status:** Design spec — approved for implementation planning
