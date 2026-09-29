@@ -15,6 +15,7 @@ import MarkdownResult from "@/components/MarkdownResult";
 import { useAIStream } from "@/hooks/useAIStream";
 import { COMPANY_CATEGORIES, COMPANY_PROFILES, getCompanySlugsForCategory, buildCompanyPromptBlock, type CompanyCategory } from "@/lib/companyProfiles";
 import { trackEvent } from "@/lib/track-event";
+import { useDefaultResume } from "@/hooks/useDefaultResume";
 
 /* ---- Minimal SpeechRecognition interface (avoids `any` for vendor-prefixed API) ---- */
 interface MinimalSpeechRecognition {
@@ -88,6 +89,9 @@ const MicIcon: React.FC<{ active?: boolean }> = ({ active }) => (
 );
 
 export default function InterviewPage() {
+  /* ---- Default resume (auto-loads for personalized questions) ---- */
+  const { defaultResume, loading: defaultResumeLoading } = useDefaultResume();
+
   /* ---- Tab state ---- */
   const [activeTab, setActiveTab] = useState<"predict" | "practice" | "saythis" | "star">("predict");
 
@@ -119,7 +123,14 @@ export default function InterviewPage() {
   /* ---- AI streaming hook ---- */
   const { result: streamResult, loading, streaming, error, callAI: streamAI, reset: resetAI } = useAIStream();
 
-  /* ---- Fetch saved resumes on mount and auto-select the latest ---- */
+  /* ---- Auto-load default resume for personalized questions & answers ---- */
+  useEffect(() => {
+    if (defaultResume?.content && !resumeText) {
+      setResumeText(defaultResume.content);
+    }
+  }, [defaultResume, resumeText]);
+
+  /* ---- Fetch saved resumes on mount ---- */
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -129,8 +140,8 @@ export default function InterviewPage() {
         const list = d.data || [];
         if (!cancelled) {
           setSavedResumes(list);
-          /* Auto-select the most recent resume so it's ready for feedback */
-          if (list.length > 0 && !resumeText) {
+          /* Fallback: if no default resume, use the most recent */
+          if (list.length > 0 && !resumeText && !defaultResume?.content) {
             setResumeText(list[0].content);
           }
         }
@@ -141,13 +152,13 @@ export default function InterviewPage() {
       }
     })();
     return () => { cancelled = true; };
-  }, [resumeText]);
+  }, [resumeText, defaultResume]);
 
   /* ---- Generate interview questions ---- */
   const handlePredict = async () => {
     setQuestions("");
     setParsedQuestions([]);
-    const fullResult = await streamAI("interview_questions", { jobTitle, company, companyPromptBlock, jobDescription });
+    const fullResult = await streamAI("interview_questions", { jobTitle, company, companyPromptBlock, jobDescription, resume: resumeText });
     if (fullResult) {
       setQuestions(fullResult);
       setParsedQuestions(parseQuestionsFromMarkdown(fullResult));
@@ -400,6 +411,24 @@ export default function InterviewPage() {
               rows={5}
               className="w-full px-4 py-3 mb-4 rounded-xl bg-space-700 border border-card-border text-white placeholder-text-muted focus:outline-none focus:border-brand-indigo resize-none text-sm"
             />
+
+            {/* Resume status indicator */}
+            {resumeText ? (
+              <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                <svg className="w-4 h-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-xs text-green-300">
+                  <span className="font-medium">Resume loaded</span> — questions and model answers will be personalized to your experience
+                </p>
+              </div>
+            ) : !defaultResumeLoading && !resumesLoading ? (
+              <div className="mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center gap-2">
+                <svg className="w-4 h-4 text-yellow-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                <p className="text-xs text-yellow-300">
+                  No resume found — <a href="/dashboard/resume" className="underline hover:text-yellow-200">upload one</a> for personalized questions
+                </p>
+              </div>
+            ) : null}
+
             <button
               onClick={handlePredict}
               disabled={!jobTitle || !jobDescription || loading}
@@ -968,6 +997,364 @@ export default function InterviewPage() {
                     </div>
                   </div>
                   <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Never apologize for a gap. Bridge it to what you DO have, then show you&apos;re already closing it. That&apos;s initiative.</p>
+                </div>
+              </div>
+
+              {/* ---- Tell me about yourself ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Tell me about yourself</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I graduated from [university] and then I worked at [company] and then I moved to...&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I&apos;m a [role] with [X] years of experience in [domain]. Most recently at [company], I [key achievement]. I&apos;m now looking to [what you want next] — which is what drew me to this role.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">This isn&apos;t your life story. It&apos;s a 60-second pitch: who you are, what you&apos;ve done, and why you&apos;re here. Present, past, future — in that order.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Tell me about yourself</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I&apos;m a hard worker, very passionate, and a quick learner.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I specialize in [specific skill]. At [company], I [specific result with numbers]. I thrive in environments where [connection to this role].&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Generic adjectives tell them nothing. Replace every trait with a specific example that proves it.</p>
+                </div>
+              </div>
+
+              {/* ---- Where do you see yourself in 5 years? ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Where do you see yourself in 5 years?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;Honestly, I&apos;m not sure&rdquo; or &ldquo;In your position!&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I see myself having deepened my expertise in [domain] and grown into a role where I&apos;m mentoring others and driving strategy — ideally here, where there&apos;s a clear path for that growth.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Show ambition that aligns with the company&apos;s growth. They&apos;re checking if you&apos;ll stay and if you have direction — not testing your psychic abilities.</p>
+                </div>
+              </div>
+
+              {/* ---- Why should we hire you? ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Why should we hire you?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;Because I really need this job&rdquo; or &ldquo;I&apos;m the best candidate.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;You need someone who can [key requirement from JD]. I&apos;ve done exactly that at [company] — [specific result]. I also bring [unique angle] that I believe would add immediate value.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Match their needs to your proof. This is a sales pitch — lead with what they want, back it with evidence, close with your differentiator.</p>
+                </div>
+              </div>
+
+              {/* ---- Disagreeing with a decision ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When discussing disagreeing with a manager</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;My manager was wrong and I told them so.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I had a different perspective, so I gathered data to support my view and presented it privately. We discussed the trade-offs and agreed on a hybrid approach that incorporated both viewpoints.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">They want to hear: you speak up, you back it with evidence, you do it respectfully, and you commit to the final decision even if it wasn&apos;t yours.</p>
+                </div>
+              </div>
+
+              {/* ---- Handling mistakes ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When discussing a mistake you made</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;It wasn&apos;t really my fault — the requirements kept changing.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I underestimated the complexity and should have flagged the risk earlier. I took ownership, fixed it by [action], and implemented [process change] so it wouldn&apos;t happen again.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Blaming others is the biggest red flag. Own it cleanly, explain what you learned, and show the system you built to prevent it. That&apos;s maturity.</p>
+                </div>
+              </div>
+
+              {/* ---- When you don't know the answer ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When you don&apos;t know the answer</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I don&apos;t know&rdquo; (and then silence).</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I haven&apos;t encountered that specific scenario, but based on my experience with [related area], my approach would be to [logical first step]. I&apos;d also [how you&apos;d learn quickly].&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Silence after &ldquo;I don&apos;t know&rdquo; kills momentum. Show your thought process — interviewers care more about how you reason than whether you have a memorized answer.</p>
+                </div>
+              </div>
+
+              {/* ---- Explaining career changes ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When explaining a career change</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I just wanted to try something different.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;My experience in [previous field] gave me strong skills in [transferable skill]. I realized my passion was in [new field], so I invested in [courses/projects/certifications] to make a deliberate transition.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Random pivots scare hiring managers. Frame the change as intentional — connect what you learned before to what you&apos;re bringing now.</p>
+                </div>
+              </div>
+
+              {/* ---- Employment gaps ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When explaining an employment gap</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I just couldn&apos;t find a job for a while&rdquo; or overshare personal details.</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I took that time to [upskill/freelance/handle a personal priority]. During that period, I completed [certification/project] and I&apos;m now fully focused and energized to contribute.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Gaps happen. What matters is what you did with the time and that you&apos;re ready now. Keep it brief, positive, and forward-looking.</p>
+                </div>
+              </div>
+
+              {/* ---- Talking about leadership ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When discussing leadership</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I managed a team of 5 people.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I led a cross-functional team of 5 through [specific challenge]. I focused on removing blockers and giving each person ownership of their area — we delivered [result] ahead of schedule.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Headcount alone isn&apos;t leadership. Show HOW you led — did you unblock, mentor, set direction, make hard calls? That&apos;s what they&apos;re evaluating.</p>
+                </div>
+              </div>
+
+              {/* ---- Handling pressure / tight deadlines ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When discussing handling pressure</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I work well under pressure&rdquo; or &ldquo;I just push through it.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;When facing a tight deadline on [project], I broke the work into priority tiers, communicated the trade-offs to stakeholders, and focused the team on the highest-impact deliverables first. We hit the deadline with all critical features.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Claiming you &ldquo;handle pressure well&rdquo; proves nothing. Show your system: how you prioritize, communicate, and make trade-off decisions.</p>
+                </div>
+              </div>
+
+              {/* ---- Asking questions at the end ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Do you have any questions?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;No, I think you covered everything&rdquo; or &ldquo;What&apos;s the salary?&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;What does success look like in this role in the first 90 days?&rdquo; or &ldquo;What&apos;s the biggest challenge the team is facing right now?&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Having no questions signals low interest. Ask about the role, the team, or the challenges — it shows you&apos;re already thinking like someone who works there.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked: Do you have any questions?</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;How many vacation days do I get?&rdquo; or &ldquo;Can I work from home?&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;How does the team approach professional development?&rdquo; or &ldquo;What&apos;s one thing you wish a new hire would do in their first month?&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Perks questions in the first interview make you look like you&apos;re already negotiating before they&apos;ve decided on you. Save those for after the offer.</p>
+                </div>
+              </div>
+
+              {/* ---- Talking about challenges ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When describing a challenge you overcame</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;It was really hard but I just kept going.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;The main challenge was [specific obstacle]. I addressed it by [concrete action] — for example, [specific detail]. That approach resulted in [measurable outcome].&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Vague resilience stories don&apos;t stick. Name the obstacle, name your strategy, name the result. Specificity is what makes answers memorable.</p>
+                </div>
+              </div>
+
+              {/* ---- Work style / collaboration ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When describing your work style</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I can work independently or in a team — I&apos;m flexible.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I do my best focused work independently — deep research, writing, analysis. For execution, I prefer tight collaboration: short syncs, shared docs, quick feedback loops. At [company], this approach helped us ship [result].&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Everyone says they&apos;re &ldquo;flexible.&rdquo; Be specific about when you work best alone vs. together — it shows real self-awareness.</p>
+                </div>
+              </div>
+
+              {/* ---- Closing the interview ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When closing the interview</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;Thanks, bye!&rdquo; or &ldquo;I hope I get the job.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;Thank you for your time. This conversation reinforced my excitement about the role — especially [specific thing discussed]. I look forward to the next steps.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Your closing is the last impression. Reference something specific from the conversation — it shows you were engaged, not just reciting prepared answers.</p>
+                </div>
+              </div>
+
+              {/* ---- Multitasking / prioritization ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked about managing multiple priorities</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I&apos;m good at multitasking.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;I use [system — e.g., priority matrix, time-blocking, weekly reviews] to rank tasks by impact and urgency. When three deadlines overlapped at [company], I communicated trade-offs to stakeholders and delivered the highest-priority items first — all three shipped within the week.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Research shows multitasking doesn&apos;t work. What works is prioritization. Name your system and prove it with an example.</p>
+                </div>
+              </div>
+
+              {/* ---- Receiving feedback ---- */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-2.5 bg-brand-indigo/10 border-b border-card-border">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-brand-light">When asked about receiving feedback</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-red-400 mb-1">Don&apos;t say</p>
+                      <p className="text-sm text-red-400">&ldquo;I&apos;m always open to feedback.&rdquo;</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3">
+                      <p className="text-[0.65rem] font-bold uppercase tracking-wider text-green-400 mb-1">Say this</p>
+                      <p className="text-sm text-green-400">&ldquo;In my last role, my manager pointed out that my documentation could be more concise. I started using a template for all technical docs, and within a month, my team was adopting the same format. I actively seek feedback because it&apos;s the fastest way to grow.&rdquo;</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-secondary border-l-2 border-card-border pl-3">Saying you&apos;re &ldquo;open to feedback&rdquo; is a non-answer. Give a real example of feedback you received, what you changed, and the result.</p>
                 </div>
               </div>
 

@@ -94,8 +94,19 @@ export function interviewQuestions(payload: Record<string, any>): string {
   const companyBlock = payload.companyPromptBlock || "";
   const companyName = payload.company || "the company";
 
-  return `You are an interview preparation expert. Based on this job description${companyBlock ? ` and real interview data from ${companyName}` : ""}, predict ALL the likely interview questions — do NOT limit to a fixed number. Generate as many as needed to thoroughly prepare the candidate.
+  const resume = payload.resume || "";
+
+  return `You are an interview preparation expert. Based on this job description${companyBlock ? `, real interview data from ${companyName}` : ""}${resume ? ", and the candidate's resume" : ""}, predict ALL the likely interview questions — do NOT limit to a fixed number. Generate as many as needed to thoroughly prepare the candidate.
 ${companyBlock ? `\n${companyBlock}\n` : ""}
+${resume ? `CANDIDATE'S RESUME (USE THIS TO PERSONALIZE QUESTIONS):
+${resume}
+
+RESUME-AWARE QUESTION GENERATION (CRITICAL):
+- Cross-reference the resume against the JD. Identify GAPS where the JD requires skills/experience the resume doesn't show — generate questions that will probe those gaps, because interviewers WILL ask about them.
+- For skills the resume DOES claim, generate questions that test the DEPTH of that experience — interviewers will dig into claimed expertise to verify it's real.
+- Generate questions about specific projects, roles, and achievements mentioned in the resume — interviewers often say "I see you worked on X, tell me about that."
+- If the candidate is transitioning industries or roles (resume background differs from target role), include transition questions like "How does your experience in X prepare you for Y?"
+- In "How to prepare" tips, reference SPECIFIC items from the resume the candidate should use in their answer.\n` : ""}
 ROLE-SPECIFIC RELEVANCE (CRITICAL RULE):
 Every single question MUST make sense for the specific role of "${payload.jobTitle}". Before generating any question, check: "Would a hiring manager for ${payload.jobTitle} at ${companyName} actually ask this?" If not, do NOT include it.
 - A Data Analyst should get SQL, dashboards, data cleaning questions — NOT system architecture or engineering team leadership
@@ -156,17 +167,23 @@ ${companyBlock ? `- At least 30% of questions should be directly inspired by the
 
 Job Title: ${payload.jobTitle}
 Company: ${companyName}
-Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (focus questions on these skill areas where the candidate is weakest):\n${payload.careerContext}` : ""}`;
+Job Description: ${payload.jobDescription}${payload.careerContext ? `\n\nCAREER INTELLIGENCE (focus questions on these skill areas where the candidate is weakest):\n${payload.careerContext}` : ""}${resume ? `\n\n## Resume vs JD Gap Analysis\nAfter the Company & Role-Specific section, add one final section:\n\n## Your Resume Deep-Dive\nGenerate 3-5 questions that interviewers will likely ask based on SPECIFIC items in the candidate's resume — past roles, projects, claimed skills, career transitions, or gaps. These are the "I noticed on your resume..." questions. Use the same ### Question N format.` : ""}`;
 }
 
 export function interviewAnswer(payload: Record<string, any>): string {
   const companyBlock = payload.companyPromptBlock || "";
   const companyName = payload.company || "the company";
 
-  return `You are an interview coach. Help craft a strong answer to this interview question.
-Use the STAR method (Situation, Task, Action, Result) where applicable.
-Base the answer on the candidate's actual experience from their resume.
-Make it natural and conversational, not robotic.
+  return `You are an interview coach. Help craft a strong, personalized answer to this interview question.
+The answer MUST be built from the candidate's ACTUAL experience — their real roles, projects, metrics, and achievements from their resume. Never generate a generic answer when the resume has relevant material.
+Make it natural and conversational — something they can actually say out loud.
+
+PERSONALIZATION RULES (HIGHEST PRIORITY):
+- Read the resume FIRST. Identify the candidate's actual job titles, companies, projects, tools, and measurable results.
+- Build every answer around THEIR real data — their real company names, their real project outcomes, their real metrics. A personalized answer using their actual "increased retention by 28% at CompanyX" is 10x better than a generic "I improved metrics significantly."
+- If the resume has relevant experience: use it. Name the company, the project, the result. Make it specific and real.
+- If the resume has NO relevant experience for this question: provide a framework-based answer they can adapt, and clearly note "Adapt this with your own example when you have one."
+- NEVER invent achievements, metrics, companies, or skills not in the resume.
 
 LENGTH & STYLE RULES:
 - HARD LIMIT: 150-200 words. No exceptions. Think 60-90 seconds spoken — that's what real interviewers expect. If your draft is longer, cut ruthlessly.
@@ -183,8 +200,9 @@ RESUME EXAMPLE SELECTION (CRITICAL):
 
 QUESTION TYPE AWARENESS (CRITICAL):
 - For "How would you approach/handle X?" or process/framework questions: focus 100% on the METHOD — the clear, structured steps you would take. Do NOT pad with resume references like "My background in X at Company Y taught me..." — the interviewer asked for your approach, not your CV. Show you know the process.
-- For behavioral questions ("Tell me about a time..."): use the resume to tell a real story with STAR.
+- For behavioral questions ("Tell me about a time..."): use the resume to tell a real story with STAR. Pull SPECIFIC details — project names, team sizes, tools used, measurable outcomes.
 - For motivation questions ("Why this company?"): answer directly with genuine reasons. No resume padding.
+- For "Tell me about yourself": build a 60-second narrative arc from the resume — past role → key achievement → why this role now. Use their actual career trajectory.
 - NEVER insert sentences like "much like how I've done X at Y" or "my experience at Z would be crucial here" into process answers — it sounds forced and wastes the interviewer's time.
 ${companyBlock ? `\n${companyBlock}\n\nTailor the answer to ${companyName}'s interview style, evaluation criteria, and cultural values described above. If ${companyName} uses specific frameworks (e.g., Amazon's Leadership Principles, Google's Googleyness), frame the answer to align with those.\n` : ""}
 Question: ${payload.question}
