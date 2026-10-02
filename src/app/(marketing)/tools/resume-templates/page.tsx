@@ -11,13 +11,13 @@ import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import TemplateCarousel from "./TemplateCarousel";
 
 export const metadata = {
-  title: "20 Free Professional Resume Templates — ATS-Friendly | JP Arc",
+  title: "20 Free Resume & CV Templates (2026) — ATS-Friendly, Download as PDF",
   description:
-    "Choose from 20 structurally unique resume templates. Classic, sidebar, visual, modern, and special layouts — all ATS-friendly. Fill in your details, download as PDF.",
+    "Pick from 20 professional resume templates designed to pass ATS scanners. Classic, modern, creative, and sidebar layouts. Fill your details, download as PDF — free, no watermark.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-templates" },
   openGraph: {
-    title: "20 Free Professional Resume Templates — JP Arc",
-    description: "20 unique layouts: Classic, Sidebar, Visual, Modern, Special. ATS-friendly, fill & download.",
+    title: "20 Free Resume & CV Templates — Download as PDF",
+    description: "Professional resume templates that pass ATS. Classic, modern, creative layouts. Fill & download free.",
     url: "https://jobpilotai.co/tools/resume-templates",
   },
 };

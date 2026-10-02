@@ -23,14 +23,14 @@ export function SoftwareAppJsonLd() {
     operatingSystem: "Web",
     url: "https://jobpilotai.co",
     description:
-      "AI-powered career platform that optimizes your resume, matches you with jobs, generates cover letters, and prepares you for interviews.",
+      "Free AI resume builder, CV templates, ATS checker, mock interview practice, cover letter generator, and job application tracker. Build and download your resume in minutes.",
     offers: [
       {
         "@type": "Offer",
         price: "0",
         priceCurrency: "GBP",
         name: "Free Plan",
-        description: "5 AI actions per month, 1 resume, basic job search",
+        description: "Resume builder, CV templates, ATS checker, mock interviews, cover letters — all free",
       },
       {
         "@type": "Offer",
@@ -58,9 +58,9 @@ export function OrganizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "JP Arc",
-    alternateName: ["JP Arc"],
+    alternateName: ["JP Arc", "JobPilot AI"],
     url: "https://jobpilotai.co",
-    logo: "https://jobpilotai.co/icon.png",
+    logo: "https://jobpilotai.co/icon-192.png",
     image: "https://jobpilotai.co/opengraph-image",
     description:
       "AI-powered career platform that helps job seekers land interviews faster with resume optimization, cover letter generation, mock interviews, and job matching.",
@@ -92,10 +92,18 @@ export function WebSiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "JP Arc",
-    alternateName: ["JP Arc"],
+    alternateName: ["JP Arc", "JobPilot AI"],
     url: "https://jobpilotai.co",
     description:
-      "AI-powered career platform — resume optimization, cover letters, mock interviews, job matching.",
+      "Free AI career platform — resume builder, CV templates, ATS checker, mock interviews, cover letters, job matching.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://jobpilotai.co/tools?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
     publisher: {
       "@type": "Organization",
       name: "JP Arc",

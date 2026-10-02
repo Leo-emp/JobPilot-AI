@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "AI Job Board — Smart Job Search with Match Scores | JP Arc",
+  title: "AI Job Search — Find Jobs That Actually Match Your Skills",
   description:
-    "Search jobs with AI match scores that tell you how well each role fits your profile. Filter by location, salary, and remote options. Save jobs with one click.",
+    "Search thousands of jobs with AI match scores that show how well each role fits your profile. Filter by location, salary, remote. Stop applying blindly — apply where you'll get hired. Free.",
   alternates: { canonical: "https://jobpilotai.co/tools/job-search" },
   openGraph: {
-    title: "AI Job Board — Smart Job Search | JP Arc",
-    description: "Search jobs with AI match scores. Know which roles fit you best before applying.",
+    title: "AI Job Search — Know Which Jobs Fit You Before Applying",
+    description: "AI scores every job against your profile. Stop applying blindly. Free smart job search.",
     url: "https://jobpilotai.co/tools/job-search",
   },
 };

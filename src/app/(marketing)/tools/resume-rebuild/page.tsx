@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Rebuild — Complete Resume Rewrite for Any Role | JP Arc",
+  title: "Free AI Resume Rewriter — Complete CV Makeover for Any Role",
   description:
-    "AI completely rewrites your resume from scratch for a target role. New structure, new bullets, new language — optimized to land interviews in your desired field.",
+    "AI rewrites your entire resume from scratch for a target role. New structure, new bullet points, ATS-optimized language. Like hiring a professional resume writer — but free.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-rebuild" },
   openGraph: {
-    title: "Free AI Resume Rebuild — JP Arc",
-    description: "Complete resume rewrite for any target role. New structure, bullets, and language — AI-powered.",
+    title: "Free AI Resume Rewriter — Complete CV Makeover",
+    description: "AI rewrites your resume from scratch for any role. Professional quality, ATS-optimized, free.",
     url: "https://jobpilotai.co/tools/resume-rebuild",
   },
 };

@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Builder & ATS Checker — Score & Optimize | JP Arc",
+  title: "Free AI Resume Builder 2026 — Build & Download in Minutes",
   description:
-    "Get an instant ATS compatibility score, find missing keywords, and let AI rebuild your resume to beat applicant tracking systems. Free AI-powered resume tool.",
+    "Create a professional, ATS-optimized resume in under 5 minutes. AI writes your bullets, scores your resume against real job descriptions, and exports to PDF. No sign-up required.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-builder" },
   openGraph: {
-    title: "Free AI Resume Builder & ATS Checker — JP Arc",
-    description: "Get an instant ATS score, find keyword gaps, and optimize your resume with AI. Free tool.",
+    title: "Free AI Resume Builder — Create Your Resume in Minutes",
+    description: "AI writes your bullets, optimizes for ATS, and exports to PDF. No sign-up, no watermark, 100% free.",
     url: "https://jobpilotai.co/tools/resume-builder",
   },
 };

@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Smart Job Matching — AI Match Score & Skills Gap Analysis | JP Arc",
+  title: "Free Resume-to-Job Match Score — See If You Qualify Before Applying",
   description:
-    "Paste a job description and your resume to get a precise AI match score. See which skills align, which are missing, and get actionable recommendations to close the gap.",
+    "Paste your resume and a job description — AI gives you a match score out of 100 and shows exactly which skills you have and which you're missing. Stop wasting time on bad-fit jobs.",
   alternates: { canonical: "https://jobpilotai.co/tools/job-matching" },
   openGraph: {
-    title: "Smart Job Matching — JP Arc",
-    description: "Get an AI match score that tells you exactly how well your resume fits any job. Free skills gap analysis.",
+    title: "Free Resume-to-Job Match Score — Know Before You Apply",
+    description: "AI scores how well your resume matches any job. See skill gaps, get fix suggestions. Free.",
     url: "https://jobpilotai.co/tools/job-matching",
   },
 };

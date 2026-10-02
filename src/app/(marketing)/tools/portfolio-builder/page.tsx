@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Portfolio Builder — Showcase Your Career Story | JP Arc",
+  title: "Free Online Portfolio Builder — Create a Professional Portfolio in Minutes",
   description:
-    "AI builds a professional career portfolio from your resume and experience. Showcases projects, achievements, and skills in a shareable format. Free tool.",
+    "AI turns your resume into a shareable online portfolio with projects, achievements, and skills. Get a custom link to share with employers. No design skills needed. Free.",
   alternates: { canonical: "https://jobpilotai.co/tools/portfolio-builder" },
   openGraph: {
-    title: "Free AI Portfolio Builder — JP Arc",
-    description: "AI transforms your resume into a professional portfolio that showcases projects and achievements.",
+    title: "Free Online Portfolio Builder — Share Your Work with a Link",
+    description: "AI creates a professional portfolio from your resume. Shareable link, no design skills needed. Free.",
     url: "https://jobpilotai.co/tools/portfolio-builder",
   },
 };

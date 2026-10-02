@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Resume Optimizer — Tailor Your Resume to Any Job | JP Arc",
+  title: "Free Resume Optimizer — Tailor Your CV to Any Job in Seconds",
   description:
-    "Paste a job description and AI rewrites your resume to match — adding missing keywords, strengthening bullets, and boosting your ATS score. Quick optimize in seconds.",
+    "Paste any job description and AI rewrites your resume to match. Adds missing keywords, strengthens bullet points, and boosts your ATS score from 40 to 85+. Free tool.",
   alternates: { canonical: "https://jobpilotai.co/tools/resume-optimizer" },
   openGraph: {
-    title: "Free AI Resume Optimizer — JP Arc",
-    description: "AI tailors your resume to any job description. Missing keywords added, bullets strengthened, ATS score boosted.",
+    title: "Free Resume Optimizer — Match Your CV to Any Job Description",
+    description: "AI tailors your resume to match any job posting. Keywords added, bullets rewritten, ATS score boosted. Free.",
     url: "https://jobpilotai.co/tools/resume-optimizer",
   },
 };

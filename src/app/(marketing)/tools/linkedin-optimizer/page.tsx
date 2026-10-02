@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free LinkedIn Profile Optimizer — AI Audit & Rewrite | JP Arc",
+  title: "Free LinkedIn Profile Optimizer — Get Found by Recruiters",
   description:
-    "AI audits your LinkedIn profile, rewrites your headline and summary, optimizes keywords for recruiter visibility, and creates a content strategy. Free tool.",
+    "AI audits your LinkedIn profile, rewrites your headline and summary, and optimizes keywords so recruiters find you first. Increased profile views in days. Free tool.",
   alternates: { canonical: "https://jobpilotai.co/tools/linkedin-optimizer" },
   openGraph: {
-    title: "Free LinkedIn Profile Optimizer — JP Arc",
-    description: "AI audits your LinkedIn, rewrites your headline and summary, and boosts recruiter visibility.",
+    title: "Free LinkedIn Profile Optimizer — Get Found by Recruiters",
+    description: "AI rewrites your LinkedIn headline and summary. Optimized keywords, more recruiter views. Free.",
     url: "https://jobpilotai.co/tools/linkedin-optimizer",
   },
 };

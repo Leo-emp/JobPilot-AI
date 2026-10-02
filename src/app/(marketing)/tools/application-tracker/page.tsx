@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free Job Application Tracker — Organize Your Job Search | JP Arc",
+  title: "Free Job Application Tracker — Never Lose Track of a Job Again",
   description:
-    "Track every job application in one place. Save jobs with one click, monitor application stages, get AI match scores, and never lose track of an opportunity.",
+    "Track every job application in one dashboard. See which stage each application is at, get AI match scores, and follow up at the right time. Replace your messy spreadsheet. Free.",
   alternates: { canonical: "https://jobpilotai.co/tools/application-tracker" },
   openGraph: {
-    title: "Free Job Application Tracker — JP Arc",
-    description: "Track every application, monitor stages, and stay organized throughout your job search.",
+    title: "Free Job Application Tracker — Replace Your Spreadsheet",
+    description: "Track every application, see match scores, follow up on time. Better than a spreadsheet. Free.",
     url: "https://jobpilotai.co/tools/application-tracker",
   },
 };

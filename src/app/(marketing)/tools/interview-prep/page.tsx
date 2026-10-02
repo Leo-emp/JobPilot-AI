@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Interview Prep & Mock Interviews — Practice & Ace It | JP Arc",
+  title: "Free AI Interview Prep — Predict Questions & Practice Answers",
   description:
-    "AI predicts the exact interview questions you'll face, coaches your answers using the STAR method, and runs live mock interviews. Walk in prepared and confident.",
+    "AI analyzes the job description and predicts the exact interview questions you'll face. Get model answers, STAR method coaching, and a prep checklist. Walk in confident.",
   alternates: { canonical: "https://jobpilotai.co/tools/interview-prep" },
   openGraph: {
-    title: "Free AI Interview Prep & Mock Interviews — JP Arc",
-    description: "AI-predicted questions, STAR coaching, and live mock interviews. Walk in prepared.",
+    title: "Free AI Interview Prep — Predict Questions Before Your Interview",
+    description: "AI predicts your interview questions, writes model answers, and coaches your STAR method. Free tool.",
     url: "https://jobpilotai.co/tools/interview-prep",
   },
 };

@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Cover Letter Generator — Personalized & Job-Matched | JP Arc",
+  title: "Free AI Cover Letter Generator — Write One in 60 Seconds",
   description:
-    "Generate personalized cover letters matched to any job description in seconds. AI writes unique, compelling letters that highlight your strongest qualifications. Free.",
+    "Paste a job description and AI writes a personalized cover letter that highlights your strongest qualifications. Unique every time, not a template. Copy, download, apply. Free.",
   alternates: { canonical: "https://jobpilotai.co/tools/cover-letter-generator" },
   openGraph: {
-    title: "Free AI Cover Letter Generator — JP Arc",
-    description: "AI writes personalized cover letters matched to each job description. Unique, compelling, and free.",
+    title: "Free AI Cover Letter Generator — Personalized in 60 Seconds",
+    description: "AI writes a unique cover letter matched to each job you apply to. Not a template — truly personalized. Free.",
     url: "https://jobpilotai.co/tools/cover-letter-generator",
   },
 };

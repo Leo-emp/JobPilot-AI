@@ -13,14 +13,14 @@ import Image from "next/image";
 import { BreadcrumbJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Career Tools — Resume, Interview, Job Search & More | JP Arc",
+  title: "15+ Free AI Career Tools — Resume, CV, Interview, Job Search",
   description:
-    "Every tool you need to land your dream job. AI resume checker, cover letter generator, interview prep, career quizzes, application tracker, LinkedIn optimizer, and more — all free.",
+    "All the tools you need to land your next job, in one place. AI resume builder, CV templates, ATS checker, mock interviews, cover letter generator, job tracker — 100% free.",
   alternates: { canonical: "https://jobpilotai.co/tools" },
   openGraph: {
-    title: "Free AI Career Tools — JP Arc",
+    title: "15+ Free AI Career Tools — Everything to Land Your Next Job",
     description:
-      "AI resume checker, cover letter generator, interview prep, career quizzes, job tracker, and more — all in one platform.",
+      "Resume builder, CV templates, ATS checker, mock interviews, cover letters, job tracker — all free, all AI-powered.",
     url: "https://jobpilotai.co/tools",
   },
 };

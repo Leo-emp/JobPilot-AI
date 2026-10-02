@@ -10,13 +10,13 @@ import Link from "next/link";
 import { BreadcrumbJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Free AI Mock Interview — Practice with Real-Time Feedback | JP Arc",
+  title: "Free AI Mock Interview Practice — Unlimited Sessions, Real Feedback",
   description:
-    "Practice interviews with an AI interviewer that adapts to the job description. Get real-time STAR coaching, detailed feedback, and confidence scores. Unlimited practice.",
+    "Practice job interviews with an AI interviewer that asks role-specific questions and coaches your answers in real time. STAR method feedback, confidence scoring, unlimited retries. Free.",
   alternates: { canonical: "https://jobpilotai.co/tools/mock-interview" },
   openGraph: {
-    title: "Free AI Mock Interview — JP Arc",
-    description: "Practice with an AI interviewer. Real-time STAR coaching, role-specific questions, detailed feedback.",
+    title: "Free AI Mock Interview — Practice Unlimited, Get Real Feedback",
+    description: "AI asks real interview questions, coaches your STAR answers, and scores your confidence. Unlimited practice, free.",
     url: "https://jobpilotai.co/tools/mock-interview",
   },
 };
