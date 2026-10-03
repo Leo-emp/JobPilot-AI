@@ -91,6 +91,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
     </svg>
   ),
+  workshops: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+  ),
   admin: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -118,6 +123,7 @@ const navItems = [
   { href: "/dashboard/resignation-letter", icon: icons.resignation, label: "Resignation Letter" },
   { href: "/dashboard/career-quizzes", icon: icons.quizzes, label: "Career Quizzes" },
   { href: "/dashboard/portfolio", icon: icons.portfolio, label: "Portfolio Builder" },
+  { href: "/dashboard/workshops", icon: icons.workshops, label: "Learning Center" },
   /* B2B phase — hidden for B2C launch, re-enable when org layer ships
   { href: "/dashboard/opportunities", icon: icons.jobs, label: "My Opportunities" },
   { href: "/dashboard/bookmarks", icon: icons.portfolio, label: "Bookmarks" },

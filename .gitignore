@@ -78,3 +78,5 @@ test-results/
 prisma/restore-test.db*
 
 .env*
+
+.env*

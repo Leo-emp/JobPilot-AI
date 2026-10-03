@@ -803,3 +803,90 @@ model EmployerUsage {
   @@unique([employerId, month])                       // One usage record per employer per month
   @@index([employerId])
 }
+
+// ============================================================
+// PROFESSIONAL WORKSHOPS — Learning Center
+// ============================================================
+// Database-driven workshop content for 7 professions.
+// All content is static (zero AI calls). Progress tracked per user.
+// Accessible at /dashboard/workshops.
+// ============================================================
+
+// ---- Workshop (Profession) ----
+// Top-level container: one per profession (Software Engineer, AI PM, etc.)
+model Workshop {
+  id          String   @id @default(cuid())
+  name        String                          // "AI Product Manager"
+  slug        String   @unique                // "ai-product-manager"
+  description String                          // One-line description shown on card
+  icon        String                          // Icon identifier for the profession
+  color       String                          // Hex color for profession accent (#f43f5e)
+  order       Int                             // Display order on landing page
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules WorkshopModule[]
+}
+
+// ---- Workshop Module ----
+// A topic group within a workshop (e.g. "RAG" within AI Engineer)
+model WorkshopModule {
+  id          String   @id @default(cuid())
+  workshopId  String
+  name        String                          // "PRDs (Product Requirements Documents)"
+  slug        String                          // "prds"
+  description String                          // Module summary shown on overview page
+  order       Int                             // Display order within workshop
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workshop Workshop          @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  sections WorkshopSection[]
+
+  @@unique([workshopId, slug])
+  @@index([workshopId, order])
+}
+
+// ---- Workshop Section ----
+// Individual lesson, exercise, or quiz within a module
+model WorkshopSection {
+  id               String    @id @default(cuid())
+  moduleId         String
+  title            String                          // "Chunking Strategies"
+  slug             String                          // "chunking-strategies"
+  content          String                          // Markdown content (rendered client-side)
+  type             String    @default("lesson")    // "lesson" | "exercise" | "quiz"
+  difficulty       String?                         // "beginner" | "intermediate" | "advanced"
+  estimatedMinutes Int       @default(15)          // Estimated completion time
+  order            Int                             // Display order within module
+  lastVerified     DateTime?                       // For perishable data (costs, regulations)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  module   WorkshopModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress WorkshopProgress[]
+
+  @@unique([moduleId, slug])
+  @@index([moduleId, order])
+}
+
+// ---- Workshop Progress ----
+// Per-user completion tracking for each section
+model WorkshopProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  sectionId   String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  quizScore   Int?                            // Best quiz score if section type is "quiz"
+  quizAnswers String?                         // JSON string of user's answers
+  notes       String?                         // User's personal notes on this section
+  bookmarked  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  section WorkshopSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sectionId])
+  @@index([userId])
+}
