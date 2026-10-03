@@ -57,46 +57,65 @@ export default async function WorkshopsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  /* # Fetch all workshops with module/section counts */
-  const workshops = await dbRetry(() =>
-    prisma.workshop.findMany({
-      orderBy: { order: "asc" },
-      include: {
-        modules: {
-          include: {
-            sections: {
-              select: { id: true },
+  /* # Wrap in try/catch — Workshop tables may not exist on production yet */
+  let workshopData: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    icon: string;
+    color: string;
+    order: number;
+    totalSections: number;
+    completedSections: number;
+    totalModules: number;
+  }[] = [];
+
+  try {
+    /* # Fetch all workshops with module/section counts */
+    const workshops = await dbRetry(() =>
+      prisma.workshop.findMany({
+        orderBy: { order: "asc" },
+        include: {
+          modules: {
+            include: {
+              sections: {
+                select: { id: true },
+              },
             },
           },
         },
-      },
-    })
-  );
-
-  /* # Fetch user's progress across all workshops */
-  const progress = await dbRetry(() =>
-    prisma.workshopProgress.findMany({
-      where: { userId: session.user.id, completed: true },
-      select: { sectionId: true },
-    })
-  );
-
-  const completedIds = new Set(progress.map((p) => p.sectionId));
-
-  /* # Calculate per-workshop completion */
-  const workshopData = workshops.map((w) => {
-    const totalSections = w.modules.reduce((sum, m) => sum + m.sections.length, 0);
-    const completedSections = w.modules.reduce(
-      (sum, m) => sum + m.sections.filter((s) => completedIds.has(s.id)).length,
-      0
+      })
     );
-    return {
-      ...w,
-      totalSections,
-      completedSections,
-      totalModules: w.modules.length,
-    };
-  });
+
+    /* # Fetch user's progress across all workshops */
+    const progress = await dbRetry(() =>
+      prisma.workshopProgress.findMany({
+        where: { userId: session.user.id, completed: true },
+        select: { sectionId: true },
+      })
+    );
+
+    const completedIds = new Set(progress.map((p) => p.sectionId));
+
+    /* # Calculate per-workshop completion */
+    workshopData = workshops.map((w) => {
+      const totalSections = w.modules.reduce((sum, m) => sum + m.sections.length, 0);
+      const completedSections = w.modules.reduce(
+        (sum, m) => sum + m.sections.filter((s) => completedIds.has(s.id)).length,
+        0
+      );
+      return {
+        ...w,
+        totalSections,
+        completedSections,
+        totalModules: w.modules.length,
+      };
+    });
+  } catch {
+    /* # Tables don't exist yet — show empty state gracefully */
+    workshopData = [];
+  }
 
   return (
     <div>

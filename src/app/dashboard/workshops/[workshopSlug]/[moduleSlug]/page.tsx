@@ -23,13 +23,18 @@ export default async function ModulePage({ params }: PageProps) {
 
   const { workshopSlug, moduleSlug } = await params;
 
-  /* # Fetch workshop for breadcrumbs + color */
-  const workshop = await dbRetry(() =>
-    prisma.workshop.findUnique({
-      where: { slug: workshopSlug },
-      select: { name: true, color: true, slug: true },
-    })
-  );
+  /* # Fetch workshop — try/catch in case tables don't exist on production */
+  let workshop;
+  try {
+    workshop = await dbRetry(() =>
+      prisma.workshop.findUnique({
+        where: { slug: workshopSlug },
+        select: { name: true, color: true, slug: true },
+      })
+    );
+  } catch {
+    notFound();
+  }
 
   if (!workshop) notFound();
 

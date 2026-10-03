@@ -25,13 +25,18 @@ export default async function SectionPage({ params }: PageProps) {
 
   const { workshopSlug, moduleSlug, sectionSlug } = await params;
 
-  /* # Fetch the workshop for breadcrumbs + color */
-  const workshop = await dbRetry(() =>
-    prisma.workshop.findUnique({
-      where: { slug: workshopSlug },
-      select: { name: true, color: true, slug: true },
-    })
-  );
+  /* # Fetch the workshop — try/catch in case tables don't exist on production */
+  let workshop;
+  try {
+    workshop = await dbRetry(() =>
+      prisma.workshop.findUnique({
+        where: { slug: workshopSlug },
+        select: { name: true, color: true, slug: true },
+      })
+    );
+  } catch {
+    notFound();
+  }
 
   if (!workshop) notFound();
 

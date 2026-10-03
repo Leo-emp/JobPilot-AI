@@ -22,23 +22,28 @@ export default async function WorkshopOverviewPage({ params }: PageProps) {
 
   const { workshopSlug } = await params;
 
-  /* # Fetch the workshop with all modules and sections */
-  const workshop = await dbRetry(() =>
-    prisma.workshop.findUnique({
-      where: { slug: workshopSlug },
-      include: {
-        modules: {
-          orderBy: { order: "asc" },
-          include: {
-            sections: {
-              orderBy: { order: "asc" },
-              select: { id: true, slug: true, title: true, type: true, difficulty: true, estimatedMinutes: true },
+  /* # Fetch the workshop — try/catch in case tables don't exist on production */
+  let workshop;
+  try {
+    workshop = await dbRetry(() =>
+      prisma.workshop.findUnique({
+        where: { slug: workshopSlug },
+        include: {
+          modules: {
+            orderBy: { order: "asc" },
+            include: {
+              sections: {
+                orderBy: { order: "asc" },
+                select: { id: true, slug: true, title: true, type: true, difficulty: true, estimatedMinutes: true },
+              },
             },
           },
         },
-      },
-    })
-  );
+      })
+    );
+  } catch {
+    notFound();
+  }
 
   if (!workshop) notFound();
 

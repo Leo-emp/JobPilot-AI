@@ -45,10 +45,15 @@ export async function POST(req: NextRequest) {
 
   const { sectionId, completed, completedAt, bookmarked, notes, quizScore, quizAnswers } = parsed.data;
 
-  /* # Verify the section exists */
-  const section = await dbRetry(() =>
-    prisma.workshopSection.findUnique({ where: { id: sectionId }, select: { id: true } })
-  );
+  /* # Verify the section exists — catch table-not-found errors */
+  let section;
+  try {
+    section = await dbRetry(() =>
+      prisma.workshopSection.findUnique({ where: { id: sectionId }, select: { id: true } })
+    );
+  } catch {
+    return NextResponse.json({ error: "Workshop tables not available" }, { status: 503 });
+  }
 
   if (!section) {
     return NextResponse.json({ error: "Section not found" }, { status: 404 });
@@ -93,19 +98,24 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  /* # Fetch all progress for this user */
-  const progress = await dbRetry(() =>
-    prisma.workshopProgress.findMany({
-      where: { userId: session.user.id },
-      select: {
-        sectionId: true,
-        completed: true,
-        completedAt: true,
-        bookmarked: true,
-        quizScore: true,
-      },
-    })
-  );
+  /* # Fetch all progress — catch table-not-found errors */
+  let progress;
+  try {
+    progress = await dbRetry(() =>
+      prisma.workshopProgress.findMany({
+        where: { userId: session.user.id },
+        select: {
+          sectionId: true,
+          completed: true,
+          completedAt: true,
+          bookmarked: true,
+          quizScore: true,
+        },
+      })
+    );
+  } catch {
+    return NextResponse.json({ progress: [] });
+  }
 
   return NextResponse.json({ progress });
 }
