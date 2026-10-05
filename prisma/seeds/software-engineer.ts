@@ -3,6 +3,7 @@
    ============================================================
    # Exports the full module/section data for the SE workshop.
    # Imported by the main seed-workshops.ts script.
+   # EXPANDED: Deep prose, analogies, step-by-step walkthroughs.
    ============================================================ */
 
 export const softwareEngineerModules = [
@@ -20,34 +21,41 @@ export const softwareEngineerModules = [
         slug: "data-structures-overview",
         type: "lesson" as const,
         difficulty: "beginner" as const,
-        estimatedMinutes: 30,
+        estimatedMinutes: 45,
         order: 1,
         content: `## Data Structures — The Building Blocks
 
-Every piece of software you've ever used stores and organizes data using data structures. Choosing the right data structure is the difference between code that runs in milliseconds and code that takes minutes.
+Every piece of software you have ever used stores and organises data using data structures. Choosing the right data structure is the difference between code that runs in milliseconds and code that takes minutes. This is not an exaggeration — the wrong choice can turn a one-second operation into a one-hour operation when the data set grows large enough.
 
-Think of data structures like containers in a kitchen. You wouldn't store soup in a colander or pasta in a cup. Each container has a purpose, and using the wrong one makes everything harder.
+Think of data structures like containers in a kitchen. You would not store soup in a colander or pasta in a cup. Each container has a purpose, and using the wrong one makes everything harder. The same principle applies to software — each data structure excels at certain operations and fails at others.
+
+Understanding data structures is not about memorising definitions. It is about developing an intuition for which container to reach for when you encounter a specific problem. When someone says "I need to check if this item exists in a collection of 10 million items," your brain should immediately think "hash map" — just as naturally as you would reach for a bowl when serving soup.
 
 ### Arrays
 
 **What it is:** A contiguous block of memory storing elements of the same type, accessed by index.
 
-**Kitchen analogy:** A spice rack with numbered slots. You can instantly grab spice #5, but inserting a new spice in the middle means shifting everything over.
+**Kitchen analogy:** A spice rack with numbered slots. You can instantly grab spice number 5 — you know exactly where it is because the slots are numbered in order. But inserting a new spice in the middle means physically sliding everything over to make room.
+
+This is not just a metaphor — it is exactly how arrays work in computer memory. An array occupies a contiguous block of memory, and each element sits at a predictable offset from the start. The computer calculates the memory address of element \`i\` using a simple formula: \`start_address + (i × element_size)\`. This is why accessing any element by index is instant — the computer does not need to search; it calculates the exact location.
+
+But this contiguous layout has a cost. When you insert an element at position 3, every element from position 3 onwards must be physically shifted one slot to the right to make room. With 10 million elements, inserting at the beginning means moving 10 million values. That is expensive.
 
 **Operations & Complexity:**
 
 | Operation | Time | Why |
 |-----------|------|-----|
-| Access by index | O(1) | Jump directly to memory location |
-| Search (unsorted) | O(n) | Must check each element |
-| Insert at end | O(1) | Just add to the next slot |
-| Insert at beginning | O(n) | Must shift all elements right |
-| Delete at beginning | O(n) | Must shift all elements left |
+| Access by index | O(1) | Jump directly to calculated memory location |
+| Search (unsorted) | O(n) | Must check each element one by one |
+| Insert at end | O(1) | Just add to the next available slot |
+| Insert at beginning | O(n) | Must shift ALL existing elements right |
+| Delete at beginning | O(n) | Must shift ALL existing elements left |
 
 **When to use:**
 - You need fast access by position (index)
 - Data size is known or changes infrequently
-- You need to iterate through all elements
+- You need to iterate through all elements in order
+- Memory efficiency matters (no overhead per element)
 
 **When NOT to use:**
 - Frequent insertions/deletions at the beginning or middle
@@ -56,210 +64,221 @@ Think of data structures like containers in a kitchen. You wouldn't store soup i
 
 ### Linked Lists
 
-**What it is:** A chain of nodes where each node contains data and a pointer to the next node.
+**What it is:** A chain of nodes where each node contains data and a pointer (reference) to the next node.
 
-**Kitchen analogy:** A treasure hunt where each clue tells you where the next clue is. You can't jump to clue #5 — you must follow the chain from the start.
+**Kitchen analogy:** A treasure hunt where each clue tells you where the next clue is. You cannot jump to clue number 5 — you must follow the chain from the very first clue, reading each one to find the location of the next.
+
+The key insight about linked lists is that they trade random access speed for insertion speed. Because nodes are not stored contiguously in memory (they can be anywhere), inserting a new node is trivial — create the node, update two pointers, and you are done. No shifting required. But finding a specific node means walking the chain from the beginning.
 
 **Operations & Complexity:**
 
 | Operation | Time | Why |
 |-----------|------|-----|
-| Access by index | O(n) | Must traverse from head |
+| Access by index | O(n) | Must traverse from head, one node at a time |
 | Search | O(n) | Must traverse from head |
-| Insert at beginning | O(1) | Just update the head pointer |
-| Insert at end (with tail) | O(1) | Update tail pointer |
-| Delete (given node) | O(1) | Update pointers |
+| Insert at beginning | O(1) | Just create a new node and point it to the old head |
+| Insert at end (with tail pointer) | O(1) | Update tail pointer |
+| Delete (given the node reference) | O(1) | Update the previous node's pointer |
 
 **When to use:**
 - Frequent insertions/deletions at the beginning
 - Implementing stacks, queues, or LRU caches
-- When you don't need random access
+- When you do not need random access by index
+- When memory is fragmented (nodes do not need contiguous space)
 
 ### Stacks (LIFO — Last In, First Out)
 
-**What it is:** A collection where you can only add/remove from the top. Like a stack of plates.
+**What it is:** A collection where you can only add to and remove from the top. Like a stack of plates — the last plate you place on top is the first one you take off.
 
-**Key operations:** push (add to top), pop (remove from top), peek (look at top)
+**Key operations:** push (add to top), pop (remove from top), peek (look at top without removing)
+
+This "last in, first out" behaviour might seem restrictive, but it perfectly models many real-world processes. Think about what happens when you type in a text editor and press Ctrl+Z (undo). The last action you performed is the first one to be undone. That is a stack.
 
 **Real-world uses:**
-- Browser back button (stack of visited pages)
-- Undo functionality (stack of actions)
-- Function call stack (how your code executes)
-- Matching parentheses in code editors
+- Browser back button (stack of visited pages — the last page you visited is the first one you go back to)
+- Undo functionality (stack of actions — undo the most recent action first)
+- Function call stack (when function A calls function B which calls function C, C finishes first, then B, then A)
+- Matching parentheses in code editors (push opening brackets, pop when you see closing brackets)
+- Expression evaluation (converting infix to postfix notation)
 
 ### Queues (FIFO — First In, First Out)
 
-**What it is:** A collection where you add to the back and remove from the front. Like a line at a shop.
+**What it is:** A collection where you add to the back and remove from the front. Like a queue at a shop — the first person in line is the first person served.
 
 **Key operations:** enqueue (add to back), dequeue (remove from front)
 
+Queues model fairness — first come, first served. Any system that processes requests in the order they arrive uses a queue. This is so fundamental that operating systems, web servers, and databases all use queues internally.
+
 **Real-world uses:**
-- Print queue (documents print in order)
-- Task scheduling (process jobs in order)
-- BFS traversal (explore level by level)
-- Message queues (Kafka, RabbitMQ)
+- Print queue (documents print in the order they were submitted)
+- Task scheduling (process jobs in the order they arrive)
+- BFS graph traversal (explore nodes level by level)
+- Message queues in distributed systems (Kafka, RabbitMQ, SQS)
+- Customer support ticket systems
 
 ### Hash Maps (Dictionaries)
 
-**What it is:** A key-value store that uses a hash function to map keys to array indices for O(1) average lookup.
+**What it is:** A key-value store that uses a hash function to map keys to array indices, giving O(1) average-case lookup.
 
-**Kitchen analogy:** A filing cabinet with labeled folders. You don't search through every folder — you go directly to the label you need.
+**Kitchen analogy:** A filing cabinet with labelled folders. You do not search through every folder — you go directly to the folder with the label you need. The label IS the address.
+
+Hash maps are arguably the single most important data structure in practical software engineering. They appear everywhere: caching, configuration, counting, deduplication, indexing, routing, and more. If you could learn only one data structure, learn hash maps.
+
+The magic is the hash function. It takes any key (a string, a number, an object) and converts it into an array index. The same key always produces the same index, so lookup is instant — compute the hash, go to that index, and read the value. No searching.
 
 **Operations & Complexity:**
 
-| Operation | Average | Worst |
-|-----------|---------|-------|
+| Operation | Average | Worst (hash collisions) |
+|-----------|---------|------------------------|
 | Get by key | O(1) | O(n) |
 | Set key-value | O(1) | O(n) |
 | Delete by key | O(1) | O(n) |
 | Check key exists | O(1) | O(n) |
 
+The worst case (O(n)) happens when many keys hash to the same index (a "collision"). Good hash functions and proper table sizing make this extremely rare in practice.
+
 **When to use:**
-- You need fast lookup by key (user IDs, config settings)
-- Counting occurrences (word frequency, vote tallying)
-- Caching (memoization, LRU cache)
-- Deduplication (have I seen this before?)
+- Fast lookup by key (user IDs, config settings, database records)
+- Counting occurrences (word frequency, vote tallying, analytics)
+- Caching (memoisation, LRU cache, API response caching)
+- Deduplication (have I seen this value before?)
+- Two Sum and similar "find complement" problems
 
 **When NOT to use:**
-- You need ordered data (use a tree instead)
-- Memory is extremely constrained (hash maps use extra memory)
+- You need ordered data (use a tree or sorted array instead)
+- Memory is extremely constrained (hash maps use extra memory for the hash table)
+- You need range queries ("find all values between 10 and 20")
 
 ### Trees
 
-**What it is:** A hierarchical data structure with a root node and child nodes forming branches.
+**What it is:** A hierarchical data structure with a root node and child nodes forming branches. Unlike arrays and linked lists (which are linear), trees branch — each node can have multiple children.
 
-**Types:**
-- **Binary Tree** — each node has at most 2 children
-- **Binary Search Tree (BST)** — left child < parent < right child
-- **Balanced BST (AVL, Red-Black)** — self-balancing for guaranteed O(log n)
-- **Heap** — parent is always greater/smaller than children (used for priority queues)
-- **Trie** — tree for storing strings character by character (autocomplete, spell check)
-
-**BST Operations & Complexity:**
-
-| Operation | Average | Worst (unbalanced) |
-|-----------|---------|-------------------|
-| Search | O(log n) | O(n) |
-| Insert | O(log n) | O(n) |
-| Delete | O(log n) | O(n) |
+**Types and when to use each:**
+- **Binary Search Tree (BST)** — left child < parent < right child. Enables O(log n) search, insert, and delete when balanced. Used in database indexes and in-memory sorted collections.
+- **Balanced BST (AVL, Red-Black)** — self-balancing to guarantee O(log n) even in worst case. Used in language standard libraries (Java TreeMap, C++ std::map).
+- **Heap** — parent is always greater (max-heap) or smaller (min-heap) than children. Used for priority queues: "give me the highest-priority item" in O(1).
+- **Trie** — tree for storing strings character by character. Used for autocomplete, spell check, and IP routing.
+- **B-tree / B+ tree** — wide, shallow tree optimised for disk access. Used in virtually every database index (PostgreSQL, MySQL, SQLite).
 
 **Real-world uses:**
-- File systems (directory tree)
-- Database indexes (B-trees)
-- Autocomplete (tries)
-- Priority scheduling (heaps)
-- HTML/DOM (tree of elements)
+- File systems (the directory tree on your computer)
+- Database indexes (B-trees make SELECT fast)
+- Autocomplete features (tries)
+- Priority scheduling (heaps — "process the most urgent task next")
+- HTML/DOM (the Document Object Model is a tree of elements)
 
 ### Graphs
 
-**What it is:** A collection of nodes (vertices) connected by edges. Unlike trees, graphs can have cycles and don't require a root.
+**What it is:** A collection of nodes (vertices) connected by edges. Unlike trees, graphs can have cycles (A → B → C → A) and do not require a root node.
+
+Graphs model relationships. Any time you have entities that are connected to each other, you have a graph. Social networks, maps, dependency chains, recommendation systems — all graphs.
 
 **Types:**
-- **Directed** — edges have direction (Twitter follows: A follows B doesn't mean B follows A)
+- **Directed** — edges have direction (Twitter follows: A follows B does NOT mean B follows A)
 - **Undirected** — edges go both ways (Facebook friends: if A is friends with B, B is friends with A)
-- **Weighted** — edges have values (distance, cost, time)
-
-**Real-world uses:**
-- Social networks (friend connections)
-- Maps/navigation (routes between locations)
-- Dependency resolution (package managers)
-- Recommendation systems (item similarity)
+- **Weighted** — edges have values (map routes: the edge from London to Edinburgh has weight "distance in miles")
 
 ### Data Structure Decision Guide
 
-| Need | Use |
-|------|-----|
+| What You Need | Use This |
+|---------------|----------|
 | Fast access by position | Array |
 | Fast insert/delete at ends | Linked List or Deque |
-| LIFO (undo, back button) | Stack |
-| FIFO (task queue, BFS) | Queue |
+| LIFO ordering (undo, back button) | Stack |
+| FIFO ordering (task queue, BFS) | Queue |
 | Fast lookup by key | Hash Map |
 | Ordered data with fast search | BST / Balanced BST |
-| Priority ordering | Heap |
+| Priority ordering | Heap / Priority Queue |
 | String prefix matching | Trie |
 | Relationships between entities | Graph |
 
 ### Big O Cheat Sheet
 
-From fastest to slowest:
+Big O describes how an algorithm's performance scales as input size grows. It answers the question: "If I double the input, how much longer does it take?"
 
-| Complexity | Name | Example |
-|-----------|------|---------|
-| O(1) | Constant | Array access, hash map lookup |
-| O(log n) | Logarithmic | Binary search, balanced BST |
-| O(n) | Linear | Linear search, single loop |
-| O(n log n) | Linearithmic | Merge sort, heap sort |
-| O(n²) | Quadratic | Nested loops, bubble sort |
-| O(2ⁿ) | Exponential | Recursive subsets, brute force |
-| O(n!) | Factorial | Permutations, travelling salesman |`,
+| Complexity | Name | Scaling Behaviour | Example |
+|-----------|------|-------------------|---------|
+| O(1) | Constant | Same time regardless of input size | Array access, hash map lookup |
+| O(log n) | Logarithmic | Doubles input → one extra step | Binary search, balanced BST |
+| O(n) | Linear | Doubles input → doubles time | Linear search, single loop |
+| O(n log n) | Linearithmic | Slightly worse than linear | Merge sort, heap sort, good sorting |
+| O(n²) | Quadratic | Doubles input → 4x time | Nested loops, bubble sort |
+| O(2ⁿ) | Exponential | Each +1 input doubles time | Recursive subsets, brute force |
+| O(n!) | Factorial | Completely impractical for n > 20 | Permutations, travelling salesman |`,
       },
       {
         title: "Algorithms — Pattern Recognition Guide",
         slug: "algorithms-patterns",
         type: "lesson" as const,
         difficulty: "intermediate" as const,
-        estimatedMinutes: 35,
+        estimatedMinutes: 40,
         order: 2,
-        content: `## Algorithm Patterns — Recognizing What to Use
+        content: `## Algorithm Patterns — Recognising What to Use
 
-The key to solving algorithm problems isn't memorizing solutions — it's recognizing patterns. When you see a problem, you should think "this looks like a sliding window problem" or "this needs BFS," not "let me recall the exact code."
+The key to solving algorithm problems is not memorising solutions — it is recognising patterns. When you see a problem, you should think "this looks like a sliding window problem" or "this needs BFS," not "let me recall the exact code." Pattern recognition turns an infinite number of problems into a manageable number of techniques.
+
+Think of it like learning to play chess. A grandmaster does not calculate every possible move from scratch. They recognise positions: "this looks like a Sicilian Defence — I know the typical responses." Similarly, an experienced engineer recognises: "this asks for the longest contiguous subarray — I know this is a sliding window problem."
 
 ### Pattern 1: Two Pointers
 
 **When to use:** Sorted arrays, finding pairs, palindromes, removing duplicates.
 
-**How it works:** Use two pointers (usually start/end or slow/fast) to traverse the data structure, reducing the search space.
+**How it works:** Use two pointers (usually start/end or slow/fast) to traverse the data structure, reducing the search space with each step instead of checking every pair.
+
+The insight is that in a sorted array, the relationship between the two pointed-to values tells you which pointer to move. If the sum is too small, move the left pointer right (to increase the sum). If the sum is too large, move the right pointer left (to decrease it). This eliminates entire swathes of the search space in one step.
 
 **Recognition clues:**
 - "Find a pair that sums to X" in a sorted array
 - "Is this a palindrome?"
 - "Remove duplicates from sorted array"
 - "Container with most water"
-
-**Template:**
+- Any problem on sorted data asking about pairs
 
 \`\`\`typescript
+// # Two Pointers: find pair summing to target in sorted array
 function twoPointers(arr: number[], target: number): [number, number] | null {
-  let left = 0;
-  let right = arr.length - 1;
+  let left = 0;                    // # Start pointer at beginning
+  let right = arr.length - 1;      // # End pointer at end
 
   while (left < right) {
-    const sum = arr[left] + arr[right];
-    if (sum === target) return [left, right];
-    if (sum < target) left++;
-    else right--;
+    const sum = arr[left] + arr[right];   // # Calculate current pair sum
+    if (sum === target) return [left, right]; // # Found the pair
+    if (sum < target) left++;     // # Sum too small → need bigger number → move left forward
+    else right--;                 // # Sum too large → need smaller number → move right backward
   }
-  return null;
+  return null;                    // # No pair found
 }
 \`\`\`
 
 ### Pattern 2: Sliding Window
 
-**When to use:** Contiguous subarrays/substrings, maximum/minimum in a window, fixed or variable size windows.
+**When to use:** Problems involving contiguous subarrays or substrings — "find the maximum/minimum over a window of elements."
 
-**How it works:** Maintain a "window" of elements that slides through the array, expanding or contracting as needed.
+**How it works:** Maintain a "window" that slides through the array. Instead of recalculating everything for each position, you add the new element entering the window and remove the old element leaving it.
+
+The key insight: if you need to examine every contiguous subarray of size K, the brute force approach recalculates each subarray from scratch — O(n × K). But consecutive windows overlap! Window [2,3,4,5] and window [3,4,5,6] share elements [3,4,5]. Sliding window exploits this overlap.
 
 **Recognition clues:**
 - "Maximum sum subarray of size K"
 - "Longest substring without repeating characters"
-- "Smallest subarray with sum ≥ target"
+- "Smallest subarray with sum >= target"
 - Any problem mentioning "contiguous" + "maximum/minimum"
 
-**Template (variable window):**
-
 \`\`\`typescript
+// # Sliding Window: longest substring without repeating characters
 function slidingWindow(s: string): number {
-  const seen = new Set<string>();
-  let left = 0;
-  let maxLen = 0;
+  const seen = new Set<string>();  // # Track characters in current window
+  let left = 0;                    // # Left edge of window
+  let maxLen = 0;                  // # Best result found so far
 
   for (let right = 0; right < s.length; right++) {
+    // # If character already in window, shrink from left until it is gone
     while (seen.has(s[right])) {
-      seen.delete(s[left]);
-      left++;
+      seen.delete(s[left]);        // # Remove leftmost character
+      left++;                      // # Shrink window
     }
-    seen.add(s[right]);
-    maxLen = Math.max(maxLen, right - left + 1);
+    seen.add(s[right]);            // # Add new character to window
+    maxLen = Math.max(maxLen, right - left + 1); // # Update best length
   }
   return maxLen;
 }
@@ -267,100 +286,75 @@ function slidingWindow(s: string): number {
 
 ### Pattern 3: Binary Search
 
-**When to use:** Sorted data, finding boundaries, optimization problems with monotonic conditions.
+**When to use:** Sorted data, finding boundaries, or any problem where you can determine "is the answer in the left half or the right half?"
 
-**How it works:** Repeatedly halve the search space by comparing the middle element.
+**How it works:** Repeatedly halve the search space by comparing the middle element. Each comparison eliminates half of the remaining possibilities — this is why binary search is O(log n). For 1 billion elements, binary search needs at most 30 comparisons.
 
 **Recognition clues:**
 - "Find X in a sorted array"
 - "Find the first/last occurrence"
-- "Find the minimum/maximum that satisfies a condition"
+- "Find the minimum value that satisfies a condition" (binary search on the answer)
 - "Search in rotated sorted array"
 
 ### Pattern 4: BFS (Breadth-First Search)
 
-**When to use:** Shortest path in unweighted graphs, level-order traversal, finding nearest nodes.
+**When to use:** Shortest path in unweighted graphs, level-order traversal, finding the nearest node.
 
-**How it works:** Explore all neighbors at the current depth before moving deeper. Uses a queue.
+**How it works:** Explore all neighbours at the current depth before moving deeper. Uses a queue — process nodes in FIFO order, which guarantees that you visit closer nodes before distant ones.
 
-**Recognition clues:**
-- "Shortest path" (unweighted)
-- "Level order traversal"
-- "Nearest" or "minimum steps"
-- Grid problems with shortest distance
+The critical property: BFS guarantees the shortest path in an unweighted graph. The first time you reach a node, you have found the shortest path to it. This is because BFS explores all nodes at distance 1, then all at distance 2, then all at distance 3, and so on.
 
 ### Pattern 5: DFS (Depth-First Search)
 
-**When to use:** Exploring all paths, detecting cycles, topological sorting, tree traversals.
+**When to use:** Exploring all paths, detecting cycles, topological sorting, tree traversals, connected components.
 
-**How it works:** Go as deep as possible before backtracking. Uses recursion or a stack.
+**How it works:** Go as deep as possible along one path before backtracking. Uses recursion or an explicit stack.
 
-**Recognition clues:**
-- "Find all paths"
-- "Detect cycle"
-- "Connected components"
-- "Island problems" on grids
+DFS and BFS are complements. BFS finds the shortest path but uses more memory (it keeps the entire frontier in the queue). DFS uses less memory but does not guarantee the shortest path. Choose based on your problem: shortest path → BFS. All paths / cycle detection → DFS.
 
 ### Pattern 6: Dynamic Programming
 
-**When to use:** Overlapping subproblems, optimal substructure, counting problems, optimization.
+**When to use:** Problems with overlapping subproblems and optimal substructure. If solving the problem naturally leads to solving the same smaller problems repeatedly, DP eliminates that redundancy.
 
-**How it works:** Break the problem into smaller subproblems, solve each once, store results.
+**The three steps to any DP solution:**
+1. Define the state — what variables describe a subproblem? (e.g., dp[i] = best answer considering the first i elements)
+2. Write the recurrence — how does the current state relate to previous states? (e.g., dp[i] = max(dp[i-1], dp[i-2] + value[i]))
+3. Define base cases — what are the trivial starting values? (e.g., dp[0] = 0, dp[1] = value[0])
 
 **Recognition clues:**
 - "Find the maximum/minimum"
 - "Count the number of ways"
 - "Is it possible to...?"
 - "Longest/shortest subsequence"
-- Problem has overlapping subproblems (same subproblem solved multiple times)
-
-**Approach:**
-1. Define the state (what changes between subproblems?)
-2. Write the recurrence relation (how does the current state relate to previous states?)
-3. Define base cases
-4. Decide direction: top-down (memoization) or bottom-up (tabulation)
+- The same subproblem is solved multiple times
 
 ### Pattern 7: Greedy
 
-**When to use:** Local optimal choices lead to global optimal, interval scheduling, activity selection.
+**When to use:** When making the locally optimal choice at each step leads to the globally optimal solution.
 
-**How it works:** At each step, make the locally optimal choice without reconsidering.
+**Warning:** Greedy does not always work. You must prove (or strongly intuit) that local optimal → global optimal. If unsure, use DP instead — it is always correct, just sometimes slower.
 
 **Recognition clues:**
-- "Maximum number of non-overlapping intervals"
-- "Minimum number of coins"
+- "Maximum number of non-overlapping intervals" (sort by end time, always pick the earliest-ending)
 - "Activity/job scheduling"
-- Problem where choosing the best option now doesn't affect future options
-
-**Warning:** Greedy doesn't always work. You must prove that local optimal → global optimal. If unsure, use DP.
+- "Minimum coins" (only works with certain denominations — use DP for arbitrary denominations)
 
 ### Pattern 8: Backtracking
 
 **When to use:** Generate all combinations/permutations, constraint satisfaction, puzzle solving.
 
-**How it works:** Try all possibilities, backtrack when a choice leads to a dead end.
-
-**Recognition clues:**
-- "Generate all combinations"
-- "Find all permutations"
-- "Solve this puzzle" (Sudoku, N-Queens)
-- "All possible" anything
+**How it works:** Try all possibilities systematically. When a choice leads to a dead end, undo it ("backtrack") and try the next option. It is DFS applied to a decision tree.
 
 ### Pattern Selection Flowchart
 
-1. Is the input sorted or can you sort it?
-   - Yes → **Two Pointers** or **Binary Search**
-2. Does the problem involve contiguous elements?
-   - Yes → **Sliding Window**
+1. Is the input sorted (or can you sort it)? → **Two Pointers** or **Binary Search**
+2. Does the problem involve contiguous elements? → **Sliding Window**
 3. Is it a tree or graph problem?
-   - Shortest path? → **BFS**
+   - Shortest path (unweighted)? → **BFS**
    - All paths / cycle detection? → **DFS**
-4. Does it have overlapping subproblems?
-   - Yes → **Dynamic Programming**
-5. Can local optimal choices give global optimal?
-   - Yes → **Greedy**
-6. Need to generate all possibilities?
-   - Yes → **Backtracking**`,
+4. Does it have overlapping subproblems? → **Dynamic Programming**
+5. Can local optimal choices guarantee global optimal? → **Greedy**
+6. Need to generate all possibilities? → **Backtracking**`,
       },
       {
         title: "Data Structures Quiz",
@@ -371,20 +365,18 @@ function slidingWindow(s: string): number {
         order: 3,
         content: `## Data Structures Quiz
 
-Test your understanding of when to use each data structure.
-
 <!--quiz
 [
   {
     "question": "You need to implement a browser's back button. Which data structure is most appropriate?",
     "options": [
-      "Array",
-      "Queue",
-      "Stack",
-      "Hash Map"
+      "Array — store pages in order",
+      "Queue — process pages FIFO",
+      "Stack — the last page visited is the first one you go back to (LIFO)",
+      "Hash Map — look up pages by URL"
     ],
     "correctIndex": 2,
-    "explanation": "A stack (LIFO) is perfect for back/forward navigation. When you visit a new page, push it onto the stack. When you press back, pop the top page. The last page you visited is the first one you return to — exactly LIFO behavior."
+    "explanation": "A stack (LIFO) is perfect for back/forward navigation. When you visit a new page, push it onto the stack. When you press back, pop the top page. The last page you visited is the first one you return to — exactly LIFO behaviour."
   },
   {
     "question": "You need to check if a username already exists in a system with 10 million users. Which data structure gives the fastest lookup?",
@@ -395,7 +387,7 @@ Test your understanding of when to use each data structure.
       "Binary Search Tree — O(log n)"
     ],
     "correctIndex": 2,
-    "explanation": "A Hash Map (or Hash Set) provides O(1) average-case lookup, which is faster than the O(log n) of binary search or BST. At 10 million users, O(1) vs O(log n) means ~1 operation vs ~23 operations per lookup. Hash maps are the standard choice for existence checking."
+    "explanation": "A Hash Map (or Hash Set) provides O(1) average-case lookup, which is faster than the O(log n) of binary search or BST. At 10 million users, O(1) means ~1 operation vs O(log n) which means ~23 operations. Hash maps are the standard choice for existence checking and deduplication."
   },
   {
     "question": "You need to process customer support tickets in the order they were received. Which data structure should you use?",
@@ -406,29 +398,29 @@ Test your understanding of when to use each data structure.
       "Priority Queue — process by priority"
     ],
     "correctIndex": 1,
-    "explanation": "A queue (FIFO — First In, First Out) processes items in the order they arrive, which is exactly what 'in the order they were received' means. A stack would process the newest first, which isn't fair. A priority queue would be appropriate if tickets had different priority levels, but the question says 'in order received.'"
+    "explanation": "A queue (FIFO — First In, First Out) processes items in the order they arrive, which is exactly what 'in the order they were received' means. A stack would process the newest first (unfair). A priority queue would be appropriate if tickets had different priority levels, but the question specifies 'in order received.'"
   },
   {
     "question": "You're building an autocomplete feature that suggests words as the user types. Which data structure is most efficient?",
     "options": [
       "Hash Map of all words",
       "Sorted Array with binary search",
-      "Trie (prefix tree)",
+      "Trie (prefix tree) — designed specifically for prefix-based lookups",
       "Linked List of words"
     ],
     "correctIndex": 2,
-    "explanation": "A Trie is specifically designed for prefix-based lookups. When the user types 'pro', the Trie traverses p→r→o and returns all words below that node (program, product, process, etc.) in O(m) time where m is the prefix length. A hash map can't efficiently find all words starting with a prefix — you'd need to check every key."
+    "explanation": "A Trie is specifically designed for prefix-based lookups. When the user types 'pro', the Trie traverses p→r→o and returns all words below that node (program, product, process, etc.) in O(m) time where m is the prefix length. A hash map cannot efficiently find all words starting with a prefix — you would need to check every single key."
   },
   {
     "question": "What is the time complexity of inserting an element at the beginning of a regular array (not a linked list)?",
     "options": [
       "O(1) — just put it at index 0",
       "O(log n) — uses binary search to find position",
-      "O(n) — must shift all existing elements right",
+      "O(n) — must shift ALL existing elements one position right",
       "O(n²) — must shift and sort"
     ],
     "correctIndex": 2,
-    "explanation": "Inserting at the beginning of an array requires shifting every existing element one position to the right to make room at index 0. If the array has n elements, that's n shift operations → O(n). This is why linked lists (O(1) insert at head) are preferred when frequent insertions at the beginning are needed."
+    "explanation": "Inserting at the beginning of an array requires shifting every existing element one position to the right to make room at index 0. If the array has n elements, that is n shift operations → O(n). This is why linked lists (O(1) insert at head) are preferred when frequent insertions at the beginning are needed."
   }
 ]
 -->`,
@@ -441,7 +433,7 @@ Test your understanding of when to use each data structure.
   {
     name: "Coding Exercises",
     slug: "coding-exercises",
-    description: "50 LeetCode-quality coding problems — 20 Easy, 20 Medium, 10 Hard — with hints, brute force, and optimal solutions.",
+    description: "Classic coding problems with step-by-step walkthroughs — brute force first, then optimal solutions with pattern explanations.",
     order: 2,
     sections: [
       {
@@ -459,104 +451,78 @@ Given an array of integers \`nums\` and an integer \`target\`, return the indice
 
 You may assume that each input has exactly one solution, and you may not use the same element twice.
 
-### Constraints
-
-- 2 ≤ nums.length ≤ 10,000
-- -1,000,000,000 ≤ nums[i] ≤ 1,000,000,000
-- -1,000,000,000 ≤ target ≤ 1,000,000,000
-- Only one valid answer exists
-
 ### Examples
 
 **Example 1:**
 - Input: nums = [2, 7, 11, 15], target = 9
 - Output: [0, 1]
-- Explanation: nums[0] + nums[1] = 2 + 7 = 9
+- Because nums[0] + nums[1] = 2 + 7 = 9
 
 **Example 2:**
 - Input: nums = [3, 2, 4], target = 6
 - Output: [1, 2]
-- Explanation: nums[1] + nums[2] = 2 + 4 = 6
-
-**Example 3:**
-- Input: nums = [3, 3], target = 6
-- Output: [0, 1]
 
 ### Hints
 
 <details>
 <summary>Hint 1</summary>
-Think about what you need for each number. If the target is 9 and the current number is 2, what are you looking for?
+For each number, what are you looking for? If the target is 9 and the current number is 2, you need to find 7 (the complement).
 </details>
 
 <details>
 <summary>Hint 2</summary>
-For each number, you need to find its complement (target - current number). What data structure gives O(1) lookup?
+What data structure gives O(1) lookup? Use a hash map to store numbers you have seen, then for each new number, check if its complement exists.
 </details>
 
-<details>
-<summary>Hint 3</summary>
-Use a hash map to store numbers you've seen so far. Key = number, Value = index. For each new number, check if (target - number) exists in the map.
-</details>
+### Solution: Brute Force — O(n²)
 
-### Solution: Brute Force
-
-**Approach:** Check every pair of numbers.
-
-**Complexity:** Time O(n²), Space O(1)
+Check every pair. Simple but slow.
 
 \`\`\`typescript
+// # Brute force: check every pair of numbers
 function twoSum(nums: number[], target: number): number[] {
-  // Check every pair
-  for (let i = 0; i < nums.length; i++) {
-    for (let j = i + 1; j < nums.length; j++) {
-      if (nums[i] + nums[j] === target) {
-        return [i, j];
+  for (let i = 0; i < nums.length; i++) {          // # First number
+    for (let j = i + 1; j < nums.length; j++) {    // # Second number (after first)
+      if (nums[i] + nums[j] === target) {           // # Do they add up?
+        return [i, j];                               // # Found it
       }
     }
   }
-  return []; // Should never reach here per constraints
+  return [];  // # Should never reach here per constraints
 }
 \`\`\`
 
-### Solution: Optimal (Hash Map)
+### Solution: Optimal (Hash Map) — O(n)
 
-**Approach:** Use a hash map to store seen numbers. For each number, check if its complement exists.
-
-**Complexity:** Time O(n), Space O(n)
+The key insight: for each number, you are looking for its complement (target - number). A hash map lets you check "have I seen the complement before?" in O(1).
 
 \`\`\`typescript
+// # Optimal: hash map stores seen numbers for O(1) complement lookup
 function twoSum(nums: number[], target: number): number[] {
-  // Map: number → index
-  const seen = new Map<number, number>();
+  const seen = new Map<number, number>();  // # Map: number → its index
 
   for (let i = 0; i < nums.length; i++) {
-    const complement = target - nums[i];
+    const complement = target - nums[i];    // # What number do I need?
 
-    // Check if complement was seen before
-    if (seen.has(complement)) {
-      return [seen.get(complement)!, i];
+    if (seen.has(complement)) {             // # Have I seen it before?
+      return [seen.get(complement)!, i];    // # Return both indices
     }
 
-    // Store current number and its index
-    seen.set(nums[i], i);
+    seen.set(nums[i], i);                  // # Store current number for future lookups
   }
   return [];
 }
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-Two Sum tests your ability to:
-1. Recognize the hash map optimization pattern (trading space for time)
-2. Think about complement-based problems
-3. Handle edge cases (duplicate values like [3,3])
+Two Sum is the most classic interview problem because it tests the most fundamental optimisation technique in computer science: trading space for time. The brute force uses O(1) space but O(n²) time. The hash map uses O(n) space but O(n) time. This space-time tradeoff appears in virtually every optimisation problem.
 
 ### Similar Problems
 
-- Three Sum (Medium)
-- Two Sum II — Input Array Is Sorted (use two pointers)
-- Subarray Sum Equals K`,
+- Three Sum (Medium) — sort + two pointers
+- Two Sum II — Input Array Is Sorted (use two pointers, not hash map)
+- Subarray Sum Equals K (Medium) — prefix sum + hash map`,
       },
       {
         title: "Easy — Valid Parentheses",
@@ -576,60 +542,23 @@ A string is valid if:
 2. Open brackets must be closed in the correct order.
 3. Every close bracket has a corresponding open bracket of the same type.
 
-### Constraints
-
-- 1 ≤ s.length ≤ 10,000
-- s consists of parentheses only: \`()[]{}\`
-
 ### Examples
 
-**Example 1:**
-- Input: s = "()"
-- Output: true
+- \`"()"\` → true
+- \`"()[]{}"\` → true
+- \`"(]"\` → false
+- \`"([)]"\` → false (brackets overlap incorrectly)
+- \`"{[]}"\` → true (properly nested)
 
-**Example 2:**
-- Input: s = "()[]{}"
-- Output: true
+### Solution: Stack — O(n)
 
-**Example 3:**
-- Input: s = "(]"
-- Output: false
-
-**Example 4:**
-- Input: s = "([)]"
-- Output: false (brackets overlap incorrectly)
-
-**Example 5:**
-- Input: s = "{[]}"
-- Output: true (properly nested)
-
-### Hints
-
-<details>
-<summary>Hint 1</summary>
-Think about what happens when you encounter a closing bracket — what should be the most recently opened bracket?
-</details>
-
-<details>
-<summary>Hint 2</summary>
-The "most recently opened" requirement suggests LIFO ordering. Which data structure implements LIFO?
-</details>
-
-<details>
-<summary>Hint 3</summary>
-Use a stack. Push opening brackets, pop when you see a closing bracket, and check if it matches. At the end, the stack should be empty.
-</details>
-
-### Solution: Stack
-
-**Approach:** Use a stack to track opening brackets. When a closing bracket appears, the top of the stack must match.
-
-**Complexity:** Time O(n), Space O(n)
+The insight: when you encounter a closing bracket, the most recently opened bracket must match it. "Most recently" = LIFO = stack.
 
 \`\`\`typescript
+// # Stack-based matching: push opens, pop and check on closes
 function isValid(s: string): boolean {
   const stack: string[] = [];
-  const pairs: Record<string, string> = {
+  const pairs: Record<string, string> = {  // # Map closing → opening
     ")": "(",
     "]": "[",
     "}": "{",
@@ -637,34 +566,23 @@ function isValid(s: string): boolean {
 
   for (const char of s) {
     if (char === "(" || char === "[" || char === "{") {
-      // Opening bracket — push onto stack
-      stack.push(char);
+      stack.push(char);                    // # Opening bracket → push onto stack
     } else {
-      // Closing bracket — check top of stack
+      // # Closing bracket → top of stack must be the matching opener
       if (stack.length === 0 || stack[stack.length - 1] !== pairs[char]) {
-        return false;
+        return false;                      // # Mismatch or no opener → invalid
       }
-      stack.pop();
+      stack.pop();                         // # Match found → remove the opener
     }
   }
 
-  // Valid only if all brackets were matched
-  return stack.length === 0;
+  return stack.length === 0;  // # Valid only if ALL brackets were matched
 }
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-Tests your ability to:
-1. Recognize stack-based problems (matching/nesting)
-2. Handle edge cases (empty string, single bracket, interleaved brackets)
-3. Use appropriate data structures for the problem
-
-### Similar Problems
-
-- Generate Parentheses (Medium — backtracking)
-- Longest Valid Parentheses (Hard — DP or stack)
-- Minimum Add to Make Parentheses Valid`,
+This is the canonical "use a stack" problem. Any problem involving matching, nesting, or "most recent" ordering is likely a stack problem. The pattern extends to: expression evaluation, HTML tag matching, and compiler syntax checking.`,
       },
       {
         title: "Medium — Longest Substring Without Repeating Characters",
@@ -679,108 +597,40 @@ Tests your ability to:
 
 Given a string \`s\`, find the length of the longest substring without repeating characters.
 
-### Constraints
-
-- 0 ≤ s.length ≤ 50,000
-- s consists of English letters, digits, symbols, and spaces
-
 ### Examples
 
-**Example 1:**
-- Input: s = "abcabcbb"
-- Output: 3
-- Explanation: The answer is "abc", with length 3.
+- \`"abcabcbb"\` → 3 (the substring "abc")
+- \`"bbbbb"\` → 1 (the substring "b")
+- \`"pwwkew"\` → 3 (the substring "wke" — note "pwke" is a subsequence, not a substring)
 
-**Example 2:**
-- Input: s = "bbbbb"
-- Output: 1
-- Explanation: The answer is "b", with length 1.
+### Solution: Sliding Window — O(n)
 
-**Example 3:**
-- Input: s = "pwwkew"
-- Output: 3
-- Explanation: The answer is "wke", with length 3. Note that "pwke" is a subsequence, not a substring.
-
-### Hints
-
-<details>
-<summary>Hint 1</summary>
-Think about maintaining a "window" of characters. What happens when you encounter a duplicate?
-</details>
-
-<details>
-<summary>Hint 2</summary>
-Use a sliding window with two pointers. Expand the right pointer, and when a duplicate is found, shrink from the left.
-</details>
-
-<details>
-<summary>Hint 3</summary>
-Use a Set (or Map) to track characters in the current window. When a duplicate is found, remove characters from the left until the duplicate is gone.
-</details>
-
-### Solution: Brute Force
-
-**Approach:** Check every possible substring for uniqueness.
-
-**Complexity:** Time O(n³), Space O(n)
+This is the classic sliding window problem. Maintain a window [left, right] of unique characters. Expand right to add characters. When a duplicate is found, shrink from the left until the duplicate is removed.
 
 \`\`\`typescript
+// # Sliding window: expand right, shrink left on duplicate
 function lengthOfLongestSubstring(s: string): number {
-  let maxLen = 0;
-
-  for (let i = 0; i < s.length; i++) {
-    for (let j = i; j < s.length; j++) {
-      // Check if substring s[i..j] has all unique characters
-      const chars = new Set(s.slice(i, j + 1));
-      if (chars.size === j - i + 1) {
-        maxLen = Math.max(maxLen, j - i + 1);
-      }
-    }
-  }
-  return maxLen;
-}
-\`\`\`
-
-### Solution: Optimal (Sliding Window)
-
-**Approach:** Use a sliding window with a Set to track unique characters.
-
-**Complexity:** Time O(n), Space O(min(n, alphabet size))
-
-\`\`\`typescript
-function lengthOfLongestSubstring(s: string): number {
-  const seen = new Set<string>();
-  let left = 0;
-  let maxLen = 0;
+  const seen = new Set<string>();  // # Characters in current window
+  let left = 0;                    // # Left edge of window
+  let maxLen = 0;                  // # Best result found
 
   for (let right = 0; right < s.length; right++) {
-    // Shrink window from left until no duplicate
+    // # If this character is already in the window, shrink from left
     while (seen.has(s[right])) {
-      seen.delete(s[left]);
-      left++;
+      seen.delete(s[left]);        // # Remove leftmost character
+      left++;                      // # Move left edge forward
     }
 
-    // Add current character to window
-    seen.add(s[right]);
-    maxLen = Math.max(maxLen, right - left + 1);
+    seen.add(s[right]);            // # Add new character to window
+    maxLen = Math.max(maxLen, right - left + 1);  // # Update best length
   }
   return maxLen;
 }
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-Tests your ability to:
-1. Apply the sliding window pattern
-2. Use a Set for O(1) duplicate detection
-3. Handle edge cases (empty string, all same characters)
-4. Optimize from O(n³) to O(n)
-
-### Similar Problems
-
-- Longest Repeating Character Replacement (Medium)
-- Minimum Window Substring (Hard)
-- Substring with Concatenation of All Words (Hard)`,
+This is THE problem for learning the sliding window pattern. Once you understand this approach — maintaining a window, expanding and contracting — you can apply it to dozens of similar problems: maximum sum subarray, minimum window substring, longest repeating character replacement, and more.`,
       },
       {
         title: "Easy — Reverse Linked List",
@@ -793,155 +643,85 @@ Tests your ability to:
 
 ### Problem
 
-Given the head of a singly linked list, reverse the list, and return the reversed list.
+Given the head of a singly linked list, reverse the list and return the new head.
 
-### Examples
+### Example
 
-**Example 1:**
-- Input: head = [1, 2, 3, 4, 5]
-- Output: [5, 4, 3, 2, 1]
+Input: 1 → 2 → 3 → 4 → 5
+Output: 5 → 4 → 3 → 2 → 1
 
-**Example 2:**
-- Input: head = [1, 2]
-- Output: [2, 1]
+### Solution: Iterative — O(n) time, O(1) space
 
-### Hints
-
-<details>
-<summary>Hint 1</summary>
-You need to change where each node points. Instead of pointing to the next node, it should point to the previous node.
-</details>
-
-<details>
-<summary>Hint 2</summary>
-Use three pointers: previous, current, and next. At each step: save next, point current to previous, advance previous and current.
-</details>
-
-### Solution: Iterative
-
-**Complexity:** Time O(n), Space O(1)
+The trick: use three pointers. At each step, reverse the current node's pointer, then advance all three pointers forward.
 
 \`\`\`typescript
+// # Iterative reversal: change each node's "next" to point backward
 function reverseList(head: ListNode | null): ListNode | null {
-  let prev: ListNode | null = null;
-  let current = head;
+  let prev: ListNode | null = null;   // # Previous node (starts as null — new tail)
+  let current = head;                  // # Current node being processed
 
   while (current !== null) {
-    const next = current.next;  // Save next
-    current.next = prev;        // Reverse pointer
-    prev = current;             // Advance prev
-    current = next;             // Advance current
+    const next = current.next;  // # Save reference to next node BEFORE we break the link
+    current.next = prev;        // # Reverse the pointer: point backward instead of forward
+    prev = current;             // # Advance prev to current position
+    current = next;             // # Advance current to next position
   }
 
-  return prev; // prev is now the new head
+  return prev;  // # prev is now the new head (was the last node)
 }
 \`\`\`
 
-### Solution: Recursive
+### Visualisation
 
-**Complexity:** Time O(n), Space O(n) — call stack
-
-\`\`\`typescript
-function reverseList(head: ListNode | null): ListNode | null {
-  // Base case: empty list or single node
-  if (head === null || head.next === null) return head;
-
-  // Reverse the rest of the list
-  const newHead = reverseList(head.next);
-
-  // Make the next node point back to current
-  head.next.next = head;
-  head.next = null;
-
-  return newHead;
-}
+\`\`\`
+Step 0: null ← [prev]   1 → 2 → 3 → null
+                        [curr]
+Step 1: null ← 1        2 → 3 → null
+              [prev]   [curr]
+Step 2: null ← 1 ← 2    3 → null
+                  [prev] [curr]
+Step 3: null ← 1 ← 2 ← 3
+                        [prev] [curr=null] → DONE
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-Tests your ability to:
-1. Manipulate pointers without losing references
-2. Think about edge cases (empty list, single node)
-3. Understand iterative vs recursive approaches
-4. Visualize the algorithm step by step
-
-### Similar Problems
-
-- Reverse Linked List II (reverse from position m to n)
-- Palindrome Linked List
-- Swap Nodes in Pairs`,
+Reversing a linked list is one of the most common interview questions because it tests pointer manipulation — a skill that trips up many candidates. The iterative solution uses O(1) extra space and is preferred over the recursive solution (which uses O(n) stack space).`,
       },
       {
-        title: "Easy — Maximum Subarray (Kadane's)",
+        title: "Easy — Maximum Subarray (Kadane's Algorithm)",
         slug: "easy-maximum-subarray",
         type: "exercise" as const,
         difficulty: "beginner" as const,
         estimatedMinutes: 20,
         order: 5,
-        content: `## Maximum Subarray (Kadane's Algorithm)
+        content: `## Maximum Subarray — Kadane's Algorithm
 
 ### Problem
 
-Given an integer array \`nums\`, find the subarray with the largest sum, and return its sum.
+Given an integer array \`nums\`, find the contiguous subarray with the largest sum.
 
-### Examples
+### Example
 
-**Example 1:**
-- Input: nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
-- Output: 6
-- Explanation: The subarray [4, -1, 2, 1] has the largest sum 6.
+Input: [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+Output: 6 (the subarray [4, -1, 2, 1] has the largest sum)
 
-**Example 2:**
-- Input: nums = [1]
-- Output: 1
+### The Key Insight
 
-**Example 3:**
-- Input: nums = [5, 4, -1, 7, 8]
-- Output: 23
-- Explanation: The entire array [5, 4, -1, 7, 8] has the largest sum.
+At each position, you have exactly two choices: either extend the current subarray by including this element, or start a completely new subarray beginning at this element. Which is better? If the running sum is negative, starting fresh is always better — a negative prefix will only drag down whatever comes next.
 
-### Hints
-
-<details>
-<summary>Hint 1</summary>
-At each position, you have two choices: either extend the current subarray or start a new one from this position. Which gives a bigger sum?
-</details>
-
-<details>
-<summary>Hint 2</summary>
-If the running sum becomes negative, it's better to start fresh. A negative prefix will always drag down the total.
-</details>
-
-### Solution: Brute Force
-
-**Complexity:** Time O(n²), Space O(1)
+### Solution: Kadane's Algorithm — O(n) time, O(1) space
 
 \`\`\`typescript
+// # Kadane's: at each position, extend or restart
 function maxSubArray(nums: number[]): number {
-  let maxSum = -Infinity;
-  for (let i = 0; i < nums.length; i++) {
-    let currentSum = 0;
-    for (let j = i; j < nums.length; j++) {
-      currentSum += nums[j];
-      maxSum = Math.max(maxSum, currentSum);
-    }
-  }
-  return maxSum;
-}
-\`\`\`
-
-### Solution: Optimal (Kadane's Algorithm)
-
-**Complexity:** Time O(n), Space O(1)
-
-\`\`\`typescript
-function maxSubArray(nums: number[]): number {
-  let maxSum = nums[0];
-  let currentSum = nums[0];
+  let maxSum = nums[0];      // # Best sum found so far (global best)
+  let currentSum = nums[0];  // # Sum of the current subarray (local best)
 
   for (let i = 1; i < nums.length; i++) {
-    // Either extend the current subarray or start fresh
+    // # Decision: extend current subarray OR start fresh at nums[i]
     currentSum = Math.max(nums[i], currentSum + nums[i]);
+    // # Update global best if current subarray is better
     maxSum = Math.max(maxSum, currentSum);
   }
 
@@ -949,19 +729,9 @@ function maxSubArray(nums: number[]): number {
 }
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-Tests your ability to:
-1. Apply dynamic programming / greedy thinking
-2. Understand Kadane's algorithm (a fundamental technique)
-3. Handle all-negative arrays
-4. Think about subarray vs subsequence
-
-### Similar Problems
-
-- Maximum Product Subarray (Medium)
-- Best Time to Buy and Sell Stock (Easy — same pattern)
-- Maximum Sum Circular Subarray (Medium)`,
+Kadane's Algorithm is one of the most elegant algorithms in computer science. It reduces a seemingly complex problem (find the best subarray among O(n²) possibilities) to a single linear pass. The same "extend or restart" logic applies to: Best Time to Buy and Sell Stock, Maximum Product Subarray, and Maximum Sum Circular Subarray.`,
       },
       {
         title: "Medium — Merge Intervals",
@@ -974,54 +744,38 @@ Tests your ability to:
 
 ### Problem
 
-Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals, and return an array of the non-overlapping intervals.
+Given an array of intervals where intervals[i] = [start, end], merge all overlapping intervals.
 
-### Examples
+### Example
 
-**Example 1:**
-- Input: intervals = [[1,3],[2,6],[8,10],[15,18]]
-- Output: [[1,6],[8,10],[15,18]]
-- Explanation: [1,3] and [2,6] overlap → [1,6]
+Input: [[1,3], [2,6], [8,10], [15,18]]
+Output: [[1,6], [8,10], [15,18]]
+Because [1,3] and [2,6] overlap → merged into [1,6]
 
-**Example 2:**
-- Input: intervals = [[1,4],[4,5]]
-- Output: [[1,5]]
-- Explanation: [1,4] and [4,5] are touching → [1,5]
+### The Key Insight
 
-### Hints
+If you sort intervals by start time, overlapping intervals become adjacent. Then a single linear scan merges them: if the current interval's start is less than or equal to the last merged interval's end, they overlap — extend the merged interval. Otherwise, start a new merged interval.
 
-<details>
-<summary>Hint 1</summary>
-If the intervals were sorted by start time, overlapping intervals would be adjacent. How does sorting help?
-</details>
-
-<details>
-<summary>Hint 2</summary>
-After sorting, compare each interval with the last merged interval. If they overlap (current start ≤ last end), merge them. Otherwise, start a new merged interval.
-</details>
-
-### Solution: Sort + Linear Scan
-
-**Complexity:** Time O(n log n), Space O(n)
+### Solution: Sort + Linear Scan — O(n log n)
 
 \`\`\`typescript
+// # Sort by start time, then merge overlapping intervals in one pass
 function merge(intervals: number[][]): number[][] {
   if (intervals.length <= 1) return intervals;
 
-  // Sort by start time
-  intervals.sort((a, b) => a[0] - b[0]);
+  intervals.sort((a, b) => a[0] - b[0]);  // # Sort by start time
 
-  const merged: number[][] = [intervals[0]];
+  const merged: number[][] = [intervals[0]];  // # Start with the first interval
 
   for (let i = 1; i < intervals.length; i++) {
-    const last = merged[merged.length - 1];
-    const current = intervals[i];
+    const last = merged[merged.length - 1];    // # Last merged interval
+    const current = intervals[i];               // # Current interval
 
     if (current[0] <= last[1]) {
-      // Overlapping — merge by extending the end
+      // # Overlapping: extend the end of the last merged interval
       last[1] = Math.max(last[1], current[1]);
     } else {
-      // Not overlapping — add as new interval
+      // # No overlap: add current interval as a new entry
       merged.push(current);
     }
   }
@@ -1030,99 +784,9 @@ function merge(intervals: number[][]): number[][] {
 }
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-Tests your ability to:
-1. Recognize that sorting enables a linear solution
-2. Handle edge cases (touching intervals, fully contained)
-3. Modify data in place (extending merged intervals)
-4. This pattern appears everywhere: calendar scheduling, resource allocation, time ranges
-
-### Similar Problems
-
-- Insert Interval (Medium)
-- Non-overlapping Intervals (Medium)
-- Meeting Rooms / Meeting Rooms II`,
-      },
-      {
-        title: "Medium — Binary Tree Level Order Traversal",
-        slug: "medium-level-order-traversal",
-        type: "exercise" as const,
-        difficulty: "intermediate" as const,
-        estimatedMinutes: 25,
-        order: 7,
-        content: `## Binary Tree Level Order Traversal
-
-### Problem
-
-Given the root of a binary tree, return the level order traversal of its nodes' values. (i.e., from left to right, level by level).
-
-### Examples
-
-**Example 1:**
-- Input: root = [3, 9, 20, null, null, 15, 7]
-- Output: [[3], [9, 20], [15, 7]]
-
-**Example 2:**
-- Input: root = [1]
-- Output: [[1]]
-
-### Hints
-
-<details>
-<summary>Hint 1</summary>
-Level order traversal = BFS. What data structure does BFS use?
-</details>
-
-<details>
-<summary>Hint 2</summary>
-Use a queue. Process all nodes at the current level before moving to the next. Track level boundaries by processing queue.length nodes at each step.
-</details>
-
-### Solution: BFS with Queue
-
-**Complexity:** Time O(n), Space O(n)
-
-\`\`\`typescript
-function levelOrder(root: TreeNode | null): number[][] {
-  if (!root) return [];
-
-  const result: number[][] = [];
-  const queue: TreeNode[] = [root];
-
-  while (queue.length > 0) {
-    const levelSize = queue.length; // Nodes at current level
-    const currentLevel: number[] = [];
-
-    for (let i = 0; i < levelSize; i++) {
-      const node = queue.shift()!;
-      currentLevel.push(node.val);
-
-      // Add children for next level
-      if (node.left) queue.push(node.left);
-      if (node.right) queue.push(node.right);
-    }
-
-    result.push(currentLevel);
-  }
-
-  return result;
-}
-\`\`\`
-
-### Why Interviewers Ask This
-
-Tests your ability to:
-1. Apply BFS correctly with level boundaries
-2. Use a queue data structure
-3. Handle null nodes and edge cases
-4. BFS is foundational for graph problems, shortest path, and many tree operations
-
-### Similar Problems
-
-- Binary Tree Zigzag Level Order Traversal (Medium)
-- Minimum Depth of Binary Tree (Easy — first leaf node in BFS)
-- Binary Tree Right Side View (Medium — last node in each level)`,
+Interval merging appears everywhere in real software: calendar scheduling (find free time slots), resource allocation (merge overlapping bookings), time range queries (merge overlapping log entries), and IP range consolidation. The "sort then scan" technique is a powerful general pattern.`,
       },
       {
         title: "Hard — Trapping Rain Water",
@@ -1130,63 +794,46 @@ Tests your ability to:
         type: "exercise" as const,
         difficulty: "advanced" as const,
         estimatedMinutes: 30,
-        order: 8,
+        order: 7,
         content: `## Trapping Rain Water
 
 ### Problem
 
 Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.
 
-### Examples
+### Example
 
-**Example 1:**
-- Input: height = [0,1,0,2,1,0,1,3,2,1,2,1]
-- Output: 6
+Input: [0,1,0,2,1,0,1,3,2,1,2,1]
+Output: 6
 
-**Example 2:**
-- Input: height = [4,2,0,3,2,5]
-- Output: 9
+### The Key Insight
 
-### Hints
+For each position, the water it can hold equals: min(max height to its left, max height to its right) minus its own height. Water is bounded by the shorter of the two walls.
 
-<details>
-<summary>Hint 1</summary>
-For each position, the water it can hold = min(max height to its left, max height to its right) - its own height.
-</details>
+The two-pointer approach avoids precomputing these maximums by working from both ends inward, maintaining running maximums as it goes.
 
-<details>
-<summary>Hint 2</summary>
-Brute force: for each position, scan left and right for max heights. Can you precompute these?
-</details>
-
-<details>
-<summary>Hint 3</summary>
-Optimal: use two pointers (left, right) moving inward. Track maxLeft and maxRight. Water at each position depends on the smaller of the two maxes.
-</details>
-
-### Solution: Two Pointers
-
-**Complexity:** Time O(n), Space O(1)
+### Solution: Two Pointers — O(n) time, O(1) space
 
 \`\`\`typescript
+// # Two pointers: track max heights from both sides, work inward
 function trap(height: number[]): number {
-  let left = 0;
-  let right = height.length - 1;
-  let maxLeft = 0;
-  let maxRight = 0;
-  let water = 0;
+  let left = 0;                         // # Left pointer
+  let right = height.length - 1;        // # Right pointer
+  let maxLeft = 0;                      // # Tallest bar seen from the left
+  let maxRight = 0;                     // # Tallest bar seen from the right
+  let water = 0;                        // # Total trapped water
 
   while (left < right) {
     if (height[left] < height[right]) {
-      // Water at left position bounded by maxLeft
+      // # Left side is the bottleneck — process left position
       if (height[left] >= maxLeft) {
-        maxLeft = height[left];
+        maxLeft = height[left];         // # Update max (this bar is a wall, not a container)
       } else {
-        water += maxLeft - height[left];
+        water += maxLeft - height[left]; // # Water fills up to maxLeft
       }
       left++;
     } else {
-      // Water at right position bounded by maxRight
+      // # Right side is the bottleneck — process right position
       if (height[right] >= maxRight) {
         maxRight = height[right];
       } else {
@@ -1200,19 +847,9 @@ function trap(height: number[]): number {
 }
 \`\`\`
 
-### Why Interviewers Ask This
+### Why This Problem Matters
 
-This is a famous hard problem that tests:
-1. Two-pointer technique on arrays
-2. Understanding how constraints (left max, right max) work together
-3. Optimizing from O(n²) brute force to O(n) with clever pointer logic
-4. It's a common Google/Amazon interview question
-
-### Similar Problems
-
-- Container With Most Water (Medium — two pointers)
-- Largest Rectangle in Histogram (Hard — stack)
-- Product of Array Except Self (Medium)`,
+This is one of the most famous hard interview problems (common at Google and Amazon). It combines the two-pointer technique with a non-obvious insight about how constraints from both sides interact. Understanding this problem develops the ability to reason about bounded quantities — a skill that transfers to many other problems.`,
       },
       {
         title: "Coding Exercises Quiz",
@@ -1220,7 +857,7 @@ This is a famous hard problem that tests:
         type: "quiz" as const,
         difficulty: "intermediate" as const,
         estimatedMinutes: 10,
-        order: 9,
+        order: 8,
         content: `## Coding Pattern Recognition Quiz
 
 <!--quiz
@@ -1229,34 +866,34 @@ This is a famous hard problem that tests:
     "question": "You need to find if there's a pair in a SORTED array that sums to a target. What's the optimal approach?",
     "options": [
       "Hash Map — O(n) time, O(n) space",
-      "Two Pointers — O(n) time, O(1) space",
+      "Two Pointers — O(n) time, O(1) space (optimal because the array is already sorted)",
       "Binary Search for each element — O(n log n)",
-      "Sort then use nested loops — O(n²)"
+      "Nested loops — O(n²)"
     ],
     "correctIndex": 1,
-    "explanation": "Since the array is already sorted, two pointers is optimal: start one at the beginning and one at the end. If sum < target, move left pointer right. If sum > target, move right pointer left. O(n) time and O(1) space — better than hash map's O(n) space."
+    "explanation": "Since the array is SORTED, two pointers is optimal: start one at the beginning and one at the end. If sum < target, move left pointer right. If sum > target, move right pointer left. O(n) time and O(1) space — better than a hash map's O(n) space. The sorted order is what makes two pointers work; on an unsorted array, you'd need the hash map."
   },
   {
     "question": "You need to find the shortest path between two nodes in an unweighted graph. Which algorithm?",
     "options": [
-      "DFS — explore all paths",
-      "BFS — shortest path in unweighted graphs",
-      "Dijkstra's — shortest path algorithm",
+      "DFS — explore all paths depth-first",
+      "BFS — guarantees shortest path in unweighted graphs because it explores level by level",
+      "Dijkstra's — shortest path for weighted graphs",
       "Dynamic Programming — break into subproblems"
     ],
     "correctIndex": 1,
-    "explanation": "BFS guarantees the shortest path in an unweighted graph because it explores all nodes at distance 1 before distance 2, distance 2 before distance 3, etc. The first time you reach the target, you've found the shortest path. DFS might find a longer path first. Dijkstra's is for weighted graphs (overkill here)."
+    "explanation": "BFS guarantees the shortest path in an unweighted graph because it explores ALL nodes at distance 1 before ANY at distance 2. The first time you reach the target, you have found the shortest path. DFS might find a longer path first. Dijkstra's is for weighted graphs and is overkill for unweighted ones."
   },
   {
     "question": "A problem asks: 'Find the number of ways to climb n stairs if you can take 1 or 2 steps at a time.' What pattern is this?",
     "options": [
-      "Greedy — always take the largest step",
+      "Greedy — always take the largest step possible",
       "Backtracking — try all combinations",
-      "Dynamic Programming — overlapping subproblems",
+      "Dynamic Programming — overlapping subproblems: ways(n) = ways(n-1) + ways(n-2)",
       "Two Pointers — scan from both ends"
     ],
     "correctIndex": 2,
-    "explanation": "This is classic DP (it's actually the Fibonacci sequence!). ways(n) = ways(n-1) + ways(n-2). The subproblems overlap: ways(5) needs ways(4) and ways(3), ways(4) needs ways(3) and ways(2) — ways(3) is computed twice without memoization. Keywords 'number of ways' and optimal substructure are DP signals."
+    "explanation": "This is classic DP (it is actually the Fibonacci sequence!). ways(n) = ways(n-1) + ways(n-2). The subproblems overlap: ways(5) needs ways(4) and ways(3), ways(4) needs ways(3) and ways(2) — ways(3) is computed twice without memoisation. Keywords 'number of ways' and optimal substructure are DP signals."
   },
   {
     "question": "Kadane's algorithm solves which problem in O(n) time?",
@@ -1267,7 +904,7 @@ This is a famous hard problem that tests:
       "Sorting an array"
     ],
     "correctIndex": 1,
-    "explanation": "Kadane's algorithm finds the maximum sum contiguous subarray in O(n) time. At each position, it decides: extend the current subarray or start a new one. If the running sum becomes negative, start fresh — a negative prefix always hurts. It's one of the most important algorithms to know for interviews."
+    "explanation": "Kadane's algorithm finds the maximum sum contiguous subarray in O(n). At each position, it decides: extend the current subarray or start fresh. If the running sum is negative, starting fresh is always better — a negative prefix always hurts. It is one of the most fundamental algorithms for interviews."
   }
 ]
 -->`,
@@ -1280,7 +917,7 @@ This is a famous hard problem that tests:
   {
     name: "System Design",
     slug: "system-design",
-    description: "10 classic system design problems with step-by-step walkthroughs, architecture diagrams, and trade-off discussions.",
+    description: "Classic system design problems with step-by-step walkthroughs — requirements, API, database, architecture, scaling, and trade-offs.",
     order: 3,
     sections: [
       {
@@ -1288,34 +925,51 @@ This is a famous hard problem that tests:
         slug: "design-url-shortener",
         type: "lesson" as const,
         difficulty: "intermediate" as const,
-        estimatedMinutes: 35,
+        estimatedMinutes: 40,
         order: 1,
         content: `## System Design: URL Shortener (Bitly)
 
+System design interviews test your ability to think at scale, make trade-offs, and communicate clearly about complex distributed systems. The URL shortener is the perfect starting problem because it is simple enough to understand immediately but deep enough to explore caching, database design, scaling, and distributed systems.
+
 ### Step 1: Requirements Clarification
 
-Always start by asking clarifying questions. Never jump into design.
+Always start by asking clarifying questions. Never jump straight into architecture — interviewers want to see that you gather requirements before designing.
 
 **Functional Requirements:**
-- Given a long URL, generate a short URL
+- Given a long URL, generate a unique short URL
 - Given a short URL, redirect to the original long URL
 - Users can optionally set custom short URLs
 - Short URLs expire after a configurable period (default: no expiry)
 
 **Non-Functional Requirements:**
-- System should be highly available (redirects must never fail)
-- URL redirection should happen in real-time (<100ms latency)
-- Short URLs should not be predictable (security)
-- System should handle 100M new URLs per month, 10B redirects per month
+- Highly available (redirects must never fail — this IS the product)
+- Low latency (< 100ms for redirects — users notice anything slower)
+- Short URLs should not be predictable (security against enumeration)
+- Scale: 100M new URLs/month, 10B redirects/month
 
-**Back-of-the-Envelope Estimation:**
-- 100M new URLs/month = ~40 URLs/second (write)
-- 10B redirects/month = ~4,000 redirects/second (read)
-- Read:Write ratio = 100:1 (read-heavy system)
-- Storage: 100M × 12 months × 5 years = 6B URLs. Each URL ~500 bytes → 3TB total
-- Short URL length: 6 characters using [a-zA-Z0-9] = 62⁶ = 56.8B possibilities (enough)
+### Step 2: Back-of-the-Envelope Estimation
 
-### Step 2: API Design
+This step demonstrates that you think quantitatively, not just qualitatively. Interviewers love this.
+
+\`\`\`
+Write throughput:
+  100M new URLs/month ÷ 30 days ÷ 86,400 seconds ≈ 40 URLs/second
+
+Read throughput:
+  10B redirects/month ÷ 30 ÷ 86,400 ≈ 4,000 redirects/second
+
+Read:Write ratio = 100:1 → read-heavy system (optimise for reads)
+
+Storage (5-year projection):
+  100M × 12 months × 5 years = 6 billion URLs
+  Each URL record ≈ 500 bytes → 6B × 500 = 3TB total
+
+Short URL length:
+  Characters: [a-zA-Z0-9] = 62 options per character
+  6 characters: 62⁶ = 56.8 billion possibilities (enough for 6B URLs)
+\`\`\`
+
+### Step 3: API Design
 
 \`\`\`
 POST /api/shorten
@@ -1323,278 +977,323 @@ POST /api/shorten
   Response: { shortUrl: string, longUrl: string, createdAt: string }
 
 GET /{shortCode}
-  Response: 301 Redirect to longUrl
-  (301 = permanent redirect, browser caches it)
-  (302 = temporary redirect, browser always hits server — better for analytics)
+  Response: 302 Redirect to longUrl
+  Why 302 (temporary) instead of 301 (permanent)?
+    301 = browser caches the redirect permanently (faster for user, but we lose analytics)
+    302 = browser always hits our server (slightly slower, but we can track every click)
+    → Choose 302 for analytics, 301 if analytics are not needed
 
 GET /api/stats/{shortCode}
   Response: { clicks: number, created: string, lastAccessed: string }
 \`\`\`
 
-### Step 3: Database Schema
+### Step 4: Database Design
 
 \`\`\`sql
+-- # Main URL table: stores the short-to-long mapping
 CREATE TABLE urls (
   id          BIGINT PRIMARY KEY AUTO_INCREMENT,
-  short_code  VARCHAR(10) UNIQUE NOT NULL,
-  long_url    TEXT NOT NULL,
-  user_id     BIGINT,
+  short_code  VARCHAR(10) UNIQUE NOT NULL,  -- # The 6-char code (indexed for fast lookup)
+  long_url    TEXT NOT NULL,                -- # The original URL
+  user_id     BIGINT,                       -- # Who created it (nullable for anonymous)
   created_at  TIMESTAMP DEFAULT NOW(),
-  expires_at  TIMESTAMP NULL,
+  expires_at  TIMESTAMP NULL,               -- # NULL = never expires
   click_count BIGINT DEFAULT 0
 );
 
+-- # Index on short_code: this is our primary lookup path
 CREATE INDEX idx_short_code ON urls(short_code);
+-- # Partial index for expiring URLs (only index rows that HAVE an expiry)
 CREATE INDEX idx_expires_at ON urls(expires_at) WHERE expires_at IS NOT NULL;
 \`\`\`
 
-**Database choice:** SQL (PostgreSQL) for consistency and the unique constraint on short_code. At this scale, a single primary with read replicas works. For >1B URLs, consider sharding by short_code hash.
+**Database choice:** PostgreSQL. The data is structured (fits relational model well), we need a unique constraint on short_code (SQL databases enforce this natively), and at 3TB total over 5 years, a single primary with read replicas handles this. For >10B URLs, consider sharding by short_code hash.
 
-### Step 4: Short Code Generation
+### Step 5: Short Code Generation
 
-**Option 1: Hash-based (MD5/SHA256)**
-- Hash the long URL, take first 6 characters
-- Problem: collisions. Two different URLs might generate the same hash prefix.
-- Mitigation: append a counter or user ID before hashing
+Three approaches, each with different trade-offs:
 
-**Option 2: Counter-based (Auto-increment → Base62)**
-- Use a global counter, convert to Base62
-- Problem: predictable (counter=1 → "1", counter=2 → "2")
-- Mitigation: add random offset or use a distributed ID generator (Snowflake)
+| Approach | How It Works | Pros | Cons |
+|----------|-------------|------|------|
+| Hash-based | MD5/SHA256 the URL, take first 6 chars | Deterministic, same URL → same code | Collisions possible, must handle them |
+| Counter-based | Auto-increment → Base62 encode | No collisions, simple | Predictable (sequential), single point of failure |
+| Pre-generated pool | Generate millions of random codes in advance | No collisions, fast, unpredictable | Extra storage, pool management needed |
 
-**Option 3: Pre-generated keys (Recommended)**
-- Generate millions of random 6-character codes in advance
-- Store in a "key pool" table
-- When a new URL is created, pop a key from the pool
-- No collision risk, fast, not predictable
+**Recommended: Pre-generated key pool.** Generate millions of random 6-character codes in advance. Store them in a key pool table. When a new URL is created, pop a key from the pool. No collision risk, fast, and not predictable.
 
-### Step 5: Architecture
+### Step 6: Architecture
 
 \`\`\`
 Client → Load Balancer → API Servers → Cache (Redis) → Database (PostgreSQL)
                                      ↑
-                              Read path: Check cache first
-                              Miss: Query DB, populate cache
-                              Write path: Write DB, write cache
+                              Read path: cache first, DB on miss
+                              Write path: DB first, then populate cache
 \`\`\`
 
-**Components:**
-1. **Load Balancer** — distributes traffic across API servers
-2. **API Servers** — stateless, horizontally scalable
-3. **Redis Cache** — cache hot URLs (most accessed URLs follow 80/20 rule)
-4. **PostgreSQL** — persistent storage with read replicas
-5. **Key Generation Service** — generates and manages pre-generated short codes
-
-### Step 6: Detailed Design
-
-**Read Path (Redirect):**
+**Read path (redirect) — the hot path:**
 1. User hits GET /{shortCode}
-2. Check Redis cache for shortCode → longUrl mapping
-3. Cache hit → return 302 redirect (fast path)
-4. Cache miss → query PostgreSQL, populate Redis, return 302 redirect
-5. Increment click counter (async, write to separate analytics table)
+2. Check Redis cache → cache hit? Return 302 redirect immediately
+3. Cache miss → query PostgreSQL → populate Redis → return 302
+4. Increment click counter asynchronously (do not slow down the redirect)
 
-**Write Path (Create Short URL):**
-1. User sends POST /api/shorten with longUrl
-2. Check if longUrl already exists → return existing shortCode
-3. Get next available shortCode from Key Generation Service
+**Write path (create short URL):**
+1. POST /api/shorten with longUrl
+2. Optionally check if longUrl already has a code (deduplication)
+3. Pop a pre-generated code from the key pool
 4. Insert into PostgreSQL
 5. Add to Redis cache
-6. Return shortUrl to user
+6. Return shortUrl
 
-**Cache Strategy:**
-- Cache capacity: 20% of URLs (80/20 rule — 20% of URLs get 80% of traffic)
-- 6B × 20% = 1.2B entries × 500 bytes ≈ 600GB Redis (use a cluster)
-- Eviction: LRU (Least Recently Used)
-- TTL: match URL expiration, or 24 hours for non-expiring
-
-### Step 7: Scalability
+### Step 7: Scaling Discussion
 
 | Challenge | Solution |
 |-----------|---------|
-| High read volume (4K/s) | Redis cache + read replicas |
-| Database growth (3TB) | Partition by shortCode hash (range-based sharding) |
-| Global latency | CDN for redirect responses + geo-distributed caches |
-| Key generation bottleneck | Pre-generate keys in batches, assign ranges to servers |
-| Analytics at scale | Separate analytics pipeline (Kafka → clickstream DB) |
+| High read volume (4K/s) | Redis cache (80/20 rule: 20% of URLs get 80% of traffic) + read replicas |
+| Database growth (3TB) | Partition by short_code hash (range-based sharding) |
+| Global latency | CDN for redirect responses + geo-distributed Redis clusters |
+| Key generation at scale | Assign key ranges to each server (no coordination needed) |
+| Analytics at scale | Separate analytics pipeline (Kafka → analytics database) |
 
-### Step 8: Trade-offs
+### Step 8: Trade-off Summary
 
-| Decision | Option A | Option B | Chosen |
-|----------|---------|---------|--------|
-| Redirect code | 301 (cached by browser) | 302 (always hits server) | 302 — need analytics |
-| Database | SQL (consistency) | NoSQL (scale) | SQL — data is structured, needs unique constraint |
-| Short code length | 6 chars (56B possibilities) | 8 chars (218T possibilities) | 6 — sufficient for 5+ years |
-| Cache strategy | Cache all | Cache hot URLs (LRU) | LRU — more cost-effective |`,
+The interviewer wants to hear you reason about trade-offs, not memorise the "right" answer.
+
+| Decision | Option A | Option B | Our Choice & Why |
+|----------|---------|---------|-----------------|
+| Redirect code | 301 (browser caches) | 302 (always hits server) | 302 — need click analytics |
+| Database | SQL (consistency) | NoSQL (horizontal scale) | SQL — structured data, unique constraint, sufficient scale |
+| Short code length | 6 chars (56B options) | 8 chars (218T options) | 6 — enough for 5+ years |
+| Cache strategy | Cache everything | Cache hot URLs (LRU) | LRU — cost-effective, 20% cache covers 80% of traffic |`,
       },
       {
         title: "Design a Chat Application (WhatsApp)",
         slug: "design-chat-app",
         type: "lesson" as const,
         difficulty: "advanced" as const,
-        estimatedMinutes: 35,
+        estimatedMinutes: 40,
         order: 2,
         content: `## System Design: Chat Application (WhatsApp)
+
+Chat systems are among the most demanding distributed systems to design. They require real-time delivery, guaranteed ordering, offline message handling, and extreme scale — WhatsApp handles over 100 billion messages per day. This design problem tests your understanding of WebSockets, message queues, database partitioning, and push notifications.
 
 ### Requirements
 
 **Functional:**
-- One-on-one messaging
+- One-on-one messaging (the core feature)
 - Group chats (up to 256 members)
 - Online/offline status indicators
-- Message delivery receipts (sent, delivered, read)
+- Message delivery receipts (sent → delivered → read)
 - Media sharing (images, videos, documents)
 
 **Non-Functional:**
-- Real-time messaging (< 100ms latency)
+- Real-time messaging (< 100ms latency for online users)
 - Message ordering guaranteed within a conversation
-- At-least-once delivery (no lost messages)
+- At-least-once delivery (no lost messages — this is critical for trust)
 - Support 1B+ daily active users
 - Messages stored for 30 days on server, permanently on device
 
 ### Back-of-the-Envelope
 
-- 1B DAU, 40 messages/user/day = 40B messages/day
-- 40B / 86,400 = ~460K messages/second
-- Average message: 100 bytes → 40B × 100 = 4TB/day new messages
-- Media: 10% of messages have media → 4B media files/day
+\`\`\`
+1B DAU × 40 messages/user/day = 40 billion messages/day
+40B ÷ 86,400 seconds = ~460,000 messages/second
+Average message: 100 bytes → 40B × 100 = 4TB/day of new messages
+Media: ~10% of messages have attachments → 4 billion media files/day
+\`\`\`
 
 ### Architecture
 
 \`\`\`
-Client → Load Balancer → WebSocket Servers → Message Queue →
-  → Chat Service → Database (messages)
-  → Notification Service → Push Notifications (offline users)
-  → Media Service → Blob Storage (images/videos)
+Client ←→ WebSocket Server ←→ Message Queue (Kafka) ←→ Chat Service
+                                                          ↓
+                                              Message Database (Cassandra)
+                                              Notification Service (push)
+                                              Media Service (blob storage)
 \`\`\`
 
-**Key Components:**
+**Why WebSockets?** HTTP is request-response: the client must ask "any new messages?" repeatedly (polling). WebSockets maintain a persistent, bidirectional connection — the server can push messages to the client instantly without the client asking. This is essential for real-time chat.
 
-1. **WebSocket Servers** — maintain persistent connections with clients. Each server tracks which users are connected to it.
+**Connection Manager:** Maps userId → which WebSocket server they are connected to. When User A sends a message to User B, the system needs to know which server B is on so it can forward the message.
 
-2. **Connection Manager** — maps userId → which WebSocket server they're on. When User A sends to User B, the system looks up B's server.
-
-3. **Message Queue (Kafka)** — decouples message sending from delivery. Ensures at-least-once delivery even if recipient's server is temporarily down.
-
-4. **Chat Service** — handles message routing, group message fan-out, delivery receipts.
-
-5. **Message Storage** — write-optimized database (Cassandra) partitioned by conversationId. Messages within a conversation are ordered by timestamp.
+**Message Queue (Kafka):** Decouples message sending from delivery. If User B's server is temporarily overloaded or B is offline, the message is safely stored in Kafka until it can be delivered. This guarantees at-least-once delivery.
 
 ### Message Flow
 
-**Sending a message:**
-1. User A sends message via WebSocket to their connected server
-2. Server generates messageId + timestamp
-3. Server writes to Kafka topic for User B's conversation
-4. Server returns "sent" receipt to User A
+**Sending a message (User A → User B):**
+1. User A sends message via their WebSocket connection
+2. A's WebSocket server generates a messageId and timestamp
+3. Server publishes message to Kafka topic for B's conversation
+4. Server returns a "sent" receipt (single tick ✓) to User A
 5. Chat Service consumes from Kafka:
-   - Stores message in database
-   - Looks up User B's WebSocket server
-   - If B is online: forward message → return "delivered" receipt
-   - If B is offline: send push notification
+   - Stores message in Cassandra (durability)
+   - Looks up User B's WebSocket server in Connection Manager
+   - **If B is online:** forward message via B's WebSocket → return "delivered" receipt (double tick ✓✓) to A
+   - **If B is offline:** send push notification via APNs/FCM
+6. When B opens the chat and sees the message → "read" receipt (blue ticks) sent to A
 
 **Group message fan-out:**
-- For a group of 100 members, the message is written once to the group's Kafka topic
-- Chat Service fans out to each member's inbox
-- Only online members get real-time delivery; offline members see it when they reconnect
+The message is written once to the group's Kafka topic. The Chat Service fans out to each member's inbox. Only online members receive real-time delivery; offline members see messages when they reconnect and sync.
+
+### Database Choice: Why Cassandra?
+
+| Requirement | Why Cassandra Fits |
+|-------------|-------------------|
+| Write-heavy (460K msg/s) | Cassandra excels at writes — distributed, no single bottleneck |
+| Partition by conversation | Natural partition key: conversationId. All messages for a chat live on the same nodes |
+| Time-ordered within partition | Clustering key: timestamp. Messages are automatically ordered |
+| Horizontal scaling | Add nodes to handle more data — no downtime, automatic rebalancing |
 
 ### Key Trade-offs
 
-| Decision | Choice | Why |
-|----------|--------|-----|
-| Protocol | WebSocket | Real-time, bidirectional, low overhead |
-| Message DB | Cassandra | Write-heavy, partition by conversation, time-ordered |
-| Queue | Kafka | Durable, ordered, handles 460K msg/s |
-| Media storage | S3/Blob | Cheap, scalable, CDN-friendly |
-| Encryption | End-to-end | Privacy, but complicates search and moderation |`,
+| Decision | Our Choice | Why |
+|----------|-----------|-----|
+| Protocol | WebSocket | Real-time bidirectional, low overhead per message |
+| Message DB | Cassandra | Write-optimised, partition by conversation, time-ordered |
+| Queue | Kafka | Durable, ordered, handles 460K msg/s, replay capability |
+| Media storage | S3/Blob storage | Cheap, scalable, CDN-friendly for global delivery |
+| Encryption | End-to-end | Privacy requirement, but prevents server-side search/moderation |`,
       },
       {
         title: "Design a Rate Limiter",
         slug: "design-rate-limiter",
         type: "lesson" as const,
         difficulty: "intermediate" as const,
-        estimatedMinutes: 25,
+        estimatedMinutes: 30,
         order: 3,
         content: `## System Design: Rate Limiter
 
-### Why Rate Limiting?
+A rate limiter controls how many requests a client can make within a time window. Every production API needs one. Without rate limiting, a single misbehaving client (or attacker) can overwhelm your servers, exhaust your resources, and bring down the service for everyone.
 
-- Prevent abuse (DDoS, brute force)
-- Control costs (expensive API calls)
-- Ensure fair usage (shared resources)
-- Protect downstream services
+### Why Rate Limiting Matters
 
-### Algorithms
+- **Prevent abuse:** DDoS attacks, brute-force login attempts, scraping
+- **Control costs:** Expensive operations (AI inference, payment processing) must be budgeted
+- **Ensure fairness:** Shared resources should not be monopolised by one client
+- **Protect downstream services:** Your API might be fine at 10K req/s, but the database behind it might not
 
-**1. Token Bucket**
+### Rate Limiting Algorithms
 
-Imagine a bucket that fills with tokens at a steady rate. Each request takes one token. If the bucket is empty, the request is rejected.
+**1. Token Bucket (Most Common)**
 
-- Bucket capacity: 10 tokens (burst limit)
-- Refill rate: 1 token/second
-- Allows bursts up to 10 requests, then 1/second steady
+Imagine a bucket that fills with tokens at a steady rate (e.g., 1 token per second). The bucket has a maximum capacity (e.g., 10 tokens). Each request consumes one token. If the bucket is empty, the request is rejected.
+
+This algorithm naturally allows bursts: if a client has been quiet, their bucket is full, and they can make 10 requests immediately. But sustained traffic is limited to the refill rate (1/second). This is usually the desired behaviour — allow short bursts but limit sustained load.
 
 **2. Sliding Window Counter**
 
-Count requests in a sliding time window (e.g., last 60 seconds).
+Count requests in a sliding time window. More accurate than fixed windows because it avoids the boundary problem.
 
 \`\`\`typescript
-// Simplified sliding window
-async function isAllowed(userId: string, limit: number, windowMs: number): Promise<boolean> {
+// # Sliding window: count requests in the last N seconds using a Redis sorted set
+async function isAllowed(
+  userId: string,
+  limit: number,
+  windowMs: number
+): Promise<boolean> {
   const now = Date.now();
-  const windowStart = now - windowMs;
+  const windowStart = now - windowMs;  // # Beginning of the time window
 
-  // Count requests in the window
+  // # Count requests within the window
   const count = await redis.zcount(\`ratelimit:\${userId}\`, windowStart, now);
 
-  if (count >= limit) return false;
+  if (count >= limit) return false;    // # Over the limit → reject
 
-  // Add current request
+  // # Record this request (score = timestamp, member = unique ID)
   await redis.zadd(\`ratelimit:\${userId}\`, now, \`\${now}-\${Math.random()}\`);
-  // Clean old entries
+  // # Clean up old entries outside the window
   await redis.zremrangebyscore(\`ratelimit:\${userId}\`, 0, windowStart);
 
-  return true;
+  return true;  // # Under the limit → allow
 }
 \`\`\`
 
 **3. Fixed Window Counter**
 
-Count requests per fixed time window (e.g., per minute). Simpler but has boundary issues — a burst at 0:59 + burst at 1:01 bypasses the limit.
+Count requests per fixed time window (e.g., "100 requests per minute, resetting at :00"). Simplest to implement, but has a boundary problem: a client can send 100 requests at 0:59 and another 100 at 1:01 — 200 requests in 2 seconds while technically respecting the "100 per minute" limit.
 
-### Rate Limiter Architecture
+### Architecture
 
 \`\`\`
-Client → API Gateway (rate limiter) → Backend Services
-                ↓
-         Redis (counters)
+Client → Load Balancer → Rate Limiter (middleware) → Backend API
+                              ↓
+                         Redis (shared counters)
 \`\`\`
 
-**Headers to return:**
+The rate limiter sits in front of your API, either as middleware in your application or as a separate service at the API gateway level. Redis provides the shared counter — all API server instances check the same counter, so a client cannot bypass the limit by hitting different servers.
+
+### Response Headers
+
+When rate limiting, always tell the client their status:
+
 \`\`\`
-X-RateLimit-Limit: 100          // Max requests per window
-X-RateLimit-Remaining: 87       // Requests left
-X-RateLimit-Reset: 1625097600   // When the window resets (Unix timestamp)
-Retry-After: 30                 // Seconds until the client can retry (on 429)
+X-RateLimit-Limit: 100          // # Maximum requests per window
+X-RateLimit-Remaining: 87       // # How many requests left
+X-RateLimit-Reset: 1625097600   // # When the window resets (Unix timestamp)
+Retry-After: 30                 // # Seconds to wait before retrying (on 429 response)
 \`\`\`
+
+### Rate Limit Configuration
+
+Different endpoints need different limits based on cost and sensitivity:
+
+| Endpoint | Limit | Window | Why |
+|----------|-------|--------|-----|
+| General API | 100 requests | 1 minute | Standard protection |
+| Login | 5 attempts | 5 minutes | Prevent brute force |
+| AI generation | 10 requests | 1 hour | Expensive compute |
+| File upload | 20 uploads | 1 hour | Resource-heavy |
+| Password reset | 3 requests | 15 minutes | Security-sensitive |
 
 ### Distributed Rate Limiting
 
-With multiple API servers, you need a shared counter:
-- **Redis** — central counter, all servers increment the same key
-- **Race condition:** Use Redis MULTI/EXEC (atomic) or Lua scripts
-- **Consistency:** Slightly over-limiting is better than under-limiting
+With multiple API servers, the counter MUST be shared. If each server tracks its own count, a client hitting 3 different servers gets 3x the allowed rate. Redis solves this — all servers read/write the same key. Use Redis MULTI/EXEC or Lua scripts to make the check-and-increment atomic (avoid race conditions).`,
+      },
+      {
+        title: "System Design Quiz",
+        slug: "system-design-quiz",
+        type: "quiz" as const,
+        difficulty: "intermediate" as const,
+        estimatedMinutes: 10,
+        order: 4,
+        content: `## System Design Quiz
 
-### Rule Configuration
-
-\`\`\`typescript
-const RATE_LIMITS = {
-  "api.general": { limit: 100, window: "1m" },
-  "api.auth.login": { limit: 5, window: "5m" },      // Stricter
-  "api.ai.generate": { limit: 10, window: "1h" },     // Expensive
-  "api.upload": { limit: 20, window: "1h" },           // Resource-heavy
-};
-\`\`\``,
+<!--quiz
+[
+  {
+    "question": "You're designing a URL shortener. Should you use 301 (permanent) or 302 (temporary) redirects?",
+    "options": [
+      "301 — faster because the browser caches it and never hits your server again",
+      "302 — the browser always contacts your server, which lets you track click analytics and change the target URL later",
+      "It doesn't matter — both accomplish the same redirect",
+      "Use 200 with a meta refresh tag instead"
+    ],
+    "correctIndex": 1,
+    "explanation": "302 (temporary redirect) means the browser always contacts your server for each click. This enables: (1) click analytics — you can count every visit, (2) URL updates — you can change where the short URL points to, (3) expiration — you can stop redirecting after the TTL. 301 is faster for users but you lose analytics and control. Most URL shorteners (Bitly, TinyURL) use 302 or 307."
+  },
+  {
+    "question": "In a chat system like WhatsApp, why is Kafka used between the WebSocket servers and the chat service?",
+    "options": [
+      "Kafka encrypts messages for security",
+      "Kafka provides durable, ordered message delivery — if the recipient's server is down, messages are safely stored until they can be delivered",
+      "Kafka is faster than direct server-to-server communication",
+      "Kafka compresses messages to save bandwidth"
+    ],
+    "correctIndex": 1,
+    "explanation": "Kafka decouples message production from consumption. Benefits: (1) Durability — if the recipient's WebSocket server crashes, messages are safely stored in Kafka (not lost), (2) Ordering — messages within a partition are strictly ordered, (3) Backpressure — if the chat service is overwhelmed, messages queue in Kafka instead of being dropped, (4) Replay — if a consumer fails, it can re-read messages from where it left off."
+  },
+  {
+    "question": "Your rate limiter uses a fixed window counter (100 requests per minute). A user sends 100 requests at 11:59:59 and another 100 at 12:00:01. What happens?",
+    "options": [
+      "The second batch is rejected — 200 total requests exceeds the limit",
+      "Both batches are allowed — each falls within a different minute window. The user effectively sent 200 requests in 2 seconds while 'respecting' the limit",
+      "The rate limiter crashes from the burst",
+      "Only 50 of the second batch are allowed"
+    ],
+    "correctIndex": 1,
+    "explanation": "This is the boundary problem with fixed window counters. The window resets at the minute boundary, so 100 requests at 11:59:59 and 100 at 12:00:01 are each within their respective windows. The user sends 200 requests in 2 seconds while technically respecting the '100 per minute' rule. Sliding window counters fix this by looking at the actual last 60 seconds, not calendar minutes."
+  }
+]
+-->`,
       },
     ],
   },
@@ -1604,7 +1303,7 @@ const RATE_LIMITS = {
   {
     name: "Code Architecture",
     slug: "code-architecture",
-    description: "SOLID principles, design patterns, clean code, and refactoring exercises — all in TypeScript.",
+    description: "SOLID principles, design patterns, clean code practices — all with TypeScript examples and real-world context.",
     order: 4,
     sections: [
       {
@@ -1612,18 +1311,27 @@ const RATE_LIMITS = {
         slug: "solid-principles",
         type: "lesson" as const,
         difficulty: "intermediate" as const,
-        estimatedMinutes: 30,
+        estimatedMinutes: 40,
         order: 1,
         content: `## SOLID Principles
 
-SOLID is a set of five design principles that help you write code that's maintainable, extensible, and testable. They're not rules to follow blindly — they're guidelines that become intuitive with practice.
+SOLID is a set of five design principles that help you write code that is maintainable, extensible, and testable. They are not rules to follow blindly — they are guidelines that become intuitive with experience. The goal is not "SOLID-compliant code" — it is code that is easy to change, easy to test, and easy to understand.
+
+Think of SOLID like the principles of good architecture in buildings. A well-designed building separates electrical, plumbing, and structural systems so that you can rewire the electricity without tearing down a wall. SOLID does the same for software — it separates concerns so that changing one part does not break unrelated parts.
 
 ### S — Single Responsibility Principle
 
 **One class (or function) should have one reason to change.**
 
-**Bad — UserService does everything:**
+This does not mean a class should have only one method. It means a class should serve one purpose, one area of responsibility. If changes to email templates require modifying the same class as changes to user database queries, those two concerns are tangled together — and tangling means risk.
+
+**Bad — UserService does four unrelated things:**
 \`\`\`typescript
+// # This class has FOUR reasons to change:
+// # 1. User creation logic changes
+// # 2. Email templates or provider changes
+// # 3. Report format changes
+// # 4. Password rules change
 class UserService {
   createUser(data: UserData) { /* creates user in DB */ }
   sendWelcomeEmail(user: User) { /* sends email */ }
@@ -1639,7 +1347,7 @@ class UserRepository {
 }
 
 class EmailService {
-  sendWelcome(user: User): void { /* email only */ }
+  sendWelcome(user: User): void { /* email logic only */ }
 }
 
 class ReportGenerator {
@@ -1651,29 +1359,31 @@ class PasswordValidator {
 }
 \`\`\`
 
-**Why it matters:** When you need to change how emails are sent, you only touch EmailService. No risk of breaking user creation or reporting.
+**Why it matters in practice:** When you need to switch email providers (from SendGrid to Resend), you only touch EmailService. No risk of accidentally breaking user creation, reporting, or password validation. The blast radius of any change is contained.
 
 ### O — Open/Closed Principle
 
-**Open for extension, closed for modification.**
-
-You should be able to add new behavior without changing existing code.
+**Open for extension, closed for modification.** You should be able to add new behaviour without changing existing, tested code.
 
 **Bad — adding a new payment method requires modifying the function:**
 \`\`\`typescript
+// # Every new payment method requires editing this function
+// # and risking breakage of existing payment methods
 function processPayment(method: string, amount: number) {
   if (method === "credit_card") { /* credit card logic */ }
   else if (method === "paypal") { /* paypal logic */ }
-  else if (method === "crypto") { /* crypto logic — had to modify! */ }
+  else if (method === "crypto") { /* crypto logic — had to MODIFY existing code! */ }
 }
 \`\`\`
 
-**Good — new payment methods are added without touching existing code:**
+**Good — new payment methods are added by creating new classes, not modifying existing ones:**
 \`\`\`typescript
+// # Define the contract
 interface PaymentProcessor {
   process(amount: number): PaymentResult;
 }
 
+// # Each implementation is independent — adding one never touches another
 class CreditCardProcessor implements PaymentProcessor {
   process(amount: number) { /* credit card logic */ }
 }
@@ -1682,7 +1392,7 @@ class PayPalProcessor implements PaymentProcessor {
   process(amount: number) { /* paypal logic */ }
 }
 
-// Adding crypto — no existing code modified
+// # Adding crypto — ZERO existing code modified
 class CryptoProcessor implements PaymentProcessor {
   process(amount: number) { /* crypto logic */ }
 }
@@ -1692,134 +1402,93 @@ class CryptoProcessor implements PaymentProcessor {
 
 **Subtypes must be substitutable for their base types without breaking the program.**
 
-If your code works with a base class, it should work with any subclass without surprises.
-
-**Bad — Square breaks Rectangle's behavior:**
-\`\`\`typescript
-class Rectangle {
-  setWidth(w: number) { this.width = w; }
-  setHeight(h: number) { this.height = h; }
-  area() { return this.width * this.height; }
-}
-
-class Square extends Rectangle {
-  setWidth(w: number) { this.width = w; this.height = w; } // Surprise!
-  setHeight(h: number) { this.width = h; this.height = h; } // Surprise!
-}
-
-// This breaks with Square:
-function doubleWidth(rect: Rectangle) {
-  rect.setWidth(rect.width * 2);
-  // Expected: area doubles. With Square: area quadruples!
-}
-\`\`\`
+If your code works with a base class, it should work with ANY subclass without surprises. The classic violation: Square extends Rectangle, but setting width on a Square also changes height — breaking code that assumes width and height are independent.
 
 ### I — Interface Segregation Principle
 
-**No client should be forced to depend on methods it doesn't use.**
+**No client should be forced to depend on methods it does not use.**
 
-**Bad — one fat interface:**
 \`\`\`typescript
+// # Bad: one fat interface forces Robot to implement eat() and sleep()
 interface Worker {
   work(): void;
   eat(): void;
   sleep(): void;
-  attendMeeting(): void;
 }
-// A Robot implements Worker but can't eat or sleep!
-\`\`\`
 
-**Good — split into focused interfaces:**
-\`\`\`typescript
+// # Good: split into focused interfaces
 interface Workable { work(): void; }
 interface Feedable { eat(): void; }
-interface Restable { sleep(): void; }
 
-class HumanWorker implements Workable, Feedable, Restable {
+class HumanWorker implements Workable, Feedable {
   work() { }
   eat() { }
-  sleep() { }
 }
 
 class RobotWorker implements Workable {
-  work() { } // Only implements what it needs
+  work() { }  // # Robot only implements what makes sense
 }
 \`\`\`
 
 ### D — Dependency Inversion Principle
 
-**High-level modules should not depend on low-level modules. Both should depend on abstractions.**
+**High-level modules should not depend on low-level modules. Both should depend on abstractions (interfaces).**
 
-**Bad — tightly coupled:**
 \`\`\`typescript
+// # Bad — tightly coupled to specific implementations
 class OrderService {
-  private db = new PostgresDatabase(); // Directly depends on Postgres
-  private mailer = new SendGridMailer(); // Directly depends on SendGrid
-
-  createOrder(data: OrderData) {
-    this.db.insert("orders", data);
-    this.mailer.send(data.email, "Order confirmed");
-  }
+  private db = new PostgresDatabase();    // # Locked to Postgres
+  private mailer = new SendGridMailer();  // # Locked to SendGrid
 }
-\`\`\`
 
-**Good — depends on abstractions:**
-\`\`\`typescript
+// # Good — depends on abstractions, implementations injected
 interface Database { insert(table: string, data: any): void; }
 interface Mailer { send(to: string, body: string): void; }
 
 class OrderService {
   constructor(
-    private db: Database,      // Any database implementation works
-    private mailer: Mailer     // Any mailer implementation works
+    private db: Database,      // # Any database works
+    private mailer: Mailer     // # Any mailer works
   ) {}
-
-  createOrder(data: OrderData) {
-    this.db.insert("orders", data);
-    this.mailer.send(data.email, "Order confirmed");
-  }
 }
 
-// Easy to swap implementations:
+// # Production: real implementations
 new OrderService(new PostgresDatabase(), new SendGridMailer());
-new OrderService(new MockDatabase(), new MockMailer()); // For testing!
+// # Testing: mock implementations
+new OrderService(new MockDatabase(), new MockMailer());
 \`\`\`
 
 ### When SOLID Goes Too Far
 
-SOLID principles are guidelines, not laws. Over-applying them creates:
-- Too many tiny classes that are hard to navigate
-- Abstractions for things that will never change
-- "Architecture astronaut" code that's harder to understand than the problem it solves
-
-**Rule of thumb:** Apply SOLID when you feel the pain of not applying it (duplicate code, hard-to-test classes, changes rippling through many files). Don't pre-apply it to code that's simple and unlikely to change.`,
+SOLID principles are guidelines, not laws. Over-applying them creates "architecture astronaut" code — dozens of tiny classes, interfaces for everything, and layers of abstraction that make simple operations hard to follow. Apply SOLID when you feel the pain of NOT applying it: duplicate code, hard-to-test classes, changes rippling through many files. Do not pre-apply it to code that is simple and unlikely to change.`,
       },
       {
         title: "Design Patterns in TypeScript",
         slug: "design-patterns-typescript",
         type: "lesson" as const,
         difficulty: "intermediate" as const,
-        estimatedMinutes: 30,
+        estimatedMinutes: 35,
         order: 2,
         content: `## Design Patterns in TypeScript
 
-Design patterns are reusable solutions to common problems. Don't memorize all 23 Gang of Four patterns — learn the ones you'll actually use.
+Design patterns are reusable solutions to common software design problems. They are not code you copy-paste — they are architectural templates that you adapt to your specific situation. You do not need to memorise all 23 Gang of Four patterns. Learn the ones that appear in real codebases.
 
 ### Strategy Pattern
 
-**Problem:** You need different algorithms/behaviors that can be swapped at runtime.
+**Problem:** You need different algorithms or behaviours that can be swapped at runtime without changing the code that uses them.
+
+**Real-world analogy:** A GPS app lets you choose your navigation strategy — shortest route, fastest route, avoid tolls. The navigation engine does not change; only the route calculation strategy changes.
 
 \`\`\`typescript
-// Define the strategy interface
+// # 1. Define the strategy interface — the contract
 interface SortStrategy {
   sort(data: number[]): number[];
 }
 
-// Implement concrete strategies
+// # 2. Implement concrete strategies — each one is independent
 class QuickSort implements SortStrategy {
   sort(data: number[]): number[] {
-    // Quick sort implementation
-    return [...data].sort((a, b) => a - b);
+    return [...data].sort((a, b) => a - b);  // # Quick sort implementation
   }
 }
 
@@ -1828,41 +1497,46 @@ class BubbleSort implements SortStrategy {
     const arr = [...data];
     for (let i = 0; i < arr.length; i++) {
       for (let j = 0; j < arr.length - i - 1; j++) {
-        if (arr[j] > arr[j + 1]) [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        if (arr[j] > arr[j + 1]) {
+          [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];  // # Swap
+        }
       }
     }
     return arr;
   }
 }
 
-// Context uses any strategy
+// # 3. Context uses ANY strategy through the interface
 class Sorter {
   constructor(private strategy: SortStrategy) {}
 
   setStrategy(strategy: SortStrategy) {
-    this.strategy = strategy;
+    this.strategy = strategy;  // # Swap algorithm at runtime
   }
 
   sort(data: number[]): number[] {
-    return this.strategy.sort(data);
+    return this.strategy.sort(data);  // # Delegates to the current strategy
   }
 }
 
-// Usage — swap algorithms without changing the Sorter
+// # Usage: swap algorithms without changing the Sorter
 const sorter = new Sorter(new QuickSort());
-sorter.sort([3, 1, 2]); // Uses QuickSort
+sorter.sort([3, 1, 2]);  // # Uses QuickSort
 
 sorter.setStrategy(new BubbleSort());
-sorter.sort([3, 1, 2]); // Now uses BubbleSort
+sorter.sort([3, 1, 2]);  // # Now uses BubbleSort — zero code changes
 \`\`\`
 
-**Real-world uses:** Payment processing (Stripe/PayPal/Crypto), authentication (JWT/Session/OAuth), notification channels (email/SMS/push).
+**Where you will see this:** Payment processing (Stripe/PayPal/Crypto), authentication methods (JWT/Session/OAuth), notification channels (email/SMS/push), pricing calculations (flat/tiered/usage-based).
 
 ### Observer Pattern
 
-**Problem:** When one object changes, notify all dependent objects automatically.
+**Problem:** When one object changes state, multiple other objects need to be notified and updated automatically — without tight coupling between them.
+
+**Real-world analogy:** A YouTube channel has subscribers. When the channel uploads a new video, every subscriber is notified. The channel does not know who its subscribers are or what they do with the notification — it just broadcasts.
 
 \`\`\`typescript
+// # Type-safe event emitter using generics
 type EventHandler<T> = (data: T) => void;
 
 class EventEmitter<Events extends Record<string, any>> {
@@ -1878,13 +1552,9 @@ class EventEmitter<Events extends Record<string, any>> {
   emit<K extends keyof Events>(event: K, data: Events[K]) {
     this.listeners.get(event as string)?.forEach(handler => handler(data));
   }
-
-  off<K extends keyof Events>(event: K, handler: EventHandler<Events[K]>) {
-    this.listeners.get(event as string)?.delete(handler);
-  }
 }
 
-// Usage
+// # Define event types for type safety
 type AppEvents = {
   "user:created": { id: string; email: string };
   "order:placed": { orderId: string; total: number };
@@ -1892,18 +1562,20 @@ type AppEvents = {
 
 const events = new EventEmitter<AppEvents>();
 
+// # Multiple independent listeners for the same event
 events.on("user:created", (user) => sendWelcomeEmail(user.email));
 events.on("user:created", (user) => createDefaultSettings(user.id));
-events.on("order:placed", (order) => updateInventory(order.orderId));
+events.on("user:created", (user) => trackAnalytics("signup", user.id));
 
+// # Emitting the event notifies ALL listeners
 events.emit("user:created", { id: "123", email: "jane@example.com" });
 \`\`\`
 
-**Real-world uses:** React state management, Node.js EventEmitter, DOM events, WebSocket messages.
+**Where you will see this:** React state management, Node.js EventEmitter, DOM events, WebSocket messages, pub/sub systems.
 
 ### Factory Pattern
 
-**Problem:** Creating objects without specifying the exact class.
+**Problem:** Create objects without the caller needing to know the specific class being instantiated.
 
 \`\`\`typescript
 interface Notification {
@@ -1922,66 +1594,29 @@ class SMSNotification implements Notification {
   }
 }
 
-class PushNotification implements Notification {
-  send(message: string, recipient: string) {
-    console.log(\`Push to \${recipient}: \${message}\`);
-  }
-}
-
-// Factory
-function createNotification(type: "email" | "sms" | "push"): Notification {
+// # Factory function: caller specifies WHAT, factory decides HOW
+function createNotification(type: "email" | "sms"): Notification {
   switch (type) {
     case "email": return new EmailNotification();
     case "sms": return new SMSNotification();
-    case "push": return new PushNotification();
   }
 }
 
-// Usage — caller doesn't know the concrete class
+// # Caller does not know or care about the concrete class
 const notifier = createNotification("email");
 notifier.send("Hello!", "jane@example.com");
 \`\`\`
 
-### Singleton Pattern
-
-**Problem:** Ensure a class has only one instance (database connections, config, logging).
-
-\`\`\`typescript
-class Database {
-  private static instance: Database;
-
-  private constructor() {
-    // Private constructor prevents direct instantiation
-  }
-
-  static getInstance(): Database {
-    if (!Database.instance) {
-      Database.instance = new Database();
-    }
-    return Database.instance;
-  }
-
-  query(sql: string) { /* execute query */ }
-}
-
-// Usage
-const db1 = Database.getInstance();
-const db2 = Database.getInstance();
-// db1 === db2 → true (same instance)
-\`\`\`
-
-**Warning:** Singletons make testing harder (global state). In modern apps, prefer dependency injection over singletons.
-
 ### Pattern Decision Guide
 
-| Problem | Pattern |
-|---------|---------|
-| Need to swap algorithms at runtime | Strategy |
-| Need to notify multiple listeners of changes | Observer |
-| Need to create objects without knowing the exact type | Factory |
-| Need exactly one instance of a class | Singleton |
-| Need to add behavior to objects dynamically | Decorator |
-| Need to simplify a complex subsystem | Facade |`,
+| Problem | Pattern | Example |
+|---------|---------|---------|
+| Swap algorithms at runtime | Strategy | Payment processor, sort algorithm |
+| Notify multiple listeners of changes | Observer | Event system, pub/sub |
+| Create objects without knowing exact type | Factory | Notification type, database driver |
+| Ensure exactly one instance | Singleton | Database connection, logger |
+| Add behaviour to objects dynamically | Decorator | Logging middleware, auth wrapper |
+| Simplify a complex subsystem | Facade | Payment gateway SDK, email service |`,
       },
       {
         title: "Code Architecture Quiz",
@@ -1997,35 +1632,35 @@ const db2 = Database.getInstance();
   {
     "question": "Your payment system supports credit cards now but will add PayPal and crypto later. Which SOLID principle tells you how to structure this?",
     "options": [
-      "Single Responsibility — each payment method is its own class",
-      "Open/Closed — new payment methods shouldn't require modifying existing code",
-      "Liskov Substitution — all payment methods must be interchangeable",
-      "All of the above work together"
+      "Single Responsibility — each payment method gets its own class",
+      "Open/Closed — new methods should be added WITHOUT modifying existing code",
+      "Dependency Inversion — depend on a PaymentProcessor interface, not concrete classes",
+      "All of the above work together — SRP isolates each method, O/C allows extension without modification, DIP ensures loose coupling"
     ],
     "correctIndex": 3,
-    "explanation": "All three work together: Open/Closed says add new payment types without modifying existing code. Single Responsibility says each payment type is its own class. Liskov Substitution says all implementations must honor the PaymentProcessor interface contract. You'd create an interface, implement it for each method, and inject the right implementation."
+    "explanation": "All three work together: Open/Closed says add new payment types without modifying existing code. Single Responsibility says each payment type is its own class with one reason to change. Dependency Inversion says the payment service depends on a PaymentProcessor interface, not on CreditCardProcessor directly. This lets you add PayPal without touching a single line of existing code."
   },
   {
-    "question": "You need to send notifications via email, SMS, or push depending on user preferences. Which design pattern?",
+    "question": "You need to send notifications via email, SMS, or push depending on user preferences, and the preference can change at runtime. Which design pattern?",
     "options": [
       "Singleton — one notification instance",
-      "Strategy — swap notification channel at runtime",
+      "Strategy — define a NotificationStrategy interface, swap implementations at runtime",
       "Observer — broadcast to all channels",
       "Factory — create the right notification type"
     ],
     "correctIndex": 1,
-    "explanation": "Strategy pattern is ideal: define a NotificationStrategy interface with a send() method. Implement EmailStrategy, SMSStrategy, PushStrategy. The notification service takes a strategy and uses it without knowing the implementation. The strategy can be selected based on user preferences at runtime."
+    "explanation": "Strategy pattern: define a NotificationStrategy interface with a send() method. Implement EmailStrategy, SMSStrategy, PushStrategy. The notification service accepts any strategy and uses it without knowing the implementation details. The strategy can be selected based on user preferences at runtime and swapped without changing the notification service code."
   },
   {
-    "question": "What's wrong with this code from a SOLID perspective?\\n\\nclass UserService {\\n  async register(data) { ... }\\n  async sendVerificationEmail(user) { ... }\\n  async generateAvatar(user) { ... }\\n  async createBillingAccount(user) { ... }\\n}",
+    "question": "What's wrong with this class from a SOLID perspective? class UserService { register(), sendVerificationEmail(), generateAvatar(), createBillingAccount() }",
     "options": [
-      "Nothing — it's a user service, all these relate to users",
-      "Violates Single Responsibility — UserService has 4 different reasons to change",
+      "Nothing — all methods relate to users",
+      "Violates Single Responsibility — the class has 4 unrelated reasons to change (user creation, email, avatar, billing)",
       "Violates Open/Closed — can't extend without modifying",
-      "Violates Interface Segregation — clients forced to depend on methods they don't use"
+      "Violates Interface Segregation — clients must depend on all methods"
     ],
     "correctIndex": 1,
-    "explanation": "This violates the Single Responsibility Principle. UserService has 4 distinct reasons to change: (1) registration logic, (2) email templates/delivery, (3) avatar generation, (4) billing integration. If the email provider changes, you modify UserService. If billing changes, you modify UserService. Split into: UserRepository, EmailService, AvatarService, BillingService."
+    "explanation": "This violates Single Responsibility. UserService has 4 distinct areas of change: (1) registration logic, (2) email templates/delivery, (3) avatar generation, (4) billing integration. If the email provider changes, you modify UserService. If billing changes, you modify UserService. Each change risks breaking unrelated functionality. Split into: UserRepository, EmailService, AvatarService, BillingService."
   }
 ]
 -->`,
@@ -2038,109 +1673,140 @@ const db2 = Database.getInstance();
   {
     name: "Testing Workshop",
     slug: "testing-workshop",
-    description: "Unit testing patterns, integration testing, TDD walkthrough, and test coverage strategy.",
+    description: "Unit testing patterns, integration testing, TDD, mocking strategy, and building a testing culture.",
     order: 5,
     sections: [
       {
-        title: "Unit Testing Patterns",
-        slug: "unit-testing-patterns",
+        title: "Testing Fundamentals",
+        slug: "testing-fundamentals",
         type: "lesson" as const,
         difficulty: "beginner" as const,
-        estimatedMinutes: 25,
+        estimatedMinutes: 45,
         order: 1,
-        content: `## Unit Testing Patterns
+        content: `## Testing Fundamentals
 
-Good tests are the difference between "I'm confident this deploy won't break anything" and "let me deploy on Friday afternoon and pray."
+Good tests are the difference between "I am confident this deploy will not break anything" and "let me deploy on Friday afternoon and pray." Tests are not just a safety net — they are a design tool. Code that is easy to test is usually well-designed code. Code that is hard to test is usually poorly designed.
+
+### The Testing Pyramid
+
+The testing pyramid tells you how many of each type of test to write:
+
+\`\`\`
+        /\\
+       /  \\         E2E Tests (few — slow, expensive, brittle)
+      /    \\        Test complete user flows through the real UI
+     /------\\
+    /        \\      Integration Tests (moderate — test real connections)
+   /          \\     Test components working together (API + DB, service + service)
+  /------------\\
+ /              \\   Unit Tests (many — fast, cheap, reliable)
+/                \\  Test individual functions and classes in isolation
+\\________________/
+\`\`\`
+
+**Unit tests** are the foundation. They test individual functions and classes in isolation — no database, no network, no file system. They run in milliseconds and tell you exactly what broke. You should have hundreds or thousands of them.
+
+**Integration tests** verify that components work together correctly. Does your API route actually query the database and return the right response? Does your authentication middleware correctly block unauthenticated requests? These are slower (they hit real databases or APIs) but catch issues that unit tests miss.
+
+**E2E (End-to-End) tests** simulate real user behaviour through the actual UI. "Click the signup button, fill in the form, submit, verify the welcome page appears." These are the most realistic but also the slowest, most expensive, and most brittle. Write few but critical ones.
 
 ### The AAA Pattern (Arrange, Act, Assert)
 
-Every test follows this structure:
+Every test follows this three-step structure:
 
 \`\`\`typescript
-test("calculates total with tax", () => {
-  // Arrange — set up test data
+test("calculates total with tax correctly", () => {
+  // # ARRANGE — set up the test data and preconditions
   const cart = new ShoppingCart();
   cart.addItem({ name: "Book", price: 20 });
   cart.addItem({ name: "Pen", price: 5 });
-  const taxRate = 0.1;
+  const taxRate = 0.1;  // # 10% tax
 
-  // Act — execute the thing being tested
+  // # ACT — execute the function being tested
   const total = cart.calculateTotal(taxRate);
 
-  // Assert — verify the result
-  expect(total).toBe(27.5); // (20 + 5) * 1.1
+  // # ASSERT — verify the result is correct
+  expect(total).toBe(27.5);  // # (20 + 5) × 1.1 = 27.5
 });
 \`\`\`
 
-### What to Test
+This pattern makes tests readable: even someone who has never seen the codebase can understand what is being tested, how, and what the expected result is.
 
-**Test behavior, not implementation.** Don't test that a function calls another function — test that the output is correct.
+### Test Behaviour, Not Implementation
 
-**Bad — testing implementation:**
+This is the single most important testing principle. Test WHAT the code does (its outputs and side effects), not HOW it does it internally.
+
+**Bad — testing implementation details:**
 \`\`\`typescript
-test("sorts array using quicksort", () => {
+// # This test breaks if you change the sorting algorithm,
+// # even though the output is still correct
+test("sorts using quicksort", () => {
   const spy = jest.spyOn(sorter, "quicksort");
   sorter.sort([3, 1, 2]);
-  expect(spy).toHaveBeenCalled(); // Who cares HOW it sorts?
+  expect(spy).toHaveBeenCalled();  // # Who cares HOW it sorts?
 });
 \`\`\`
 
-**Good — testing behavior:**
+**Good — testing behaviour:**
 \`\`\`typescript
+// # This test passes regardless of which algorithm is used internally
 test("sorts array in ascending order", () => {
   expect(sorter.sort([3, 1, 2])).toEqual([1, 2, 3]);
 });
 \`\`\`
 
+The bad test is brittle — it breaks when you change the internal algorithm, even though the function still works correctly. The good test only breaks when the function's actual behaviour changes.
+
 ### Testing Edge Cases
 
-Always test:
-1. **Empty input** — empty array, empty string, null
-2. **Single element** — array with 1 item
-3. **Boundary values** — 0, -1, MAX_INT, minimum valid input
-4. **Duplicates** — [1, 1, 1]
-5. **Already sorted / reverse sorted**
-6. **Invalid input** — wrong types, missing fields
+The most valuable tests are often edge case tests. Happy path tests ("normal inputs produce normal outputs") catch obvious bugs. Edge case tests catch the subtle bugs that make it to production.
 
 \`\`\`typescript
-describe("Array.max", () => {
+describe("findMax", () => {
   test("returns max of positive numbers", () => {
-    expect(findMax([3, 7, 2, 9, 1])).toBe(9);
+    expect(findMax([3, 7, 2, 9, 1])).toBe(9);       // # Happy path
   });
 
   test("handles single element", () => {
-    expect(findMax([42])).toBe(42);
+    expect(findMax([42])).toBe(42);                   // # Edge: only one element
   });
 
   test("handles negative numbers", () => {
-    expect(findMax([-5, -2, -8])).toBe(-2);
+    expect(findMax([-5, -2, -8])).toBe(-2);           // # Edge: all negative
   });
 
   test("handles duplicates", () => {
-    expect(findMax([5, 5, 5])).toBe(5);
+    expect(findMax([5, 5, 5])).toBe(5);               // # Edge: all same
   });
 
   test("throws on empty array", () => {
-    expect(() => findMax([])).toThrow("Array cannot be empty");
+    expect(() => findMax([])).toThrow("Array cannot be empty");  // # Edge: empty input
   });
 });
 \`\`\`
 
-### Test Coverage Strategy
+### Mocking Strategy
 
-**What to test:**
-- Business logic (calculations, transformations, validations)
-- Edge cases and error handling
-- Integration points (API responses, database queries)
-- Regression tests (bugs that were found and fixed)
+Mocks replace real dependencies (database, API, file system) with controlled substitutes. They make unit tests fast and isolated. But they have a critical limitation: mocks test that your code works IF the dependency behaves as expected. They do not catch mismatches between your mock and the real dependency.
 
-**What NOT to test:**
-- Framework/library code (React renders, Express routing)
-- Simple getters/setters with no logic
-- Configuration files
-- Third-party code
+**Rule of thumb:**
+- **Unit tests:** mock external dependencies (database, APIs, file system)
+- **Integration tests:** use real dependencies (test database, test API server)
+- **Never mock what you own** — if you wrote the function, test it with real inputs, not a mock
 
-**Coverage target:** Aim for 80% code coverage on business logic. 100% coverage is a waste of time and leads to brittle tests that break on every refactor.`,
+### What to Test vs. What Not to Test
+
+| Test This | Do NOT Test This |
+|-----------|-----------------|
+| Business logic (calculations, validations, transformations) | Framework code (React renders, Express routing) |
+| Edge cases and error handling | Simple getters/setters with no logic |
+| API contract (request/response shapes) | Configuration files |
+| Regression tests (bugs that were fixed) | Third-party library internals |
+| Security-critical paths (auth, input validation) | CSS styling details |
+
+### Coverage Target
+
+Aim for 80% code coverage on business logic. 100% coverage is usually counterproductive — the last 20% often involves testing trivial code (getters, configuration) that provides no value but makes tests brittle and slow. Focus coverage on the code where bugs would cause the most damage: business logic, security, and data processing.`,
       },
       {
         title: "Testing Workshop Quiz",
@@ -2156,35 +1822,35 @@ describe("Array.max", () => {
   {
     "question": "You're testing a calculateDiscount(price, percentage) function. Which test cases should you include?",
     "options": [
-      "Just test calculateDiscount(100, 10) = 90 — one test is enough",
-      "Normal case, zero discount, 100% discount, negative price, percentage > 100, and non-numeric inputs",
+      "Just test calculateDiscount(100, 10) = 90 — one happy path test is enough",
+      "Normal case (100, 10), zero discount (100, 0), full discount (100, 100), negative price, percentage > 100, and decimal edge cases",
       "Only test with random values to cover more scenarios",
-      "Only test the cases from the requirements document"
+      "Only test the cases listed in the requirements document"
     ],
     "correctIndex": 1,
-    "explanation": "Good unit tests cover: (1) normal/happy path (100, 10 → 90), (2) boundary cases (0% discount, 100% discount), (3) edge cases (negative price — should it throw?), (4) invalid inputs (percentage > 100, non-numeric). These catch bugs that normal usage doesn't. Each test should be independent and test ONE behavior. This is the foundation of the testing pyramid."
+    "explanation": "Good unit tests cover: (1) happy path (100, 10 → 90), (2) boundary cases (0% discount → no change, 100% discount → free), (3) invalid inputs (negative price — should it throw? percentage > 100 — is that allowed?), (4) decimal precision (10.5% of 99.99). Edge case tests catch the bugs that make it to production. A single happy-path test gives false confidence."
   },
   {
-    "question": "Your test mocks the database and API calls. It passes perfectly. But the feature is broken in production. What went wrong?",
+    "question": "Your test mocks the database and all API calls. Every test passes. But the feature is broken in production. What went wrong?",
     "options": [
       "The test framework has a bug",
-      "Mocks matched the expected behavior but not the ACTUAL behavior — you need integration tests that hit real services",
+      "Mocks matched the EXPECTED behaviour but not the ACTUAL behaviour of the real dependencies — you need integration tests that use real services",
       "The test was too thorough",
       "Production has different hardware"
     ],
     "correctIndex": 1,
-    "explanation": "Mocks test that your code works IF the database/API behaves as expected. But mocks don't catch: schema mismatches (database returns different fields), API behavior changes, query performance issues, connection handling, or data format changes. You need integration tests that hit a real (test) database to catch these. Use mocks for unit tests (fast, isolated), integration tests for real interactions."
+    "explanation": "Mocks verify that your code works IF the dependency behaves as mocked. But mocks do not catch: schema mismatches (database returns different column names), API behaviour changes (vendor updated their API), query errors (your SQL has a typo), connection handling issues, or data format differences. You need integration tests that hit a real (test) database and real (test) APIs to catch these mismatches."
   },
   {
     "question": "You have 95% test coverage but bugs keep shipping. What's most likely wrong?",
     "options": [
       "You need 100% coverage",
-      "High coverage doesn't mean good tests — you're probably testing implementation details instead of behavior, and missing edge cases",
+      "High coverage ≠ good tests — you're probably testing implementation details instead of behaviour and missing critical edge cases",
       "The test framework is unreliable",
-      "You need more E2E tests"
+      "You need more E2E tests instead of unit tests"
     ],
     "correctIndex": 1,
-    "explanation": "Coverage measures which lines RUN, not whether they're tested CORRECTLY. Common problems with high-coverage-but-buggy code: (1) tests assert nothing meaningful, (2) tests mirror implementation instead of testing behavior, (3) edge cases aren't tested even if normal paths are, (4) tests don't check error handling. Good tests assert behavior ('given X input, expect Y output'), not implementation ('function calls method Z')."
+    "explanation": "Coverage measures which lines RUN during tests, not whether they are tested CORRECTLY. Common problems: (1) tests that assert nothing meaningful ('expect(true).toBe(true)'), (2) tests that mirror implementation details instead of testing behaviour, (3) edge cases not tested even though normal paths are covered, (4) tests that do not check error handling. Quality over quantity — one well-designed edge-case test catches more bugs than ten trivial happy-path tests."
   }
 ]
 -->`,
@@ -2197,84 +1863,62 @@ describe("Array.max", () => {
   {
     name: "DevOps Essentials",
     slug: "devops-essentials",
-    description: "Git workflows, CI/CD pipelines, Docker, deployment checklists, monitoring, and cloud services overview.",
+    description: "Git workflows, CI/CD pipelines, Docker, deployment strategies, monitoring, and the DevOps mindset.",
     order: 6,
     sections: [
       {
-        title: "Git Workflow Cheat Sheet",
-        slug: "git-workflow",
+        title: "Git, CI/CD, and Deployment",
+        slug: "git-cicd-deployment",
         type: "lesson" as const,
         difficulty: "beginner" as const,
-        estimatedMinutes: 20,
+        estimatedMinutes: 45,
         order: 1,
-        content: `## Git Workflow Cheat Sheet
+        content: `## Git, CI/CD, and Modern Deployment
 
-### The Three Areas
+DevOps is not a job title — it is a culture. It means developers and operations teams work together to automate everything between writing code and that code running in production. The goal: deploy confidently, frequently, and safely. A mature DevOps team deploys multiple times per day without drama. An immature team treats every deployment as a risky event requiring a war room.
 
-Git has three areas where your code lives:
+### Git — Version Control That Enables Everything Else
 
-1. **Working Directory** — your files on disk (what you edit)
-2. **Staging Area** — files marked for the next commit (\`git add\`)
-3. **Repository** — committed history (\`git commit\`)
+Git is the foundation of all modern software collaboration. Every CI/CD pipeline, every code review, and every deployment starts with Git. Understanding Git is not optional — it is as fundamental as understanding how to use a text editor.
 
-### Essential Commands
+**The Three Areas of Git:**
+
+1. **Working Directory** — the files you see and edit on disk
+2. **Staging Area** — files you have marked for the next commit (\`git add\`)
+3. **Repository** — the committed history (what gets pushed to the remote)
+
+\`\`\`
+Working Directory → git add → Staging Area → git commit → Repository → git push → Remote
+\`\`\`
+
+**Essential Commands Every Engineer Uses Daily:**
 
 | Command | What It Does |
 |---------|-------------|
-| \`git status\` | Show what's changed, staged, and untracked |
-| \`git add file.ts\` | Stage a specific file |
-| \`git add .\` | Stage all changes (be careful!) |
-| \`git commit -m "message"\` | Commit staged changes |
-| \`git log --oneline\` | See commit history (compact) |
-| \`git diff\` | See unstaged changes |
-| \`git diff --staged\` | See staged changes |
-| \`git stash\` | Temporarily save uncommitted changes |
+| \`git status\` | Show what has changed, what is staged, what is untracked |
+| \`git add file.ts\` | Stage a specific file for the next commit |
+| \`git commit -m "message"\` | Create a snapshot of staged changes |
+| \`git log --oneline\` | See commit history in compact format |
+| \`git diff\` | See what has changed but NOT yet staged |
+| \`git diff --staged\` | See what IS staged and will be committed |
+| \`git stash\` | Temporarily save uncommitted changes (like a clipboard for code) |
 | \`git stash pop\` | Restore stashed changes |
 
-### Branching Strategy
+### Branching Strategies
 
-**Git Flow (most teams):**
-- \`main\` — production code, always deployable
-- \`develop\` — integration branch, next release
-- \`feature/xyz\` — one branch per feature
-- \`hotfix/xyz\` — urgent production fixes
+**Git Flow (structured teams, release-based):**
+- \`main\` — production code, always deployable, protected
+- \`develop\` — integration branch for the next release
+- \`feature/xyz\` — one branch per feature, branched from develop
+- \`hotfix/xyz\` — urgent production fixes, branched from main
 
-**Trunk-Based (modern teams):**
-- \`main\` — everyone commits here (via short-lived branches)
-- Feature branches live <1 day
-- Feature flags for incomplete work
+**Trunk-Based (modern teams, continuous deployment):**
+- \`main\` — everyone works here via very short-lived branches (hours, not weeks)
+- Feature branches live less than 1 day before merging
+- Incomplete features hidden behind feature flags
+- This is what Google, Netflix, and most high-performing teams use
 
-### Common Operations
-
-**Create and switch to a new branch:**
-\`\`\`
-git checkout -b feature/user-auth
-\`\`\`
-
-**Merge a feature branch into main:**
-\`\`\`
-git checkout main
-git pull origin main
-git merge feature/user-auth
-\`\`\`
-
-**Rebase (rewrite history for clean commits):**
-\`\`\`
-git checkout feature/user-auth
-git rebase main
-\`\`\`
-
-**Cherry-pick a specific commit:**
-\`\`\`
-git cherry-pick abc123
-\`\`\`
-
-**Undo the last commit (keep changes):**
-\`\`\`
-git reset --soft HEAD~1
-\`\`\`
-
-### Commit Message Convention
+### Commit Messages That Help
 
 \`\`\`
 type(scope): short description
@@ -2282,19 +1926,86 @@ type(scope): short description
 Types: feat, fix, docs, style, refactor, test, chore
 \`\`\`
 
-**Examples:**
+**Good examples:**
 - \`feat(auth): add Google OAuth login\`
-- \`fix(cart): prevent negative quantity\`
-- \`docs(api): update endpoint documentation\`
-- \`refactor(user): extract validation logic\`
+- \`fix(cart): prevent negative quantity on decrement\`
+- \`refactor(user): extract validation into separate module\`
 
-### Golden Rules
+**Bad examples:**
+- \`fix bug\` — which bug? Where? Why?
+- \`changes\` — what changes? This tells nobody anything.
+- \`WIP\` — do not commit work-in-progress to shared branches
 
-1. **Never force push to main/master** — you'll overwrite your team's work
-2. **Commit early, commit often** — small commits are easier to review and revert
-3. **Write meaningful commit messages** — "fix bug" tells nobody anything
-4. **Pull before you push** — avoid merge conflicts
-5. **Never commit secrets** — .env files, API keys, passwords`,
+### CI/CD — Continuous Integration / Continuous Deployment
+
+**Continuous Integration (CI):** Every time a developer pushes code, automated checks run — linting, type checking, unit tests, integration tests. If any check fails, the team is notified immediately and the merge is blocked. CI catches bugs before they reach production.
+
+**Continuous Deployment (CD):** After CI passes, the code is automatically deployed to production (or staging, depending on the pipeline). This means every merged PR reaches users within minutes, not weeks.
+
+**A typical CI/CD pipeline:**
+
+\`\`\`
+Push code → Lint check → Type check → Unit tests →
+  → Integration tests → Build → Deploy to staging →
+  → Smoke tests on staging → Deploy to production
+\`\`\`
+
+Each step is a gate. If linting fails, the pipeline stops. If tests fail, the pipeline stops. Code only reaches production if EVERY gate passes.
+
+### Docker — Consistent Environments
+
+The most common deployment problem: "It works on my machine but not in production." This happens because your machine has different software versions, environment variables, operating system settings, or installed packages than the production server.
+
+Docker solves this by packaging your application AND its entire environment (operating system, dependencies, configuration) into a container. The container runs identically everywhere — your laptop, the CI server, staging, and production.
+
+\`\`\`dockerfile
+# # Multi-stage Docker build: build in one stage, run in a smaller one
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci                          # # Install dependencies (deterministic)
+COPY . .
+RUN npm run build                   # # Build the application
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app/dist ./dist        # # Copy only the built output
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]       # # Start the application
+\`\`\`
+
+**Why multi-stage builds?** The builder stage has all build tools (TypeScript compiler, dev dependencies). The runner stage has only what is needed to RUN the app. This makes the production image smaller (faster to deploy, smaller attack surface).
+
+### Deployment Strategies
+
+| Strategy | How It Works | Risk Level | When to Use |
+|----------|-------------|------------|-------------|
+| **Rolling** | Replace instances one at a time | Low | Default for most services |
+| **Blue/Green** | Run old and new versions side by side, switch traffic instantly | Very low (instant rollback) | Critical services, databases |
+| **Canary** | Send 5% of traffic to the new version first, gradually increase | Very low | High-traffic services, risky changes |
+| **Recreate** | Stop all old instances, start new ones | High (downtime) | Only for dev/staging environments |
+
+### Monitoring — What to Watch After Deployment
+
+Deploying code is not the end — it is the beginning. You need to monitor the deployed code to catch issues that tests did not find.
+
+**The Four Golden Signals (from Google SRE):**
+
+1. **Latency** — how long requests take. Track p50 (median), p95 (95th percentile), and p99. A spike in p95 latency means some users are having a bad experience even if the median looks fine.
+2. **Traffic** — requests per second. A sudden drop means something is broken (users cannot reach your service). A sudden spike means you might need to scale.
+3. **Errors** — error rate (5xx responses / total responses). Track this as a percentage, not a count. 100 errors out of 100K requests (0.1%) is normal. 100 errors out of 200 requests (50%) is a crisis.
+4. **Saturation** — how full your resources are (CPU, memory, disk, database connections). When saturation approaches 100%, performance degrades dramatically.
+
+### Golden Rules of DevOps
+
+1. **Never force push to main** — you will overwrite your team's work
+2. **Never commit secrets** — .env files, API keys, passwords. Use environment variables.
+3. **Automate everything you do more than twice** — manual steps are error-prone
+4. **Make deployments boring** — if deployment is stressful, your process is broken
+5. **Monitor, do not guess** — dashboards and alerts catch problems before users report them`,
       },
       {
         title: "DevOps Essentials Quiz",
@@ -2310,35 +2021,35 @@ Types: feat, fix, docs, style, refactor, test, chore
   {
     "question": "You accidentally committed your .env file with API keys to a public GitHub repo. What should you do FIRST?",
     "options": [
-      "Delete the file and push a new commit — the old commit is buried",
-      "Immediately rotate ALL exposed API keys/secrets (they're already compromised), then remove the file from git history",
-      "Make the repo private",
+      "Delete the file and push a new commit — the old commit will be buried",
+      "Immediately rotate ALL exposed API keys and secrets — they are already compromised. THEN remove the file from git history.",
+      "Make the repository private",
       "Add .env to .gitignore — that will remove it from history"
     ],
     "correctIndex": 1,
-    "explanation": "Rotating secrets is the FIRST priority because bots scan GitHub continuously for exposed keys (within minutes). Even after you delete the file, the old commit with the secrets still exists in git history — anyone can view it. Steps: (1) Rotate ALL exposed secrets immediately, (2) Remove from git history (git filter-branch or BFG), (3) Add to .gitignore, (4) Force push. Making the repo private doesn't help — the keys may already be scraped."
+    "explanation": "Rotating secrets is the FIRST priority because automated bots scan GitHub continuously for exposed keys — within minutes. Even after you delete the file, the old commit with the secrets still exists in git history — anyone can view it with 'git log'. Steps: (1) Rotate ALL exposed secrets immediately, (2) Remove from git history using BFG or git filter-branch, (3) Add to .gitignore to prevent future accidents, (4) Force push the cleaned history."
   },
   {
-    "question": "Your team uses 'git rebase' before merging feature branches. Why is this preferred over 'git merge' by many teams?",
+    "question": "Your CI pipeline runs: lint → type check → unit tests → integration tests → build → deploy. Unit tests pass but integration tests fail. What does this tell you?",
     "options": [
-      "Rebase is always faster than merge",
-      "Rebase creates a linear commit history (no merge commits), making it easier to read and bisect",
-      "Merge is deprecated in modern Git",
-      "Rebase automatically resolves conflicts"
+      "The unit tests are wrong",
+      "Individual functions work correctly in isolation, but something breaks when components interact — likely a database query, API call, or configuration mismatch",
+      "The integration test environment is broken",
+      "You should skip integration tests to speed up deployment"
     ],
     "correctIndex": 1,
-    "explanation": "Rebase replays your commits on top of main, creating a linear history without merge commits. This makes 'git log' cleaner (easy to follow the project history), 'git bisect' more effective (finding which commit introduced a bug), and blame more readable. Merge preserves the exact branching history (useful for auditing) but creates merge commits that clutter the log. Both resolve conflicts manually."
+    "explanation": "Unit tests verify individual functions in isolation (with mocks). Integration tests verify that components work together with real dependencies. When unit tests pass but integration tests fail, the individual pieces work but their interaction does not — common causes: SQL query returns unexpected columns, API endpoint returns a different format than expected, environment variable is missing, or a database migration was not applied. This is exactly why you need both layers of tests."
   },
   {
-    "question": "What's the main benefit of trunk-based development over Git Flow?",
+    "question": "What is the main advantage of canary deployments over rolling deployments?",
     "options": [
-      "It uses fewer branches",
-      "Developers integrate changes continuously into main (multiple times a day), reducing merge conflicts and integration pain",
-      "It doesn't require pull requests",
-      "It's faster for large teams"
+      "Canary is faster",
+      "Canary deploys to only a small percentage of traffic first (e.g., 5%), so if the new version has a bug, only 5% of users are affected — not 100%",
+      "Canary doesn't require Docker",
+      "Canary is simpler to implement"
     ],
     "correctIndex": 1,
-    "explanation": "Trunk-based development means short-lived branches (hours, not weeks) merged into main frequently. This avoids 'merge hell' — the longer a branch lives, the more it diverges from main, and the harder the merge. Continuous integration catches conflicts early (when they're small). Feature flags hide incomplete work. Google, Facebook, and Netflix all use trunk-based development at massive scale."
+    "explanation": "Canary deployments send a small percentage of real traffic (e.g., 5%) to the new version while 95% continues on the old version. If error rates or latency increase for the canary group, you roll back — only 5% of users were affected. Rolling deployments replace instances one at a time, but once an instance is replaced, its traffic hits the new version permanently. Canary gives you a controlled experiment before full rollout."
   }
 ]
 -->`,
