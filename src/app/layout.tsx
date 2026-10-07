@@ -44,12 +44,16 @@ const spaceGrotesk = Space_Grotesk({
 /* Search engines and social media use these when displaying links */
 export const metadata: Metadata = {
   title: {
-    default: "Free AI Resume Builder, CV Templates & Mock Interviews — JP Arc",
+    default: "JP Arc — Free AI Resume Builder, CV Templates & Mock Interviews",
     template: "%s — JP Arc",
   },
   description:
-    "Build your resume in minutes, score it against ATS, and practice mock interviews — all free. 20+ CV templates, AI cover letters, and interview coaching used by 10,000+ job seekers.",
+    "JP Arc is a free AI career platform. Build ATS-optimized resumes, generate cover letters, practice mock interviews, and track applications — all in one place. 20+ CV templates used by 10,000+ job seekers.",
   keywords: [
+    "JP Arc",
+    "JP Arc AI",
+    "JP Arc career platform",
+    "JPArc",
     "free resume builder",
     "AI resume builder",
     "resume builder online free",
@@ -69,7 +73,7 @@ export const metadata: Metadata = {
     "resume score checker",
     "job application tracker",
     "career tools",
-    "JP Arc",
+    "jobpilotai",
   ],
   metadataBase: new URL("https://jobpilotai.co"),
   manifest: "/manifest.json",
@@ -77,6 +81,7 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
@@ -85,17 +90,19 @@ export const metadata: Metadata = {
     locale: "en_GB",
     url: "https://jobpilotai.co",
     siteName: "JP Arc",
-    title: "Free AI Resume Builder, CV Templates & Mock Interviews — JP Arc",
+    title: "JP Arc — Free AI Resume Builder, CV Templates & Mock Interviews",
     description:
-      "Build your resume in minutes, score it against ATS, and practice mock interviews — all free. 20+ templates, AI cover letters, and interview coaching.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "JP Arc — Free AI Resume Builder & Career Tools" }],
+      "JP Arc is a free AI career platform. Build ATS-optimized resumes, generate cover letters, practice mock interviews — all in one place.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "JP Arc — AI Career Platform for Resume Building, Interviews & Job Search" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free AI Resume Builder & Mock Interviews — JP Arc",
+    title: "JP Arc — Free AI Resume Builder & Mock Interviews",
     description:
-      "Build ATS-optimized resumes, practice mock interviews, generate cover letters — all free. Join 10,000+ job seekers landing interviews faster.",
+      "JP Arc helps you build ATS-optimized resumes, practice mock interviews, generate cover letters — all free. Join 10,000+ job seekers.",
     images: ["/og-image.png"],
+    site: "@jobpilotai",
+    creator: "@jobpilotai",
   },
   alternates: {
     canonical: "https://jobpilotai.co",

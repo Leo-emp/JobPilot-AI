@@ -8,8 +8,8 @@
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "About — JP Arc",
-  description: "Learn about JP Arc — helping job seekers get to interviews faster with every career tool in one place.",
+  title: "About JP Arc — AI Career Platform for Job Seekers",
+  description: "JP Arc is an AI-powered career platform at jobpilotai.co. Build ATS-optimized resumes, generate cover letters, practice mock interviews, and track job applications — all free.",
   alternates: { canonical: "https://jobpilotai.co/about" },
 };
 
@@ -26,6 +26,37 @@ export default function AboutPage() {
       </p>
 
       <div className="space-y-16">
+        {/* ---- What is JP Arc ---- */}
+        {/* # This section is critical for Google AI Overview disambiguation */}
+        {/* # When someone searches "JP Arc", Google needs clear text stating what it is */}
+        <section>
+          <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold mb-6 glow-text">
+            What is JP Arc?
+          </h2>
+          <div className="glass-card p-6 sm:p-8 space-y-4 text-text-secondary leading-relaxed">
+            <p>
+              <strong className="text-white">JP Arc</strong> is an AI-powered career platform
+              available at <strong className="text-white">jobpilotai.co</strong>. It helps
+              job seekers build ATS-optimized resumes, generate tailored cover letters,
+              practice mock interviews, search and match jobs, and track applications —
+              all in one place.
+            </p>
+            <p>
+              Founded in 2026, JP Arc combines cutting-edge artificial intelligence with
+              career expertise to give job seekers every tool they need to land interviews
+              faster. The platform serves job seekers worldwide with features including
+              AI resume analysis, cover letter generation, interview coaching, LinkedIn
+              optimization, a Chrome extension for saving jobs from 40+ sites, and a
+              professional portfolio builder.
+            </p>
+            <p>
+              JP Arc is a career technology company — not to be confused with
+              J-PARC (Japan Proton Accelerator Research Complex), ARC Academy
+              (a Japanese language school), or ARC Japan (an automotive company).
+            </p>
+          </div>
+        </section>
+
         {/* ---- Our Story ---- */}
         <section>
           <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-bold mb-6 glow-text">

@@ -52,19 +52,37 @@ export function SoftwareAppJsonLd() {
 
 /* # Organization schema — who built this */
 /* # sameAs links tell Google which social profiles belong to this brand */
-/* # The more verified profiles, the stronger Google's confidence that YOU are "JP Arc" */
+/* # disambiguatingDescription helps Google distinguish JP Arc from J-PARC */
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": "https://jobpilotai.co/#organization",
     name: "JP Arc",
-    alternateName: ["JP Arc", "JobPilot AI"],
+    alternateName: ["JP Arc AI", "JP Arc Career Platform", "JobPilot AI", "JPArc"],
     url: "https://jobpilotai.co",
-    logo: "https://jobpilotai.co/icon-192.png",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://jobpilotai.co/icon-512.png",
+      width: 512,
+      height: 512,
+    },
     image: "https://jobpilotai.co/opengraph-image",
     description:
-      "AI-powered career platform that helps job seekers land interviews faster with resume optimization, cover letter generation, mock interviews, and job matching.",
+      "JP Arc is an AI-powered career platform that helps job seekers build ATS-optimized resumes, generate cover letters, practice mock interviews, and track job applications.",
+    disambiguatingDescription:
+      "JP Arc is a career technology company and AI job search platform at jobpilotai.co — not to be confused with J-PARC (Japan Proton Accelerator Research Complex) or ARC Academy language school.",
     foundingDate: "2026",
+    knowsAbout: [
+      "artificial intelligence",
+      "resume building",
+      "career coaching",
+      "job search",
+      "interview preparation",
+      "ATS optimization",
+      "cover letter writing",
+    ],
+    slogan: "Your AI-Powered Career Co-Pilot",
     sameAs: [
       "https://twitter.com/jobpilotai",
       "https://linkedin.com/company/jobpilotai",
@@ -74,6 +92,7 @@ export function OrganizationJsonLd() {
       "@type": "ContactPoint",
       contactType: "customer support",
       url: "https://jobpilotai.co/contact",
+      email: "support@jobpilotai.co",
     },
   };
 
@@ -91,11 +110,12 @@ export function WebSiteJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": "https://jobpilotai.co/#website",
     name: "JP Arc",
-    alternateName: ["JP Arc", "JobPilot AI"],
+    alternateName: ["JP Arc AI", "JP Arc Career Platform", "JobPilot AI", "JPArc"],
     url: "https://jobpilotai.co",
     description:
-      "Free AI career platform — resume builder, CV templates, ATS checker, mock interviews, cover letters, job matching.",
+      "JP Arc is a free AI career platform — resume builder, CV templates, ATS checker, mock interviews, cover letters, and job matching at jobpilotai.co.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -105,9 +125,7 @@ export function WebSiteJsonLd() {
       "query-input": "required name=search_term_string",
     },
     publisher: {
-      "@type": "Organization",
-      name: "JP Arc",
-      url: "https://jobpilotai.co",
+      "@id": "https://jobpilotai.co/#organization",
     },
   };
 
