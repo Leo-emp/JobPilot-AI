@@ -9,9 +9,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authHandler } from "@/lib/api-handler";
 import { dbRetry } from "@/lib/db-retry";
+import { isB2BEnabled } from "@/lib/b2b-gate";
 
 /* # GET: list all orgs the current user is a member of */
 export const GET = authHandler(async (_req, session) => {
+  /* # B2B feature gate — return empty list when B2B is disabled */
+  if (!isB2BEnabled()) {
+    return NextResponse.json({ memberships: [] });
+  }
+
   /* # Fetch memberships with org details for the switcher */
   const memberships = await dbRetry(() =>
     prisma.organizationMember.findMany({

@@ -23,10 +23,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ skipped: true, reason: "B2B not enabled" });
   }
 
-  /* # Verify cron secret */
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  /* # Verify cron secret — returns null on success, 401 response on failure */
+  const authError = verifyCronSecret(req);
+  if (authError) return authError;
 
   /* # Fetch all active roles */
   const activeRoles = await dbRetry(() =>

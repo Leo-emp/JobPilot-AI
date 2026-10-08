@@ -61,11 +61,10 @@ export async function GET(req: NextRequest) {
         },
         select: {
           id: true,
-          email: true,
           plan: true,
           referralSource: true,
           createdAt: true,
-          _count: { select: { aiResults: true } }, // # Aggregate count for milestone detection
+          _count: { select: { aiResults: true } },
         },
       })
     );
@@ -73,7 +72,6 @@ export async function GET(req: NextRequest) {
     // # Type definition for a single funnel event
     type FunnelEvent = {
       userId: string;
-      email: string;
       eventType: "signup" | "first_ai_use" | "fifth_ai_use" | "pro_upgrade";
       utmSource: string | null;
       utmMedium: string | null;
@@ -118,7 +116,6 @@ export async function GET(req: NextRequest) {
       // # Always emitted for every user in the window
       events.push({
         userId: user.id,
-        email: user.email,
         eventType: "signup",
         utmSource: utm.source,
         utmMedium: utm.medium,
@@ -134,7 +131,6 @@ export async function GET(req: NextRequest) {
       if (user._count.aiResults >= 1) {
         events.push({
           userId: user.id,
-          email: user.email,
           eventType: "first_ai_use",
           utmSource: utm.source,
           utmMedium: utm.medium,
@@ -152,7 +148,6 @@ export async function GET(req: NextRequest) {
       if (user._count.aiResults >= 5) {
         events.push({
           userId: user.id,
-          email: user.email,
           eventType: "fifth_ai_use",
           utmSource: utm.source,
           utmMedium: utm.medium,
@@ -169,7 +164,6 @@ export async function GET(req: NextRequest) {
       if (user.plan === "pro") {
         events.push({
           userId: user.id,
-          email: user.email,
           eventType: "pro_upgrade",
           utmSource: utm.source,
           utmMedium: utm.medium,

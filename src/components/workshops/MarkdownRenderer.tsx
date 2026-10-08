@@ -10,6 +10,7 @@
 "use client";
 
 import { useMemo } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 interface MarkdownRendererProps {
   content: string;
@@ -17,24 +18,25 @@ interface MarkdownRendererProps {
   color: string;
 }
 
-/* # Parse a simple markdown string into React-safe HTML */
+/* # Parse a simple markdown string into React-safe HTML.
+   # Output is sanitised through DOMPurify to prevent stored XSS
+   # even if workshop content is compromised. */
 function parseInline(text: string): string {
-  return (
-    text
-      /* # Code inline: `code` */
-      .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-white/10 text-sm font-mono text-indigo-300">$1</code>')
-      /* # Bold + italic: ***text*** */
-      .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
-      /* # Bold: **text** */
-      .replace(/\*\*(.+?)\*\*/g, "<strong class=\"text-white font-semibold\">$1</strong>")
-      /* # Italic: *text* */
-      .replace(/\*(.+?)\*/g, "<em>$1</em>")
-      /* # Links: [text](url) */
-      .replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">$1</a>'
-      )
-  );
+  const raw = text
+    /* # Code inline: `code` */
+    .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-white/10 text-sm font-mono text-indigo-300">$1</code>')
+    /* # Bold + italic: ***text*** */
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    /* # Bold: **text** */
+    .replace(/\*\*(.+?)\*\*/g, "<strong class=\"text-white font-semibold\">$1</strong>")
+    /* # Italic: *text* */
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    /* # Links: [text](url) */
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">$1</a>'
+    );
+  return DOMPurify.sanitize(raw, { ADD_ATTR: ["target", "rel", "class"] });
 }
 
 /* # Parse full markdown content into structured blocks */

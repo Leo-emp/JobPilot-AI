@@ -54,8 +54,12 @@ export const POST = safeHandler(async (req: NextRequest) => {
       return NextResponse.json({ error: "File too large. Maximum 5MB." }, { status: 400 });
     }
 
-    /* Read the file and parse with unpdf (dynamic import to avoid build crash) */
+    /* # Read file and validate PDF magic bytes before passing to parser */
     const arrayBuffer = await file.arrayBuffer();
+    const header = new Uint8Array(arrayBuffer).slice(0, 4);
+    if (String.fromCharCode(...header) !== "%PDF") {
+      return NextResponse.json({ error: "Invalid PDF file." }, { status: 400 });
+    }
     const { extractText, getDocumentProxy } = await import("unpdf");
     const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
     const { text, totalPages } = await extractText(pdf);

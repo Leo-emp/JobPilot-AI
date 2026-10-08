@@ -39,15 +39,16 @@ export const DELETE = authHandler(async (
 
   const { id } = await params;
 
-  const result = await dbRetry(() => prisma.aiResult.findFirst({
+  /* # Use deleteMany with userId constraint to atomically verify ownership
+     and delete — prevents TOCTOU race where ownership check and delete
+     are separate queries */
+  const result = await dbRetry(() => prisma.aiResult.deleteMany({
     where: { id, userId: session.user.id },
   }));
 
-  if (!result) {
+  if (result.count === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-
-  await dbRetry(() => prisma.aiResult.delete({ where: { id } }));
 
   return NextResponse.json({ success: true });
 });

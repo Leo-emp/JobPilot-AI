@@ -14,12 +14,18 @@ import { formatZodError } from "@/lib/validations";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { audit, getClientIp } from "@/lib/audit";
 import { dbRetry } from "@/lib/db-retry";
+import { isB2BEnabled } from "@/lib/b2b-gate";
 
 /* # 3 employer accounts per hour per user — prevents spam */
 const employerCreateLimit = createRateLimiter({ maxRequests: 3, windowMs: 60 * 60_000 });
 
 /* # GET: list employer accounts the user belongs to */
 export const GET = authHandler(async (_req, session) => {
+  /* # B2B feature gate — return empty list when B2B is disabled */
+  if (!isB2BEnabled()) {
+    return NextResponse.json({ employers: [] });
+  }
+
   const memberships = await dbRetry(() =>
     prisma.employerMember.findMany({
       where: { userId: session.user.id },

@@ -6,17 +6,23 @@
    wraps all /org/* pages with session + sidebar.
    ============================================================ */
 
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { auth } from "@/lib/auth";
 import { SessionProvider } from "next-auth/react";
 import OrgSidebar from "@/components/OrgSidebar";
+import { isB2BEnabled } from "@/lib/b2b-gate";
 
 const StarField = dynamic(() => import("@/components/StarField"));
 
 /* # Inner shell loads session then renders children */
 async function OrgShell({ children }: { children: React.ReactNode }) {
+  /* # B2B feature gate — entire org dashboard is hidden until enabled */
+  if (!isB2BEnabled()) {
+    notFound();
+  }
+
   const session = await auth();
   if (!session?.user) {
     redirect("/login");
